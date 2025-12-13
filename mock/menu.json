@@ -1,0 +1,100 @@
+[
+  {
+    "id": 1,
+    "code": "shouye",
+    "name": "首页",
+    "menus": [
+      {
+        "id": 5,
+        "name": "推荐",
+        "code": "tuijian"
+      },
+      {
+        "id": 6,
+        "name": "关注",
+        "code": "guanzhu"
+      },
+      {
+        "id": 7,
+        "name": "本地",
+        "code": "bendi"
+      },
+      {
+        "id": 8,
+        "name": "广场",
+        "code": "guangchang"
+      },
+      {
+        "id": 9,
+        "name": "商场",
+        "code": "shangchang"
+      },
+      {
+        "id": 10,
+        "name": "聚力",
+        "code": "juli"
+      },
+      {
+        "id": 11,
+        "name": "共享",
+        "code": "gongxiang"
+      },
+      {
+        "id": 12,
+        "name": "工具",
+        "code": "gongju"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "code": "shipin",
+    "name": "视频",
+    "menus": [
+      {
+        "id": 13,
+        "name": "影视",
+        "code": "yingshi"
+      },
+      {
+        "id": 14,
+        "name": "短视频",
+        "code": "duanshipin"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "code": "xiaoxi",
+    "name": "消息",
+    "menus": [
+      {
+        "id": 15,
+        "name": "消息",
+        "code": "wodexiaoxi"
+      },
+      {
+        "id": 16,
+        "name": "好友",
+        "code": "haoyou"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "code": "wode",
+    "name": "我的",
+    "menus": [
+      {
+        "id": 17,
+        "name": "金库",
+        "code": "uuku"
+      },
+      {
+        "id": 18,
+        "name": "作品",
+        "code": "zuopin"
+      }
+    ]
+  }
+]

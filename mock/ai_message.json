@@ -1,0 +1,15 @@
+[
+  {
+    "author": {
+      "firstName": "A",
+      "id": "1",
+      "lastName": "I"
+    },
+    "createdAt": 1655624460000,
+    "id": "1",
+    "status": "seen",
+    "text": "主人，您好，我是您的AI小助手",
+    "type": "text"
+  }
+
+]
