@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/day_weather_entity.dart';
+import '../../../features/data/models/day_weather_entity.dart';
 
 DayWeatherEntity $DayWeatherEntityFromJson(Map<String, dynamic> json) {
   final DayWeatherEntity dayWeatherEntity = DayWeatherEntity();

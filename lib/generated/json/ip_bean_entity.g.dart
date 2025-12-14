@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/ip_bean_entity.dart';
+import '../../../features/data/models/ip_bean_entity.dart';
 
 IpBeanEntity $IpBeanEntityFromJson(Map<String, dynamic> json) {
   final IpBeanEntity ipBeanEntity = IpBeanEntity();

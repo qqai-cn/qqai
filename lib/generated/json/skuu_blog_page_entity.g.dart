@@ -1,4 +1,4 @@
-import 'package:qqai/app/data/models/skuu_blog_page_entity.dart';
+import '../../../features/data/models/skuu_blog_page_entity.dart';
 import 'package:qqai/generated/json/base/json_convert_content.dart';
 
 SkuuBlogPageEntity $SkuuBlogPageEntityFromJson(Map<String, dynamic> json) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../app/data/local/my_shared_pref.dart';
+import '../../util/my_shared_pref.dart';
 import '../translations/localization_service.dart';
 
 //  configure text family and size

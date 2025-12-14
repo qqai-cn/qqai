@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/city_menu_model_entity.dart';
+import '../../../features/data/models/city_menu_model_entity.dart';
 
 CityMenuModelEntity $CityMenuModelEntityFromJson(Map<String, dynamic> json) {
   final CityMenuModelEntity cityMenuModelEntity = CityMenuModelEntity();

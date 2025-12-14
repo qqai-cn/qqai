@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/message_entity.dart';
+import '../../../features/data/models/message_entity.dart';
 
 MessageEntity $MessageEntityFromJson(Map<String, dynamic> json) {
   final MessageEntity messageEntity = MessageEntity();

@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/address_entity.dart';
+import '../../../features/data/models/address_entity.dart';
 
 AddressEntity $AddressEntityFromJson(Map<String, dynamic> json) {
   final AddressEntity addressEntity = AddressEntity();

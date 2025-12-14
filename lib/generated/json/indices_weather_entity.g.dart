@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/indices_weather_entity.dart';
+import '../../../features/data/models/indices_weather_entity.dart';
 
 IndicesWeatherEntity $IndicesWeatherEntityFromJson(Map<String, dynamic> json) {
   final IndicesWeatherEntity indicesWeatherEntity = IndicesWeatherEntity();

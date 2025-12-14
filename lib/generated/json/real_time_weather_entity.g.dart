@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/real_time_weather_entity.dart';
+import '../../../features/data/models/real_time_weather_entity.dart';
 import 'package:flutter_weather_bg_null_safety/utils/weather_type.dart';
 
 

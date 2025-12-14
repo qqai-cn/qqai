@@ -1,26 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/date_symbol_data_local.dart' as intl;
+import 'package:qqai/router/app_router.dart';
 
-import 'app/data/local/my_shared_pref.dart';
-import 'app/routes/app_pages.dart';
 import 'config/theme/my_theme.dart';
 import 'config/translations/localization_service.dart';
+import 'util/my_shared_pref.dart';
+import 'providers/app_config_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // init shared preference
   await MySharedPref.init();
-  initializeDateFormatting().then((_) => runApp(MyApp()));
-  // ;runApp(MyApp());
+  intl.initializeDateFormatting().then((_) => runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  ));
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key}) {}
+class MyApp extends ConsumerWidget {
+  const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeIsLight = ref.watch(appThemeModeProvider);
+    final locale = ref.watch(appLocaleProvider);
+    // 使用 read 而不是 watch，避免 GoRouter 频繁重建
+    final router = ref.read(appRouterProvider);
+
     return ScreenUtilInit(
       designSize: const Size(1170, 2532),
       minTextAdapt: true,
@@ -28,25 +38,29 @@ class MyApp extends StatelessWidget {
       useInheritedMediaQuery: true,
       rebuildFactor: (old, data) => true,
       builder: (context, child) {
-        return GetMaterialApp(
+        return MaterialApp.router(
           title: '千千Ai',
-          useInheritedMediaQuery: true,
           debugShowCheckedModeBanner: false,
-          builder: (context,widget) {
-            bool themeIsLight = MySharedPref.getThemeIsLight();
+          locale: locale,
+          supportedLocales: LocalizationService.supportedLanguages.values.toList(),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: MyTheme.getThemeData(isLight: true),
+          darkTheme: MyTheme.getThemeData(isLight: false),
+          themeMode: themeIsLight ? ThemeMode.light : ThemeMode.dark,
+          routerConfig: router,
+          builder: (context, widget) {
             return Theme(
               data: MyTheme.getThemeData(isLight: themeIsLight),
               child: MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+                data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
                 child: widget!,
               ),
             );
           },
-          initialRoute: AppPages.INITIAL, // first screen to show when app is running
-          getPages: AppPages.routes, // app screens
-          locale: MySharedPref.getCurrentLocal(), // app language
-          translations: LocalizationService.getInstance(),
-          // home: ChatPage()
         );
       },
     );

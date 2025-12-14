@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/huati_entity.dart';
+import '../../../features/data/models/huati_entity.dart';
 
 HuatiEntity $HuatiEntityFromJson(Map<String, dynamic> json) {
   final HuatiEntity huatiEntity = HuatiEntity();

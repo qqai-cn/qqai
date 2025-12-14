@@ -1,5 +1,5 @@
 import 'package:qqai/generated/json/base/json_convert_content.dart';
-import 'package:qqai/app/data/models/idCard_bean_entity.dart';
+import '../../../features/data/models/idCard_bean_entity.dart';
 
 IdCardBeanEntity $IdCardBeanEntityFromJson(Map<String, dynamic> json) {
   final IdCardBeanEntity idCardBeanEntity = IdCardBeanEntity();
