@@ -15,15 +15,15 @@ const lookArtProvider = LookArtNotifierProvider._();
 final class LookArtNotifierProvider
     extends $NotifierProvider<LookArtNotifier, LookArtState> {
   const LookArtNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'lookArtProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'lookArtProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$lookArtNotifierHash();
@@ -41,7 +41,7 @@ final class LookArtNotifierProvider
   }
 }
 
-String _$lookArtNotifierHash() => r'1cb9cef3c5f95edead894f590ced5b23378640c8';
+String _$lookArtNotifierHash() => r'721aeecff5c2ab0f70c072fd47a2d3e40598148b';
 
 abstract class _$LookArtNotifier extends $Notifier<LookArtState> {
   LookArtState build();
@@ -50,11 +50,14 @@ abstract class _$LookArtNotifier extends $Notifier<LookArtState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<LookArtState, LookArtState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<LookArtState, LookArtState>,
-        LookArtState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<LookArtState, LookArtState>,
+              LookArtState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

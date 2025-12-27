@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import '../../../index/presentation/providers/home_providers.dart';
-import '../../../index/presentation/providers/index_providers.dart';
+import '../../../index/providers/home_providers.dart';
+import '../../../index/providers/index_providers.dart';
 import '../providers/share_providers.dart';
 import 'share_img_item_view.dart';
 import 'share_video_item_view.dart';
@@ -33,24 +33,13 @@ class _ShareViewState extends ConsumerState<ShareView> {
   }
 
   void _initScrollController() {
-    final indexState = ref.read(indexProvider);
-    if (indexState.controllers.containsKey(7)) {
-      _scrollController = indexState.controllers[7];
-    } else {
-      Future.microtask(() {
-        if (mounted) {
-          _scrollController = ref.read(indexProvider.notifier).getScrollController(7);
-          setState(() {});
-        }
-      });
-      _scrollController = ScrollController();
-    }
+    _scrollController = ScrollController();
   }
 
   void _initColCount() {
     Future.microtask(() {
       if (mounted) {
-        ref.read(homeProvider.notifier).setColCount(1.sw);
+        // ref.read(homeProvider.notifier).setColCount(1.sw);
       }
     });
   }
@@ -62,13 +51,13 @@ class _ShareViewState extends ConsumerState<ShareView> {
     final homeState = ref.watch(homeProvider);
     final indexState = ref.watch(indexProvider);
 
-    final scrollController = _scrollController ?? indexState.controllers[7] ?? ScrollController();
+    final scrollController =  ScrollController();
 
     return Scaffold(
       backgroundColor: Colors.black12,
       body: MasonryGridView.count(
         itemCount: shareState.blogItems.length,
-        crossAxisCount: homeState.colCount,
+        crossAxisCount: 3,
         controller: scrollController,
         itemBuilder: (context, index) {
           final blogItem = shareState.blogItems[index];
@@ -87,7 +76,7 @@ class _ShareViewState extends ConsumerState<ShareView> {
           } else {
             return Card(
               child: SizedBox(
-                height: shareNotifier.getVideoItemHeightWithWidth(homeState.colCount, 1.sw),
+                height: shareNotifier.getVideoItemHeightWithWidth(3, 1.sw),
                 child: ShareVideoItemView(
                   blogItem: blogItem,
                   categary: widget.categary,

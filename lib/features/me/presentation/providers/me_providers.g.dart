@@ -14,15 +14,15 @@ const meProvider = MeNotifierProvider._();
 
 final class MeNotifierProvider extends $NotifierProvider<MeNotifier, MeState> {
   const MeNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'meProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'meProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$meNotifierHash();
@@ -49,8 +49,14 @@ abstract class _$MeNotifier extends $Notifier<MeState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<MeState, MeState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<MeState, MeState>, MeState, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<MeState, MeState>,
+              MeState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

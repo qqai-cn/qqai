@@ -14,15 +14,15 @@ const appThemeModeProvider = AppThemeModeProvider._();
 
 final class AppThemeModeProvider extends $NotifierProvider<AppThemeMode, bool> {
   const AppThemeModeProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'appThemeModeProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appThemeModeProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$appThemeModeHash();
@@ -49,8 +49,14 @@ abstract class _$AppThemeMode extends $Notifier<bool> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<bool, bool>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<bool, bool>, bool, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }
@@ -60,15 +66,15 @@ const appLocaleProvider = AppLocaleProvider._();
 
 final class AppLocaleProvider extends $NotifierProvider<AppLocale, Locale> {
   const AppLocaleProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'appLocaleProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'appLocaleProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$appLocaleHash();
@@ -95,8 +101,14 @@ abstract class _$AppLocale extends $Notifier<Locale> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<Locale, Locale>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<Locale, Locale>, Locale, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<Locale, Locale>,
+              Locale,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

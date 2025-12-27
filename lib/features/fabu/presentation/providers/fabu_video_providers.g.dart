@@ -15,15 +15,15 @@ const fabuVideoProvider = FabuVideoNotifierProvider._();
 final class FabuVideoNotifierProvider
     extends $NotifierProvider<FabuVideoNotifier, FabuVideoState> {
   const FabuVideoNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'fabuVideoProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fabuVideoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$fabuVideoNotifierHash();
@@ -50,11 +50,14 @@ abstract class _$FabuVideoNotifier extends $Notifier<FabuVideoState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<FabuVideoState, FabuVideoState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<FabuVideoState, FabuVideoState>,
-        FabuVideoState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<FabuVideoState, FabuVideoState>,
+              FabuVideoState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

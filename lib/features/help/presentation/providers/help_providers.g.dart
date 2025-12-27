@@ -14,15 +14,16 @@ const helpProvider = HelpNotifierFamily._();
 
 final class HelpNotifierProvider
     extends $NotifierProvider<HelpNotifier, HelpState> {
-  const HelpNotifierProvider._(
-      {required HelpNotifierFamily super.from, required int super.argument})
-      : super(
-          retry: null,
-          name: r'helpProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+  const HelpNotifierProvider._({
+    required HelpNotifierFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'helpProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$helpNotifierHash();
@@ -57,24 +58,27 @@ final class HelpNotifierProvider
   }
 }
 
-String _$helpNotifierHash() => r'c0237f6fe92f3858a0477e3c290e8378a4ea23b6';
+String _$helpNotifierHash() => r'353f6bb33ea3c6bbefb4ee7a3e3613b10319774e';
 
 final class HelpNotifierFamily extends $Family
     with
-        $ClassFamilyOverride<HelpNotifier, HelpState, HelpState, HelpState,
-            int> {
+        $ClassFamilyOverride<
+          HelpNotifier,
+          HelpState,
+          HelpState,
+          HelpState,
+          int
+        > {
   const HelpNotifierFamily._()
-      : super(
-          retry: null,
-          name: r'helpProvider',
-          dependencies: null,
-          $allTransitiveDependencies: null,
-          isAutoDispose: true,
-        );
+    : super(
+        retry: null,
+        name: r'helpProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
 
-  HelpNotifierProvider call(
-    int category,
-  ) =>
+  HelpNotifierProvider call(int category) =>
       HelpNotifierProvider._(argument: category, from: this);
 
   @override
@@ -85,18 +89,20 @@ abstract class _$HelpNotifier extends $Notifier<HelpState> {
   late final _$args = ref.$arg as int;
   int get category => _$args;
 
-  HelpState build(
-    int category,
-  );
+  HelpState build(int category);
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build(
-      _$args,
-    );
+    final created = build(_$args);
     final ref = this.ref as $Ref<HelpState, HelpState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<HelpState, HelpState>, HelpState, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<HelpState, HelpState>,
+              HelpState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

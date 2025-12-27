@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:qqai/components/responsive_masonry_grid.dart';
 
-import '../../../index/presentation/providers/home_providers.dart';
-import '../../../index/presentation/providers/index_providers.dart';
-import '../providers/blog_providers.dart';
-import 'blog_img_item_view.dart';
-import 'blog_video_item_view.dart';
+import '../../providers/blog_providers.dart';
+import '../widgets/blog_img_item_view.dart';
+import '../widgets/blog_video_item_view.dart';
 
 class BlogView extends ConsumerStatefulWidget {
-  final int categary;
+  final int category;
 
-  const BlogView(this.categary, {super.key});
+  const BlogView(this.category, {super.key});
 
   @override
   ConsumerState<BlogView> createState() => _BlogViewState();
@@ -24,86 +22,62 @@ class _BlogViewState extends ConsumerState<BlogView> {
   @override
   void initState() {
     super.initState();
-    // 在 initState 中初始化，使用 postFrameCallback 延迟执行
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _initScrollController();
-        _initColCount();
-      }
-    });
+    _scrollController = ScrollController();
   }
 
-  void _initScrollController() {
-    final indexState = ref.read(indexProvider);
-    if (indexState.controllers.containsKey(0)) {
-      _scrollController = indexState.controllers[0];
-    } else {
-      // 延迟创建，避免在构建过程中修改 provider
-      Future.microtask(() {
-        if (mounted) {
-          _scrollController = ref.read(indexProvider.notifier).getScrollController(0);
-          setState(() {});
-        }
-      });
-      // 临时创建一个 ScrollController
-      _scrollController = ScrollController();
-    }
-  }
-
-  void _initColCount() {
-    // 延迟设置列数，避免在构建过程中修改 provider
-    Future.microtask(() {
-      if (mounted) {
-        ref.read(homeProvider.notifier).setColCount(1.sw);
-      }
-    });
+  @override
+  void dispose() {
+    _scrollController?.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final blogState = ref.watch(blogProvider(widget.categary));
-    final blogNotifier = ref.read(blogProvider(widget.categary).notifier);
-    final homeState = ref.watch(homeProvider);
-    final indexState = ref.watch(indexProvider);
-
-    // 使用已初始化的 ScrollController 或从 state 中获取
-    final scrollController = _scrollController ?? indexState.controllers[0] ?? ScrollController();
-
+    final blogState = ref.watch(blogProvider(widget.category));
     return Scaffold(
       backgroundColor: Colors.black12,
-      body: MasonryGridView.count(
-        itemCount: blogState.blogItems.length,
-        crossAxisCount: homeState.colCount,
-        controller: scrollController,
-        itemBuilder: (context, index) {
-          final blogItem = blogState.blogItems[index];
+      body: blogState.when(
+        data: (data) => ResponsiveMasonryGrid(
+          itemCount: data.blogItems.length,
+          minColumnWidth: 400,
+          itemBuilder: (context, index) {
+            final blogItem = data.blogItems[index];
+            final blogNotifier = ref.read(
+              blogProvider(widget.category).notifier,
+            );
             if (blogItem.blogType == 1) {
+              return Card(child: BlogImgItemView(widget.category, blogItem));
+            } else {
               return Card(
-                child: BlogImgItemView(
-                  blogItem: blogItem,
-                  categary: widget.categary,
-                  onAvatarTap: () => blogNotifier.onUserAvatarTap(context, blogItem),
-                  onCardTap: () => blogNotifier.onBlogItemTap(context, blogItem),
-                  onCareTap: () => blogNotifier.onCareTap(blogItem),
-                  onZanTap: () => blogNotifier.onZanTap(blogItem),
-                  onImgTap: (item, index, heroTag) => blogNotifier.onBlogImgItemTap(context, item, index, heroTag),
+                child: SizedBox(
+                  height: blogNotifier.getVideoItemHeightWithWidth(3, 1.sw),
+                  child: BlogVideoItemView(
+                    blogItem: blogItem,
+                    categary: widget.category,
+                    onCardTap: () =>
+                        blogNotifier.onBlogItemTap(context, blogItem),
+                    onCareTap: () => blogNotifier.onCareTap(blogItem),
+                    onZanTap: () => blogNotifier.onZanTap(blogItem),
+                  ),
                 ),
               );
-          } else {
-            return Card(
-              child: SizedBox(
-                height: blogNotifier.getVideoItemHeightWithWidth(homeState.colCount, 1.sw),
-                child: BlogVideoItemView(
-                  blogItem: blogItem,
-                  categary: widget.categary,
-                  onCardTap: () => blogNotifier.onBlogItemTap(context, blogItem),
-                  onCareTap: () => blogNotifier.onCareTap(blogItem),
-                  onZanTap: () => blogNotifier.onZanTap(blogItem),
-                ),
+            }
+          },
+        ),
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('加载失败: $err', style: const TextStyle(color: Colors.white)),
+              ElevatedButton(
+                onPressed: () =>
+                    ref.read(blogProvider(widget.category).notifier).refresh(),
+                child: const Text('重试'),
               ),
-            );
-          }
-        },
+            ],
+          ),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
       ),
     );
   }

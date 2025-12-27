@@ -12,18 +12,20 @@ part of 'fabu_dynamic_providers.dart';
 @ProviderFor(fabuDynamicRepo)
 const fabuDynamicRepoProvider = FabuDynamicRepoProvider._();
 
-final class FabuDynamicRepoProvider extends $FunctionalProvider<FabuDynamicRepo,
-    FabuDynamicRepo, FabuDynamicRepo> with $Provider<FabuDynamicRepo> {
+final class FabuDynamicRepoProvider
+    extends
+        $FunctionalProvider<FabuDynamicRepo, FabuDynamicRepo, FabuDynamicRepo>
+    with $Provider<FabuDynamicRepo> {
   const FabuDynamicRepoProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'fabuDynamicRepoProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fabuDynamicRepoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$fabuDynamicRepoHash();
@@ -55,15 +57,15 @@ const fabuDynamicProvider = FabuDynamicNotifierProvider._();
 final class FabuDynamicNotifierProvider
     extends $NotifierProvider<FabuDynamicNotifier, FabuDynamicState> {
   const FabuDynamicNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'fabuDynamicProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fabuDynamicProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$fabuDynamicNotifierHash();
@@ -91,11 +93,14 @@ abstract class _$FabuDynamicNotifier extends $Notifier<FabuDynamicState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<FabuDynamicState, FabuDynamicState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<FabuDynamicState, FabuDynamicState>,
-        FabuDynamicState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<FabuDynamicState, FabuDynamicState>,
+              FabuDynamicState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

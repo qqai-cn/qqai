@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import '../../../index/presentation/providers/home_providers.dart';
-import '../../../index/presentation/providers/index_providers.dart';
+import '../../../index/providers/home_providers.dart';
+import '../../../index/providers/index_providers.dart';
 import '../providers/help_providers.dart';
 import 'help_img_item_view.dart';
 import 'help_video_item_view.dart';
@@ -33,24 +33,13 @@ class _HelpViewState extends ConsumerState<HelpView> {
   }
 
   void _initScrollController() {
-    final indexState = ref.read(indexProvider);
-    if (indexState.controllers.containsKey(6)) {
-      _scrollController = indexState.controllers[6];
-    } else {
-      Future.microtask(() {
-        if (mounted) {
-          _scrollController = ref.read(indexProvider.notifier).getScrollController(6);
-          setState(() {});
-        }
-      });
-      _scrollController = ScrollController();
-    }
+    _scrollController = ScrollController();
   }
 
   void _initColCount() {
     Future.microtask(() {
       if (mounted) {
-        ref.read(homeProvider.notifier).setColCount(1.sw);
+        // ref.read(homeProvider.notifier).setColCount(1.sw);
       }
     });
   }
@@ -62,13 +51,13 @@ class _HelpViewState extends ConsumerState<HelpView> {
     final homeState = ref.watch(homeProvider);
     final indexState = ref.watch(indexProvider);
 
-    final scrollController = _scrollController ?? indexState.controllers[6] ?? ScrollController();
+    final scrollController =  ScrollController();
 
     return Scaffold(
       backgroundColor: Colors.black12,
       body: MasonryGridView.count(
         itemCount: helpState.blogItems.length,
-        crossAxisCount: homeState.colCount,
+        crossAxisCount: 4,
         controller: scrollController,
         itemBuilder: (context, index) {
           final blogItem = helpState.blogItems[index];
@@ -87,7 +76,7 @@ class _HelpViewState extends ConsumerState<HelpView> {
           } else {
             return Card(
               child: SizedBox(
-                height: helpNotifier.getVideoItemHeightWithWidth(homeState.colCount, 1.sw),
+                height: helpNotifier.getVideoItemHeightWithWidth(2, 1.sw),
                 child: HelpVideoItemView(
                   blogItem: blogItem,
                   categary: widget.categary,

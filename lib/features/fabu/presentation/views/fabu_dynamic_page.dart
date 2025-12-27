@@ -8,7 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../components/video_player_public/public_video_player.dart';
 import '../../../data/models/address_entity.dart';
-import '../../../index/views/filter_page.dart';
+import '../../../index/presentation/views/filter_page.dart';
 import '../providers/fabu_dynamic_providers.dart';
 
 

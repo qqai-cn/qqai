@@ -1,22 +1,5 @@
 # qqai
 
-qqai
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-# qqai
-
-
 // 1. 只读依赖
 final configProvider = Provider(...);
 
@@ -51,3 +34,12 @@ dart run build_runner build
 
 # 开发时监听文件变化（推荐）
 dart run build_runner watch
+# 执行自动创建
+flutter_clean_architecture_generator
+
+
+错误写法,正确写法
+build() 里调用 ref.watch(xxx) + 异步方法,build() 里 ref.read + await
+build() 里调用另一个会 watch 的方法,把异步逻辑直接写在 build() 里，或用 ref.read
+build() 里操作 state = xxx,只在 build() 外操作 state
+

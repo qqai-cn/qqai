@@ -15,15 +15,15 @@ const shortVideoProvider = ShortVideoNotifierProvider._();
 final class ShortVideoNotifierProvider
     extends $NotifierProvider<ShortVideoNotifier, ShortVideoState> {
   const ShortVideoNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'shortVideoProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shortVideoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$shortVideoNotifierHash();
@@ -51,11 +51,14 @@ abstract class _$ShortVideoNotifier extends $Notifier<ShortVideoState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<ShortVideoState, ShortVideoState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<ShortVideoState, ShortVideoState>,
-        ShortVideoState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<ShortVideoState, ShortVideoState>,
+              ShortVideoState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

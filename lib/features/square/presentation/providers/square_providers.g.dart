@@ -15,15 +15,15 @@ const squareProvider = SquareNotifierProvider._();
 final class SquareNotifierProvider
     extends $NotifierProvider<SquareNotifier, SquareState> {
   const SquareNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'squareProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'squareProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$squareNotifierHash();
@@ -50,8 +50,14 @@ abstract class _$SquareNotifier extends $Notifier<SquareState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<SquareState, SquareState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<SquareState, SquareState>, SquareState, Object?, Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<SquareState, SquareState>,
+              SquareState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

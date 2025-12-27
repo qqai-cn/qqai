@@ -4,11 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../../../components/imgcomment/previewImg.dart';
+import '../../../../components/imgpreview/preview_img.dart';
 import '../../../blog/data/blog_repo.dart';
 import '../../../blog/domain/blog_page_model.dart';
 import '../../../../router/app_routes.dart';
-import '../../../blog/presentation/providers/blog_providers.dart';
+import '../../../blog/providers/blog_providers.dart';
 
 part 'help_providers.freezed.dart';
 part 'help_providers.g.dart';
@@ -70,7 +70,7 @@ class HelpNotifier extends _$HelpNotifier {
   // 跳转到图片预览页
   void onBlogImgItemTap(BuildContext context, BlogItem blogItem, int index, String heroTag) {
     PreviewImg previewImg = PreviewImg().copyWith(
-      id: blogItem.id,
+      id: blogItem.id!.toInt(),
       url: blogItem.resources,
       index: index,
       heroTag: heroTag,

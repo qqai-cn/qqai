@@ -24,11 +24,15 @@ sealed class LookArtState with _$LookArtState {
 // LookArtController Provider - 使用 Riverpod 3 代码生成
 @riverpod
 class LookArtNotifier extends _$LookArtNotifier {
+  // 使用实例变量跟踪当前的 tabController，避免在 onDispose 中访问 state
+  TabController? _currentTabController;
+
   @override
   LookArtState build() {
     const state = LookArtState();
+    _currentTabController = state.tabController;
     ref.onDispose(() {
-      this.state.tabController?.dispose();
+      _currentTabController?.dispose();
     });
     return state;
   }
@@ -51,6 +55,7 @@ class LookArtNotifier extends _$LookArtNotifier {
       vsync: vsync,
     );
     oldController?.dispose();
+    _currentTabController = newController; // 更新实例变量
     state = state.copyWith(tabController: newController);
   }
 

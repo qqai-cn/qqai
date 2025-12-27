@@ -15,15 +15,15 @@ const longVideoProvider = LongVideoNotifierProvider._();
 final class LongVideoNotifierProvider
     extends $NotifierProvider<LongVideoNotifier, LongVideoState> {
   const LongVideoNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'longVideoProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'longVideoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$longVideoNotifierHash();
@@ -50,11 +50,14 @@ abstract class _$LongVideoNotifier extends $Notifier<LongVideoState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<LongVideoState, LongVideoState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<LongVideoState, LongVideoState>,
-        LongVideoState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<LongVideoState, LongVideoState>,
+              LongVideoState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

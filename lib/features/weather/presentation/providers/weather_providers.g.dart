@@ -16,15 +16,15 @@ final class WeatherRepoProvider
     extends $FunctionalProvider<WeatherRepo, WeatherRepo, WeatherRepo>
     with $Provider<WeatherRepo> {
   const WeatherRepoProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'weatherRepoProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'weatherRepoProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$weatherRepoHash();
@@ -56,15 +56,15 @@ const weatherProvider = WeatherNotifierProvider._();
 final class WeatherNotifierProvider
     extends $NotifierProvider<WeatherNotifier, WeatherState> {
   const WeatherNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'weatherProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'weatherProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$weatherNotifierHash();
@@ -91,11 +91,14 @@ abstract class _$WeatherNotifier extends $Notifier<WeatherState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<WeatherState, WeatherState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<WeatherState, WeatherState>,
-        WeatherState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<WeatherState, WeatherState>,
+              WeatherState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

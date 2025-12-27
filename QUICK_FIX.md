@@ -16,10 +16,10 @@ flutter clean
 flutter pub get
 
 # 3. 清理 build_runner
-flutter pub run build_runner clean
+ dart run build_runner clean
 
 # 4. 重新生成所有代码
-flutter pub run build_runner build --delete-conflicting-outputs
+ dart run build_runner build --delete-conflicting-outputs
 ```
 
 ### 步骤 2：重启 IDE

@@ -15,15 +15,15 @@ const fabuAiXinProvider = FabuAiXinNotifierProvider._();
 final class FabuAiXinNotifierProvider
     extends $NotifierProvider<FabuAiXinNotifier, FabuAiXinState> {
   const FabuAiXinNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'fabuAiXinProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fabuAiXinProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$fabuAiXinNotifierHash();
@@ -50,11 +50,14 @@ abstract class _$FabuAiXinNotifier extends $Notifier<FabuAiXinState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<FabuAiXinState, FabuAiXinState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<FabuAiXinState, FabuAiXinState>,
-        FabuAiXinState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<FabuAiXinState, FabuAiXinState>,
+              FabuAiXinState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

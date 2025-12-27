@@ -15,15 +15,15 @@ const fabuZuoPinProvider = FabuZuoPinNotifierProvider._();
 final class FabuZuoPinNotifierProvider
     extends $NotifierProvider<FabuZuoPinNotifier, FabuZuoPinState> {
   const FabuZuoPinNotifierProvider._()
-      : super(
-          from: null,
-          argument: null,
-          retry: null,
-          name: r'fabuZuoPinProvider',
-          isAutoDispose: true,
-          dependencies: null,
-          $allTransitiveDependencies: null,
-        );
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'fabuZuoPinProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
 
   @override
   String debugGetCreateSourceHash() => _$fabuZuoPinNotifierHash();
@@ -51,11 +51,14 @@ abstract class _$FabuZuoPinNotifier extends $Notifier<FabuZuoPinState> {
   void runBuild() {
     final created = build();
     final ref = this.ref as $Ref<FabuZuoPinState, FabuZuoPinState>;
-    final element = ref.element as $ClassProviderElement<
-        AnyNotifier<FabuZuoPinState, FabuZuoPinState>,
-        FabuZuoPinState,
-        Object?,
-        Object?>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<FabuZuoPinState, FabuZuoPinState>,
+              FabuZuoPinState,
+              Object?,
+              Object?
+            >;
     element.handleValue(ref, created);
   }
 }

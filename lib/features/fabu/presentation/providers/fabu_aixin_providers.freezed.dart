@@ -11,86 +11,47 @@ part of 'fabu_aixin_providers.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$FabuAiXinState {
-  TextEditingController get publishController;
-  List<XFile> get files;
-  List<XFile> get videoFiles;
-  List<AddressEntity> get addressList;
-  List<String> get whoCanSee;
-  AddressEntity? get selAddressEntity;
-  String? get whoCanSeeSel;
-  int get aixinType;
-  Map<int, String> get huatiSel;
 
-  /// Create a copy of FabuAiXinState
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $FabuAiXinStateCopyWith<FabuAiXinState> get copyWith =>
-      _$FabuAiXinStateCopyWithImpl<FabuAiXinState>(
-          this as FabuAiXinState, _$identity);
+ TextEditingController get publishController; List<XFile> get files; List<XFile> get videoFiles; List<AddressEntity> get addressList; List<String> get whoCanSee; AddressEntity? get selAddressEntity; String? get whoCanSeeSel; int get aixinType; Map<int, String> get huatiSel;
+/// Create a copy of FabuAiXinState
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$FabuAiXinStateCopyWith<FabuAiXinState> get copyWith => _$FabuAiXinStateCopyWithImpl<FabuAiXinState>(this as FabuAiXinState, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is FabuAiXinState &&
-            (identical(other.publishController, publishController) ||
-                other.publishController == publishController) &&
-            const DeepCollectionEquality().equals(other.files, files) &&
-            const DeepCollectionEquality()
-                .equals(other.videoFiles, videoFiles) &&
-            const DeepCollectionEquality()
-                .equals(other.addressList, addressList) &&
-            const DeepCollectionEquality().equals(other.whoCanSee, whoCanSee) &&
-            (identical(other.selAddressEntity, selAddressEntity) ||
-                other.selAddressEntity == selAddressEntity) &&
-            (identical(other.whoCanSeeSel, whoCanSeeSel) ||
-                other.whoCanSeeSel == whoCanSeeSel) &&
-            (identical(other.aixinType, aixinType) ||
-                other.aixinType == aixinType) &&
-            const DeepCollectionEquality().equals(other.huatiSel, huatiSel));
-  }
 
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      publishController,
-      const DeepCollectionEquality().hash(files),
-      const DeepCollectionEquality().hash(videoFiles),
-      const DeepCollectionEquality().hash(addressList),
-      const DeepCollectionEquality().hash(whoCanSee),
-      selAddressEntity,
-      whoCanSeeSel,
-      aixinType,
-      const DeepCollectionEquality().hash(huatiSel));
 
-  @override
-  String toString() {
-    return 'FabuAiXinState(publishController: $publishController, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel)';
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FabuAiXinState&&(identical(other.publishController, publishController) || other.publishController == publishController)&&const DeepCollectionEquality().equals(other.files, files)&&const DeepCollectionEquality().equals(other.videoFiles, videoFiles)&&const DeepCollectionEquality().equals(other.addressList, addressList)&&const DeepCollectionEquality().equals(other.whoCanSee, whoCanSee)&&(identical(other.selAddressEntity, selAddressEntity) || other.selAddressEntity == selAddressEntity)&&(identical(other.whoCanSeeSel, whoCanSeeSel) || other.whoCanSeeSel == whoCanSeeSel)&&(identical(other.aixinType, aixinType) || other.aixinType == aixinType)&&const DeepCollectionEquality().equals(other.huatiSel, huatiSel));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,publishController,const DeepCollectionEquality().hash(files),const DeepCollectionEquality().hash(videoFiles),const DeepCollectionEquality().hash(addressList),const DeepCollectionEquality().hash(whoCanSee),selAddressEntity,whoCanSeeSel,aixinType,const DeepCollectionEquality().hash(huatiSel));
+
+@override
+String toString() {
+  return 'FabuAiXinState(publishController: $publishController, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel)';
+}
+
+
 }
 
 /// @nodoc
-abstract mixin class $FabuAiXinStateCopyWith<$Res> {
-  factory $FabuAiXinStateCopyWith(
-          FabuAiXinState value, $Res Function(FabuAiXinState) _then) =
-      _$FabuAiXinStateCopyWithImpl;
-  @useResult
-  $Res call(
-      {TextEditingController publishController,
-      List<XFile> files,
-      List<XFile> videoFiles,
-      List<AddressEntity> addressList,
-      List<String> whoCanSee,
-      AddressEntity? selAddressEntity,
-      String? whoCanSeeSel,
-      int aixinType,
-      Map<int, String> huatiSel});
-}
+abstract mixin class $FabuAiXinStateCopyWith<$Res>  {
+  factory $FabuAiXinStateCopyWith(FabuAiXinState value, $Res Function(FabuAiXinState) _then) = _$FabuAiXinStateCopyWithImpl;
+@useResult
+$Res call({
+ TextEditingController publishController, List<XFile> files, List<XFile> videoFiles, List<AddressEntity> addressList, List<String> whoCanSee, AddressEntity? selAddressEntity, String? whoCanSeeSel, int aixinType, Map<int, String> huatiSel
+});
 
+
+
+
+}
 /// @nodoc
 class _$FabuAiXinStateCopyWithImpl<$Res>
     implements $FabuAiXinStateCopyWith<$Res> {
@@ -99,415 +60,234 @@ class _$FabuAiXinStateCopyWithImpl<$Res>
   final FabuAiXinState _self;
   final $Res Function(FabuAiXinState) _then;
 
-  /// Create a copy of FabuAiXinState
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? publishController = null,
-    Object? files = null,
-    Object? videoFiles = null,
-    Object? addressList = null,
-    Object? whoCanSee = null,
-    Object? selAddressEntity = freezed,
-    Object? whoCanSeeSel = freezed,
-    Object? aixinType = null,
-    Object? huatiSel = null,
-  }) {
-    return _then(_self.copyWith(
-      publishController: null == publishController
-          ? _self.publishController
-          : publishController // ignore: cast_nullable_to_non_nullable
-              as TextEditingController,
-      files: null == files
-          ? _self.files
-          : files // ignore: cast_nullable_to_non_nullable
-              as List<XFile>,
-      videoFiles: null == videoFiles
-          ? _self.videoFiles
-          : videoFiles // ignore: cast_nullable_to_non_nullable
-              as List<XFile>,
-      addressList: null == addressList
-          ? _self.addressList
-          : addressList // ignore: cast_nullable_to_non_nullable
-              as List<AddressEntity>,
-      whoCanSee: null == whoCanSee
-          ? _self.whoCanSee
-          : whoCanSee // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      selAddressEntity: freezed == selAddressEntity
-          ? _self.selAddressEntity
-          : selAddressEntity // ignore: cast_nullable_to_non_nullable
-              as AddressEntity?,
-      whoCanSeeSel: freezed == whoCanSeeSel
-          ? _self.whoCanSeeSel
-          : whoCanSeeSel // ignore: cast_nullable_to_non_nullable
-              as String?,
-      aixinType: null == aixinType
-          ? _self.aixinType
-          : aixinType // ignore: cast_nullable_to_non_nullable
-              as int,
-      huatiSel: null == huatiSel
-          ? _self.huatiSel
-          : huatiSel // ignore: cast_nullable_to_non_nullable
-              as Map<int, String>,
-    ));
-  }
+/// Create a copy of FabuAiXinState
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? publishController = null,Object? files = null,Object? videoFiles = null,Object? addressList = null,Object? whoCanSee = null,Object? selAddressEntity = freezed,Object? whoCanSeeSel = freezed,Object? aixinType = null,Object? huatiSel = null,}) {
+  return _then(_self.copyWith(
+publishController: null == publishController ? _self.publishController : publishController // ignore: cast_nullable_to_non_nullable
+as TextEditingController,files: null == files ? _self.files : files // ignore: cast_nullable_to_non_nullable
+as List<XFile>,videoFiles: null == videoFiles ? _self.videoFiles : videoFiles // ignore: cast_nullable_to_non_nullable
+as List<XFile>,addressList: null == addressList ? _self.addressList : addressList // ignore: cast_nullable_to_non_nullable
+as List<AddressEntity>,whoCanSee: null == whoCanSee ? _self.whoCanSee : whoCanSee // ignore: cast_nullable_to_non_nullable
+as List<String>,selAddressEntity: freezed == selAddressEntity ? _self.selAddressEntity : selAddressEntity // ignore: cast_nullable_to_non_nullable
+as AddressEntity?,whoCanSeeSel: freezed == whoCanSeeSel ? _self.whoCanSeeSel : whoCanSeeSel // ignore: cast_nullable_to_non_nullable
+as String?,aixinType: null == aixinType ? _self.aixinType : aixinType // ignore: cast_nullable_to_non_nullable
+as int,huatiSel: null == huatiSel ? _self.huatiSel : huatiSel // ignore: cast_nullable_to_non_nullable
+as Map<int, String>,
+  ));
 }
+
+}
+
 
 /// Adds pattern-matching-related methods to [FabuAiXinState].
 extension FabuAiXinStatePatterns on FabuAiXinState {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_FabuAiXinState value)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _FabuAiXinState() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _FabuAiXinState value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _FabuAiXinState() when $default != null:
+return $default(_that);case _:
+  return orElse();
 
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_FabuAiXinState value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _FabuAiXinState():
-        return $default(_that);
-    }
-  }
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _FabuAiXinState value)  $default,){
+final _that = this;
+switch (_that) {
+case _FabuAiXinState():
+return $default(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _FabuAiXinState value)?  $default,){
+final _that = this;
+switch (_that) {
+case _FabuAiXinState() when $default != null:
+return $default(_that);case _:
+  return null;
 
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_FabuAiXinState value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _FabuAiXinState() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( TextEditingController publishController,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  String? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _FabuAiXinState() when $default != null:
+return $default(_that.publishController,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel);case _:
+  return orElse();
 
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(
-            TextEditingController publishController,
-            List<XFile> files,
-            List<XFile> videoFiles,
-            List<AddressEntity> addressList,
-            List<String> whoCanSee,
-            AddressEntity? selAddressEntity,
-            String? whoCanSeeSel,
-            int aixinType,
-            Map<int, String> huatiSel)?
-        $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _FabuAiXinState() when $default != null:
-        return $default(
-            _that.publishController,
-            _that.files,
-            _that.videoFiles,
-            _that.addressList,
-            _that.whoCanSee,
-            _that.selAddressEntity,
-            _that.whoCanSeeSel,
-            _that.aixinType,
-            _that.huatiSel);
-      case _:
-        return orElse();
-    }
-  }
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
 
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( TextEditingController publishController,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  String? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel)  $default,) {final _that = this;
+switch (_that) {
+case _FabuAiXinState():
+return $default(_that.publishController,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(
-            TextEditingController publishController,
-            List<XFile> files,
-            List<XFile> videoFiles,
-            List<AddressEntity> addressList,
-            List<String> whoCanSee,
-            AddressEntity? selAddressEntity,
-            String? whoCanSeeSel,
-            int aixinType,
-            Map<int, String> huatiSel)
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _FabuAiXinState():
-        return $default(
-            _that.publishController,
-            _that.files,
-            _that.videoFiles,
-            _that.addressList,
-            _that.whoCanSee,
-            _that.selAddressEntity,
-            _that.whoCanSeeSel,
-            _that.aixinType,
-            _that.huatiSel);
-    }
-  }
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( TextEditingController publishController,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  String? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel)?  $default,) {final _that = this;
+switch (_that) {
+case _FabuAiXinState() when $default != null:
+return $default(_that.publishController,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel);case _:
+  return null;
 
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
+}
+}
 
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(
-            TextEditingController publishController,
-            List<XFile> files,
-            List<XFile> videoFiles,
-            List<AddressEntity> addressList,
-            List<String> whoCanSee,
-            AddressEntity? selAddressEntity,
-            String? whoCanSeeSel,
-            int aixinType,
-            Map<int, String> huatiSel)?
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _FabuAiXinState() when $default != null:
-        return $default(
-            _that.publishController,
-            _that.files,
-            _that.videoFiles,
-            _that.addressList,
-            _that.whoCanSee,
-            _that.selAddressEntity,
-            _that.whoCanSeeSel,
-            _that.aixinType,
-            _that.huatiSel);
-      case _:
-        return null;
-    }
-  }
 }
 
 /// @nodoc
+
 
 class _FabuAiXinState implements FabuAiXinState {
-  const _FabuAiXinState(
-      {required this.publishController,
-      final List<XFile> files = const [],
-      final List<XFile> videoFiles = const [],
-      final List<AddressEntity> addressList = const [],
-      final List<String> whoCanSee = const [],
-      this.selAddressEntity,
-      this.whoCanSeeSel,
-      this.aixinType = 0,
-      final Map<int, String> huatiSel = const {}})
-      : _files = files,
-        _videoFiles = videoFiles,
-        _addressList = addressList,
-        _whoCanSee = whoCanSee,
-        _huatiSel = huatiSel;
+  const _FabuAiXinState({required this.publishController, final  List<XFile> files = const [], final  List<XFile> videoFiles = const [], final  List<AddressEntity> addressList = const [], final  List<String> whoCanSee = const [], this.selAddressEntity, this.whoCanSeeSel, this.aixinType = 0, final  Map<int, String> huatiSel = const {}}): _files = files,_videoFiles = videoFiles,_addressList = addressList,_whoCanSee = whoCanSee,_huatiSel = huatiSel;
+  
 
-  @override
-  final TextEditingController publishController;
-  final List<XFile> _files;
-  @override
-  @JsonKey()
-  List<XFile> get files {
-    if (_files is EqualUnmodifiableListView) return _files;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_files);
-  }
+@override final  TextEditingController publishController;
+ final  List<XFile> _files;
+@override@JsonKey() List<XFile> get files {
+  if (_files is EqualUnmodifiableListView) return _files;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_files);
+}
 
-  final List<XFile> _videoFiles;
-  @override
-  @JsonKey()
-  List<XFile> get videoFiles {
-    if (_videoFiles is EqualUnmodifiableListView) return _videoFiles;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_videoFiles);
-  }
+ final  List<XFile> _videoFiles;
+@override@JsonKey() List<XFile> get videoFiles {
+  if (_videoFiles is EqualUnmodifiableListView) return _videoFiles;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_videoFiles);
+}
 
-  final List<AddressEntity> _addressList;
-  @override
-  @JsonKey()
-  List<AddressEntity> get addressList {
-    if (_addressList is EqualUnmodifiableListView) return _addressList;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_addressList);
-  }
+ final  List<AddressEntity> _addressList;
+@override@JsonKey() List<AddressEntity> get addressList {
+  if (_addressList is EqualUnmodifiableListView) return _addressList;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_addressList);
+}
 
-  final List<String> _whoCanSee;
-  @override
-  @JsonKey()
-  List<String> get whoCanSee {
-    if (_whoCanSee is EqualUnmodifiableListView) return _whoCanSee;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_whoCanSee);
-  }
+ final  List<String> _whoCanSee;
+@override@JsonKey() List<String> get whoCanSee {
+  if (_whoCanSee is EqualUnmodifiableListView) return _whoCanSee;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_whoCanSee);
+}
 
-  @override
-  final AddressEntity? selAddressEntity;
-  @override
-  final String? whoCanSeeSel;
-  @override
-  @JsonKey()
-  final int aixinType;
-  final Map<int, String> _huatiSel;
-  @override
-  @JsonKey()
-  Map<int, String> get huatiSel {
-    if (_huatiSel is EqualUnmodifiableMapView) return _huatiSel;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_huatiSel);
-  }
+@override final  AddressEntity? selAddressEntity;
+@override final  String? whoCanSeeSel;
+@override@JsonKey() final  int aixinType;
+ final  Map<int, String> _huatiSel;
+@override@JsonKey() Map<int, String> get huatiSel {
+  if (_huatiSel is EqualUnmodifiableMapView) return _huatiSel;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableMapView(_huatiSel);
+}
 
-  /// Create a copy of FabuAiXinState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$FabuAiXinStateCopyWith<_FabuAiXinState> get copyWith =>
-      __$FabuAiXinStateCopyWithImpl<_FabuAiXinState>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _FabuAiXinState &&
-            (identical(other.publishController, publishController) ||
-                other.publishController == publishController) &&
-            const DeepCollectionEquality().equals(other._files, _files) &&
-            const DeepCollectionEquality()
-                .equals(other._videoFiles, _videoFiles) &&
-            const DeepCollectionEquality()
-                .equals(other._addressList, _addressList) &&
-            const DeepCollectionEquality()
-                .equals(other._whoCanSee, _whoCanSee) &&
-            (identical(other.selAddressEntity, selAddressEntity) ||
-                other.selAddressEntity == selAddressEntity) &&
-            (identical(other.whoCanSeeSel, whoCanSeeSel) ||
-                other.whoCanSeeSel == whoCanSeeSel) &&
-            (identical(other.aixinType, aixinType) ||
-                other.aixinType == aixinType) &&
-            const DeepCollectionEquality().equals(other._huatiSel, _huatiSel));
-  }
+/// Create a copy of FabuAiXinState
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$FabuAiXinStateCopyWith<_FabuAiXinState> get copyWith => __$FabuAiXinStateCopyWithImpl<_FabuAiXinState>(this, _$identity);
 
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      publishController,
-      const DeepCollectionEquality().hash(_files),
-      const DeepCollectionEquality().hash(_videoFiles),
-      const DeepCollectionEquality().hash(_addressList),
-      const DeepCollectionEquality().hash(_whoCanSee),
-      selAddressEntity,
-      whoCanSeeSel,
-      aixinType,
-      const DeepCollectionEquality().hash(_huatiSel));
 
-  @override
-  String toString() {
-    return 'FabuAiXinState(publishController: $publishController, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel)';
-  }
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FabuAiXinState&&(identical(other.publishController, publishController) || other.publishController == publishController)&&const DeepCollectionEquality().equals(other._files, _files)&&const DeepCollectionEquality().equals(other._videoFiles, _videoFiles)&&const DeepCollectionEquality().equals(other._addressList, _addressList)&&const DeepCollectionEquality().equals(other._whoCanSee, _whoCanSee)&&(identical(other.selAddressEntity, selAddressEntity) || other.selAddressEntity == selAddressEntity)&&(identical(other.whoCanSeeSel, whoCanSeeSel) || other.whoCanSeeSel == whoCanSeeSel)&&(identical(other.aixinType, aixinType) || other.aixinType == aixinType)&&const DeepCollectionEquality().equals(other._huatiSel, _huatiSel));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,publishController,const DeepCollectionEquality().hash(_files),const DeepCollectionEquality().hash(_videoFiles),const DeepCollectionEquality().hash(_addressList),const DeepCollectionEquality().hash(_whoCanSee),selAddressEntity,whoCanSeeSel,aixinType,const DeepCollectionEquality().hash(_huatiSel));
+
+@override
+String toString() {
+  return 'FabuAiXinState(publishController: $publishController, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel)';
+}
+
+
 }
 
 /// @nodoc
-abstract mixin class _$FabuAiXinStateCopyWith<$Res>
-    implements $FabuAiXinStateCopyWith<$Res> {
-  factory _$FabuAiXinStateCopyWith(
-          _FabuAiXinState value, $Res Function(_FabuAiXinState) _then) =
-      __$FabuAiXinStateCopyWithImpl;
-  @override
-  @useResult
-  $Res call(
-      {TextEditingController publishController,
-      List<XFile> files,
-      List<XFile> videoFiles,
-      List<AddressEntity> addressList,
-      List<String> whoCanSee,
-      AddressEntity? selAddressEntity,
-      String? whoCanSeeSel,
-      int aixinType,
-      Map<int, String> huatiSel});
-}
+abstract mixin class _$FabuAiXinStateCopyWith<$Res> implements $FabuAiXinStateCopyWith<$Res> {
+  factory _$FabuAiXinStateCopyWith(_FabuAiXinState value, $Res Function(_FabuAiXinState) _then) = __$FabuAiXinStateCopyWithImpl;
+@override @useResult
+$Res call({
+ TextEditingController publishController, List<XFile> files, List<XFile> videoFiles, List<AddressEntity> addressList, List<String> whoCanSee, AddressEntity? selAddressEntity, String? whoCanSeeSel, int aixinType, Map<int, String> huatiSel
+});
 
+
+
+
+}
 /// @nodoc
 class __$FabuAiXinStateCopyWithImpl<$Res>
     implements _$FabuAiXinStateCopyWith<$Res> {
@@ -516,60 +296,24 @@ class __$FabuAiXinStateCopyWithImpl<$Res>
   final _FabuAiXinState _self;
   final $Res Function(_FabuAiXinState) _then;
 
-  /// Create a copy of FabuAiXinState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? publishController = null,
-    Object? files = null,
-    Object? videoFiles = null,
-    Object? addressList = null,
-    Object? whoCanSee = null,
-    Object? selAddressEntity = freezed,
-    Object? whoCanSeeSel = freezed,
-    Object? aixinType = null,
-    Object? huatiSel = null,
-  }) {
-    return _then(_FabuAiXinState(
-      publishController: null == publishController
-          ? _self.publishController
-          : publishController // ignore: cast_nullable_to_non_nullable
-              as TextEditingController,
-      files: null == files
-          ? _self._files
-          : files // ignore: cast_nullable_to_non_nullable
-              as List<XFile>,
-      videoFiles: null == videoFiles
-          ? _self._videoFiles
-          : videoFiles // ignore: cast_nullable_to_non_nullable
-              as List<XFile>,
-      addressList: null == addressList
-          ? _self._addressList
-          : addressList // ignore: cast_nullable_to_non_nullable
-              as List<AddressEntity>,
-      whoCanSee: null == whoCanSee
-          ? _self._whoCanSee
-          : whoCanSee // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      selAddressEntity: freezed == selAddressEntity
-          ? _self.selAddressEntity
-          : selAddressEntity // ignore: cast_nullable_to_non_nullable
-              as AddressEntity?,
-      whoCanSeeSel: freezed == whoCanSeeSel
-          ? _self.whoCanSeeSel
-          : whoCanSeeSel // ignore: cast_nullable_to_non_nullable
-              as String?,
-      aixinType: null == aixinType
-          ? _self.aixinType
-          : aixinType // ignore: cast_nullable_to_non_nullable
-              as int,
-      huatiSel: null == huatiSel
-          ? _self._huatiSel
-          : huatiSel // ignore: cast_nullable_to_non_nullable
-              as Map<int, String>,
-    ));
-  }
+/// Create a copy of FabuAiXinState
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? publishController = null,Object? files = null,Object? videoFiles = null,Object? addressList = null,Object? whoCanSee = null,Object? selAddressEntity = freezed,Object? whoCanSeeSel = freezed,Object? aixinType = null,Object? huatiSel = null,}) {
+  return _then(_FabuAiXinState(
+publishController: null == publishController ? _self.publishController : publishController // ignore: cast_nullable_to_non_nullable
+as TextEditingController,files: null == files ? _self._files : files // ignore: cast_nullable_to_non_nullable
+as List<XFile>,videoFiles: null == videoFiles ? _self._videoFiles : videoFiles // ignore: cast_nullable_to_non_nullable
+as List<XFile>,addressList: null == addressList ? _self._addressList : addressList // ignore: cast_nullable_to_non_nullable
+as List<AddressEntity>,whoCanSee: null == whoCanSee ? _self._whoCanSee : whoCanSee // ignore: cast_nullable_to_non_nullable
+as List<String>,selAddressEntity: freezed == selAddressEntity ? _self.selAddressEntity : selAddressEntity // ignore: cast_nullable_to_non_nullable
+as AddressEntity?,whoCanSeeSel: freezed == whoCanSeeSel ? _self.whoCanSeeSel : whoCanSeeSel // ignore: cast_nullable_to_non_nullable
+as String?,aixinType: null == aixinType ? _self.aixinType : aixinType // ignore: cast_nullable_to_non_nullable
+as int,huatiSel: null == huatiSel ? _self._huatiSel : huatiSel // ignore: cast_nullable_to_non_nullable
+as Map<int, String>,
+  ));
+}
+
+
 }
 
 // dart format on
