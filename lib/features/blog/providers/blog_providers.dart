@@ -67,9 +67,9 @@ class BlogNotifier extends _$BlogNotifier {
   // 跳转到博客详情页
   void onBlogItemTap(BuildContext context, BlogItem blogItem) {
     if (blogItem.blogType == 1) {
-      context.push(Routes.whatArticle, extra: blogItem);
+      context.push(Routes.imageFlowPage, extra: blogItem);
     } else {
-      context.push(Routes.watchVideo, extra: blogItem);
+      context.push(Routes.videoFlowPage, extra: blogItem);
     }
   }
 

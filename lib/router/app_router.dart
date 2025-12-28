@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/imgpreview/comment_panel.dart';
+import 'package:qqai/features/blog/domain/blog_page_model.dart';
+import 'package:qqai/features/flow/pages/image_flow_page.dart';
+import 'package:qqai/features/flow/pages/video_flow_page.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/fabu/presentation/views/fabu_goods_page.dart';
@@ -66,79 +70,106 @@ GoRouter appRouter(Ref ref) {
     routes: [
       /// ========== 首页 ==========
       GoRoute(
-          path: Routes.HOME,
-          name: 'home',
-          builder: (context, state) => HomePage()),
+        path: Routes.HOME,
+        name: 'home',
+        builder: (context, state) => HomePage(),
+      ),
 
       /// ========== 工具类页面 ==========
       GoRoute(path: Routes.aiPageUrl, name: 'ai', builder: (c, s) => AiPage()),
       GoRoute(
-          path: Routes.qrCodePageUrl,
-          name: 'qrCode',
-          builder: (c, s) => QrCodePage()),
+        path: Routes.qrCodePageUrl,
+        name: 'qrCode',
+        builder: (c, s) => QrCodePage(),
+      ),
       GoRoute(
-          path: Routes.calendarToolPageUrl,
-          name: 'calendarTool',
-          builder: (c, s) => CalendarToolPage()),
+        path: Routes.calendarToolPageUrl,
+        name: 'calendarTool',
+        builder: (c, s) => CalendarToolPage(),
+      ),
       GoRoute(
-          path: Routes.dateToolPageUrl,
-          name: 'dateTool',
-          builder: (c, s) => DateToolPage()),
+        path: Routes.dateToolPageUrl,
+        name: 'dateTool',
+        builder: (c, s) => DateToolPage(),
+      ),
       GoRoute(
-          path: Routes.idToolPageUrl,
-          name: 'idTool',
-          builder: (c, s) => IdToolPage()),
+        path: Routes.idToolPageUrl,
+        name: 'idTool',
+        builder: (c, s) => IdToolPage(),
+      ),
       GoRoute(
-          path: Routes.urlToolPageUrl,
-          name: 'urlTool',
-          builder: (c, s) => UrlToolPage()),
+        path: Routes.urlToolPageUrl,
+        name: 'urlTool',
+        builder: (c, s) => UrlToolPage(),
+      ),
       GoRoute(
-          path: Routes.ipToolPageUrl,
-          name: 'ipTool',
-          builder: (c, s) => IpToolPage()),
+        path: Routes.ipToolPageUrl,
+        name: 'ipTool',
+        builder: (c, s) => IpToolPage(),
+      ),
       GoRoute(
-          path: Routes.thumbnailPageUrl,
-          name: 'thumbnail',
-          builder: (c, s) => ThumbnailPage()),
+        path: Routes.thumbnailPageUrl,
+        name: 'thumbnail',
+        builder: (c, s) => ThumbnailPage(),
+      ),
 
       /// ========== 内容详情 ==========
       GoRoute(
-          path: Routes.watchImgUrl,
-          name: 'imageDetail',
-          builder: (c, s) {
-            // 从 extra 获取参数
-            final preview = s.extra as PreviewImg;
-            return ImageDetailPage(preview: preview);
-          }),
+        path: Routes.watchImgUrl,
+        name: 'imageDetail',
+        builder: (c, s) {
+          // 从 extra 获取参数
+          final preview = s.extra as PreviewImg;
+          return ImageDetailPage(preview: preview);
+        },
+      ),
       GoRoute(
-          path: Routes.fullVideoUrl,
-          name: 'fullScreenVideo',
-          builder: (c, s) {
-            final videoItem = s.extra;
-            return FullScreenVideoPlayer(videoItem: videoItem);
-          }),
+        path: Routes.fullVideoUrl,
+        name: 'fullScreenVideo',
+        builder: (c, s) {
+          final videoItem = s.extra;
+          return FullScreenVideoPlayer(videoItem: videoItem);
+        },
+      ),
       GoRoute(
-          path: Routes.watchVideo,
-          name: 'playVideo',
-          builder: (c, s) {
-            final videoItem = s.extra;
-            return PlayVideoPage(videoItem: videoItem);
-          }),
+        path: Routes.watchVideo,
+        name: 'playVideo',
+        builder: (c, s) {
+          final videoItem = s.extra;
+          return PlayVideoPage(videoItem: videoItem);
+        },
+      ),
       GoRoute(
-          path: Routes.whatArticle,
-          name: 'lookArt',
-          builder: (c, s) {
-            final blogItem = s.extra;
-            // return LookartView(blogItem: blogItem);
-            return TodoListPage();
-
-          }),
+        path: Routes.whatArticle,
+        name: 'lookArt',
+        builder: (c, s) {
+          final blogItem = s.extra;
+          return LookartView(blogItem: blogItem);
+        },
+      ),
+      GoRoute(
+        path: Routes.imageFlowPage,
+        name: 'imageFlowPage',
+        builder: (c, s) {
+          final blogItem = s.extra as BlogItem;
+          return ImageFlowPage(blogItem: blogItem);
+        },
+      ),
+      GoRoute(
+        path: Routes.videoFlowPage,
+        name: 'videoFlowPage',
+        builder: (c, s) {
+          final blogItem = s.extra as BlogItem;
+          return VideoFlowPage(blogItem: blogItem);
+        },
+      ),
 
       /// ========== 商品 ==========
       GoRoute(
-          path: Routes.goodsPageUrl,
-          name: 'goods',
-          builder: (c, s) => GoodsPage()),
+        path: Routes.goodsPageUrl,
+        name: 'goods',
+        builder: (c, s) => GoodsPage(),
+      ),
       GoRoute(
         path: '${Routes.goodsDetailPageUrl}/:id',
         name: 'goodsDetail',
@@ -150,17 +181,22 @@ GoRouter appRouter(Ref ref) {
 
       /// ========== 我的 ==========
       GoRoute(
-          path: Routes.care, name: 'myCare', builder: (c, s) => MyCarePage()),
+        path: Routes.care,
+        name: 'myCare',
+        builder: (c, s) => MyCarePage(),
+      ),
       GoRoute(
-          path: Routes.collect,
-          name: 'myCollect',
-          builder: (c, s) => MyCollectPage()),
+        path: Routes.collect,
+        name: 'myCollect',
+        builder: (c, s) => MyCollectPage(),
+      ),
 
       /// ========== 社交 ==========
       GoRoute(
-          path: Routes.friendDetail,
-          name: 'friends',
-          builder: (c, s) => FriendsPage()),
+        path: Routes.friendDetail,
+        name: 'friends',
+        builder: (c, s) => FriendsPage(),
+      ),
       GoRoute(
         path: '${Routes.userDetail}/:userId/:showAppBar',
         name: 'userDetail',
@@ -177,27 +213,28 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) {
           final chatId = state.pathParameters['chatId'] ?? '';
           // TODO: 需要实现 ChatWidget 页面，接收 chatId 参数
-          return Scaffold(
-            body: Center(child: Text('Chat page for: $chatId')),
-          );
+          return Scaffold(body: Center(child: Text('Chat page for: $chatId')));
         },
       ),
 
       /// ========== 发布 ==========
       GoRoute(
-          path: Routes.publishGoodsPageUrl,
-          name: 'publishGoods',
-          builder: (c, s) => FabuGoodsPage()),
+        path: Routes.publishGoodsPageUrl,
+        name: 'publishGoods',
+        builder: (c, s) => FabuGoodsPage(),
+      ),
       GoRoute(
-          path: Routes.publishZuoPinPageUrl,
-          name: 'publishZuopin',
-          builder: (c, s) => const FabuZuoPinPage()),
+        path: Routes.publishZuoPinPageUrl,
+        name: 'publishZuopin',
+        builder: (c, s) => const FabuZuoPinPage(),
+      ),
 
       /// ========== 搜索 ==========
       GoRoute(
-          path: Routes.searchPage,
-          name: 'search',
-          builder: (c, s) => SearchPage()),
+        path: Routes.searchPage,
+        name: 'search',
+        builder: (c, s) => SearchPage(),
+      ),
 
       /// ========== 天气模块（嵌套路由）==========
       ShellRoute(
@@ -219,17 +256,19 @@ GoRouter appRouter(Ref ref) {
             builder: (context, state) => const WeatherDetailView(),
           ),
           GoRoute(
-              path: 'per-day',
-              name: 'perDayWeather',
-              builder: (context, state) => PerDayWeatherView()),
+            path: 'per-day',
+            name: 'perDayWeather',
+            builder: (context, state) => PerDayWeatherView(),
+          ),
         ],
       ),
 
       /// ========== 其他 ==========
       GoRoute(
-          path: Routes.homeAppbarItemPageUrl,
-          name: 'homeItem',
-          builder: (c, s) => HomeAppBarItemPage()),
+        path: Routes.homeAppbarItemPageUrl,
+        name: 'homeItem',
+        builder: (c, s) => HomeAppBarItemPage(),
+      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text('PageRoute not found: ${state.uri}')),
@@ -257,10 +296,5 @@ Page<dynamic> _noTransition(Widget child) {
 
 // 辅助函数：禁用返回
 Page<dynamic> _noTransitionWithPopScope(Widget child, {required bool canPop}) {
-  return NoTransitionPage(
-    child: PopScope(
-      canPop: false,
-      child: child,
-    ),
-  );
+  return NoTransitionPage(child: PopScope(canPop: false, child: child));
 }

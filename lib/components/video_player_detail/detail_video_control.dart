@@ -5,13 +5,13 @@ import 'detail_data_manager.dart';
 
 /// Default portrait controls.
 class DetailVideoControl extends StatelessWidget {
-  const DetailVideoControl(
-      {Key? key,
-      this.iconSize = 20,
-      this.fontSize = 12,
-      this.progressBarSettings,
-      this.dataManager})
-      : super(key: key);
+  const DetailVideoControl({
+    Key? key,
+    this.iconSize = 20,
+    this.fontSize = 12,
+    this.progressBarSettings,
+    this.dataManager,
+  }) : super(key: key);
 
   /// Icon size.
   ///
@@ -34,73 +34,6 @@ class DetailVideoControl extends StatelessWidget {
     return FlickShowControlsActionWeb(
       child: Stack(
         children: <Widget>[
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            child: Container(
-              alignment: Alignment.center,
-              padding: EdgeInsets.only(
-                top: 20,
-              ),
-              child: FlickAnimatedVolumeLevel(
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                ),
-                textStyle: TextStyle(color: Colors.white, fontSize: 20),
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: FlickSeekVideoAction(
-              child: Center(
-                child: FlickVideoBuffer(
-                  child: FlickAutoHideChild(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              dataManager!.skipToPreviousVideo();
-                            },
-                            child: Icon(
-                              Icons.skip_previous,
-                              color: dataManager!.hasPreviousVideo()
-                                  ? Colors.white
-                                  : Colors.white38,
-                              size: 35,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: FlickPlayToggle(size: 50),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              dataManager!.skipToNextVideo();
-                            },
-                            child: Icon(
-                              Icons.skip_next,
-                              color: dataManager!.hasNextVideo()
-                                  ? Colors.white
-                                  : Colors.white38,
-                              size: 35,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
           Positioned.fill(
             child: FlickAutoHideChild(
               child: Padding(
@@ -116,41 +49,27 @@ class DetailVideoControl extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          FlickPlayToggle(
-                            size: iconSize,
-                          ),
-                          SizedBox(
-                            width: iconSize / 2,
-                          ),
-                          FlickSoundToggle(
-                            size: iconSize,
-                          ),
-                          SizedBox(
-                            width: iconSize / 2,
-                          ),
+                          FlickPlayToggle(size: iconSize),
+                          SizedBox(width: iconSize / 2),
+                          FlickSoundToggle(size: iconSize),
+                          SizedBox(width: iconSize / 2),
                           Row(
                             children: <Widget>[
-                              FlickCurrentPosition(
-                                fontSize: fontSize,
-                              ),
+                              FlickCurrentPosition(fontSize: fontSize),
                               FlickAutoHideChild(
                                 child: Text(
                                   ' / ',
                                   style: TextStyle(
-                                      color: Colors.white, fontSize: fontSize),
+                                    color: Colors.white,
+                                    fontSize: fontSize,
+                                  ),
                                 ),
                               ),
-                              FlickTotalDuration(
-                                fontSize: fontSize,
-                              ),
+                              FlickTotalDuration(fontSize: fontSize),
                             ],
                           ),
-                          Expanded(
-                            child: Container(),
-                          ),
-                          FlickFullScreenToggle(
-                            size: iconSize,
-                          ),
+                          Spacer(),
+                          FlickFullScreenToggle(size: iconSize),
                         ],
                       ),
                     ),

@@ -162,12 +162,12 @@ class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
   }
 
   Future<void> load() async {
-    state = state.copyWith(items: const AsyncLoading(), error: null);
+    ${n.camel}State = ${n.camel}State.copyWith(items: const AsyncLoading(), error: null);
     try {
       final items = await _repo.getAll${n.pascal}s();
-      state = state.copyWith(items: AsyncData(items));
+      ${n.camel}State = ${n.camel}State.copyWith(items: AsyncData(items));
     } catch (e, st) {
-      state = state.copyWith(items: AsyncError(e, st), error: e.toString());
+      ${n.camel}State = ${n.camel}State.copyWith(items: AsyncError(e, st), error: e.toString());
     }
   }
 
@@ -182,7 +182,7 @@ class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
       await _repo.add${n.pascal}(newItem);
       await load();
     } catch (e) {
-      state = state.copyWith(error: '添加失败: \$e');
+      ${n.camel}State = ${n.camel}State.copyWith(error: '添加失败: \$e');
     }
   }
 
@@ -194,7 +194,7 @@ class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
       await _repo.update${n.pascal}(updated);
       await load();
     } catch (e) {
-      state = state.copyWith(error: '更新失败: \$e');
+      ${n.camel}State = ${n.camel}State.copyWith(error: '更新失败: \$e');
     }
   }
 
@@ -203,7 +203,7 @@ class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
       await _repo.delete${n.pascal}(id);
       await load();
     } catch (e) {
-      state = state.copyWith(error: '删除失败: \$e');
+      ${n.camel}State = ${n.camel}State.copyWith(error: '删除失败: \$e');
     }
   }
 }
@@ -242,8 +242,8 @@ class _${n.pascal}PageState extends ConsumerState<${n.pascal}Page> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(${n.camel}Provider);
-    final notifier = ref.read(${n.camel}Provider.notifier);
+    final ${n.camel}State = ref.watch(${n.camel}Provider);
+    final ${n.camel}Notifier = ref.read(${n.camel}Provider.notifier);
 
     return Scaffold(
       appBar: AppBar(title: Text('${n.pascal}')),
@@ -263,7 +263,7 @@ class _${n.pascal}PageState extends ConsumerState<${n.pascal}Page> {
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     if (_controller.text.isNotEmpty) {
-                      notifier.add(_controller.text);
+                      ${n.camel}Notifier.add(_controller.text);
                       _controller.clear();
                     }
                   },
@@ -272,7 +272,7 @@ class _${n.pascal}PageState extends ConsumerState<${n.pascal}Page> {
             ),
           ),
           Expanded(
-            child: state.items.when(
+            child: ${n.camel}State.items.when(
               data: (items) => ListView.builder(
                 itemCount: items.length,
                 itemBuilder: (context, i) {
@@ -280,7 +280,7 @@ class _${n.pascal}PageState extends ConsumerState<${n.pascal}Page> {
                   return ListTile(
                     leading: Checkbox(
                       value: item.isDone,
-                      onChanged: (_) => notifier.toggle(item.id),
+                      onChanged: (_) => ${n.camel}Notifier.toggle(item.id),
                     ),
                     title: Text(
                       item.title,
@@ -290,7 +290,7 @@ class _${n.pascal}PageState extends ConsumerState<${n.pascal}Page> {
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => notifier.delete(item.id),
+                      onPressed: () => ${n.camel}Notifier.delete(item.id),
                     ),
                   );
                 },
@@ -302,7 +302,7 @@ class _${n.pascal}PageState extends ConsumerState<${n.pascal}Page> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: notifier.load,
+        onPressed: ${n.camel}Notifier.load,
         child: const Icon(Icons.refresh),
       ),
     );

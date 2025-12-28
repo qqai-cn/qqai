@@ -37,6 +37,9 @@ dart run build_runner watch
 # 执行自动创建
 flutter_clean_architecture_generator
 
+// 用法示例:
+dart run lib/util/generator.dart flow --dir=lib/features
+
 
 错误写法,正确写法
 build() 里调用 ref.watch(xxx) + 异步方法,build() 里 ref.read + await

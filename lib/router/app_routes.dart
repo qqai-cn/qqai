@@ -11,6 +11,8 @@ class Routes {
   static const String collect = "/collects";
   static const String watchVideo = "/watchs";
   static const String whatArticle = "/look_art";
+  static const String imageFlowPage = "/image_flow_page";
+  static const String videoFlowPage = "/video_flow_page";
   static const String watchImgUrl = "/watchImg";
   static const String fullVideoUrl = "/fullVideo";
   static const String searchPage = "/search_page";
