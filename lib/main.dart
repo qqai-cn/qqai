@@ -42,7 +42,8 @@ class MyApp extends ConsumerWidget {
           title: '千千Ai',
           debugShowCheckedModeBanner: false,
           locale: locale,
-          supportedLocales: LocalizationService.supportedLanguages.values.toList(),
+          supportedLocales:
+              LocalizationService.supportedLanguages.values.toSet().toList(),
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,

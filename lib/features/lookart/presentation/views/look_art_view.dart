@@ -29,7 +29,6 @@ class _LookartViewState extends ConsumerState<LookartView> with TickerProviderSt
     super.initState();
     _searchController = TextEditingController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(lookArtProvider.notifier).initTabController(this);
       ref.read(lookArtProvider.notifier).resetWindow();
     });
   }
@@ -99,7 +98,7 @@ class _LookartViewState extends ConsumerState<LookartView> with TickerProviderSt
                 Container(
                   width: 350,
                   height: double.infinity,
-                  child: const LookArtRight(),
+                  child: LookArtRight(),
                 ),
             ],
           ),

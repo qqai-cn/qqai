@@ -1,87 +1,111 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../../components/imgpreview/preview_img.dart';
 import '../../../router/app_routes.dart';
-import '../data/blog_repo.dart';
-import '../domain/blog_page_model.dart';
+import '../data/models/blog_model.dart';
+import '../data/models/blog_page_model.dart';
+import '../data/repos/blog_repo.dart';
 
 part 'blog_providers.freezed.dart';
 part 'blog_providers.g.dart';
 
-// BlogRepo Provider - 使用 Riverpod 3 代码生成
-@riverpod
-BlogRepo blogRepo(Ref ref) {
-  return BlogRepo();
-}
-
-// BlogController 状态 - 使用 Freezed
 @freezed
 sealed class BlogState with _$BlogState {
   const factory BlogState({
-    BlogPageModel? blogPageModel,
-    int? total,
-    @Default([]) List<BlogItem> blogItems,
-    @Default(false) bool isLoading,
-    @Default('') String error,
-    @Default(0.0) double scrollOffset,
+    // freezed 的 @Default 必须是 const
+    @Default(const AsyncLoading()) AsyncValue<BlogPageModelData> blogPageData,
+    String? error,
   }) = _BlogState;
 }
 
-// BlogController Provider - 使用 Riverpod 3 代码生成（family）
 @riverpod
 class BlogNotifier extends _$BlogNotifier {
+  late final IBlogRepo _repo;
+
   @override
-  Future<BlogState> build(int category) async {
-    final repo = ref.read(blogRepoProvider);
-    
+  BlogState build() {
+    _repo = ref.read(blogRepoProvider);
+    Future.microtask(() => load());
+    return const BlogState();
+  }
+
+
+  Future<void> load() async {
+    state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
-      final res = await repo.getBlogPageModel(1);
-      return BlogState(
-        blogPageModel: res,
-        total: res.data?.total?.toInt() ?? 0,
-        blogItems: res.data?.list ?? [],
-        isLoading: false,
-        error: '',
-        scrollOffset: 0.0,
-      );
-    } catch (e, stack) {
-      // 打印错误，方便调试
-      debugPrint('Blog load error: $e\n$stack');
-      return BlogState(
+      final items = await _repo.getBlogPageModelData();
+      state = state.copyWith(blogPageData: AsyncData(items));
+    } catch (e, st) {
+      state = state.copyWith(
+        blogPageData: AsyncError(e, st),
         error: e.toString(),
-        isLoading: false,
       );
     }
   }
 
-  // 刷新方法
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() => build(category));
+  Future<void> add(String title) async {
+    if (title.trim().isEmpty) return;
+    final newItem = BlogModel(
+      id: const Uuid().v4(),
+      title: title,
+      isDone: false,
+    );
+    try {
+      await _repo.addBlog(newItem);
+      await load();
+    } catch (e) {
+      state = state.copyWith(error: '添加失败: $e');
+    }
+  }
+
+  Future<void> toggle(String id) async {
+    final item = await _repo.getBlogById(id);
+    if (item == null) return;
+    final updated = item.copyWith(isDone: !item.isDone);
+    try {
+      await _repo.updateBlog(updated);
+      await load();
+    } catch (e) {
+      state = state.copyWith(error: '更新失败: $e');
+    }
+  }
+
+  Future<void> delete(String id) async {
+    try {
+      await _repo.deleteBlog(id);
+      await load();
+    } catch (e) {
+      state = state.copyWith(error: '删除失败: $e');
+    }
   }
 
   // 跳转到博客详情页
   void onBlogItemTap(BuildContext context, BlogItem blogItem) {
     if (blogItem.blogType == 1) {
-      context.push(Routes.imageFlowPage, extra: blogItem);
+      context.push(Routes.blogImgDetailView, extra: blogItem);
     } else {
-      context.push(Routes.videoFlowPage, extra: blogItem);
+      context.push(Routes.blogVideoDetailView, extra: blogItem);
     }
   }
 
   // 跳转到图片预览页
   void onBlogImgItemTap(
-      BuildContext context, BlogItem blogItem, int index, String heroTag, List<String> imageUrls) {
+    BuildContext context,
+    BlogItem blogItem,
+    int index,
+    String heroTag,
+    List<String> imageUrls,
+  ) {
     PreviewImg previewImg = PreviewImg(
       id: blogItem.id?.toInt(),
       url: blogItem.resources,
       index: index,
       heroTag: heroTag,
-      allUris: imageUrls
+      allUris: imageUrls,
     );
     context.push(Routes.watchImgUrl, extra: previewImg);
   }
@@ -117,14 +141,18 @@ class BlogNotifier extends _$BlogNotifier {
 
   // 动态根据图片个数算item高度
   static double getImgItemHeight(
-      int itemCount, double length, int colCount, double screenWidth) {
+    int itemCount,
+    double length,
+    int colCount,
+    double screenWidth,
+  ) {
     length = length == 0 ? 100 : length;
     double widthItem = screenWidth;
     if (colCount > 1) {
       widthItem = widthItem * 0.5;
     }
-    length =
-        '长风破浪会有时，直挂云帆济沧海。长风破浪会有时，直挂云帆济沧海。长风破浪会有时，直挂云帆济沧海。'.length.toDouble();
+    length = '长风破浪会有时，直挂云帆济沧海。长风破浪会有时，直挂云帆济沧海。长风破浪会有时，直挂云帆济沧海。'.length
+        .toDouble();
     length = length * 22;
     double lineCount = (length / widthItem).ceilToDouble();
     double wordHeight = (lineCount > 3 ? 3 : lineCount) * 30 + 102;
@@ -161,5 +189,3 @@ class BlogNotifier extends _$BlogNotifier {
     return widthItem / (15 / 9) + 150;
   }
 }
-
-final commentPanelVisibleProvider = StateProvider<bool>((ref) => false);

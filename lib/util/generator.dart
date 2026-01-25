@@ -5,7 +5,9 @@ import 'dart:io';
 
 void main(List<String> args) {
   if (args.isEmpty) {
-    print('用法: dart run generate_riverpod_feature.dart <feature_name> [--dir=路径] [--force]');
+    print(
+      '用法: dart run lib/util/generator.dart <feature_name> [--dir=路径] [--force]',
+    );
     exit(1);
   }
 
@@ -24,8 +26,8 @@ void main(List<String> args) {
   }
 
   final n = _Name(feature);
-  final cleanName = n.clean;
-  final featureDirPath = '$baseDir/$cleanName';
+  // 目录建议使用 snake_case（更稳定，避免大小写/下划线带来的导入混乱）
+  final featureDirPath = '$baseDir/${n.snake}';
   final dir = Directory(featureDirPath);
 
   if (dir.existsSync()) {
@@ -40,18 +42,24 @@ void main(List<String> args) {
   dir.createSync(recursive: true);
   print('生成 feature: $featureDirPath');
 
-  _write('$featureDirPath/data/models/${cleanName}_model.dart', _modelTemplate(n));
-  _write('$featureDirPath/data/repos/${cleanName}_repo.dart', _repoTemplate(n));
-  _write('$featureDirPath/providers/${cleanName}_providers.dart', _providersTemplate(n));
-  _write('$featureDirPath/pages/${cleanName}_page.dart', _pageTemplate(n));
+  _write(
+    '$featureDirPath/data/models/${n.snake}_model.dart',
+    _modelTemplate(n),
+  );
+  _write('$featureDirPath/data/repos/${n.snake}_repo.dart', _repoTemplate(n));
+  _write(
+    '$featureDirPath/providers/${n.snake}_providers.dart',
+    _providersTemplate(n),
+  );
+  _write('$featureDirPath/views/${n.snake}_view.dart', _viewTemplate(n));
 
   print('\n生成完成！');
   print('下一步：dart run build_runner build --delete-conflicting-outputs');
-  print('页面中使用：ref.watch(${n.clean}Provider)');
+  print('页面中使用：ref.watch(${n.camel}Provider)');
 }
 
 void _write(String path, String content) {
-  Directory(path).parent.createSync(recursive: true);
+  File(path).parent.createSync(recursive: true);
   File(path).writeAsStringSync(content.trimLeft());
   print('  └─ $path');
 }
@@ -60,11 +68,12 @@ void _write(String path, String content) {
 // 模板（已统一使用 generator 生成的小写 provider 名称）
 // ──────────────────────────────────────────────────────────────
 
-String _modelTemplate(_Name n) => '''
+String _modelTemplate(_Name n) =>
+    '''
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part '${n.clean}_model.freezed.dart';
-part '${n.clean}_model.g.dart';
+part '${n.snake}_model.freezed.dart';
+part '${n.snake}_model.g.dart';
 
 @freezed
 sealed class ${n.pascal}Model with _\$${n.pascal}Model {
@@ -80,10 +89,18 @@ sealed class ${n.pascal}Model with _\$${n.pascal}Model {
 }
 ''';
 
-String _repoTemplate(_Name n) => '''
-import '../models/${n.clean}_model.dart';
+String _repoTemplate(_Name n) =>
+    '''
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-abstract class I${n.pascal}Repository {
+import '../models/${n.snake}_model.dart';
+
+// Repo Provider（按 blog 的格式：Provider 放在 repo 文件里）
+final ${n.camel}RepoProvider = Provider<I${n.pascal}Repo>(
+  (ref) => ${n.pascal}Repo(),
+);
+
+abstract class I${n.pascal}Repo {
   Future<List<${n.pascal}Model>> getAll${n.pascal}s();
   Future<${n.pascal}Model?> get${n.pascal}ById(String id);
   Future<void> add${n.pascal}(${n.pascal}Model item);
@@ -91,7 +108,7 @@ abstract class I${n.pascal}Repository {
   Future<void> delete${n.pascal}(String id);
 }
 
-class ${n.pascal}Repository implements I${n.pascal}Repository {
+class ${n.pascal}Repo implements I${n.pascal}Repo {
   final List<${n.pascal}Model> _items = [];
 
   @override
@@ -131,43 +148,45 @@ class ${n.pascal}Repository implements I${n.pascal}Repository {
 }
 ''';
 
-String _providersTemplate(_Name n) => '''
+String _providersTemplate(_Name n) =>
+    '''
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
-import '../data/repos/${n.clean}_repo.dart';
-import '../data/models/${n.clean}_model.dart';
+import '../data/repos/${n.snake}_repo.dart';
+import '../data/models/${n.snake}_model.dart';
 
-part '${n.clean}_providers.freezed.dart';  
-part '${n.clean}_providers.g.dart';
+part '${n.snake}_providers.freezed.dart';  
+part '${n.snake}_providers.g.dart';
 
 @freezed
 sealed class ${n.pascal}State with _\$${n.pascal}State {
   const factory ${n.pascal}State({
-    @Default(AsyncLoading()) AsyncValue<List<${n.pascal}Model>> items,
+    // freezed 的 @Default 必须是 const
+    @Default(const AsyncLoading()) AsyncValue<List<${n.pascal}Model>> items,
     String? error,
   }) = _${n.pascal}State;
 }
 
 @riverpod
 class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
-  late final I${n.pascal}Repository _repo;
+  late final I${n.pascal}Repo _repo;
 
   @override
   ${n.pascal}State build() {
-    _repo = ref.read(${n.clean}RepositoryProvider);
+    _repo = ref.read(${n.camel}RepoProvider);
     return const ${n.pascal}State();
   }
 
   Future<void> load() async {
-    ${n.camel}State = ${n.camel}State.copyWith(items: const AsyncLoading(), error: null);
+    state = state.copyWith(items: const AsyncLoading(), error: null);
     try {
       final items = await _repo.getAll${n.pascal}s();
-      ${n.camel}State = ${n.camel}State.copyWith(items: AsyncData(items));
+      state = state.copyWith(items: AsyncData(items));
     } catch (e, st) {
-      ${n.camel}State = ${n.camel}State.copyWith(items: AsyncError(e, st), error: e.toString());
+      state = state.copyWith(items: AsyncError(e, st), error: e.toString());
     }
   }
 
@@ -182,7 +201,7 @@ class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
       await _repo.add${n.pascal}(newItem);
       await load();
     } catch (e) {
-      ${n.camel}State = ${n.camel}State.copyWith(error: '添加失败: \$e');
+      state = state.copyWith(error: '添加失败: \$e');
     }
   }
 
@@ -194,7 +213,7 @@ class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
       await _repo.update${n.pascal}(updated);
       await load();
     } catch (e) {
-      ${n.camel}State = ${n.camel}State.copyWith(error: '更新失败: \$e');
+      state = state.copyWith(error: '更新失败: \$e');
     }
   }
 
@@ -203,30 +222,28 @@ class ${n.pascal}Notifier extends _\$${n.pascal}Notifier {
       await _repo.delete${n.pascal}(id);
       await load();
     } catch (e) {
-      ${n.camel}State = ${n.camel}State.copyWith(error: '删除失败: \$e');
+      state = state.copyWith(error: '删除失败: \$e');
     }
   }
 }
 
-final ${n.clean}RepositoryProvider = Provider<I${n.pascal}Repository>(
-  (ref) => ${n.pascal}Repository(),
-);
 ''';
 
-String _pageTemplate(_Name n) => '''
+String _viewTemplate(_Name n) =>
+    '''
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../providers/${n.clean}_providers.dart';
+import '../providers/${n.snake}_providers.dart';
 
-class ${n.pascal}Page extends ConsumerStatefulWidget {
-  const ${n.pascal}Page({super.key});
+class ${n.pascal}View extends ConsumerStatefulWidget {
+  const ${n.pascal}View({super.key});
 
   @override
-  ConsumerState<${n.pascal}Page> createState() => _${n.pascal}PageState();
+  ConsumerState<${n.pascal}View> createState() => _${n.pascal}ViewState();
 }
 
-class _${n.pascal}PageState extends ConsumerState<${n.pascal}Page> {
+class _${n.pascal}ViewState extends ConsumerState<${n.pascal}View> {
   final TextEditingController _controller = TextEditingController();
 
   @override
@@ -317,16 +334,20 @@ class _Name {
   static List<String> _split(String input) =>
       input.split(RegExp(r'[_ -]+')).where((s) => s.isNotEmpty).toList();
 
-  String get clean => raw.toLowerCase().replaceAll(RegExp(r'[_ -]'), '');
+  /// snake_case（目录/文件名建议用这个）
+  String get snake => _split(raw).map((s) => s.toLowerCase()).join('_');
 
   String get camel {
     final parts = _split(raw);
     if (parts.isEmpty) return '';
     return parts[0].toLowerCase() +
-        parts.skip(1).map((s) => s[0].toUpperCase() + s.substring(1).toLowerCase()).join();
+        parts
+            .skip(1)
+            .map((s) => s[0].toUpperCase() + s.substring(1).toLowerCase())
+            .join();
   }
 
-  String get pascal => _split(raw)
-      .map((s) => s[0].toUpperCase() + s.substring(1).toLowerCase())
-      .join();
+  String get pascal => _split(
+    raw,
+  ).map((s) => s[0].toUpperCase() + s.substring(1).toLowerCase()).join();
 }

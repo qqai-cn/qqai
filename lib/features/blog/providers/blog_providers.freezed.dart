@@ -14,7 +14,8 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BlogState {
 
- BlogPageModel? get blogPageModel; int? get total; List<BlogItem> get blogItems; bool get isLoading; String get error; double get scrollOffset;
+// freezed 的 @Default 必须是 const
+ AsyncValue<BlogPageModelData> get blogPageData; String? get error;
 /// Create a copy of BlogState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +26,16 @@ $BlogStateCopyWith<BlogState> get copyWith => _$BlogStateCopyWithImpl<BlogState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BlogState&&(identical(other.blogPageModel, blogPageModel) || other.blogPageModel == blogPageModel)&&(identical(other.total, total) || other.total == total)&&const DeepCollectionEquality().equals(other.blogItems, blogItems)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.scrollOffset, scrollOffset) || other.scrollOffset == scrollOffset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BlogState&&(identical(other.blogPageData, blogPageData) || other.blogPageData == blogPageData)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,blogPageModel,total,const DeepCollectionEquality().hash(blogItems),isLoading,error,scrollOffset);
+int get hashCode => Object.hash(runtimeType,blogPageData,error);
 
 @override
 String toString() {
-  return 'BlogState(blogPageModel: $blogPageModel, total: $total, blogItems: $blogItems, isLoading: $isLoading, error: $error, scrollOffset: $scrollOffset)';
+  return 'BlogState(blogPageData: $blogPageData, error: $error)';
 }
 
 
@@ -45,7 +46,7 @@ abstract mixin class $BlogStateCopyWith<$Res>  {
   factory $BlogStateCopyWith(BlogState value, $Res Function(BlogState) _then) = _$BlogStateCopyWithImpl;
 @useResult
 $Res call({
- BlogPageModel? blogPageModel, int? total, List<BlogItem> blogItems, bool isLoading, String error, double scrollOffset
+ AsyncValue<BlogPageModelData> blogPageData, String? error
 });
 
 
@@ -62,15 +63,11 @@ class _$BlogStateCopyWithImpl<$Res>
 
 /// Create a copy of BlogState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? blogPageModel = freezed,Object? total = freezed,Object? blogItems = null,Object? isLoading = null,Object? error = null,Object? scrollOffset = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? blogPageData = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
-blogPageModel: freezed == blogPageModel ? _self.blogPageModel : blogPageModel // ignore: cast_nullable_to_non_nullable
-as BlogPageModel?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
-as int?,blogItems: null == blogItems ? _self.blogItems : blogItems // ignore: cast_nullable_to_non_nullable
-as List<BlogItem>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,error: null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
-as String,scrollOffset: null == scrollOffset ? _self.scrollOffset : scrollOffset // ignore: cast_nullable_to_non_nullable
-as double,
+blogPageData: null == blogPageData ? _self.blogPageData : blogPageData // ignore: cast_nullable_to_non_nullable
+as AsyncValue<BlogPageModelData>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -152,10 +149,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( BlogPageModel? blogPageModel,  int? total,  List<BlogItem> blogItems,  bool isLoading,  String error,  double scrollOffset)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<BlogPageModelData> blogPageData,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BlogState() when $default != null:
-return $default(_that.blogPageModel,_that.total,_that.blogItems,_that.isLoading,_that.error,_that.scrollOffset);case _:
+return $default(_that.blogPageData,_that.error);case _:
   return orElse();
 
 }
@@ -173,10 +170,10 @@ return $default(_that.blogPageModel,_that.total,_that.blogItems,_that.isLoading,
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( BlogPageModel? blogPageModel,  int? total,  List<BlogItem> blogItems,  bool isLoading,  String error,  double scrollOffset)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<BlogPageModelData> blogPageData,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _BlogState():
-return $default(_that.blogPageModel,_that.total,_that.blogItems,_that.isLoading,_that.error,_that.scrollOffset);}
+return $default(_that.blogPageData,_that.error);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -190,10 +187,10 @@ return $default(_that.blogPageModel,_that.total,_that.blogItems,_that.isLoading,
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( BlogPageModel? blogPageModel,  int? total,  List<BlogItem> blogItems,  bool isLoading,  String error,  double scrollOffset)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<BlogPageModelData> blogPageData,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _BlogState() when $default != null:
-return $default(_that.blogPageModel,_that.total,_that.blogItems,_that.isLoading,_that.error,_that.scrollOffset);case _:
+return $default(_that.blogPageData,_that.error);case _:
   return null;
 
 }
@@ -205,21 +202,12 @@ return $default(_that.blogPageModel,_that.total,_that.blogItems,_that.isLoading,
 
 
 class _BlogState implements BlogState {
-  const _BlogState({this.blogPageModel, this.total, final  List<BlogItem> blogItems = const [], this.isLoading = false, this.error = '', this.scrollOffset = 0.0}): _blogItems = blogItems;
+  const _BlogState({this.blogPageData = const AsyncLoading(), this.error});
   
 
-@override final  BlogPageModel? blogPageModel;
-@override final  int? total;
- final  List<BlogItem> _blogItems;
-@override@JsonKey() List<BlogItem> get blogItems {
-  if (_blogItems is EqualUnmodifiableListView) return _blogItems;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableListView(_blogItems);
-}
-
-@override@JsonKey() final  bool isLoading;
-@override@JsonKey() final  String error;
-@override@JsonKey() final  double scrollOffset;
+// freezed 的 @Default 必须是 const
+@override@JsonKey() final  AsyncValue<BlogPageModelData> blogPageData;
+@override final  String? error;
 
 /// Create a copy of BlogState
 /// with the given fields replaced by the non-null parameter values.
@@ -231,16 +219,16 @@ _$BlogStateCopyWith<_BlogState> get copyWith => __$BlogStateCopyWithImpl<_BlogSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BlogState&&(identical(other.blogPageModel, blogPageModel) || other.blogPageModel == blogPageModel)&&(identical(other.total, total) || other.total == total)&&const DeepCollectionEquality().equals(other._blogItems, _blogItems)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.error, error) || other.error == error)&&(identical(other.scrollOffset, scrollOffset) || other.scrollOffset == scrollOffset));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BlogState&&(identical(other.blogPageData, blogPageData) || other.blogPageData == blogPageData)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,blogPageModel,total,const DeepCollectionEquality().hash(_blogItems),isLoading,error,scrollOffset);
+int get hashCode => Object.hash(runtimeType,blogPageData,error);
 
 @override
 String toString() {
-  return 'BlogState(blogPageModel: $blogPageModel, total: $total, blogItems: $blogItems, isLoading: $isLoading, error: $error, scrollOffset: $scrollOffset)';
+  return 'BlogState(blogPageData: $blogPageData, error: $error)';
 }
 
 
@@ -251,7 +239,7 @@ abstract mixin class _$BlogStateCopyWith<$Res> implements $BlogStateCopyWith<$Re
   factory _$BlogStateCopyWith(_BlogState value, $Res Function(_BlogState) _then) = __$BlogStateCopyWithImpl;
 @override @useResult
 $Res call({
- BlogPageModel? blogPageModel, int? total, List<BlogItem> blogItems, bool isLoading, String error, double scrollOffset
+ AsyncValue<BlogPageModelData> blogPageData, String? error
 });
 
 
@@ -268,15 +256,11 @@ class __$BlogStateCopyWithImpl<$Res>
 
 /// Create a copy of BlogState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? blogPageModel = freezed,Object? total = freezed,Object? blogItems = null,Object? isLoading = null,Object? error = null,Object? scrollOffset = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? blogPageData = null,Object? error = freezed,}) {
   return _then(_BlogState(
-blogPageModel: freezed == blogPageModel ? _self.blogPageModel : blogPageModel // ignore: cast_nullable_to_non_nullable
-as BlogPageModel?,total: freezed == total ? _self.total : total // ignore: cast_nullable_to_non_nullable
-as int?,blogItems: null == blogItems ? _self._blogItems : blogItems // ignore: cast_nullable_to_non_nullable
-as List<BlogItem>,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
-as bool,error: null == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
-as String,scrollOffset: null == scrollOffset ? _self.scrollOffset : scrollOffset // ignore: cast_nullable_to_non_nullable
-as double,
+blogPageData: null == blogPageData ? _self.blogPageData : blogPageData // ignore: cast_nullable_to_non_nullable
+as AsyncValue<BlogPageModelData>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

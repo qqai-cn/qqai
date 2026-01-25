@@ -4,10 +4,10 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:qqai/features/blog/domain/blog_page_model.dart';
 
 import '../../../../components/comment_second_item.dart';
 import '../../../../components/level_icon.dart';
+import '../../../blog/data/models/blog_page_model.dart';
 import '../providers/lookart_providers.dart';
 import 'look_art_right.dart';
 
@@ -51,7 +51,7 @@ class _FlowViewState extends ConsumerState<FlowView>
               Container(
                 width: 350,
                 height: double.infinity,
-                child: const LookArtRight(),
+                child: LookArtRight(),
               ),
           ],
         ),

@@ -38,7 +38,7 @@ dart run build_runner watch
 flutter_clean_architecture_generator
 
 // 用法示例:
-dart run lib/util/generator.dart flow --dir=lib/features
+dart run lib/util/generator.dart share --dir=lib/features
 
 
 错误写法,正确写法
@@ -46,3 +46,9 @@ build() 里调用 ref.watch(xxx) + 异步方法,build() 里 ref.read + await
 build() 里调用另一个会 watch 的方法,把异步逻辑直接写在 build() 里，或用 ref.read
 build() 里操作 state = xxx,只在 build() 外操作 state
 
+
+jsontomodel
+从 JSON 文件生成到指定输出文件：
+dart run lib/util/json_to_model.dart SharePageModel --json-file=mock/blog_page.json --out=lib/features/share/data/models/share_page_model.dart
+从 JSON 字符串生成（输出到终端）：
+dart run lib/util/json_to_model.dart Test --json='{"id":1,"title":"hi"}'

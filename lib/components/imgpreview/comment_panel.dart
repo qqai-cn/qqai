@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../features/blog/providers/blog_providers.dart';
-
 class CommentPanel extends ConsumerWidget {
   const CommentPanel({super.key});
 
@@ -32,7 +30,7 @@ class CommentPanel extends ConsumerWidget {
                   icon: const Icon(Icons.close),
                   onPressed: () {
                     // 关闭面板（Riverpod 或 ValueNotifier）
-                    ref.read(commentPanelVisibleProvider.notifier).state = false;
+                    // ref.read(commentPanelVisibleProvider.notifier).state = false;
                   },
                 ),
               ],

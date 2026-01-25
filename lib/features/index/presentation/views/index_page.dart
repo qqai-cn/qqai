@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/KeepAliveTabWrapper.dart';
 import 'package:qqai/features/index/providers/index_providers.dart';
-import 'package:qqai/features/lookart/presentation/views/look_art_right.dart';
 
-import '../../../blog/presentation/views/blog_view.dart';
+import '../../../blog/views/blog_view.dart';
 import '../../../goods/goods_page.dart';
-import '../../../help/presentation/views/help_view.dart';
-import '../../../share/presentation/views/share_view.dart';
+import '../../../help/views/help_view.dart';
+import '../../../share/views/share_view.dart';
 import '../../../square/views/square_view.dart';
 import '../../../tool/tool_page.dart';
 

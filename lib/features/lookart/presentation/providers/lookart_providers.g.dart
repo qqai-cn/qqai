@@ -41,7 +41,7 @@ final class LookArtNotifierProvider
   }
 }
 
-String _$lookArtNotifierHash() => r'721aeecff5c2ab0f70c072fd47a2d3e40598148b';
+String _$lookArtNotifierHash() => r'60b752ef1b0d3397a582c4932ceb971ba7b2e8ad';
 
 abstract class _$LookArtNotifier extends $Notifier<LookArtState> {
   LookArtState build();
