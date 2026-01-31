@@ -54,7 +54,7 @@ void main(List<String> args) {
   _write('$featureDirPath/views/${n.snake}_view.dart', _viewTemplate(n));
 
   print('\n生成完成！');
-  print('下一步：dart run build_runner build --delete-conflicting-outputs');
+  print('下一步： \n dart run build_runner build --delete-conflicting-outputs');
   print('页面中使用：ref.watch(${n.camel}Provider)');
 }
 

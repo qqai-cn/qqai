@@ -1,10 +1,10 @@
-import 'package:circular_menu/circular_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../router/app_routes.dart';
+import '../../providers/home_providers.dart';
 import '../widgets/drawer_page.dart';
 import '../../../me/me_detail_page.dart';
 import '../../../me/presentation/providers/me_providers.dart';
@@ -15,45 +15,39 @@ class MePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final meState = ref.watch(meProvider);
-    
+    final isWideScreen = MediaQuery.sizeOf(context).width > 800;
     return Scaffold(
-      //导航栏
-      // appBar: getAppbar2(context),
-      // drawer: const DrawerPage(),
+      appBar: getAppbar2(context, ref, isWideScreen),
+      drawer: isWideScreen ? null : const DrawerPage(),
       body: Center(
         child: MeDetailPage(meState.name),
       ),
     );
   }
 
-  PreferredSizeWidget getAppbar2(BuildContext context) {
+  PreferredSizeWidget getAppbar2(
+      BuildContext context, WidgetRef ref, bool isWideScreen) {
     return AppBar(
-      leading: Builder(
-        builder: (BuildContext context) {
-          return GestureDetector(
-            child: Image.asset(
-              'imgs/hy.gif',
-            ),
-            onTap: () {
-              Scaffold.of(context).openDrawer();
-            },
-          );
+      leading: GestureDetector(
+        onTap: () {
+          if (isWideScreen) {
+            ref.read(homeProvider.notifier).changeExtended();
+          } else {
+            Scaffold.of(context).openDrawer();
+          }
         },
+        child: Image.asset('imgs/hy.gif'),
       ),
       automaticallyImplyLeading: false,
       title: animatedTitle(context),
       actions: [
         IconButton(
-          icon: const Icon(Icons.add),
-          onPressed: () {
-            context.push(Routes.publishZuoPinPageUrl);
-          },
+          icon: const Icon(Icons.add_circle_sharp),
+          onPressed: () => context.push(Routes.publishZuoPinPageUrl),
         ),
         IconButton(
           icon: const Icon(Icons.search),
-          onPressed: () {
-            context.push(Routes.searchPage);
-          },
+          onPressed: () => context.push(Routes.searchPage),
         ),
       ],
     );

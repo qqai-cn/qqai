@@ -33,6 +33,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
   Widget build(BuildContext context) {
     final blogState = ref.watch(blogProvider);
     final blogNotifier = ref.read(blogProvider.notifier);
+    final isWideScreen = 1.sw > 900;
     return Padding(
       padding: EdgeInsets.all(2),
       child: Column(
@@ -152,7 +153,25 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   backgroundColor: WidgetStateProperty.all(Colors.transparent),
                 ),
                 onPressed: () {
-                  blogNotifier.onBlogItemTap(context, widget.blogItem);
+                  if (isWideScreen) {
+                    blogNotifier.onBlogItemTap(context, widget.blogItem);
+                  } else {
+                    showModalBottomSheet(
+                      constraints: BoxConstraints(maxHeight: 0.6.sh),
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (BuildContext build) {
+                        return ListView(
+                          children: [
+                            getRow(1),
+                            getRow(1),
+                            getRow(1),
+                            getRow(1),
+                          ],
+                        );
+                      },
+                    );
+                  }
                 },
                 icon: Icon(Icons.comment),
                 label: Text('评论'),

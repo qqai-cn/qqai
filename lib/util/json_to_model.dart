@@ -77,7 +77,7 @@ void main(List<String> args) {
   }
 
   stdout.writeln(
-    '\n下一步：dart run build_runner build --delete-conflicting-outputs',
+    '\n下一步：\n dart run build_runner build --delete-conflicting-outputs',
   );
   if (decoded is List) {
     stdout.writeln('提示：你的 JSON 顶层是数组，已为数组元素生成 $className 模型。');

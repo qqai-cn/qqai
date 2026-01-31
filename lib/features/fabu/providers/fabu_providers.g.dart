@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'help_providers.dart';
+part of 'fabu_providers.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,52 @@ part of 'help_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(HelpNotifier)
-const helpProvider = HelpNotifierProvider._();
+@ProviderFor(FabuNotifier)
+const fabuProvider = FabuNotifierProvider._();
 
-final class HelpNotifierProvider
-    extends $NotifierProvider<HelpNotifier, HelpState> {
-  const HelpNotifierProvider._()
+final class FabuNotifierProvider
+    extends $NotifierProvider<FabuNotifier, FabuState> {
+  const FabuNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'helpProvider',
+        name: r'fabuProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$helpNotifierHash();
+  String debugGetCreateSourceHash() => _$fabuNotifierHash();
 
   @$internal
   @override
-  HelpNotifier create() => HelpNotifier();
+  FabuNotifier create() => FabuNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(HelpState value) {
+  Override overrideWithValue(FabuState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<HelpState>(value),
+      providerOverride: $SyncValueProvider<FabuState>(value),
     );
   }
 }
 
-String _$helpNotifierHash() => r'73207bf2dc17e7b5fee980b92d1160a66288a9c5';
+String _$fabuNotifierHash() => r'd821798f0a7f3135014a655fd6fb6c0421f3b1ff';
 
-abstract class _$HelpNotifier extends $Notifier<HelpState> {
-  HelpState build();
+abstract class _$FabuNotifier extends $Notifier<FabuState> {
+  FabuState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<HelpState, HelpState>;
+    final ref = this.ref as $Ref<FabuState, FabuState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<HelpState, HelpState>,
-              HelpState,
+              AnyNotifier<FabuState, FabuState>,
+              FabuState,
               Object?,
               Object?
             >;

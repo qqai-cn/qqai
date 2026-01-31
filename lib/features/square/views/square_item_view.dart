@@ -16,7 +16,7 @@ class SquareItemView extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        context.push(Routes.homeAppbarItemPageUrl);
+        context.push(Routes.squareBlogView);
       },
       child: Card(
         elevation: 0,
@@ -38,9 +38,7 @@ class SquareItemView extends StatelessWidget {
                 ),
               ),
             ),
-            Container(
-              height: 2,
-            ),
+            Container(height: 2),
             Container(
               height: 80,
               child: Row(
@@ -48,14 +46,10 @@ class SquareItemView extends StatelessWidget {
                   InkWell(
                     onHover: (a) {},
                     onTap: () => {},
-                    child: Column(
-                      children: <Widget>[
-                        Image.asset(
-                          'imgs/img_default.png',
-                          width: imgHover,
-                          height: imgHover,
-                        ),
-                      ],
+                    child: Image.asset(
+                      'imgs/img_default.png',
+                      width: imgHover,
+                      height: imgHover,
                     ),
                   ),
                   Expanded(
@@ -90,18 +84,18 @@ class SquareItemView extends StatelessWidget {
                             ),
                             Expanded(
                               child: Text(
-                                ' ◉ 1212 次观看  ◉ 2天前',
+                                ' ◉ 1212 热度  ◉ 2天前',
                                 textAlign: TextAlign.left,
                                 overflow: TextOverflow.ellipsis,
-                                style:
-                                    TextStyle(color: Colors.grey, fontSize: 10),
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        Container(
-                          height: 5,
-                        )
+                        Container(height: 5),
                       ],
                     ),
                   ),
@@ -111,10 +105,7 @@ class SquareItemView extends StatelessWidget {
                       Spacer(),
                       PopupMenuButton(
                         tooltip: "",
-                        icon: Icon(
-                          Icons.more_horiz,
-                          color: Colors.black54,
-                        ),
+                        icon: Icon(Icons.more_horiz, color: Colors.black54),
                         onSelected: (va) {
                           print(va);
                         },
@@ -152,7 +143,7 @@ class SquareItemView extends StatelessWidget {
                         },
                       ),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

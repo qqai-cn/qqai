@@ -4,50 +4,40 @@ import 'package:qqai/features/blog/views/blog_img_detail_view.dart';
 import 'package:qqai/features/blog/views/blog_video_detail_view.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../../features/fabu/presentation/views/fabu_goods_page.dart'
-    deferred as fabu_goods;
-import '../../features/fabu/presentation/views/fabu_zuopin_page.dart'
-    deferred as fabu_zuopin;
 import '../../features/friends/friends_page.dart' deferred as friends;
 import '../../features/friends/user_detail_page.dart' deferred as user_detail;
-import '../../features/goods/goods_detail_page.dart' deferred as goods_detail;
-import '../../features/goods/goods_page.dart' deferred as goods;
 import '../../features/lookart/presentation/views/look_art_view.dart'
     deferred as look_art;
 import '../../features/meleft/mycare_page.dart' deferred as my_care;
 import '../../features/meleft/mycollect_page.dart' deferred as my_collect;
-import '../../features/search/search_page.dart' deferred as search;
-import '../../features/tool/ai_page.dart' deferred as ai;
-import '../../features/tool/calendar_tool_page.dart' deferred as calendar_tool;
-import '../../features/tool/date_tool_page.dart' deferred as date_tool;
-import '../../features/tool/id_tool_page.dart' deferred as id_tool;
-import '../../features/tool/ip_tool_page.dart' deferred as ip_tool;
-import '../../features/tool/qr_code_page.dart' deferred as qr_code;
-import '../../features/tool/thumbnail_page.dart' deferred as thumbnail;
-import '../../features/tool/url_tool_page.dart' deferred as url_tool;
+import '../../features/search/search_page.dart';
+import '../../features/tool/ai_page.dart';
+import '../../features/tool/calendar_tool_page.dart';
+import '../../features/tool/date_tool_page.dart';
+import '../../features/tool/id_tool_page.dart';
+import '../../features/tool/ip_tool_page.dart';
+import '../../features/tool/qr_code_page.dart';
+import '../../features/tool/thumbnail_page.dart';
+import '../../features/tool/url_tool_page.dart';
 import '../../features/watchvideo/play_video_page.dart' deferred as play_video;
-import '../../features/weather/presentation/views/perday_weather_view.dart'
-    deferred as weather_perday;
-import '../../features/weather/presentation/views/weather_detail_view.dart'
-    deferred as weather_detail;
-import '../../features/weather/presentation/views/weather_home_page.dart'
-    deferred as weather_home;
-import '../../features/weather/presentation/views/weather_left_page.dart'
-    deferred as weather_left;
+import '../../features/weather/presentation/views/perday_weather_view.dart';
+import '../../features/weather/presentation/views/weather_detail_view.dart';
+import '../../features/weather/presentation/views/weather_home_page.dart';
+import '../../features/weather/presentation/views/weather_left_page.dart';
 import '../cache/deferred_widget.dart';
 import '../components/imgpreview/image_detail_page.dart';
 import '../components/imgpreview/preview_img.dart';
 import '../components/video_player_detail/FullScreenVideoPlayer.dart';
 import '../features/blog/data/models/blog_page_model.dart';
+import '../features/fabu/views/fabu_view.dart';
 import '../features/help/data/models/help_page_model.dart';
 import '../features/help/views/help_img_detail_view.dart';
 import '../features/help/views/help_video_detail_view.dart';
-import '../features/index/presentation/views/home_appbar_item_page.dart'
-    deferred as home_item;
 import '../features/index/presentation/views/home_page.dart';
 import '../features/share/data/models/share_page_model.dart';
 import '../features/share/views/share_img_detail_view.dart';
 import '../features/share/views/share_video_detail_view.dart';
+import '../features/square/views/square_blog_view.dart';
 import '../providers/auth_providers.dart';
 import 'app_routes.dart';
 
@@ -89,69 +79,41 @@ GoRouter appRouter(Ref ref) {
       ),
 
       /// ========== 工具类页面 ==========
-      GoRoute(
-        path: Routes.aiPageUrl,
-        name: 'ai',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: ai.loadLibrary,
-          builder: () => ai.AiPage(),
-        ),
-      ),
+      GoRoute(path: Routes.aiPageUrl, name: 'ai', builder: (c, s) => AiPage()),
       GoRoute(
         path: Routes.qrCodePageUrl,
         name: 'qrCode',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: qr_code.loadLibrary,
-          builder: () => qr_code.QrCodePage(),
-        ),
+        builder: (c, s) => QrCodePage(),
       ),
       GoRoute(
         path: Routes.calendarToolPageUrl,
         name: 'calendarTool',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: calendar_tool.loadLibrary,
-          builder: () => calendar_tool.CalendarToolPage(),
-        ),
+        builder: (c, s) => CalendarToolPage(),
       ),
       GoRoute(
         path: Routes.dateToolPageUrl,
         name: 'dateTool',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: date_tool.loadLibrary,
-          builder: () => date_tool.DateToolPage(),
-        ),
+        builder: (c, s) => DateToolPage(),
       ),
       GoRoute(
         path: Routes.idToolPageUrl,
         name: 'idTool',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: id_tool.loadLibrary,
-          builder: () => id_tool.IdToolPage(),
-        ),
+        builder: (c, s) => IdToolPage(),
       ),
       GoRoute(
         path: Routes.urlToolPageUrl,
         name: 'urlTool',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: url_tool.loadLibrary,
-          builder: () => url_tool.UrlToolPage(),
-        ),
+        builder: (c, s) => UrlToolPage(),
       ),
       GoRoute(
         path: Routes.ipToolPageUrl,
         name: 'ipTool',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: ip_tool.loadLibrary,
-          builder: () => ip_tool.IpToolPage(),
-        ),
+        builder: (c, s) => IpToolPage(),
       ),
       GoRoute(
         path: Routes.thumbnailPageUrl,
         name: 'thumbnail',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: thumbnail.loadLibrary,
-          builder: () => thumbnail.ThumbnailPage(),
-        ),
+        builder: (c, s) => ThumbnailPage(),
       ),
 
       /// ========== 内容详情 ==========
@@ -210,27 +172,15 @@ GoRouter appRouter(Ref ref) {
           return BlogVideoDetailView(blogItem: blogItem);
         },
       ),
-
-      /// ========== 商品 ==========
       GoRoute(
-        path: Routes.goodsPageUrl,
-        name: 'goods',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: goods.loadLibrary,
-          builder: () => goods.GoodsPage(),
-        ),
-      ),
-      GoRoute(
-        path: '${Routes.goodsDetailPageUrl}/:id',
-        name: 'goodsDetail',
+        path: Routes.squareBlogView,
+        name: 'squareBlogView',
         builder: (c, s) {
-          // final id = s.pathParameters['id'] ?? ''; // TODO: 使用 id 参数
-          return AppDeferredWidget(
-            libraryLoader: goods_detail.loadLibrary,
-            builder: () => goods_detail.GoodsDetailPage(),
-          );
+          return SquareBlogView();
         },
       ),
+
+      /// ========== 商品 ==========
 
       /// ========== 互助 ==========
       GoRoute(
@@ -320,38 +270,21 @@ GoRouter appRouter(Ref ref) {
 
       /// ========== 发布 ==========
       GoRoute(
-        path: Routes.publishGoodsPageUrl,
-        name: 'publishGoods',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: fabu_goods.loadLibrary,
-          builder: () => fabu_goods.FabuGoodsPage(),
-        ),
-      ),
-      GoRoute(
         path: Routes.publishZuoPinPageUrl,
         name: 'publishZuopin',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: fabu_zuopin.loadLibrary,
-          builder: () => fabu_zuopin.FabuZuoPinPage(),
-        ),
+        builder: (c, s) => FabuView(),
       ),
 
       /// ========== 搜索 ==========
       GoRoute(
         path: Routes.searchPage,
         name: 'search',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: search.loadLibrary,
-          builder: () => search.SearchPage(),
-        ),
+        builder: (c, s) => SearchPage(),
       ),
 
       /// ========== 天气模块（嵌套路由）==========
       ShellRoute(
-        builder: (context, state, child) => AppDeferredWidget(
-          libraryLoader: weather_home.loadLibrary,
-          builder: () => weather_home.WeatherHomePage(),
-        ),
+        builder: (context, state, child) => WeatherHomePage(),
         routes: [
           GoRoute(
             path: Routes.weatherPageUrl,
@@ -361,39 +294,22 @@ GoRouter appRouter(Ref ref) {
           GoRoute(
             path: 'left',
             name: 'weatherLeft',
-            builder: (context, state) => AppDeferredWidget(
-              libraryLoader: weather_left.loadLibrary,
-              builder: () => weather_left.WeatherLeftPage(),
-            ),
+            builder: (context, state) => WeatherLeftPage(),
           ),
           GoRoute(
             path: 'detail',
             name: 'weatherDetail',
-            builder: (context, state) => AppDeferredWidget(
-              libraryLoader: weather_detail.loadLibrary,
-              builder: () => weather_detail.WeatherDetailView(),
-            ),
+            builder: (context, state) => WeatherDetailView(),
           ),
           GoRoute(
             path: 'per-day',
             name: 'perDayWeather',
-            builder: (context, state) => AppDeferredWidget(
-              libraryLoader: weather_perday.loadLibrary,
-              builder: () => weather_perday.PerDayWeatherView(),
-            ),
+            builder: (context, state) => PerDayWeatherView(),
           ),
         ],
       ),
 
       /// ========== 其他 ==========
-      GoRoute(
-        path: Routes.homeAppbarItemPageUrl,
-        name: 'homeItem',
-        builder: (c, s) => AppDeferredWidget(
-          libraryLoader: home_item.loadLibrary,
-          builder: () => home_item.HomeAppBarItemPage(),
-        ),
-      ),
     ],
     errorBuilder: (context, state) => Scaffold(
       body: Center(child: Text('PageRoute not found: ${state.uri}')),

@@ -9,6 +9,7 @@ import '../presentation/views/message_page.dart';
 import '../presentation/views/video_page.dart';
 
 part 'home_providers.freezed.dart';
+
 part 'home_providers.g.dart';
 
 // HomeController 状态（不包含 TabController，它在 Widget 中管理）- 使用 Freezed
@@ -31,29 +32,39 @@ class HomeNotifier extends _$HomeNotifier {
     return const HomeState();
   }
 
- final List<Widget Function()> mainPages = [
+  final List<Widget Function()> mainPages = [
     () => IndexPage(),
     () => VideoPage(),
     () => MessagePage(),
     () => MePage(),
   ];
+  static List<String> tabItems = [
+    '推荐',
+    '关注',
+    '本地',
+    '广场',
+    '商场',
+    '聚力',
+    '共享',
+    '工具',
+  ];
+  static List<String> videoTabItems = ['推荐', '影视'];
+  static List<String> messageTabItems = ['消息', '好友'];
 
   void changeMainPage(int index) {
     state = state.copyWith(selected: index);
   }
 
-  void changeExtended(){
+  void changeExtended() {
     state = state.copyWith(isExtended: !state.isExtended);
   }
 
   Widget getMainPage() {
-    // 添加边界检查，防止越界
     if (state.selected < 0 || state.selected >= mainPages.length) {
-      return mainPages[0](); // 默认返回第一个页面
+      return mainPages[0]();
     }
     return mainPages[state.selected]();
   }
-
 
   // 静态常量：底部导航栏项
   static final List<BarItem> barItems = [
@@ -82,7 +93,6 @@ class HomeNotifier extends _$HomeNotifier {
       color: Colors.teal,
     ),
   ];
-
 }
 
 // Provider 已通过代码生成自动创建为 homeNotifierProvider

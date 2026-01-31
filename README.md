@@ -38,7 +38,9 @@ dart run build_runner watch
 flutter_clean_architecture_generator
 
 // 用法示例:
-dart run lib/util/generator.dart share --dir=lib/features
+dart run lib/util/generator.dart fabu --dir=lib/features
+
+dart run build_runner build --delete-conflicting-outputs
 
 
 错误写法,正确写法
