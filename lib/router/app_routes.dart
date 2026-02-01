@@ -14,6 +14,7 @@ class Routes {
   static const String squareBlogView = "/square_blog_view";
   static const String blogImgDetailView = "/blog_img_detail_view";
   static const String blogVideoDetailView = "/blog_video_detail_view";
+  static const String videoDetailView = "/video_detail_view";
   static const String helpImgDetailView = "/help_img_detail_view";
   static const String helpVideoDetailView = "/help_video_detail_view";
   static const String shareImgDetailView = "/share_img_detail_view";

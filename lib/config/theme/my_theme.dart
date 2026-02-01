@@ -74,6 +74,9 @@ class MyTheme {
 
         // icon theme
         iconTheme: MyStyles.getIconTheme(isLightTheme: isLight),
+        tabBarTheme: TabBarThemeData(
+          dividerColor: Colors.transparent, // ← 关键！隐藏底部横线
+        ),
 
         // list tile theme
         listTileTheme: MyStyles.getListTileThemeData(isLightTheme: isLight),

@@ -23,7 +23,7 @@ class ShortVideoPlayerState extends State<ShortVideoPlayer> {
   @override
   void initState() {
     super.initState();
-    // getVideoData();
+    getVideoData();
     flickMultiManager = FlickMultiManager();
   }
 

@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:qqai/features/blog/views/video_detail_palyer/video_detail_players.dart';
+import 'package:qqai/features/video/views/video_detail_palyer/video_detail_players.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';
 import '../../comment/views/comment_view.dart';
 
-class BlogVideoDetailView extends ConsumerStatefulWidget {
+class VideoDetailView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
 
-  const BlogVideoDetailView({super.key, required this.blogItem});
+  const VideoDetailView({super.key, required this.blogItem});
 
   @override
-  ConsumerState<BlogVideoDetailView> createState() => _BlogVideoDetailView();
+  ConsumerState<VideoDetailView> createState() => _VideoDetailView();
 }
 
-class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
+class _VideoDetailView extends ConsumerState<VideoDetailView> {
   final TextEditingController _controller = TextEditingController();
 
   @override

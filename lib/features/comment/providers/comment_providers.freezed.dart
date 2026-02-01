@@ -203,7 +203,7 @@ return $default(_that.items,_that.showComment,_that.error);case _:
 
 
 class _CommentState implements CommentState {
-  const _CommentState({this.items = const AsyncLoading(), this.showComment = true, this.error});
+  const _CommentState({this.items = const AsyncLoading(), this.showComment = false, this.error});
   
 
 // freezed 的 @Default 必须是 const

@@ -34,15 +34,13 @@ class _IndexPageState extends ConsumerState<IndexPage>
   }
 
   void _onTabChanged() {
-    if (mounted) setState(() {
-
-    });
+    if (!_tabController.indexIsChanging && mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _tabController.dispose();
     _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -50,7 +48,10 @@ class _IndexPageState extends ConsumerState<IndexPage>
   Widget build(BuildContext context) {
     final isWideScreen = 1.sw > 800;
     return Scaffold(
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: GestureDetector(
           onTap: () {
             if (isWideScreen) {
@@ -59,17 +60,18 @@ class _IndexPageState extends ConsumerState<IndexPage>
               Scaffold.of(context).openDrawer();
             }
           },
-          child: Image.asset('imgs/hy.gif'),
+          // GIF 每帧重绘是卡顿主因，改用 Icon 可大幅缓解
+          child: const Icon(Icons.menu, size: 28),
         ),
         automaticallyImplyLeading: false,
         title: animatedTitle(),
         actions: [animateActions()],
       ),
       drawer: isWideScreen ? null : const DrawerPage(),
-      body: Center(
+      body: RepaintBoundary(
         child: TabBarView(
           controller: _tabController,
-          physics: const AlwaysScrollableScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           children: [
             KeepAliveTabWrapper(child: BlogView(0)),
             KeepAliveTabWrapper(child: BlogView(1)),
@@ -154,7 +156,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
         children: [
           IconButton(
             icon: const Icon(Icons.switch_right),
-            onPressed: (){
+            onPressed: () {
               setState(() {
                 _tabController.animateTo(1);
               });

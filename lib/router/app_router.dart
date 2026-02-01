@@ -38,6 +38,7 @@ import '../features/share/data/models/share_page_model.dart';
 import '../features/share/views/share_img_detail_view.dart';
 import '../features/share/views/share_video_detail_view.dart';
 import '../features/square/views/square_blog_view.dart';
+import '../features/video/views/video_detail_view.dart';
 import '../providers/auth_providers.dart';
 import 'app_routes.dart';
 
@@ -170,6 +171,14 @@ GoRouter appRouter(Ref ref) {
         builder: (c, s) {
           final blogItem = s.extra as BlogItem;
           return BlogVideoDetailView(blogItem: blogItem);
+        },
+      ),
+      GoRoute(
+        path: Routes.videoDetailView,
+        name: 'videoDetailView',
+        builder: (c, s) {
+          final blogItem = s.extra as BlogItem;
+          return VideoDetailView(blogItem: blogItem);
         },
       ),
       GoRoute(

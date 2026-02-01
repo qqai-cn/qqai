@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/features/video/views/video_item_view.dart';
 
 import '../../../constant/color_constant.dart';
-import '../video/myvideo_long_item.dart';
 import 'friend_detail.dart';
 
 class UserDetailPage extends StatefulWidget {
@@ -244,9 +244,9 @@ class _UserDetailPage extends State<UserDetailPage>
                 controller: _tabController,
                 // physics: NeverScrollableScrollPhysics(),
                 children: [
-                  MyVideoLongItem(),
-                  MyVideoLongItem(),
-                  MyVideoLongItem(),
+                  VideoItemView(),
+                  VideoItemView(),
+                  VideoItemView(),
                   FriendDetail(
                     title: '名称：' + widget.userId.toString(),
                   ),

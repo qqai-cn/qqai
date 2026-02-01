@@ -4,12 +4,12 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 
 import '../../../../../constant/color_constant.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
-import '../../../../components/video_player_detail/myvideo_play.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_providers.dart';
 
@@ -126,14 +126,13 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
             flex: 9,
             child: AspectRatio(
               aspectRatio: 15 / 9,
-              child: MyVideo(
-                id: widget.blogItem.id!,
+              child: VideoItemPlayer(
                 url: widget.blogItem.resources!,
-                color: Colors.black,
-                categary: widget.category,
+                imgUrl: 'https://file.qqai.cn/qqai/2025/09/1.webp',
               ),
             ),
           ),
+
           Row(
             children: <Widget>[
               TextButton.icon(

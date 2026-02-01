@@ -4,7 +4,7 @@ import 'package:qqai/constant/constant.dart';
 
 import '../../../constant/color_constant.dart';
 import '../friends/friend_detail.dart';
-import '../video/myvideo_long_item.dart';
+import '../video/views/video_item_view.dart';
 
 class MeDetailPage extends StatefulWidget {
   final int userId;
@@ -52,170 +52,163 @@ class _MeDetailPage extends State<MeDetailPage>
   @override
   Widget build(BuildContext context) {
     return NestedScrollView(
-        controller: _scrollviewController,
-        headerSliverBuilder: (context, boxIsScrolled) {
-          return [
-            SliverAppBar(
-              pinned: true,
-              floating: true,
-              elevation: 0.5,
-              forceElevated: true,
-              expandedHeight: 0.5.sh,
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
-              flexibleSpace: FlexibleSpaceBar(
-                  collapseMode: CollapseMode.pin, //视差效果
-                  background: Column(
-                    children: [
-                      Stack(
-                        alignment: Alignment.topCenter,
-                        children: <Widget>[
-                          Container(
-                            height: 0.3.sh,
-                            child: _buildPageView(),
-                          ),
-                          _buildIndicator(),
-                        ],
-                      ),
-                      Container(
-                        color: Colors.white,
-                        height: 0.2.sh - 50,
-                        child: Stack(
-                          children: [
-                            Positioned.fill(
-                              child: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Row(
+      controller: _scrollviewController,
+      headerSliverBuilder: (context, boxIsScrolled) {
+        return [
+          SliverAppBar(
+            pinned: true,
+            floating: true,
+            elevation: 0.5,
+            forceElevated: true,
+            expandedHeight: 0.5.sh,
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.pin, //视差效果
+              background: Column(
+                children: [
+                  Stack(
+                    alignment: Alignment.topCenter,
+                    children: <Widget>[
+                      Container(height: 0.3.sh, child: _buildPageView()),
+                      _buildIndicator(),
+                    ],
+                  ),
+                  Container(
+                    color: Colors.white,
+                    height: 0.2.sh - 50,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Row(
+                              children: <Widget>[
+                                InkWell(
+                                  onTap: () {},
+                                  child: Image.asset('imgs/user_default.png'),
+                                ),
+                                Container(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
-                                    InkWell(
-                                      onTap: () {},
-                                      child: Image.asset(
-                                        'imgs/user_default.png',
+                                    Expanded(
+                                      child: SelectableText(
+                                        '名称：' + widget.userId.toString(),
+                                        style: TextStyle(
+                                          // color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
                                       ),
                                     ),
-                                    Container(
-                                      width: 10,
+                                    Expanded(
+                                      child: SelectableText(
+                                        '@Skuu.com',
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 15,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
                                     ),
-                                    Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Expanded(
-                                          child: SelectableText(
-                                            '名称：' +
-                                                widget.userId.toString(),
-                                            style: TextStyle(
-                                              // color: Colors.grey,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20,
-                                                overflow:
-                                                TextOverflow.ellipsis),
-                                            maxLines: 1,
-                                          ),
+                                    Expanded(
+                                      child: const Text(
+                                        '关注 32 KW ◉ 活跃 333 KW',
+                                        textAlign: TextAlign.left,
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 15,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        Expanded(
-                                          child: SelectableText(
-                                            '@Skuu.com',
-                                            textAlign: TextAlign.left,
-                                            style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 15,
-                                                overflow:
-                                                TextOverflow.ellipsis),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: const Text(
-                                            '关注 32 KW ◉ 活跃 333 KW',
-                                            textAlign: TextAlign.left,
-                                            style: TextStyle(
-                                                color: Colors.grey,
-                                                fontSize: 15,
-                                                overflow:
-                                                TextOverflow.ellipsis),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
+                              ],
                             ),
-                            Align(
-                                alignment: Alignment.centerRight,
-                                child: Padding(
-                                  padding: EdgeInsets.only(right: 10),
-                                  child: ElevatedButton(
-                                    style: _care
-                                        ? ElevatedButton.styleFrom(
+                          ),
+                        ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 10),
+                            child: ElevatedButton(
+                              style: _care
+                                  ? ElevatedButton.styleFrom(
                                       minimumSize: const Size(20, 35),
                                       padding: EdgeInsets.only(
-                                          left: 10, right: 10),
+                                        left: 10,
+                                        right: 10,
+                                      ),
                                     )
-                                        : ElevatedButton.styleFrom(
+                                  : ElevatedButton.styleFrom(
                                       minimumSize: const Size(20, 35),
                                       padding: EdgeInsets.only(
-                                          left: 13, right: 13),
-                                      backgroundColor:
-                                      ColorConstant.ThemeGreen,
+                                        left: 13,
+                                        right: 13,
+                                      ),
+                                      backgroundColor: ColorConstant.ThemeGreen,
                                     ),
-                                    child: _care
-                                        ? Text(
+                              child: _care
+                                  ? Text(
                                       "已关注",
                                       style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.grey),
+                                        fontSize: 13,
+                                        color: Colors.grey,
+                                      ),
                                     )
-                                        : Text(
+                                  : Text(
                                       "关注",
                                       style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.white),
+                                        fontSize: 13,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        _care = !_care;
-                                      });
-                                    },
-                                  ),
-                                )),
-                          ],
+                              onPressed: () {
+                                setState(() {
+                                  _care = !_care;
+                                });
+                              },
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  )),
-              bottom: TabBar(
-                  indicatorColor: Colors.grey,
-                  controller: _tabController,
-                  labelColor: Colors.black,
-                  unselectedLabelColor: Colors.grey,
-                  isScrollable: false,
-                  indicatorSize: TabBarIndicatorSize.label,
-                  tabs: [
-                    Tab(
-                      text: "视频",
+                      ],
                     ),
-                    Tab(
-                      text: "短视频",
-                    ),
-                    Tab(
-                      text: "社区",
-                    ),
-                    Tab(
-                      text: "简介",
-                    )
-                  ]),
+                  ),
+                ],
+              ),
             ),
-          ];
-        },
-        body: TabBarView(controller: _tabController, children: [
-          MyVideoLongItem(),
-          MyVideoLongItem(),
-          MyVideoLongItem(),
-          FriendDetail(
-            title: '名称：' + widget.userId.toString(),
+            bottom: TabBar(
+              indicatorColor: Colors.grey,
+              controller: _tabController,
+              labelColor: Colors.black,
+              unselectedLabelColor: Colors.grey,
+              isScrollable: false,
+              indicatorSize: TabBarIndicatorSize.label,
+              tabs: [
+                Tab(text: "视频"),
+                Tab(text: "短视频"),
+                Tab(text: "社区"),
+                Tab(text: "简介"),
+              ],
+            ),
           ),
-        ]));
+        ];
+      },
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          VideoItemView(),
+          VideoItemView(),
+          VideoItemView(),
+          FriendDetail(title: '名称：' + widget.userId.toString()),
+        ],
+      ),
+    );
   }
 
   Widget _buildPageView() {
@@ -229,10 +222,7 @@ class _MeDetailPage extends State<MeDetailPage>
       },
       itemCount: length,
       itemBuilder: (context, index) {
-        return Image.asset(
-          _pageViews[index],
-          fit: BoxFit.cover,
-        );
+        return Image.asset(_pageViews[index], fit: BoxFit.cover);
       },
     );
   }

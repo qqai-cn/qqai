@@ -45,7 +45,7 @@ class _MessagePageState extends ConsumerState<MessagePage>
               Scaffold.of(context).openDrawer();
             }
           },
-          child: Image.asset('imgs/hy.gif'),
+          child: const Icon(Icons.menu, size: 28),
         ),
         automaticallyImplyLeading: false,
         title: TabBar(

@@ -6,7 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';
 import '../../comment/views/comment_view.dart';
-import '../../video/short_video_player/short_video_share_page.dart';
+import '../../video/views/video_share_view.dart';
 
 class BlogImgDetailView extends ConsumerStatefulWidget {
   final BlogItem? blogItem;
@@ -166,7 +166,7 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
                         ),
                         Text('20kw', style: TextStyle(color: Colors.white)),
                         SizedBox(height: 10,),
-                        ShortVideoSharePage(),
+                        VideoShareView(),
                         Text('2kw', style: TextStyle(color: Colors.white)),
                       ],
                     ),

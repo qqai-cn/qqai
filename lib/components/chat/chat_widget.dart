@@ -56,15 +56,16 @@ class _ChatWidget extends State<ChatWidget> {
   final _systemUser = const User(id: 'system');
   final _currentUser = const User(
     id: 'me',
-    imageSource: 'http://localhost:8080/assets/imgs/img_default.png',
+    imageSource: 'https://file.qqai.cn/qqai/2025/09/1.webp',
     name: '马化腾',
   );
   final _recipient = const User(
     id: 'recipient',
-    imageSource: 'http://localhost:8080/assets/imgs/img_default.png',
+    imageSource: 'https://file.qqai.cn/qqai/2025/09/1.webp',
     name: '马云',
   );
   bool _isTyping = false;
+
   @override
   void initState() {
     super.initState();
@@ -79,8 +80,8 @@ class _ChatWidget extends State<ChatWidget> {
       chatId: widget.chatId,
       authorId: widget.currentUserId,
     );
-
-    _connectToWs();
+    //todo-dcx 先注释掉
+    //     _connectToWs();
   }
 
   @override
@@ -111,42 +112,42 @@ class _ChatWidget extends State<ChatWidget> {
                   },
                 );
               },
-              customMessageBuilder: (
-                context,
-                message,
-                index, {
-                required bool isSentByMe,
-                MessageGroupStatus? groupStatus,
-              }) =>
-                  Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.brightness == Brightness.dark
-                      ? ChatColors.dark().surfaceContainer
-                      : ChatColors.light().surfaceContainer,
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
-                ),
-                child: IsTypingIndicator(),
-              ),
-              imageMessageBuilder: (
-                context,
-                message,
-                index, {
-                required bool isSentByMe,
-                MessageGroupStatus? groupStatus,
-              }) =>
-                  FlyerChatImageMessage(message: message, index: index),
-              systemMessageBuilder: (
-                context,
-                message,
-                index, {
-                required bool isSentByMe,
-                MessageGroupStatus? groupStatus,
-              }) =>
-                  FlyerChatSystemMessage(message: message, index: index),
+              customMessageBuilder:
+                  (
+                    context,
+                    message,
+                    index, {
+                    required bool isSentByMe,
+                    MessageGroupStatus? groupStatus,
+                  }) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.brightness == Brightness.dark
+                          ? ChatColors.dark().surfaceContainer
+                          : ChatColors.light().surfaceContainer,
+                      borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    ),
+                    child: IsTypingIndicator(),
+                  ),
+              imageMessageBuilder:
+                  (
+                    context,
+                    message,
+                    index, {
+                    required bool isSentByMe,
+                    MessageGroupStatus? groupStatus,
+                  }) => FlyerChatImageMessage(message: message, index: index),
+              systemMessageBuilder:
+                  (
+                    context,
+                    message,
+                    index, {
+                    required bool isSentByMe,
+                    MessageGroupStatus? groupStatus,
+                  }) => FlyerChatSystemMessage(message: message, index: index),
               composerBuilder: (context) => Composer(
                 topWidget: ComposerActionBar(
                   buttons: [
@@ -181,91 +182,92 @@ class _ChatWidget extends State<ChatWidget> {
                   },
                 );
               },
-              textMessageBuilder: (
-                context,
-                message,
-                index, {
-                required bool isSentByMe,
-                MessageGroupStatus? groupStatus,
-              }) =>
-                  FlyerChatTextMessage(message: message, index: index),
-              fileMessageBuilder: (
-                context,
-                message,
-                index, {
-                required bool isSentByMe,
-                MessageGroupStatus? groupStatus,
-              }) =>
-                  FlyerChatFileMessage(message: message, index: index),
-              chatMessageBuilder: (
-                context,
-                message,
-                index,
-                animation,
-                child, {
-                bool? isRemoved,
-                required bool isSentByMe,
-                MessageGroupStatus? groupStatus,
-              }) {
-                final isSystemMessage = message.authorId == 'system';
-                final isFirstInGroup = groupStatus?.isFirst ?? true;
-                final isLastInGroup = groupStatus?.isLast ?? true;
-                final shouldShowAvatar =
-                    !isSystemMessage && isLastInGroup && isRemoved != true;
-                final isCurrentUser = message.authorId == _currentUser.id;
-                final shouldShowUsername =
-                    !isSystemMessage && isFirstInGroup && isRemoved != true;
+              textMessageBuilder:
+                  (
+                    context,
+                    message,
+                    index, {
+                    required bool isSentByMe,
+                    MessageGroupStatus? groupStatus,
+                  }) => FlyerChatTextMessage(message: message, index: index),
+              fileMessageBuilder:
+                  (
+                    context,
+                    message,
+                    index, {
+                    required bool isSentByMe,
+                    MessageGroupStatus? groupStatus,
+                  }) => FlyerChatFileMessage(message: message, index: index),
+              chatMessageBuilder:
+                  (
+                    context,
+                    message,
+                    index,
+                    animation,
+                    child, {
+                    bool? isRemoved,
+                    required bool isSentByMe,
+                    MessageGroupStatus? groupStatus,
+                  }) {
+                    final isSystemMessage = message.authorId == 'system';
+                    final isFirstInGroup = groupStatus?.isFirst ?? true;
+                    final isLastInGroup = groupStatus?.isLast ?? true;
+                    final shouldShowAvatar =
+                        !isSystemMessage && isLastInGroup && isRemoved != true;
+                    final isCurrentUser = message.authorId == _currentUser.id;
+                    final shouldShowUsername =
+                        !isSystemMessage && isFirstInGroup && isRemoved != true;
 
-                Widget? avatar;
-                if (shouldShowAvatar) {
-                  avatar = Padding(
-                    padding: EdgeInsets.only(
-                      left: isCurrentUser ? 8 : 0,
-                      right: isCurrentUser ? 0 : 8,
-                    ),
-                    child: Avatar(userId: message.authorId),
-                  );
-                } else if (!isSystemMessage) {
-                  avatar = const SizedBox(width: 40);
-                }
+                    Widget? avatar;
+                    if (shouldShowAvatar) {
+                      avatar = Padding(
+                        padding: EdgeInsets.only(
+                          left: isCurrentUser ? 8 : 0,
+                          right: isCurrentUser ? 0 : 8,
+                        ),
+                        child: Avatar(userId: message.authorId),
+                      );
+                    } else if (!isSystemMessage) {
+                      avatar = const SizedBox(width: 40);
+                    }
 
-                return ChatMessage(
-                  message: message,
-                  index: index,
-                  animation: animation,
-                  isRemoved: isRemoved,
-                  groupStatus: groupStatus,
-                  topWidget: shouldShowUsername
-                      ? Padding(
-                          padding: EdgeInsets.only(
-                            bottom: 4,
-                            left: isCurrentUser ? 0 : 48,
-                            right: isCurrentUser ? 48 : 0,
-                          ),
-                          child: Username(userId: message.authorId),
-                        )
-                      : null,
-                  leadingWidget: !isCurrentUser
-                      ? avatar
-                      : isSystemMessage
+                    return ChatMessage(
+                      message: message,
+                      index: index,
+                      animation: animation,
+                      isRemoved: isRemoved,
+                      groupStatus: groupStatus,
+                      topWidget: shouldShowUsername
+                          ? Padding(
+                              padding: EdgeInsets.only(
+                                bottom: 4,
+                                left: isCurrentUser ? 0 : 48,
+                                right: isCurrentUser ? 48 : 0,
+                              ),
+                              child: Username(userId: message.authorId),
+                            )
+                          : null,
+                      leadingWidget: !isCurrentUser
+                          ? avatar
+                          : isSystemMessage
                           ? null
                           : const SizedBox(width: 40),
-                  trailingWidget: isCurrentUser
-                      ? avatar
-                      : isSystemMessage
+                      trailingWidget: isCurrentUser
+                          ? avatar
+                          : isSystemMessage
                           ? null
                           : const SizedBox(width: 40),
-                  receivedMessageScaleAnimationAlignment:
-                      (message is SystemMessage)
+                      receivedMessageScaleAnimationAlignment:
+                          (message is SystemMessage)
                           ? Alignment.center
                           : Alignment.centerLeft,
-                  receivedMessageAlignment: (message is SystemMessage)
-                      ? AlignmentDirectional.center
-                      : AlignmentDirectional.centerStart,
-                  horizontalPadding: (message is SystemMessage) ? 0 : 8,
-                  child: child,
-                );
-              },
+                      receivedMessageAlignment: (message is SystemMessage)
+                          ? AlignmentDirectional.center
+                          : AlignmentDirectional.centerStart,
+                      horizontalPadding: (message is SystemMessage) ? 0 : 8,
+                      child: child,
+                    );
+                  },
             ),
             chatController: _chatController,
             crossCache: _crossCache,
@@ -550,10 +552,12 @@ class _ChatWidget extends State<ChatWidget> {
 
         // Make sure to get the updated message
         // (width and height might have been set by the image message widget)
-        final currentMessage = _chatController.messages.firstWhere(
-          (element) => element.id == id,
-          orElse: () => imageMessage,
-        ) as ImageMessage;
+        final currentMessage =
+            _chatController.messages.firstWhere(
+                  (element) => element.id == id,
+                  orElse: () => imageMessage,
+                )
+                as ImageMessage;
         final originalMetadata = currentMessage.metadata;
         final nextMessage = currentMessage.copyWith(
           source: 'https://whatever.diamanthq.dev/blob/$blobId',

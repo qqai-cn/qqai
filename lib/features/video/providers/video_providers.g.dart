@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'comment_providers.dart';
+part of 'video_providers.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,52 @@ part of 'comment_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(CommentNotifier)
-const commentProvider = CommentNotifierProvider._();
+@ProviderFor(VideoNotifier)
+const videoProvider = VideoNotifierProvider._();
 
-final class CommentNotifierProvider
-    extends $NotifierProvider<CommentNotifier, CommentState> {
-  const CommentNotifierProvider._()
+final class VideoNotifierProvider
+    extends $NotifierProvider<VideoNotifier, VideoState> {
+  const VideoNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'commentProvider',
+        name: r'videoProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$commentNotifierHash();
+  String debugGetCreateSourceHash() => _$videoNotifierHash();
 
   @$internal
   @override
-  CommentNotifier create() => CommentNotifier();
+  VideoNotifier create() => VideoNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(CommentState value) {
+  Override overrideWithValue(VideoState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<CommentState>(value),
+      providerOverride: $SyncValueProvider<VideoState>(value),
     );
   }
 }
 
-String _$commentNotifierHash() => r'845f6fb1a2dbfeda26a42ba3afa7a41acbf384f9';
+String _$videoNotifierHash() => r'aae90d541b8f5def2d9e5375a00f54b87b68742d';
 
-abstract class _$CommentNotifier extends $Notifier<CommentState> {
-  CommentState build();
+abstract class _$VideoNotifier extends $Notifier<VideoState> {
+  VideoState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<CommentState, CommentState>;
+    final ref = this.ref as $Ref<VideoState, VideoState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<CommentState, CommentState>,
-              CommentState,
+              AnyNotifier<VideoState, VideoState>,
+              VideoState,
               Object?,
               Object?
             >;

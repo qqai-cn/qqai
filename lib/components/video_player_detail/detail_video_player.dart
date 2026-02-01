@@ -22,8 +22,11 @@ class _DetailVideoPlayer extends State<DetailVideoPlayer> {
   void initState() {
     super.initState();
     flickManager = FlickManager(
-      videoPlayerController:
-          VideoPlayerController.networkUrl(Uri.parse(mockData["items"][1]["trailer_url"])),
+      videoPlayerController: VideoPlayerController.networkUrl(
+        Uri.parse(mockData["items"][1]["trailer_url"]),
+      ),
+      autoPlay: false,
+      autoInitialize: false,
     );
     List<String> urls = (mockData["items"] as List)
         .map<String>((item) => item["trailer_url"])
@@ -65,7 +68,6 @@ class _DetailVideoPlayer extends State<DetailVideoPlayer> {
             videoFit: BoxFit.contain,
             // aspectRatioWhenLoading: 4 / 3,
           ),
-
         ),
       ),
     );
