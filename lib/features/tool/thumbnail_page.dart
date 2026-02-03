@@ -16,7 +16,8 @@ import 'package:image/image.dart' as img;
 
 // Conditional imports for web
 import 'dart:io' if (dart.library.html) 'dart:html' as io;
-import 'dart:html' as html if (dart.library.io) 'html_stub.dart';
+
+import 'html_stub.dart';
 
 
 class ThumbnailRequest {
@@ -1219,12 +1220,12 @@ class _ThumbnailPage extends ConsumerState<ThumbnailPage> {
 
       if (kIsWeb) {
         // Web平台下载
-        final blob = html.Blob([jpgBytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        html.AnchorElement(href: url)
+        final blob = Blob([jpgBytes]);
+        final url = Url.createObjectUrlFromBlob(blob);
+        AnchorElement(href: url)
           ..setAttribute("download", "screenshot.jpg")
           ..click();
-        html.Url.revokeObjectUrl(url);
+        Url.revokeObjectUrl(url);
       } else {
         // 移动平台保存到文件
         // final directory = await getApplicationDocumentsDirectory();

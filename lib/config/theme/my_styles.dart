@@ -115,7 +115,7 @@ class MyStyles {
               ? LightThemeColors.displayTextColor
               : DarkThemeColors.displayTextColor,
         ),
-        bodySmall: TextStyle(
+        bodySmall: MyFonts.bodyTextStyle.copyWith(
             color: isLightTheme
                 ? LightThemeColors.bodySmallTextColor
                 : DarkThemeColors.bodySmallTextColor,

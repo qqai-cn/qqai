@@ -75,3 +75,20 @@ flutter analyze lib/providers/
 
 运行 `flutter run` 应该可以正常启动了！
 
+flutter build web --release
+
+---
+
+## Web：Failed to fetch canvaskit.js (gstatic.com)
+
+若在 Chrome 运行/热重启时报错：`Failed to fetch dynamically imported module: https://www.gstatic.com/flutter-canvaskit/.../canvaskit.js`，是因为默认从 **gstatic CDN** 拉取 CanvasKit；网络不可达时会失败。
+
+**做法：使用本地资源，不依赖 CDN**
+
+- **运行**：`flutter run -d chrome --no-web-resources-cdn`  
+  或执行项目根目录脚本：`./run_web.sh`
+- **打包**：`flutter build web --no-web-resources-cdn`
+
+`--no-web-resources-cdn` 会把 CanvasKit 等资源打包进应用，由同一域名提供，不再请求 gstatic。
+
+（新版 Flutter 已移除 `--web-renderer` 和 HTML 渲染器，只能通过关闭 CDN 避免外网拉取。）

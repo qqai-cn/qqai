@@ -24,26 +24,30 @@ class LocalizationService {
   static Map<String, Locale> supportedLanguages = {
     'en': const Locale('en', 'US'),
     // Arabic
-    'ar': const Locale('ar', 'AR'),
+    // 'ar': const Locale('ar', 'AR'),
     // Chinese
     'zh': const Locale('zh', 'CN'),
   };
 
-  // supported languages fonts family (must be in assets & pubspec yaml) or you can use google fonts
+  // Supported languages font style.
+  // 中文使用阿里巴巴普惠体（见 pubspec fonts + assets/fonts/）
   static Map<String, TextStyle> supportedLanguagesFontsFamilies = {
-    // todo add your English font families (add to assets/fonts, pubspec and name it here) default is poppins for english and cairo for arabic
-    'en': const TextStyle(fontFamily: 'Poppins'),
+    'en': const TextStyle(
+      fontFamily: 'Alibaba PuHuiTi',
+      fontFamilyFallback: ['Alibaba PuHuiTi', 'Roboto'],
+    ),
     // 'ar': const TextStyle(fontFamily: 'Cairo'),
-    // Chinese: prefer system font unless you bundle a font asset and set its family here (e.g. 'Alibaba PuHuiTi')
-    'zh': const TextStyle(fontFamily: '"PingFang SC", "Microsoft YaHei", sans-serif',),
+    'zh': const TextStyle(
+      fontFamily: 'Alibaba PuHuiTi',
+      fontFamilyFallback: ['Alibaba PuHuiTi', 'Roboto'],
+    ),
   };
 
   // Translation keys for supported languages
   static Map<String, Map<String, String>> get keys => {
-        'en_US': enUs,
-        // 'ar_AR': arAR,
-        'zh_CN': zhCN,
-      };
+    'en_US': enUs,
+    'zh_CN': zhCN,
+  };
 
   /// check if the language is supported
   static bool isLanguageSupported(String languageCode) =>
@@ -69,4 +73,3 @@ class LocalizationService {
   /// get current locale
   static Locale getCurrentLocal() => MySharedPref.getCurrentLocal();
 }
-

@@ -12,6 +12,8 @@ import 'providers/app_config_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // 禁止 google_fonts 运行时从 fonts.gstatic.com 拉取字体（避免 Roboto 等请求）
+  // GoogleFonts.config.allowRuntimeFetching = false;
   // init shared preference
   await MySharedPref.init();
   intl.initializeDateFormatting().then((_) => runApp(
