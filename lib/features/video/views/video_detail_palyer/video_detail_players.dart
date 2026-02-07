@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:qqai/features/video/views/video_service.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../../demo/flickvideo/short_video_player/data/mock_data.dart';
-import 'multi_manager/flick_multi_manager.dart';
-import 'multi_manager/flick_multi_player.dart';
+import 'package:qqai/features/video/views/feed_video/feed_video_manager.dart';
+import 'package:qqai/features/video/views/feed_video/feed_video_player.dart';
+
+import '../../data/mock_data.dart';
 
 class VideoDetailPlayers extends StatefulWidget {
   const VideoDetailPlayers({Key? key}) : super(key: key);
@@ -15,14 +16,14 @@ class VideoDetailPlayers extends StatefulWidget {
 
 class _VideoDetailPlayers extends State<VideoDetailPlayers> {
 
-  late FlickMultiManager flickMultiManager;
+  late FeedVideoManager feedVideoManager;
   List items = shortVideoMockData['items'];
 
   @override
   void initState() {
     super.initState();
     // getVideoData();
-    flickMultiManager = FlickMultiManager();
+    feedVideoManager = FeedVideoManager();
   }
 
   Future<void> getVideoData() async {
@@ -37,10 +38,10 @@ class _VideoDetailPlayers extends State<VideoDetailPlayers> {
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
-      key: ObjectKey(flickMultiManager),
+      key: ObjectKey(feedVideoManager),
       onVisibilityChanged: (visibility) {
         if (visibility.visibleFraction == 0 && mounted) {
-          flickMultiManager.pause();
+          feedVideoManager.pause();
         }
       },
       child: PageView.builder(
@@ -49,13 +50,12 @@ class _VideoDetailPlayers extends State<VideoDetailPlayers> {
         itemBuilder: (context, index) {
           return Container(
             height: 800,
-            // margin: const EdgeInsets.all(2),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(5),
-              child: FlickMultiPlayer(
+              child: FeedVideoPlayer(
                 url: items[index]['trailer_url'],
-                flickMultiManager: flickMultiManager,
-                image: shortVideoMockData['items'][index]['image'],
+                thumbnailUrl: shortVideoMockData['items'][index]['image'],
+                manager: feedVideoManager,
               ),
             ),
           );

@@ -186,6 +186,6 @@ class BlogNotifier extends _$BlogNotifier {
     if (colCount > 1) {
       widthItem = widthItem * 0.5;
     }
-    return widthItem / (15 / 9) + 150;
+    return widthItem / (15 / 9)+150;
   }
 }

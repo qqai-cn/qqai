@@ -48,7 +48,7 @@ class _BlogViewState extends ConsumerState<BlogView> {
             } else {
               return Card(
                 child: SizedBox(
-                  height: blogNotifier.getVideoItemHeightWithWidth(3, 1.sw),
+                  height: blogNotifier.getVideoItemHeightWithWidth(2, 1.sw),
                   child: BlogVideoItemView(widget.category, blogItem),
                 ),
               );

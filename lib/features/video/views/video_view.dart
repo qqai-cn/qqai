@@ -11,8 +11,8 @@ import '../../comment/providers/comment_providers.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/providers/home_providers.dart';
 import '../data/mock_data.dart';
-import 'multi_manager/flick_multi_manager.dart';
-import 'multi_manager/flick_multi_player.dart';
+import 'feed_video/feed_video_manager.dart';
+import 'feed_video/feed_video_player.dart';
 
 class VideoView extends ConsumerStatefulWidget {
   const VideoView({Key? key}) : super(key: key);
@@ -23,7 +23,7 @@ class VideoView extends ConsumerStatefulWidget {
 
 class _VideoView extends ConsumerState<VideoView>
     with TickerProviderStateMixin {
-  late FlickMultiManager flickMultiManager;
+  late FeedVideoManager feedVideoManager;
   List items = shortVideoMockData['items'];
 
   late TabController _tabController;
@@ -33,7 +33,7 @@ class _VideoView extends ConsumerState<VideoView>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
-    flickMultiManager = FlickMultiManager();
+    feedVideoManager = FeedVideoManager();
   }
 
   void _onTabChanged() {
@@ -137,10 +137,10 @@ class _VideoView extends ConsumerState<VideoView>
 
   Widget getVideoPlayer() {
     return VisibilityDetector(
-      key: ObjectKey(flickMultiManager),
+      key: ObjectKey(feedVideoManager),
       onVisibilityChanged: (visibility) {
         if (visibility.visibleFraction == 0 && mounted) {
-          flickMultiManager.pause();
+          feedVideoManager.pause();
         }
       },
       child: PageView.builder(
@@ -149,13 +149,12 @@ class _VideoView extends ConsumerState<VideoView>
         itemBuilder: (context, index) {
           return Container(
             height: 800,
-            // margin: const EdgeInsets.all(2),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(5),
-              child: FlickMultiPlayer(
+              child: FeedVideoPlayer(
                 url: items[index]['trailer_url'],
-                flickMultiManager: flickMultiManager,
-                image: shortVideoMockData['items'][index]['image'],
+                thumbnailUrl: shortVideoMockData['items'][index]['image'],
+                manager: feedVideoManager,
               ),
             ),
           );

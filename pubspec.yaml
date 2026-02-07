@@ -43,9 +43,10 @@ dependencies:
   dio: ^5.4.0
   extended_nested_scroll_view: ^6.2.1
   easy_refresh: ^3.3.4
-  flick_video_player:
-    git:
-      url: https://github.com/daicx/flick-video-player.git
+  chewie: ^1.13.0
+#  flick_video_player:
+#    git:
+#      url: https://github.com/daicx/flick-video-player.git
   video_player: ^2.10.0
   # 基础的点击
   tapped: ^2.0.0

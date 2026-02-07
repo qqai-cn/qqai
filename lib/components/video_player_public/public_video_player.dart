@@ -1,73 +1,58 @@
-import 'package:flick_video_player/flick_video_player.dart';
+import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import 'public_video_control.dart';
-import '../../../features/demo/flickvideo/utils/mock_data.dart';
-import 'public_data_manager.dart';
+import '../../features/video/data/mock_data.dart';
+
 
 class PublicVideoPlayer extends StatefulWidget {
-  PublicVideoPlayer({Key? key}) : super(key: key);
+  PublicVideoPlayer({super.key});
 
   @override
-  _PublicVideoPlayer createState() => _PublicVideoPlayer();
+  State<PublicVideoPlayer> createState() => _PublicVideoPlayerState();
 }
 
-class _PublicVideoPlayer extends State<PublicVideoPlayer> {
-  late FlickManager flickManager;
-  late PublicDataManager dataManager;
+class _PublicVideoPlayerState extends State<PublicVideoPlayer> {
+  late VideoPlayerController _videoController;
+  late ChewieController _chewieController;
 
   @override
   void initState() {
     super.initState();
-    flickManager = FlickManager(
-      autoPlay: false,
-      videoPlayerController: VideoPlayerController.networkUrl(
-          Uri.parse(mockData["items"][1]["trailer_url"])),
+    _videoController = VideoPlayerController.networkUrl(
+      Uri.parse(shortVideoMockData["items"][1]["trailer_url"]),
     );
-    List<String> urls = (mockData["items"] as List)
-        .map<String>((item) => item["trailer_url"])
-        .toList();
-
-    dataManager = PublicDataManager(flickManager: flickManager, urls: urls);
+    _chewieController = ChewieController(
+      videoPlayerController: _videoController,
+      autoPlay: false,
+    );
+    _videoController.initialize().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   @override
   void dispose() {
-    flickManager.dispose();
+    _chewieController.dispose();
+    _videoController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
-      key: ObjectKey(flickManager),
+      key: ObjectKey(_videoController),
       onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction == 0 && this.mounted) {
-          flickManager.flickControlManager?.autoPause();
-        } else if (visibility.visibleFraction == 1) {
-          flickManager.flickControlManager?.autoResume();
+        if (visibility.visibleFraction == 0 && mounted) {
+          _videoController.pause();
+        } else if (visibility.visibleFraction == 1 && mounted) {
+          _videoController.play();
         }
       },
-      child: Container(
-        child: FlickVideoPlayer(
-          flickManager: flickManager,
-          flickVideoWithControls: FlickVideoWithControls(
-            controls: PublicVideoControl(
-              dataManager: dataManager,
-              iconSize: 30,
-              fontSize: 14,
-              progressBarSettings: FlickProgressBarSettings(
-                height: 5,
-                handleRadius: 5.5,
-              ),
-            ),
-            videoFit: BoxFit.contain,
-            // aspectRatioWhenLoading: 4 / 3,
-          ),
-        ),
-      ),
+      child: _videoController.value.isInitialized
+          ? Chewie(controller: _chewieController)
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

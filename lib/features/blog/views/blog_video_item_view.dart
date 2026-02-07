@@ -123,13 +123,9 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
           ),
           Container(height: 2, color: Colors.white),
           Expanded(
-            flex: 9,
-            child: AspectRatio(
-              aspectRatio: 15 / 9,
-              child: VideoItemPlayer(
-                url: widget.blogItem.resources!,
-                imgUrl: 'https://file.qqai.cn/qqai/2025/09/1.webp',
-              ),
+            child: VideoItemPlayer(
+              url: widget.blogItem.resources!,
+              imgUrl: 'https://file.qqai.cn/qqai/2025/09/1.webp',
             ),
           ),
 
