@@ -46,6 +46,7 @@ dependencies:
   flick_video_player:
     git:
       url: https://github.com/daicx/flick-video-player.git
+      ref: main
   video_player: ^2.10.0
   # 基础的点击
   tapped: ^2.0.0
