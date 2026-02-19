@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:qqai/features/video/views/video_detail_palyer/video_detail_players.dart';
+import 'package:qqai/features/video/views/video_detail_players.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';

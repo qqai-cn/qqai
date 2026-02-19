@@ -5,13 +5,11 @@ import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 
 import '../../../../constant/color_constant.dart';
 import '../../../router/app_routes.dart';
-import 'multi_manager/flick_multi_manager.dart';
 
 class VideoItemView extends StatelessWidget {
   final String name = "新飞飞";
   final double imgHover = 60;
   final bool _care = false;
-  late FlickMultiManager flickMultiManager = FlickMultiManager();
 
   VideoItemView({super.key});
 

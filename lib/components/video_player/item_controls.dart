@@ -1,17 +1,9 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 
-import 'multi_manager/flick_multi_manager.dart';
+class ItemControls extends StatelessWidget {
+  const ItemControls({Key? key}) : super(key: key);
 
-class FeedPlayerPortraitControls extends StatelessWidget {
-  const FeedPlayerPortraitControls({
-    Key? key,
-    this.flickMultiManager,
-    this.flickManager,
-  }) : super(key: key);
-
-  final FlickMultiManager? flickMultiManager;
-  final FlickManager? flickManager;
   final double iconSize = 30;
   final double fontSize = 14;
 

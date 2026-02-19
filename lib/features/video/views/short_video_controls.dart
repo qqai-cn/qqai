@@ -3,36 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import 'package:spring/spring.dart';
 
-import '../../../../../../constant/constant.dart';
-import '../../../../../components/level_icon.dart';
-import '../../../../../router/app_routes.dart';
-import '../../../../comment/providers/comment_providers.dart';
-import '../video_share_view.dart';
-import 'flick_multi_manager.dart';
+import '../../../../../constant/constant.dart';
+import '../../../../components/level_icon.dart';
+import '../../../../router/app_routes.dart';
+import '../../comment/providers/comment_providers.dart';
+import 'video_share_view.dart';
 
-class FeedPlayerPortraitControls extends ConsumerStatefulWidget {
-  final FlickMultiManager? flickMultiManager;
-  final FlickManager? flickManager;
-
-  FeedPlayerPortraitControls({this.flickMultiManager, this.flickManager});
+class ShortVideoControls extends ConsumerStatefulWidget {
+  ShortVideoControls();
 
   @override
-  _FeedPlayerPortraitControls createState() => _FeedPlayerPortraitControls();
+  _ShortVideoControls createState() => _ShortVideoControls();
 }
 
-class _FeedPlayerPortraitControls
-    extends ConsumerState<FeedPlayerPortraitControls> {
-  _FeedPlayerPortraitControls({
-    Key? key,
-    this.flickMultiManager,
-    this.flickManager,
-  });
-
-  final FlickMultiManager? flickMultiManager;
-  final FlickManager? flickManager;
+class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
+  _ShortVideoControls({Key? key});
 
   final double iconSize = 30;
   final double fontSize = 14;
@@ -49,6 +36,8 @@ class _FeedPlayerPortraitControls
   @override
   Widget build(BuildContext context) {
     final commentNotifier = ref.read(commentProvider.notifier);
+    final commentState = ref.watch(commentProvider);
+
     bool widScreen = 1.sw > 800;
     var wid = (180.w > 80 ? 80 : 180.w) / 2;
     return Container(
@@ -57,100 +46,87 @@ class _FeedPlayerPortraitControls
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: FlickTogglePlayAction(
-                    child: FlickSeekVideoAction(child: FlickVideoBuffer()),
-                  ),
-                ),
-                InkWell(
-                  onTap: () {
-                    context.push('${Routes.userDetail}/88/true');
-                  },
-                  child: Text('@ 3000万粉丝', style: TextStyle(fontSize: 15)),
-                ),
-                InkWell(
-                  onTap: () {
-                    showModalBottomSheet(
-                      constraints: BoxConstraints(maxHeight: 0.5.sh),
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (BuildContext build) {
-                        return Center(child: Text(text));
-                      },
-                    );
-                  },
-                  child: RichText(
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    text: TextSpan(
-                      style: TextStyle(color: Colors.white),
-                      text:
-                          '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。我真的很喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是不',
+          if (showDesc(widScreen, commentState))
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: FlickTogglePlayAction(
+                      child: FlickSeekVideoAction(child: FlickVideoBuffer()),
                     ),
                   ),
-                ),
-                FlickVideoProgressBar(
-                  flickProgressBarSettings: FlickProgressBarSettings(
-                    height: 5,
-                    handleRadius: 5.5,
+                  InkWell(
+                    onTap: () {
+                      context.push('${Routes.userDetail}/88/true');
+                    },
+                    child: Text('@ 3000万粉丝', style: TextStyle(fontSize: 15)),
                   ),
-                ),
-                FlickAutoHideChild(
-                  autoHide: true,
-                  showIfVideoNotInitialized: false,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      FlickPlayToggle(size: iconSize),
-                      SizedBox(width: iconSize / 2),
-                      FlickSoundToggle(size: iconSize),
-                      SizedBox(width: iconSize / 2),
-                      Row(
-                        children: <Widget>[
-                          FlickCurrentPosition(fontSize: fontSize),
-                          FlickAutoHideChild(
-                            child: Text(
-                              ' / ',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: fontSize,
+                  InkWell(
+                    onTap: () {
+                      showModalBottomSheet(
+                        constraints: BoxConstraints(maxHeight: 0.5.sh),
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext build) {
+                          return Center(child: Text(text));
+                        },
+                      );
+                    },
+                    child: RichText(
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      text: TextSpan(
+                        style: TextStyle(color: Colors.white),
+                        text:
+                            '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。我真的很喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是不',
+                      ),
+                    ),
+                  ),
+                  FlickVideoProgressBar(
+                    flickProgressBarSettings: FlickProgressBarSettings(
+                      height: 5,
+                      handleRadius: 5.5,
+                    ),
+                  ),
+                  FlickAutoHideChild(
+                    autoHide: true,
+                    showIfVideoNotInitialized: false,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        FlickPlayToggle(size: iconSize),
+                        SizedBox(width: iconSize / 2),
+                        FlickSoundToggle(size: iconSize),
+                        SizedBox(width: iconSize / 2),
+                        Row(
+                          children: <Widget>[
+                            FlickCurrentPosition(fontSize: fontSize),
+                            FlickAutoHideChild(
+                              child: Text(
+                                ' / ',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: fontSize,
+                                ),
                               ),
                             ),
-                          ),
-                          FlickTotalDuration(fontSize: fontSize),
-                        ],
-                      ),
-                      Expanded(child: Container()),
-                      FlickFullScreenToggle(size: iconSize),
-                    ],
+                            FlickTotalDuration(fontSize: fontSize),
+                          ],
+                        ),
+                        Expanded(child: Container()),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          if (!showDesc(widScreen, commentState)) Spacer(),
           Container(
             width: 180.w > 100 ? 80 : 180.w,
             child: Column(
               children: [
-                FlickAutoHideChild(
-                  showIfVideoNotInitialized: false,
-                  child: Align(
-                    alignment: Alignment.topRight,
-                    child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.black38,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: FlickLeftDuration(fontSize: 20),
-                    ),
-                  ),
-                ),
                 Spacer(),
                 Container(
                   width: 50,
@@ -217,25 +193,7 @@ class _FeedPlayerPortraitControls
                 IconButton(
                   iconSize: wid,
                   onPressed: () {
-                    if (widScreen) {
-                      commentNotifier.changeShowComment();
-                    } else {
-                      showModalBottomSheet(
-                        constraints: BoxConstraints(maxHeight: 0.5.sh),
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext build) {
-                          return ListView(
-                            children: [
-                              getRow(1),
-                              getRow(1),
-                              getRow(1),
-                              getRow(1),
-                            ],
-                          );
-                        },
-                      );
-                    }
+                    commentNotifier.changeShowComment();
                   },
                   color: Colors.white,
                   icon: Icon(Icons.comment),
@@ -275,6 +233,14 @@ class _FeedPlayerPortraitControls
         ],
       ),
     );
+  }
+
+  bool showDesc(bool widScreen, var commentState) {
+    if (!widScreen && commentState.showComment) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   Widget getRow(int i) {

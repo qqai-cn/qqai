@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/video_player/qqai_player.dart';
+import 'package:qqai/features/video/views/short_video_controls.dart';
 import 'package:qqai/features/video/views/video_list_view.dart';
-import 'package:qqai/features/video/views/video_service.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../../components/video_player/video_service.dart';
 import '../../../router/app_routes.dart';
 import '../../comment/providers/comment_providers.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/providers/home_providers.dart';
 import '../data/mock_data.dart';
-import 'multi_manager/flick_multi_manager.dart';
-import 'multi_manager/flick_multi_player.dart';
 
 class VideoView extends ConsumerStatefulWidget {
   const VideoView({Key? key}) : super(key: key);
@@ -23,7 +22,6 @@ class VideoView extends ConsumerStatefulWidget {
 
 class _VideoView extends ConsumerState<VideoView>
     with TickerProviderStateMixin {
-  late FlickMultiManager flickMultiManager;
   List items = shortVideoMockData['items'];
 
   late TabController _tabController;
@@ -33,16 +31,16 @@ class _VideoView extends ConsumerState<VideoView>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
-    flickMultiManager = FlickMultiManager();
   }
 
   void _onTabChanged() {
-    if (!_tabController.indexIsChanging && mounted) setState(() {
-      if(_tabController.index != 0){
-        final commentNotifier = ref.read(commentProvider.notifier);
-        commentNotifier.dontShowComment();
-      }
-    });
+    if (!_tabController.indexIsChanging && mounted)
+      setState(() {
+        if (_tabController.index != 0) {
+          final commentNotifier = ref.read(commentProvider.notifier);
+          commentNotifier.dontShowComment();
+        }
+      });
   }
 
   @override
@@ -136,31 +134,22 @@ class _VideoView extends ConsumerState<VideoView>
   }
 
   Widget getVideoPlayer() {
-    return VisibilityDetector(
-      key: ObjectKey(flickMultiManager),
-      onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction == 0 && mounted) {
-          flickMultiManager.pause();
-        }
-      },
-      child: PageView.builder(
-        scrollDirection: Axis.vertical,
-        itemCount: items.length,
-        itemBuilder: (context, index) {
-          return Container(
-            height: 800,
-            // margin: const EdgeInsets.all(2),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(5),
-              child: FlickMultiPlayer(
-                url: items[index]['trailer_url'],
-                flickMultiManager: flickMultiManager,
-                image: shortVideoMockData['items'][index]['image'],
-              ),
+    return PageView.builder(
+      scrollDirection: Axis.vertical,
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        return Container(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(5),
+            child: QqaiPlayer(
+              url: items[index]['trailer_url'],
+              image: shortVideoMockData['items'][index]['image'],
+              controls: ShortVideoControls(),
+              autoPlay: true,
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

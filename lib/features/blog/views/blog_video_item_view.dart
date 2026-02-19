@@ -61,10 +61,14 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                       InkWell(
                         onTap: () {},
                         child: AutoSizeText(
-                          '${widget.blogItem.creatorName}',
-                          style: TextStyle(fontSize: 20),
+                          widget.blogItem.creatorName ?? '未知用户',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                           minFontSize: 10,
                           maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       LevelIcon(lv: Random().nextInt(7)),

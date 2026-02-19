@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
-import 'multi_manager/flick_multi_manager.dart';
-import 'multi_manager/flick_multi_player.dart';
+import '../../../../components/video_player/item_controls.dart';
+import '../../../../components/video_player/qqai_player.dart';
 
 class VideoItemPlayer extends StatefulWidget {
   String url;
@@ -17,33 +15,22 @@ class VideoItemPlayer extends StatefulWidget {
 }
 
 class _FeedPlayerState extends State<VideoItemPlayer> {
-  late FlickMultiManager flickMultiManager;
-
   @override
   void initState() {
     super.initState();
-    flickMultiManager = FlickMultiManager();
   }
 
   @override
   Widget build(BuildContext context) {
-    return VisibilityDetector(
-      key: ObjectKey(flickMultiManager),
-      onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction > 0.9 && this.mounted && 1.sw < 800) {
-          flickMultiManager.play();
-        }
-      },
-      child: Container(
-        height: 800,
-        margin: const EdgeInsets.all(2),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(5),
-          child: FlickMultiPlayer(
-            url: widget.url,
-            flickMultiManager: flickMultiManager,
-            image: widget.imgUrl,
-          ),
+    return Container(
+      margin: const EdgeInsets.all(2),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(5),
+        child: QqaiPlayer(
+          controls: ItemControls(),
+          image: widget.imgUrl,
+          url: widget.url,
+          autoPlay: false,
         ),
       ),
     );

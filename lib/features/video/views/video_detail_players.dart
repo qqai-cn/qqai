@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:qqai/components/video_player/detail_controls.dart';
 import 'package:qqai/components/video_player/qqai_player.dart';
 
-import '../../../../components/video_player/video_service.dart';
-import '../../../demo/flickvideo/short_video_player/data/mock_data.dart';
+import '../../../components/video_player/video_service.dart';
+import '../../demo/flickvideo/short_video_player/data/mock_data.dart';
 
 class VideoDetailPlayers extends StatefulWidget {
   const VideoDetailPlayers({Key? key}) : super(key: key);
@@ -37,13 +37,12 @@ class _VideoDetailPlayers extends State<VideoDetailPlayers> {
       itemCount: items.length,
       itemBuilder: (context, index) {
         return Container(
-          height: 800,
           child: ClipRRect(
             borderRadius: BorderRadius.circular(5),
             child: QqaiPlayer(
-              controls: DetailControls(),
+              url: items[index]['trailer_url'],
               image: shortVideoMockData['items'][index]['image'],
-              url: shortVideoMockData['items'][index]['trailer_url'],
+              controls: DetailControls(),
               autoPlay: true,
             ),
           ),
