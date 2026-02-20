@@ -5,21 +5,21 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../components/level_icon.dart';
 import '../../../components/responsive_masonry_grid.dart';
 import '../../../constant/constant.dart';
-import '../../blog/providers/blog_providers.dart';
-import 'my_blog_img_item_view.dart';
-import 'my_blog_video_item_view.dart';
+import '../blog/providers/blog_providers.dart';
+import 'friend_blog_img_item_view.dart';
+import 'friend_blog_video_item_view.dart';
 
-class MyBlogView extends ConsumerStatefulWidget {
+class FriendBlogView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex; // 当前选中的 Tab index
 
-  const MyBlogView({required this.tabIndex, required this.currentIndex});
+  const FriendBlogView({required this.tabIndex, required this.currentIndex});
 
   @override
-  ConsumerState<MyBlogView> createState() => _TabPageState();
+  ConsumerState<FriendBlogView> createState() => _TabPageState();
 }
 
-class _TabPageState extends ConsumerState<MyBlogView>
+class _TabPageState extends ConsumerState<FriendBlogView>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
@@ -43,28 +43,28 @@ class _TabPageState extends ConsumerState<MyBlogView>
       data: (data) => Padding(
         padding: const EdgeInsets.only(top: kPinnedHeaderHeight),
         child: ResponsiveMasonryGrid(
-        itemCount: data.list!.length,
-        minColumnWidth: 400,
-        itemBuilder: (context, index) {
-          final blogItem = data.list![index];
-          final isWide = 1.sw > 800;
-          final itemHeight = blogNotifier.getVideoItemHeightWithWidth(
-            isWide ? 2 : 1,
-            1.sw,
-          );
-          return RepaintBoundary(
-            child: blogItem.blogType == 1
-                ? Card(child: MyBlogImgItemView(category, blogItem))
-                : Card(
-                    child: SizedBox(
-                      height: itemHeight,
-                      child: MyBlogVideoItemView(category, blogItem),
+          itemCount: data.list!.length,
+          minColumnWidth: 400,
+          itemBuilder: (context, index) {
+            final blogItem = data.list![index];
+            final isWide = 1.sw > 800;
+            final itemHeight = blogNotifier.getVideoItemHeightWithWidth(
+              isWide ? 2 : 1,
+              1.sw,
+            );
+            return RepaintBoundary(
+              child: blogItem.blogType == 1
+                  ? Card(child: FriendBlogImgItemView(category, blogItem))
+                  : Card(
+                      child: SizedBox(
+                        height: itemHeight,
+                        child: FriendBlogVideoItemView(category, blogItem),
+                      ),
                     ),
-                  ),
-          );
-        },
+            );
+          },
+        ),
       ),
-    ),
       error: (err, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

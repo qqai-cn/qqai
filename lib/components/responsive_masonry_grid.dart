@@ -39,20 +39,24 @@ class ResponsiveMasonryGrid extends StatelessWidget {
             crossAxisSpacing: crossAxisSpacing,
             itemCount: itemCount,
             itemBuilder: itemBuilder,
+            cacheExtent: 400,
+            addAutomaticKeepAlives: false,
+            addRepaintBoundaries: true,
           );
         }
         // 至少 1 列，最多 2 列
         final columns = (availableWidth / minColumnWidth).floor().clamp(1, maxColumn);
         return MasonryGridView.builder(
-          // ✅ 修复：添加必需的 gridDelegate
           gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: columns, // 动态列数
+            crossAxisCount: columns,
           ),
-          // 其他参数保持不变
           mainAxisSpacing: mainAxisSpacing,
           crossAxisSpacing: crossAxisSpacing,
           itemCount: itemCount,
           itemBuilder: itemBuilder,
+          cacheExtent: 400,
+          addAutomaticKeepAlives: false,
+          addRepaintBoundaries: true,
         );
       },
     );

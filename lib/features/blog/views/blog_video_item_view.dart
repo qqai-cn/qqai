@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../constant/color_constant.dart';
 import '../../../../../constant/constant.dart';
@@ -31,9 +33,9 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
 
   @override
   Widget build(BuildContext context) {
-    final blogState = ref.watch(blogProvider);
     final blogNotifier = ref.read(blogProvider.notifier);
     final isWideScreen = 1.sw > 900;
+    const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
     return Padding(
       padding: EdgeInsets.all(2),
       child: Column(
@@ -119,10 +121,11 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
           ),
           Padding(
             padding: EdgeInsets.only(left: 5, right: 5),
-            child: SelectableText(
+            child: Text(
               widget.blogItem.content!,
               maxLines: 1,
-              style: TextStyle(fontSize: 20, overflow: TextOverflow.ellipsis),
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 20),
             ),
           ),
           Container(height: 2, color: Colors.white),
@@ -130,9 +133,10 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
             flex: 9,
             child: AspectRatio(
               aspectRatio: 15 / 9,
-              child: VideoItemPlayer(
+              child: _LazyVideoPlaceholder(
+                key: Key('blog_video_${widget.blogItem.id}'),
                 url: widget.blogItem.resources!,
-                imgUrl: 'https://file.qqai.cn/qqai/2025/09/1.webp',
+                imgUrl: coverUrl,
               ),
             ),
           ),
@@ -268,7 +272,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 ),
               ],
             ),
-            SelectableText(text),
+            Text(text),
             SizedBox(height: 5),
             Text(
               '2022-12-11 10：12',
@@ -279,6 +283,63 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
         ),
       ),
       onTap: () {},
+    );
+  }
+}
+
+/// 仅当可见时加载视频播放器，否则只显示封面，减轻列表滑动卡顿。
+class _LazyVideoPlaceholder extends StatefulWidget {
+  final String url;
+  final String imgUrl;
+
+  const _LazyVideoPlaceholder({
+    super.key,
+    required this.url,
+    required this.imgUrl,
+  });
+
+  @override
+  State<_LazyVideoPlaceholder> createState() => _LazyVideoPlaceholderState();
+}
+
+class _LazyVideoPlaceholderState extends State<_LazyVideoPlaceholder> {
+  double _visibleFraction = 0;
+
+  static const double _visibleThreshold = 0.25;
+
+  @override
+  Widget build(BuildContext context) {
+    return VisibilityDetector(
+      key: Key('lazy_video_${widget.url.hashCode}'),
+      onVisibilityChanged: (info) {
+        if (mounted && info.visibleFraction != _visibleFraction) {
+          setState(() => _visibleFraction = info.visibleFraction);
+        }
+      },
+      child: _visibleFraction >= _visibleThreshold
+          ? VideoItemPlayer(url: widget.url, imgUrl: widget.imgUrl)
+          : _VideoThumbnail(imgUrl: widget.imgUrl),
+    );
+  }
+}
+
+class _VideoThumbnail extends StatelessWidget {
+  final String imgUrl;
+
+  const _VideoThumbnail({required this.imgUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      alignment: Alignment.center,
+      children: [
+        CachedNetworkImage(
+          imageUrl: imgUrl,
+          fit: BoxFit.cover,
+        ),
+        Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
+      ],
     );
   }
 }

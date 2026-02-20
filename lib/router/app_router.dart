@@ -5,7 +5,6 @@ import 'package:qqai/features/blog/views/blog_video_detail_view.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/friends/friends_page.dart' deferred as friends;
-import '../../features/friends/user_detail_page.dart' deferred as user_detail;
 import '../../features/lookart/presentation/views/look_art_view.dart'
     deferred as look_art;
 import '../../features/meleft/mycare_page.dart' deferred as my_care;
@@ -30,6 +29,7 @@ import '../components/imgpreview/preview_img.dart';
 import '../components/video_player_detail/FullScreenVideoPlayer.dart';
 import '../features/blog/data/models/blog_page_model.dart';
 import '../features/fabu/views/fabu_view.dart';
+import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
 import '../features/help/data/models/help_page_model.dart';
 import '../features/help/views/help_img_detail_view.dart';
 import '../features/help/views/help_video_detail_view.dart';
@@ -262,8 +262,11 @@ GoRouter appRouter(Ref ref) {
               int.tryParse(state.pathParameters['userId'] ?? '0') ?? 0;
           final showAppBar = state.pathParameters['showAppBar'] == 'true';
           return AppDeferredWidget(
-            libraryLoader: user_detail.loadLibrary,
-            builder: () => user_detail.UserDetailPage(userId, showAppBar),
+            libraryLoader: friend_detail.loadLibrary,
+            builder: () => friend_detail.FriendsDetailView(
+              userId: userId,
+              showAppBar: showAppBar,
+            ),
           );
         },
       ),

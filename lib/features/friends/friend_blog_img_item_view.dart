@@ -5,72 +5,113 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
-import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../constant/color_constant.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
-import '../../blog/data/models/blog_page_model.dart';
-import '../../blog/providers/blog_providers.dart';
+import '../blog/data/models/blog_page_model.dart';
+import '../blog/providers/blog_providers.dart';
 
-class MyBlogVideoItemView extends ConsumerStatefulWidget {
+class FriendBlogImgItemView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
   final int category;
 
-  MyBlogVideoItemView(this.category, this.blogItem);
+  FriendBlogImgItemView(this.category, this.blogItem);
 
   @override
-  ConsumerState<MyBlogVideoItemView> createState() {
-    return _BlogVideoItemViewState();
+  ConsumerState<ConsumerStatefulWidget> createState() {
+    return _MyBlogImgItemViewState();
   }
 }
 
-class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
+class _MyBlogImgItemViewState extends ConsumerState<FriendBlogImgItemView> {
+  late final List<String> _imageUrls;
   String text = '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。';
-  final String split_o = Constant.SPLIT_O;
+
+  @override
+  void initState() {
+    super.initState();
+    _imageUrls =
+        widget.blogItem.resources
+            ?.split(',')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList() ??
+        [];
+  }
 
   @override
   Widget build(BuildContext context) {
     final blogNotifier = ref.read(blogProvider.notifier);
     final isWideScreen = 1.sw > 900;
-    const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
     return Padding(
-      padding: EdgeInsets.all(2),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.only(left: 5, right: 5),
-            child: Text(
-              widget.blogItem.content!,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 20),
-            ),
+          SelectableText(
+            widget.blogItem.content!,
+            scrollPhysics: NeverScrollableScrollPhysics(),
+            maxLines: 3,
+            minLines: 1,
+            style: TextStyle(fontSize: 20, overflow: TextOverflow.ellipsis),
           ),
-          Container(height: 2, color: Colors.white),
-          Expanded(
-            flex: 9,
-            child: AspectRatio(
-              aspectRatio: 15 / 9,
-              child: _LazyVideoPlaceholder(
-                key: Key('blog_video_${widget.blogItem.id}'),
-                url: widget.blogItem.resources!,
-                imgUrl: coverUrl,
-              ),
-            ),
-          ),
+          SizedBox(height: 10),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              double parentWidth = constraints.maxWidth;
+              final imageCount = _imageUrls.length;
 
+              if (imageCount == 0) return const SizedBox.shrink();
+
+              return Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: List.generate(imageCount, (i) {
+                  final url = _imageUrls[i];
+                  final heroTag =
+                      'lookBlogImg-${widget.category}-${widget.blogItem.id}-$i';
+                  return InkWell(
+                    onTap: () {
+                      blogNotifier.onBlogImgItemTap(
+                        context,
+                        widget.blogItem,
+                        i,
+                        heroTag,
+                        _imageUrls,
+                      );
+                    },
+                    child: Hero(
+                      tag: heroTag,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: CachedNetworkImage(
+                          imageUrl: url,
+                          fit: BoxFit.cover,
+                          width: getImgGridHeight(imageCount, parentWidth),
+                          height: getImgGridHeight(imageCount, parentWidth),
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => const Icon(
+                            Icons.error,
+                            color: Colors.red,
+                            size: 40,
+                          ),
+                          fadeInDuration: const Duration(milliseconds: 300),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              );
+            },
+          ),
           Row(
             children: <Widget>[
               TextButton.icon(
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.transparent),
-                ),
                 onPressed: () {
-                  blogNotifier.onZanTap(widget.blogItem);
+                  ref.read(blogProvider.notifier).onZanTap(widget.blogItem);
                 },
                 icon: widget.blogItem.zan == 1
                     ? Icon(Icons.favorite, color: Colors.red)
@@ -83,6 +124,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
                 ),
                 onPressed: () {
                   if (isWideScreen) {
+                    // 宽屏：切换右侧面板
                     blogNotifier.onBlogItemTap(context, widget.blogItem);
                   } else {
                     showModalBottomSheet(
@@ -108,7 +150,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
               MySharePage(),
               Spacer(),
               PopupMenuButton(
-                tooltip: "",
+                tooltip: '',
                 icon: Icon(Icons.more_vert, color: Colors.black54),
                 onSelected: (va) {
                   print(va);
@@ -136,13 +178,6 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
                         style: TextStyle(color: Colors.black54),
                       ),
                     ),
-                    PopupMenuItem<String>(
-                      value: '3',
-                      child: Text(
-                        '加入播放队列',
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    ),
                   ];
                 },
               ),
@@ -151,6 +186,16 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
         ],
       ),
     );
+  }
+
+  double getImgGridHeight(int itemCount, double parentWidth) {
+    if (itemCount == 1) {
+      return 300;
+    } else if (itemCount == 3 || itemCount == 5 || itemCount == 6) {
+      return (parentWidth - 30) / 3;
+    } else {
+      return parentWidth / 3;
+    }
   }
 
   Widget getRow(int i) {
@@ -204,64 +249,17 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
           ],
         ),
       ),
-      onTap: () {},
-    );
-  }
-}
-
-/// 仅当可见时加载视频播放器，否则只显示封面，减轻列表滑动卡顿。
-class _LazyVideoPlaceholder extends StatefulWidget {
-  final String url;
-  final String imgUrl;
-
-  const _LazyVideoPlaceholder({
-    super.key,
-    required this.url,
-    required this.imgUrl,
-  });
-
-  @override
-  State<_LazyVideoPlaceholder> createState() => _LazyVideoPlaceholderState();
-}
-
-class _LazyVideoPlaceholderState extends State<_LazyVideoPlaceholder> {
-  double _visibleFraction = 0;
-
-  static const double _visibleThreshold = 0.25;
-
-  @override
-  Widget build(BuildContext context) {
-    return VisibilityDetector(
-      key: Key('lazy_video_${widget.url.hashCode}'),
-      onVisibilityChanged: (info) {
-        if (mounted && info.visibleFraction != _visibleFraction) {
-          setState(() => _visibleFraction = info.visibleFraction);
-        }
+      onTap: () {
+        setState(() {});
       },
-      child: _visibleFraction >= _visibleThreshold
-          ? VideoItemPlayer(url: widget.url, imgUrl: widget.imgUrl)
-          : _VideoThumbnail(imgUrl: widget.imgUrl),
     );
   }
 }
 
-class _VideoThumbnail extends StatelessWidget {
-  final String imgUrl;
-
-  const _VideoThumbnail({required this.imgUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      alignment: Alignment.center,
-      children: [
-        CachedNetworkImage(
-          imageUrl: imgUrl,
-          fit: BoxFit.cover,
-        ),
-        Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
-      ],
-    );
+int getCount(int count) {
+  if (count <= 3) {
+    return count;
+  } else {
+    return 3;
   }
 }

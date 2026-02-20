@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/constant/constant.dart';
 
 import '../../../constant/color_constant.dart';
-import '../friends/friend_detail.dart';
 import '../video/views/video_item_view.dart';
 
 class MeDetailPage extends StatefulWidget {
@@ -204,7 +203,7 @@ class _MeDetailPage extends State<MeDetailPage>
           VideoItemView(),
           VideoItemView(),
           VideoItemView(),
-          FriendDetail(title: '名称：' + widget.userId.toString()),
+          VideoItemView(),
         ],
       ),
     );

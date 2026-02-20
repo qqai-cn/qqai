@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,26 +5,25 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../../../../constant/color_constant.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
-import '../../blog/data/models/blog_page_model.dart';
-import '../../blog/providers/blog_providers.dart';
+import '../blog/data/models/blog_page_model.dart';
+import '../blog/providers/blog_providers.dart';
 
-class MyBlogVideoItemView extends ConsumerStatefulWidget {
+class FriendBlogVideoItemView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
   final int category;
 
-  MyBlogVideoItemView(this.category, this.blogItem);
+  FriendBlogVideoItemView(this.category, this.blogItem);
 
   @override
-  ConsumerState<MyBlogVideoItemView> createState() {
+  ConsumerState<FriendBlogVideoItemView> createState() {
     return _BlogVideoItemViewState();
   }
 }
 
-class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
+class _BlogVideoItemViewState extends ConsumerState<FriendBlogVideoItemView> {
   String text = '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。';
   final String split_o = Constant.SPLIT_O;
 
@@ -256,10 +252,7 @@ class _VideoThumbnail extends StatelessWidget {
       fit: StackFit.expand,
       alignment: Alignment.center,
       children: [
-        CachedNetworkImage(
-          imageUrl: imgUrl,
-          fit: BoxFit.cover,
-        ),
+        CachedNetworkImage(imageUrl: imgUrl, fit: BoxFit.cover),
         Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
       ],
     );

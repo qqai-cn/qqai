@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lpinyin/lpinyin.dart';
-import 'package:qqai/features/friends/user_detail_page.dart';
 import 'package:qqai/constant/constant.dart';
 
 import '../../../util/utils.dart';
@@ -14,16 +13,14 @@ import '../../components/azlist/az_listview.dart';
 import '../../components/azlist/index_bar.dart';
 import '../../router/app_routes.dart';
 import '../data/models/contact.dart';
+import 'friends_detail_view.dart';
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Material",
-      home: FriendsPage(),
-    );
+    return MaterialApp(title: "Material", home: FriendsPage());
   }
 }
 
@@ -59,30 +56,42 @@ class _FriendsPage extends State<FriendsPage> {
       "发发发9",
       "发发发11",
     ];
-    topList.add(ContactInfo(
+    topList.add(
+      ContactInfo(
         id: 12,
         name: '新的朋友',
         tagIndex: '↑',
         bgColor: Colors.orange,
-        iconData: Icons.person_add));
-    topList.add(ContactInfo(
+        iconData: Icons.person_add,
+      ),
+    );
+    topList.add(
+      ContactInfo(
         id: 13,
         name: '群聊',
         tagIndex: '↑',
         bgColor: Colors.green,
-        iconData: Icons.people));
-    topList.add(ContactInfo(
+        iconData: Icons.people,
+      ),
+    );
+    topList.add(
+      ContactInfo(
         id: 14,
         name: '标签',
         tagIndex: '↑',
         bgColor: Colors.blue,
-        iconData: Icons.local_offer));
-    topList.add(ContactInfo(
+        iconData: Icons.local_offer,
+      ),
+    );
+    topList.add(
+      ContactInfo(
         id: 15,
         name: '公众号',
         tagIndex: '↑',
         bgColor: Colors.blueAccent,
-        iconData: Icons.person));
+        iconData: Icons.person,
+      ),
+    );
     loadData();
   }
 
@@ -125,57 +134,67 @@ class _FriendsPage extends State<FriendsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-      Expanded(
-        flex: 2,
-        child: AzListView(
-          data: contactList,
-          itemCount: contactList.length,
-          itemBuilder: (BuildContext context, int index) {
-            ContactInfo model = contactList[index];
-            return getWeChatListItem(context, model,
-                defHeaderBgColor: Color(0xFFE5E5E5));
-          },
-          physics: BouncingScrollPhysics(),
-          susItemBuilder: (BuildContext context, int index) {
-            ContactInfo model = contactList[index];
-            if ('↑' == model.getSuspensionTag()) {
-              return Container();
-            }
-            return Utils.getSusItem(context, model.getSuspensionTag());
-          },
-          indexBarData: ['↑', '☆', ...kIndexBarData],
-          indexBarOptions: IndexBarOptions(
-            needRebuild: true,
-            ignoreDragCancel: true,
-            downTextStyle: TextStyle(fontSize: 12, color: Colors.white),
-            downItemDecoration:
-                BoxDecoration(shape: BoxShape.circle, color: Colors.green),
-            indexHintWidth: 120 / 2,
-            indexHintHeight: 100 / 2,
-            indexHintDecoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(Utils.getImgPath('ic_index_bar_bubble_gray')),
-                fit: BoxFit.contain,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+          flex: 2,
+          child: AzListView(
+            data: contactList,
+            itemCount: contactList.length,
+            itemBuilder: (BuildContext context, int index) {
+              ContactInfo model = contactList[index];
+              return getWeChatListItem(
+                context,
+                model,
+                defHeaderBgColor: Color(0xFFE5E5E5),
+              );
+            },
+            physics: BouncingScrollPhysics(),
+            susItemBuilder: (BuildContext context, int index) {
+              ContactInfo model = contactList[index];
+              if ('↑' == model.getSuspensionTag()) {
+                return Container();
+              }
+              return Utils.getSusItem(context, model.getSuspensionTag());
+            },
+            indexBarData: ['↑', '☆', ...kIndexBarData],
+            indexBarOptions: IndexBarOptions(
+              needRebuild: true,
+              ignoreDragCancel: true,
+              downTextStyle: TextStyle(fontSize: 12, color: Colors.white),
+              downItemDecoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.green,
               ),
+              indexHintWidth: 120 / 2,
+              indexHintHeight: 100 / 2,
+              indexHintDecoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(
+                    Utils.getImgPath('ic_index_bar_bubble_gray'),
+                  ),
+                  fit: BoxFit.contain,
+                ),
+              ),
+              indexHintAlignment: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
+                  ? Alignment.centerLeft
+                  : Alignment.centerRight,
+              indexHintChildAlignment: Alignment(-0.25, 0.0),
+              //指示器 偏移
+              indexHintOffset: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
+                  ? Offset((1 / 7).sw, 0)
+                  : Offset(0, 0),
             ),
-            indexHintAlignment: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
-                ? Alignment.centerLeft
-                : Alignment.centerRight,
-            indexHintChildAlignment: Alignment(-0.25, 0.0),
-            //指示器 偏移
-            indexHintOffset: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
-                ? Offset((1 / 7).sw, 0)
-                : Offset(0, 0),
           ),
         ),
-      ),
-      if (1.sw > Constant.CHAT_TWO_VIEW_WIDTH)
-        Expanded(
-          flex: 5,
-          child: UserDetailPage(indexSel, false),
-        ),
-    ]);
+        if (1.sw > Constant.CHAT_TWO_VIEW_WIDTH)
+          Expanded(
+            flex: 5,
+            child: FriendsDetailView(userId: indexSel, showAppBar: false),
+          ),
+      ],
+    );
   }
 
   Widget getWeChatListItem(
@@ -208,16 +227,12 @@ class _FriendsPage extends State<FriendsPage> {
         alignment: Alignment.center,
         child: model.iconData == null
             ? Text(
-                PinyinHelper.getPinyinE(model.name)
-                    .substring(0, 1)
-                    .toUpperCase(),
+                PinyinHelper.getPinyinE(
+                  model.name,
+                ).substring(0, 1).toUpperCase(),
                 style: TextStyle(color: Colors.blue),
               )
-            : Icon(
-                model.iconData,
-                color: Colors.white,
-                size: 20,
-              ),
+            : Icon(model.iconData, color: Colors.white, size: 20),
       ),
       title: Text(model.name),
       onTap: () {
