@@ -8,12 +8,14 @@ class ResponsiveMasonryGrid extends StatelessWidget {
   final double crossAxisSpacing;
   final IndexedWidgetBuilder itemBuilder;
   final int? itemCount;
+  final int maxColumn;
 
   const ResponsiveMasonryGrid({
     super.key,
     required this.minColumnWidth,
     this.mainAxisSpacing = 0,
     this.crossAxisSpacing = 0,
+    this.maxColumn = 2,
     required this.itemBuilder,
     this.itemCount,
   });
@@ -28,7 +30,7 @@ class ResponsiveMasonryGrid extends StatelessWidget {
         if (availableWidth.isInfinite || availableWidth <= 0) {
           // 使用默认值或从 MediaQuery 获取屏幕宽度
           final screenWidth = MediaQuery.of(context).size.width;
-          final columns = (screenWidth / minColumnWidth).floor().clamp(1, 2);
+          final columns = (screenWidth / minColumnWidth).floor().clamp(1, maxColumn);
           return MasonryGridView.builder(
             gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: columns,
@@ -40,7 +42,7 @@ class ResponsiveMasonryGrid extends StatelessWidget {
           );
         }
         // 至少 1 列，最多 2 列
-        final columns = (availableWidth / minColumnWidth).floor().clamp(1, 2);
+        final columns = (availableWidth / minColumnWidth).floor().clamp(1, maxColumn);
         return MasonryGridView.builder(
           // ✅ 修复：添加必需的 gridDelegate
           gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(

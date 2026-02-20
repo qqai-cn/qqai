@@ -225,16 +225,16 @@ class _UserDetailPage extends State<UserDetailPage>
                       isScrollable: false,
                       tabs: [
                         Tab(
-                          text: "视频",
+                          text: "作品",
                         ),
                         Tab(
-                          text: "播放列表",
+                          text: "合集",
                         ),
                         Tab(
-                          text: "社区",
+                          text: "日常",
                         ),
                         Tab(
-                          text: "简介",
+                          text: "店铺",
                         )
                       ]),
                 ),

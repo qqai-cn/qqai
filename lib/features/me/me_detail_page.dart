@@ -30,7 +30,6 @@ class _MeDetailPage extends State<MeDetailPage>
   @override
   void initState() {
     super.initState();
-    super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _scrollviewController = ScrollController(initialScrollOffset: 0.0);
     _pageController = PageController();

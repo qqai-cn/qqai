@@ -19,20 +19,6 @@ class FriendDetail extends StatelessWidget {
               children: [
                 Column(
                   children: [
-                    // Row(
-                    //   children: <Widget>[
-                    //     Text(
-                    //       title,
-                    //       textAlign: TextAlign.left,
-                    //       style: TextStyle(color: Colors.black, fontSize: 30),
-                    //     ),
-                    //     Image.asset(
-                    //       'imgs/img_default.png',
-                    //       width: 30,
-                    //       height: 30,
-                    //     ),
-                    //   ],
-                    // ),
                     Text(
                       '新人类文明',
                       textAlign: TextAlign.left,

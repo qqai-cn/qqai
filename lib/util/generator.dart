@@ -12,8 +12,8 @@ void main(List<String> args) {
   }
 
   final feature = args[0].trim();
-  if (feature.length < 3) {
-    print('特征名太短，至少 3 个字符');
+  if (feature.length < 2) {
+    print('特征名太短，至少 2 个字符');
     exit(1);
   }
 
