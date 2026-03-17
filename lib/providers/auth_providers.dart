@@ -1,6 +1,8 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../features/auth/data/auth_api.dart';
+import '../util/api_base_client.dart';
 import '../util/my_shared_pref.dart';
 
 part 'auth_providers.freezed.dart';
@@ -23,9 +25,13 @@ class AuthNotifier extends _$AuthNotifier {
   @override
   AuthState build() {
     // 从本地存储加载认证状态
-    final token = MySharedPref.getFcmToken(); // 这里可以改为 getAuthToken
+    final token = MySharedPref.getAuthToken();
     final isAuthenticated = token != null && token.isNotEmpty;
-    
+
+    if (isAuthenticated) {
+      ApiBaseClient.setAuthorization('Bearer $token');
+    }
+
     return AuthState(
       isAuthenticated: isAuthenticated,
       token: token,
@@ -34,37 +40,26 @@ class AuthNotifier extends _$AuthNotifier {
 
   // 登录
   Future<void> login(String username, String password) async {
-    // TODO: 实现登录逻辑
-    // 1. 调用登录 API
-    // 2. 保存 token 到本地
-    // 3. 更新状态
-    
-    // 示例：
-    // final response = await loginApi(username, password);
-    // await MySharedPref.setAuthToken(response.token);
-    // state = state.copyWith(
-    //   isAuthenticated: true,
-    //   userId: response.userId,
-    //   token: response.token,
-    //   username: username,
-    // );
-    
-    // 临时示例（实际应该从 API 获取）
+    final resp = await loginApi(username: username, password: password);
+    if (!ref.mounted) return;
+
+    await MySharedPref.setAuthToken(resp.token);
+    if (!ref.mounted) return;
+
+    ApiBaseClient.setAuthorization('Bearer ${resp.token}');
     state = state.copyWith(
       isAuthenticated: true,
+      userId: resp.userId,
       username: username,
-      token: 'mock_token_${DateTime.now().millisecondsSinceEpoch}',
+      token: resp.token,
     );
   }
 
   // 登出
   Future<void> logout() async {
-    // TODO: 实现登出逻辑
-    // 1. 清除本地 token
-    // 2. 调用登出 API（可选）
-    // 3. 更新状态
-    
-    // await MySharedPref.clearAuthToken();
+    await MySharedPref.clearAuthToken();
+    if (!ref.mounted) return;
+    ApiBaseClient.setAuthorization(null);
     state = const AuthState(isAuthenticated: false);
   }
 

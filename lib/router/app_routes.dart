@@ -1,5 +1,6 @@
 class Routes {
   static const String HOME = "/";
+  static const String login = "/login";
   static const String indexPage = "/index_page";
   static const String videoPage = "/video_page";
   static const String messagePage = "/message_page";

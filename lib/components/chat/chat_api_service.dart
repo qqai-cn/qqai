@@ -1,20 +1,25 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
+import 'package:qqai/util/api_base_client.dart';
 
 class ChatApiService {
   final String baseUrl;
   final String chatId;
   final Dio dio;
 
-  ChatApiService({required this.baseUrl, required this.chatId, required this.dio});
+  ChatApiService({
+    required this.baseUrl,
+    required this.chatId,
+    required this.dio,
+  });
 
-  Future<Map<String, dynamic>> send(Message message) async {
+  Future<dynamic> send(Message message) async {
     try {
-      final response = await dio.post<Map<String, dynamic>>(
-        '$baseUrl/chat/$chatId/message',
-        data: message.toJson(),
+      final response = ApiBaseClient.safeApiCall(
+        '$baseUrl/app-api/infra/chat/message/send',
+        RequestType.post,
       );
-      return response.data!;
+      return response;
     } catch (e) {
       throw 'Failed to send message: $e';
     }

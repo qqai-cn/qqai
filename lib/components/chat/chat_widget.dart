@@ -15,23 +15,26 @@ import 'package:flyer_chat_system_message/flyer_chat_system_message.dart';
 import 'package:flyer_chat_text_message/flyer_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
-import 'chat_api_service.dart';
-import 'widgets/composer_action_bar.dart';
+import 'package:qqai/components/chat/socketio_service.dart';
 import 'package:uuid/uuid.dart';
 
+import 'chat_api_service.dart';
 import 'connection_status.dart';
 import 'create_message.dart';
 import 'upload_file.dart';
-import 'websocket_service.dart';
+import 'widgets/composer_action_bar.dart';
 
-const baseUrl = 'https://whatever.diamanthq.dev';
-const host = 'whatever.diamanthq.dev';
+const baseUrl = 'https://qqai.cn';
+// Base origin for Socket.IO; path is configured in SocketioService
+const host = 'https://qqai.cn';
 
 class ChatWidget extends StatefulWidget {
   final UserID currentUserId;
   final String chatId;
   final List<Message> initialMessages;
   final Dio dio;
+  /// 登录 token，用于 Socket.IO 连接鉴权
+  final String? token;
 
   const ChatWidget({
     super.key,
@@ -39,6 +42,7 @@ class ChatWidget extends StatefulWidget {
     required this.chatId,
     required this.initialMessages,
     required this.dio,
+    this.token,
   });
 
   @override
@@ -50,7 +54,7 @@ class _ChatWidget extends State<ChatWidget> {
   final _uuid = const Uuid();
 
   late final ChatApiService _apiService;
-  late final ChatWebSocketService _webSocketService;
+  late final SocketioService _webSocketService;
   late final StreamSubscription<WebSocketEvent> _webSocketSubscription;
   late final ChatController _chatController;
   final _systemUser = const User(id: 'system');
@@ -75,13 +79,13 @@ class _ChatWidget extends State<ChatWidget> {
       chatId: widget.chatId,
       dio: widget.dio,
     );
-    _webSocketService = ChatWebSocketService(
+    _webSocketService = SocketioService(
       host: host,
       chatId: widget.chatId,
       authorId: widget.currentUserId,
+      token: widget.token,
     );
-    //todo-dcx 先注释掉
-    //     _connectToWs();
+    _connectToWs();
   }
 
   @override

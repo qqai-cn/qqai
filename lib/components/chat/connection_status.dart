@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'websocket_service.dart';
+import 'package:qqai/components/chat/socketio_service.dart';
 
 
 
 class ConnectionStatus extends StatefulWidget {
-  final ChatWebSocketService webSocketService;
+  final SocketioService webSocketService;
 
   const ConnectionStatus({super.key, required this.webSocketService});
 

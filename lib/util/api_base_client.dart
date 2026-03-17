@@ -34,6 +34,13 @@ class ApiBaseClient {
           ),
         );
 
+  static String? _authorization;
+
+  /// Set global Authorization header (e.g. "Bearer <token>")
+  static void setAuthorization(String? value) {
+    _authorization = value;
+  }
+
   // request timeout (default 10 seconds)
   static const int _timeoutInSeconds = 10;
 
@@ -50,12 +57,17 @@ class ApiBaseClient {
   }) async {
     try {
       late Response response;
+      final mergedHeaders = <String, dynamic>{
+        ...?_dio.options.headers,
+        if (_authorization != null) 'Authorization': _authorization,
+        ...?headers,
+      };
       if (requestType == RequestType.get) {
         response = await _dio.get(
           url,
           queryParameters: queryParameters,
           options: Options(
-            headers: headers,
+            headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
             sendTimeout: const Duration(seconds: _timeoutInSeconds),
           ),
@@ -66,7 +78,7 @@ class ApiBaseClient {
           data: data,
           queryParameters: queryParameters,
           options: Options(
-            headers: headers,
+            headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
             sendTimeout: const Duration(seconds: _timeoutInSeconds),
           ),
@@ -77,7 +89,7 @@ class ApiBaseClient {
           data: data,
           queryParameters: queryParameters,
           options: Options(
-            headers: headers,
+            headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
             sendTimeout: const Duration(seconds: _timeoutInSeconds),
           ),
@@ -88,7 +100,7 @@ class ApiBaseClient {
           data: data,
           queryParameters: queryParameters,
           options: Options(
-            headers: headers,
+            headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
             sendTimeout: const Duration(seconds: _timeoutInSeconds),
           ),

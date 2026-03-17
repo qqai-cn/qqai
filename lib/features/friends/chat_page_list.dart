@@ -1,10 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/constant/constant.dart';
 
 import '../../components/chat/chat_widget.dart';
+import '../../providers/auth_providers.dart';
 import '../../router/app_routes.dart';
 
 void main() => runApp(MyApp());
@@ -20,14 +22,12 @@ class MyApp extends StatelessWidget {
 }
 
 //好友列表
-class ChatPageList extends StatefulWidget {
+class ChatPageList extends ConsumerStatefulWidget {
   @override
-  State<StatefulWidget> createState() {
-    return _ChatPageList();
-  }
+  ConsumerState<ChatPageList> createState() => _ChatPageListState();
 }
 
-class _ChatPageList extends State<ChatPageList> {
+class _ChatPageListState extends ConsumerState<ChatPageList> {
   late List<String> _datas;
   String content = '测试赛';
   int index = 0;
@@ -56,6 +56,8 @@ class _ChatPageList extends State<ChatPageList> {
 
   @override
   Widget build(BuildContext context) {
+    // 示例：在路由或父组件里
+    final authState = ref.watch(authProvider);
     return Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
       Expanded(
         flex: 2,
@@ -74,7 +76,13 @@ class _ChatPageList extends State<ChatPageList> {
           flex: 5,
           child: Container(
             color: Colors.greenAccent,
-            child:  ChatWidget(currentUserId: '', chatId: 'DEFAULT_CHAT_ID', initialMessages: [],dio: Dio(),),
+            child: ChatWidget(
+              currentUserId: authState.userId ?? '',
+              chatId: 'DEFAULT_CHAT_ID',
+              initialMessages: [],
+              dio: Dio(),
+              token: authState.token,
+            ),
           ),
         ),
     ]);

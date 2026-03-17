@@ -11,4 +11,7 @@ class ApiConstant {
       '/app-api/blog/weather-user-city/detail-list';
   static const String BLOG_PAGE = '/app-api/blog/qqai/page';
   static const String BLOG_SAVE = '/app-api/blog/qqai/save';
+
+  // Auth
+  static const String LOGIN = '/app-api/member/auth/login';
 }

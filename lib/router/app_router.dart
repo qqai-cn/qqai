@@ -4,6 +4,7 @@ import 'package:qqai/features/blog/views/blog_img_detail_view.dart';
 import 'package:qqai/features/blog/views/blog_video_detail_view.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../features/auth/login_page.dart';
 import '../../features/friends/friends_page.dart' deferred as friends;
 import '../../features/lookart/presentation/views/look_art_view.dart'
     deferred as look_art;
@@ -51,27 +52,31 @@ GoRouter appRouter(Ref ref) {
     initialLocation: Routes.HOME,
     // 路由重定向守卫
     redirect: (context, state) {
-      // 在 redirect 中读取 authProvider，避免在 build 中 watch 导致循环依赖
-      final authState = ref.read(authProvider);
+      // 使用 watch 监听认证状态，登录成功后能触发重定向
+      final authState = ref.watch(authProvider);
       final isAuthenticated = authState.isAuthenticated;
       final path = state.uri.path;
 
-      // 检查是否需要认证
-      if (!isAuthenticated && _requiresAuth(path)) {
-        // 如果未认证且访问需要认证的页面，重定向到登录页
-        // 注意：如果还没有登录页，可以先重定向到首页
-        // return Routes.LOGIN;
-        return Routes.HOME; // 临时重定向到首页
+      // 未登录：只有需要认证的页面才跳转登录
+      if (!isAuthenticated && _requiresAuth(path) && path != Routes.login) {
+        return Routes.login;
       }
 
-      // 如果已认证且访问登录页，重定向到首页
-      // if (isAuthenticated && path == Routes.LOGIN) {
-      //   return Routes.HOME;
-      // }
+      // 已登录：访问登录页则回首页
+      if (isAuthenticated && path == Routes.login) {
+        return Routes.HOME;
+      }
 
       return null; // 允许访问
     },
     routes: [
+      /// ========== 登录 ==========
+      GoRoute(
+        path: Routes.login,
+        name: 'login',
+        builder: (context, state) => const LoginPage(),
+      ),
+
       /// ========== 首页 ==========
       GoRoute(
         path: Routes.HOME,
@@ -333,10 +338,8 @@ GoRouter appRouter(Ref ref) {
 bool _requiresAuth(String path) {
   // 定义需要认证的路由路径
   const protectedPaths = [
-    // '/profile',      // 个人资料页
-    // '/settings',     // 设置页
-    // '/publish',      // 发布页
-    // 可以根据需要添加更多需要认证的路径
+    Routes.mePage, // 我的页面
+    Routes.messagePage, // 消息页面
   ];
 
   return protectedPaths.any((protected) => path.startsWith(protected));
