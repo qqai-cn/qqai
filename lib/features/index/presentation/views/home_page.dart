@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../components/AnimatedBottomBar.dart';
 import '../../../../components/AnimatedLeftBar.dart';
 import '../../providers/home_providers.dart';
 
 class HomePage extends ConsumerStatefulWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, required this.navigationShell});
+
+  final StatefulNavigationShell navigationShell;
 
   @override
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  void _onMainTabTap(int index) {
+    widget.navigationShell.goBranch(index);
+  }
+
   @override
   Widget build(BuildContext context) {
     final homeState = ref.watch(homeProvider);
-    final homeNotifier = ref.read(homeProvider.notifier);
     final bool isWideScreen = 1.sw > 800;
+    final shell = widget.navigationShell;
 
     return Scaffold(
       body: isWideScreen
-          ? getWideScreen(homeState)
-          : ref.read(homeProvider.notifier).getMainPage(),
+          ? getWideScreen(homeState, shell)
+          : shell,
       bottomNavigationBar: !isWideScreen
           ? SafeArea(
               child: AnimatedBottomBar(
-                selectedBarIndex: homeState.selected,
+                selectedBarIndex: shell.currentIndex,
                 barItems: HomeNotifier.barItems,
-                onBarTap: (index) {
-                  homeNotifier.changeMainPage(index);
-                },
+                onBarTap: _onMainTabTap,
                 animationDuration: const Duration(milliseconds: 150),
                 barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
               ),
@@ -40,7 +45,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget getWideScreen(HomeState homeState) {
+  Widget getWideScreen(HomeState homeState, StatefulNavigationShell shell) {
     return Row(
       children: [
         Drawer(
@@ -49,20 +54,16 @@ class _HomePageState extends ConsumerState<HomePage> {
           shape: BorderDirectional(),
           child: SafeArea(
             child: Animatedleftbar(
-              selectedBarIndex: homeState.selected,
+              selectedBarIndex: shell.currentIndex,
               barItems: HomeNotifier.barItems,
-              onBarTap: (index) {
-                ref.read(homeProvider.notifier).changeMainPage(index);
-              },
+              onBarTap: _onMainTabTap,
               animationDuration: const Duration(milliseconds: 150),
               barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
               isExtended: homeState.isExtended,
             ),
           ),
         ),
-        Expanded(
-          child: ref.read(homeProvider.notifier).getMainPage(),
-        ),
+        Expanded(child: shell),
       ],
     );
   }

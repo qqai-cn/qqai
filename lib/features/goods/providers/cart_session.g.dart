@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'auth_providers.dart';
+part of 'cart_session.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,52 @@ part of 'auth_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(AuthNotifier)
-const authProvider = AuthNotifierProvider._();
+@ProviderFor(CartSession)
+const cartSessionProvider = CartSessionProvider._();
 
-final class AuthNotifierProvider
-    extends $NotifierProvider<AuthNotifier, AuthState> {
-  const AuthNotifierProvider._()
+final class CartSessionProvider
+    extends $NotifierProvider<CartSession, List<CartLine>> {
+  const CartSessionProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'authProvider',
-        isAutoDispose: true,
+        name: r'cartSessionProvider',
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$authNotifierHash();
+  String debugGetCreateSourceHash() => _$cartSessionHash();
 
   @$internal
   @override
-  AuthNotifier create() => AuthNotifier();
+  CartSession create() => CartSession();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AuthState value) {
+  Override overrideWithValue(List<CartLine> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AuthState>(value),
+      providerOverride: $SyncValueProvider<List<CartLine>>(value),
     );
   }
 }
 
-String _$authNotifierHash() => r'522abed82689e1b1b883400fbf251d1fa4504fd2';
+String _$cartSessionHash() => r'b0d41554afba3a54d1ecaa5ddf77f87189a31763';
 
-abstract class _$AuthNotifier extends $Notifier<AuthState> {
-  AuthState build();
+abstract class _$CartSession extends $Notifier<List<CartLine>> {
+  List<CartLine> build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<AuthState, AuthState>;
+    final ref = this.ref as $Ref<List<CartLine>, List<CartLine>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AuthState, AuthState>,
-              AuthState,
+              AnyNotifier<List<CartLine>, List<CartLine>>,
+              List<CartLine>,
               Object?,
               Object?
             >;

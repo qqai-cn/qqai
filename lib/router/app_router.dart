@@ -30,11 +30,26 @@ import '../components/imgpreview/preview_img.dart';
 import '../components/video_player_detail/FullScreenVideoPlayer.dart';
 import '../features/blog/data/models/blog_page_model.dart';
 import '../features/fabu/views/fabu_view.dart';
+import '../features/goods/models/cart_line.dart';
+import '../features/goods/views/cart_view.dart';
+import '../features/goods/views/checkout_view.dart';
+import '../features/goods/views/goods_detail_view.dart';
+import '../features/goods/views/order_result_view.dart';
+import '../features/douyin/views/douyin_all_features_page.dart';
+import '../features/douyin/views/douyin_anchor_center_page.dart';
+import '../features/douyin/views/douyin_group_buy_page.dart';
+import '../features/douyin/views/douyin_my_orders_page.dart';
+import '../features/douyin/views/douyin_watch_history_page.dart';
+import '../features/goods/views/goods_view.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
 import '../features/help/data/models/help_page_model.dart';
 import '../features/help/views/help_img_detail_view.dart';
 import '../features/help/views/help_video_detail_view.dart';
 import '../features/index/presentation/views/home_page.dart';
+import '../features/index/presentation/views/index_page.dart';
+import '../features/index/presentation/views/me_page.dart';
+import '../features/index/presentation/views/message_page.dart';
+import '../features/index/presentation/views/video_page.dart';
 import '../features/share/data/models/share_page_model.dart';
 import '../features/share/views/share_img_detail_view.dart';
 import '../features/share/views/share_video_detail_view.dart';
@@ -48,6 +63,9 @@ part 'app_router.g.dart';
 // GoRouter Provider - 与 Riverpod 集成
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
+  // 认证状态变化时重建 GoRouter，避免热重载/首次 read 后一直用旧实例导致新路由不生效
+  ref.watch(authProvider);
+
   return GoRouter(
     initialLocation: Routes.HOME,
     // 路由重定向守卫
@@ -76,12 +94,124 @@ GoRouter appRouter(Ref ref) {
         name: 'login',
         builder: (context, state) => const LoginPage(),
       ),
-
-      /// ========== 首页 ==========
       GoRoute(
-        path: Routes.HOME,
-        name: 'home',
-        builder: (context, state) => HomePage(),
+        path: Routes.cartPageUrl,
+        name: 'cart',
+        builder: (context, state) => const CartView(),
+      ),
+      GoRoute(
+        path: Routes.checkoutPageUrl,
+        name: 'checkout',
+        builder: (context, state) {
+          final extra = state.extra;
+          final lines = extra is List<CartLine> ? extra : null;
+          if (lines == null || lines.isEmpty) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('确认订单')),
+              body: const Center(child: Text('没有待结算商品')),
+            );
+          }
+          return CheckoutView(lines: lines);
+        },
+      ),
+      GoRoute(
+        path: Routes.orderResultPageUrl,
+        name: 'orderResult',
+        builder: (context, state) {
+          final extra = state.extra;
+          final orderId = extra is String ? extra : '';
+          return OrderResultView(orderId: orderId);
+        },
+      ),
+
+      /// ========== 抖音风「我的」扩展 ==========
+      GoRoute(
+        path: Routes.douyinGroupBuy,
+        name: 'douyinGroupBuy',
+        builder: (context, state) => const DouyinGroupBuyPage(),
+      ),
+      GoRoute(
+        path: Routes.douyinAnchorCenter,
+        name: 'douyinAnchorCenter',
+        builder: (context, state) => const DouyinAnchorCenterPage(),
+      ),
+      GoRoute(
+        path: Routes.douyinMyOrders,
+        name: 'douyinMyOrders',
+        builder: (context, state) => const DouyinMyOrdersPage(),
+      ),
+      GoRoute(
+        path: Routes.douyinWatchHistory,
+        name: 'douyinWatchHistory',
+        builder: (context, state) => const DouyinWatchHistoryPage(),
+      ),
+      GoRoute(
+        path: Routes.douyinAllFeatures,
+        name: 'douyinAllFeatures',
+        builder: (context, state) => const DouyinAllFeaturesPage(),
+      ),
+
+      /// ========== 首页（四 Tab 各自路径，便于 GoRouter redirect 统一鉴权）==========
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return HomePage(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.HOME,
+                name: 'homeIndex',
+                builder: (context, state) => const IndexPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.videoPage,
+                name: 'homeVideo',
+                builder: (context, state) => const VideoPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.messagePage,
+                name: 'homeMessage',
+                builder: (context, state) => const MessagePage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.mePage,
+                name: 'homeMe',
+                builder: (context, state) => const MePage(),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      /// ========== 商品 ==========
+      GoRoute(
+        path: Routes.goodsPageUrl,
+        name: 'goodsList',
+        builder: (context, state) => Scaffold(
+          appBar: AppBar(title: const Text('商品')),
+          body: const GoodsView(),
+        ),
+      ),
+      GoRoute(
+        path: '${Routes.goodsDetailPageUrl}/:goodsId',
+        name: 'goodsDetail',
+        builder: (context, state) {
+          final id = state.pathParameters['goodsId'] ?? '';
+          return GoodsDetailView(goodsId: id);
+        },
       ),
 
       /// ========== 工具类页面 ==========
@@ -336,6 +466,7 @@ GoRouter appRouter(Ref ref) {
 
 // 辅助函数：检查路由是否需要认证
 bool _requiresAuth(String path) {
+  if (path.startsWith('/douyin/')) return true;
   // 定义需要认证的路由路径
   const protectedPaths = [
     Routes.mePage, // 我的页面

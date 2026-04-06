@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/label.dart';
 
 class MyVideoView extends StatefulWidget {
   final int tabIndex;
@@ -51,9 +52,10 @@ class _TabPageState extends State<MyVideoView>
                   Positioned(
                     top: 10,
                     left: 10,
-                    child: Container(
-                      color: Colors.orange,
-                      child: Center(child: Text('置顶')),
+                    child: Label(
+                      content: '置顶',
+                      color: Colors.white,
+                      backgroundColor: Colors.orange,
                     ),
                   ),
                   Positioned(
@@ -63,8 +65,8 @@ class _TabPageState extends State<MyVideoView>
                       spacing: 3,
                       children: [
                         Icon(
-                          Icons.play_arrow_outlined,
-                          size: 20,
+                          Icons.play_circle_outline_rounded,
+                          size: 25,
                           color: Colors.white,
                         ),
                         Text('300', style: TextStyle(color: Colors.white)),

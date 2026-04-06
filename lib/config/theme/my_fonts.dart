@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../util/my_shared_pref.dart';
 import '../translations/localization_service.dart';
@@ -26,23 +27,23 @@ class MyFonts
 
   // appbar font size
   // static double get appBarTittleSize => 18.sp;
-  static double get appBarTittleSize => 18;
+  static double get appBarTittleSize => 18.sp.clamp(20, 40);
 
   // body font size
-  static double get bodySmallTextSize => 11;
-  static double get bodyMediumSize => 13; // default font
-  static double get bodyLargeSize => 16;
+  static double get bodySmallTextSize => 11.sp.clamp(10, 20);
+  static double get bodyMediumSize => 13.sp.clamp(10, 30); // default font
+  static double get bodyLargeSize => 16.sp.clamp(10, 50);
   // display font size
-  static double get displayLargeSize => 20;
-  static double get displayMediumSize => 17;
-  static double get displaySmallSize => 14;
+  static double get displayLargeSize => 20.sp.clamp(10, 50);
+  static double get displayMediumSize => 17.sp.clamp(10, 50);
+  static double get displaySmallSize => 14.sp.clamp(10, 50);
 
   //button font size
   // static double get buttonTextSize => 20.sp;
   static double get buttonTextSize => 18;
 
   //chip font size
-  static double get chipTextSize => 10;
+  static double get chipTextSize => 10.sp.clamp(10, 50);
 
   // list tile fonts sizes
   // static double get listTileTitleSize => 13.sp;
@@ -53,4 +54,5 @@ class MyFonts
   // custom themes (extensions)
   static double get employeeListItemNameSize => 13;
   static double get employeeListItemSubtitleSize => 13;
+  static double get labelSize => 8.sp.clamp(5, 15);
 }

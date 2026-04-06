@@ -34,6 +34,15 @@ class Routes {
   static const String goodsPageUrl = "/goods_page";
   // static const String goodsItemUrl = "/goods_item_page";
   static const String goodsDetailPageUrl = "/goods_detail_page";
+  static const String cartPageUrl = "/cart";
+  static const String checkoutPageUrl = "/checkout";
+  static const String orderResultPageUrl = "/order_result";
+  /// 抖音风格「我的」子页（需登录）
+  static const String douyinGroupBuy = "/douyin/group_buy";
+  static const String douyinAnchorCenter = "/douyin/anchor_center";
+  static const String douyinMyOrders = "/douyin/my_orders";
+  static const String douyinWatchHistory = "/douyin/watch_history";
+  static const String douyinAllFeatures = "/douyin/all_features";
   static const String calendarToolPageUrl = "/calendar_tool_page";
   static const String publishDynamicPageUrl = "/publish_dynamic_page";
   static const String publishVideoPageUrl = "/publish_video_page";

@@ -30,11 +30,14 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeIsLight = ref.watch(appThemeModeProvider);
     final locale = ref.watch(appLocaleProvider);
-    // 使用 read 而不是 watch，避免 GoRouter 频繁重建
-    final router = ref.read(appRouterProvider);
+    // watch：登录态变化或路由表更新后使用新的 GoRouter，避免一直用首次创建的实例
+    final router = ref.watch(appRouterProvider);
 
     return ScreenUtilInit(
-      designSize: const Size(1170, 2532),
+      // 须为设计稿「逻辑宽」≈ 375～430，勿填物理像素宽（如 1170≈390×3），
+      // 否则 .sp 会按 screenWidth/designWidth 缩小，小屏上 18.sp 会变成几 dp 看不清。
+      // 同一 designSize 在 iOS/Android/Web 均生效；字号 clamp 见 util/adaptive_sp.dart。
+      designSize: const Size(390, 844),
       minTextAdapt: true,
       splitScreenMode: true,
       useInheritedMediaQuery: true,

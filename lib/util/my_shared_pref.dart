@@ -13,6 +13,7 @@ class MySharedPref {
   // STORING KEYS
   static const String _fcmTokenKey = 'fcm_token';
   static const String _authTokenKey = 'auth_token';
+  static const String _watchHistoryKey = 'watch_history_v1';
   static const String _currentLocalKey = 'current_local';
   static const String _lightThemeKey = 'is_theme_light';
 
@@ -68,5 +69,12 @@ class MySharedPref {
 
   /// clear all data from shared pref
   static Future<void> clear() async => await _sharedPreferences.clear();
+
+  /// 观看历史（JSON 数组字符串）
+  static Future<void> setWatchHistoryJson(String json) =>
+      _sharedPreferences.setString(_watchHistoryKey, json);
+
+  static String getWatchHistoryJson() =>
+      _sharedPreferences.getString(_watchHistoryKey) ?? '[]';
 
 }

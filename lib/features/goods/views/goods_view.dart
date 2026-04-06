@@ -1,22 +1,20 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../router/app_routes.dart';
-import '../providers/goods_providers.dart';
 
-class GoodsView extends ConsumerStatefulWidget {
+class GoodsView extends StatefulWidget {
   const GoodsView({super.key});
 
   @override
-  ConsumerState<GoodsView> createState() => _GoodsViewState();
+  State<GoodsView> createState() => _GoodsViewState();
 }
 
-class _GoodsViewState extends ConsumerState<GoodsView> {
+class _GoodsViewState extends State<GoodsView> {
   List _waterFallList = [];
   final List<String> swigeUrls = [];
   final List<Widget> _pageViews = [];
@@ -54,9 +52,6 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
 
   @override
   Widget build(BuildContext context) {
-    final goodsState = ref.watch(goodsProvider);
-    final goodsNotifier = ref.read(goodsProvider.notifier);
-
     var count = (1.sw / 250).ceil();
     return SingleChildScrollView(
       child: Container(
@@ -71,7 +66,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
           itemBuilder: (BuildContext context, int index) => InkWell(
             child: waterCard(_waterFallList[index]),
             onTap: () {
-              context.push(Routes.goodsPageUrl);
+              context.push('${Routes.goodsDetailPageUrl}/$index');
             },
           ),
           // 纵向元素间距
