@@ -27,23 +27,23 @@ class MyFonts
 
   // appbar font size
   // static double get appBarTittleSize => 18.sp;
-  static double get appBarTittleSize => 18.sp.clamp(20, 40);
+  static double get appBarTittleSize => 18;
 
   // body font size
-  static double get bodySmallTextSize => 11.sp.clamp(10, 20);
-  static double get bodyMediumSize => 13.sp.clamp(10, 30); // default font
-  static double get bodyLargeSize => 16.sp.clamp(10, 50);
+  static double get bodySmallTextSize => 11;
+  static double get bodyMediumSize => 13; // default font
+  static double get bodyLargeSize => 16;
   // display font size
-  static double get displayLargeSize => 20.sp.clamp(10, 50);
-  static double get displayMediumSize => 17.sp.clamp(10, 50);
-  static double get displaySmallSize => 14.sp.clamp(10, 50);
+  static double get displayLargeSize => 20;
+  static double get displayMediumSize => 17;
+  static double get displaySmallSize => 14;
 
   //button font size
   // static double get buttonTextSize => 20.sp;
   static double get buttonTextSize => 18;
 
   //chip font size
-  static double get chipTextSize => 10.sp.clamp(10, 50);
+  static double get chipTextSize => 10;
 
   // list tile fonts sizes
   // static double get listTileTitleSize => 13.sp;

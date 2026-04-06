@@ -82,7 +82,7 @@ class _TabPageState extends State<FriendVideoListView>
                                 ),
                                 Text(
                                   '300',
-                                  style: TextStyle(color: Colors.white),
+                                  style: TextStyle(color: Colors.white,fontSize: 15),
                                 ),
                               ],
                             ),

@@ -4,6 +4,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../components/mybutton.dart';
 import '../../../constant/constant.dart';
+import '../../components/label.dart';
+import '../douyin/widgets/douyin_service_strip.dart';
 import '../my/providers/my_providers.dart';
 import 'friend_blog_view.dart';
 import 'friend_goods_view.dart';
@@ -231,7 +233,7 @@ class _MyViewState extends ConsumerState<FriendsDetailView>
                                 Spacer(),
                                 ElevatedButton(
                                   onPressed: () {},
-                                  child: Text("编辑主页"),
+                                  child: Text("关注"),
                                 ),
                               ],
                             ),
@@ -258,62 +260,18 @@ class _MyViewState extends ConsumerState<FriendsDetailView>
                             Row(
                               spacing: 10,
                               children: [
-                                Container(
-                                  color: Colors.black12,
-                                  child: Text(' IP: 澳大利亚 '),
+                                Label(
+                                  content: 'IP: 澳大利亚',
+                                  backgroundColor: Colors.black12,
                                 ),
-                                Container(
-                                  color: Colors.black12,
-                                  child: Text(' 女: 18岁 '),
+                                Label(
+                                  content: '女: 18岁',
+                                  backgroundColor: Colors.black12,
                                 ),
                               ],
                             ),
                             Spacer(),
-                            Row(
-                              spacing: 20,
-                              children: [
-                                MyFlatButton(
-                                  onPress: () {},
-                                  img: 'imgs/goods.png',
-                                  imgSize: 30,
-                                  text: '团购带货',
-                                  textColor: Colors.black,
-                                  textSize: 14,
-                                ),
-                                MyFlatButton(
-                                  onPress: () {},
-                                  img: 'imgs/zhibo.png',
-                                  imgSize: 30,
-                                  text: '主播中心',
-                                  textColor: Colors.black,
-                                  textSize: 14,
-                                ),
-                                MyFlatButton(
-                                  onPress: () {},
-                                  img: 'imgs/gouwuche.png',
-                                  imgSize: 30,
-                                  text: '我的订单',
-                                  textColor: Colors.black,
-                                  textSize: 14,
-                                ),
-                                MyFlatButton(
-                                  onPress: () {},
-                                  img: 'imgs/goods.png',
-                                  imgSize: 30,
-                                  text: '观看历史',
-                                  textColor: Colors.black,
-                                  textSize: 14,
-                                ),
-                                MyFlatButton(
-                                  onPress: () {},
-                                  img: 'imgs/quanbugongneng.png',
-                                  imgSize: 30,
-                                  text: '全部功能',
-                                  textColor: Colors.black,
-                                  textSize: 14,
-                                ),
-                              ],
-                            ),
+                            DouyinServiceStrip(),
                           ],
                         ),
                       ),

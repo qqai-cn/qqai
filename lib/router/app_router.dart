@@ -426,7 +426,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.searchPage,
         name: 'search',
-        builder: (c, s) => SearchPage(),
+        builder: (c, s) => const SearchPage(),
       ),
 
       /// ========== 天气模块（嵌套路由）==========
