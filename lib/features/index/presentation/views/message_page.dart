@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../providers/home_providers.dart';
+import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
 import '../../../../router/app_routes.dart';
 import '../../../friends/chat_page_list.dart';
@@ -37,16 +38,8 @@ class _MessagePageState extends ConsumerState<MessagePage>
     final isWideScreen = 1.sw > 800;
     return Scaffold(
       appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () {
-            if (isWideScreen) {
-              ref.read(homeProvider.notifier).changeExtended();
-            } else {
-              Scaffold.of(context).openDrawer();
-            }
-          },
-          child: const Icon(Icons.menu, size: 28),
-        ),
+        leadingWidth: 132,
+        leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
         title: TabBar(
           controller: _tabController,

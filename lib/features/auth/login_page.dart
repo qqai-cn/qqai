@@ -89,44 +89,79 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Logo / Title
+                  // Logo / Title（品牌图：imgs/qqai_logo.png）
                   Column(
                     children: [
                       Container(
-                        width: 72,
-                        height: 72,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 1.5,
-                          ),
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFF00F5A0),
-                              Color(0xFF00D9F5),
-                            ],
-                          ),
-                          boxShadow: const [
+                          boxShadow: [
                             BoxShadow(
-                              color: Color(0x8000D9F5),
-                              blurRadius: 24,
-                              offset: Offset(0, 8),
+                              color: const Color(0xFF00D9F5).withValues(alpha: 0.45),
+                              blurRadius: 28,
+                              spreadRadius: 2,
+                              offset: const Offset(0, 10),
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.bolt_rounded,
-                          color: Colors.white,
-                          size: 32,
+                        child: ClipOval(
+                          child: Image.asset(
+                            'imgs/qqai_logo.png',
+                            width: 96,
+                            height: 96,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              width: 96,
+                              height: 96,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFF00F5A0),
+                                    Color(0xFF00D9F5),
+                                  ],
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.bolt_rounded,
+                                color: Colors.white,
+                                size: 40,
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 20),
+                      ShaderMask(
+                        blendMode: BlendMode.srcIn,
+                        shaderCallback: (bounds) => const LinearGradient(
+                          colors: [
+                            Color(0xFFB71C1C),
+                            Color(0xFFE53935),
+                            Color(0xFFFF8A80),
+                          ],
+                        ).createShader(bounds),
+                        child: Text(
+                          '千千AI',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2,
+                            fontSize: 28,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Text(
                         '欢迎回来',
-                        style: theme.textTheme.headlineMedium?.copyWith(
+                        style: theme.textTheme.titleLarge?.copyWith(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                         ),
                       ),
@@ -167,7 +202,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             controller: _usernameController,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              labelText: '用户名',
+                              labelText: '手机号',
                               labelStyle: const TextStyle(color: Colors.white70),
                               prefixIcon: const Icon(Icons.person, color: Colors.white70),
                               filled: true,
@@ -200,7 +235,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return '请输入用户名';
+                                return '请输入手机号';
                               }
                               return null;
                             },
@@ -210,7 +245,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             controller: _passwordController,
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
-                              labelText: '密码',
+                              labelText: '密码 123456',
                               labelStyle: const TextStyle(color: Colors.white70),
                               prefixIcon: const Icon(Icons.lock, color: Colors.white70),
                               filled: true,

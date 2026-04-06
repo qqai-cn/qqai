@@ -9,6 +9,7 @@ import 'package:qqai/features/video/views/video_list_view.dart';
 import '../../../components/video_player/video_service.dart';
 import '../../../router/app_routes.dart';
 import '../../comment/providers/comment_providers.dart';
+import '../../index/presentation/widgets/brand_drawer_leading.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/providers/home_providers.dart';
 import '../data/mock_data.dart';
@@ -66,20 +67,8 @@ class _VideoView extends ConsumerState<VideoView>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: GestureDetector(
-          onTap: () {
-            if (isWideScreen) {
-              ref.read(homeProvider.notifier).changeExtended();
-            } else {
-              Scaffold.of(context).openDrawer();
-            }
-          },
-          child: Icon(
-            Icons.menu,
-            color: getFontColor(_tabController),
-            size: 28,
-          ),
-        ),
+        leadingWidth: 132,
+        leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
         title: TabBar(
           controller: _tabController,

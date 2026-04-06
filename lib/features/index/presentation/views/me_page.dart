@@ -5,9 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../router/app_routes.dart';
 import '../../../my/views/my_view.dart';
-import '../../providers/home_providers.dart';
+import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
-import '../../../me/me_detail_page.dart';
 import '../../../me/presentation/providers/me_providers.dart';
 
 class MePage extends ConsumerWidget {
@@ -33,16 +32,8 @@ class MePage extends ConsumerWidget {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: GestureDetector(
-        onTap: () {
-          if (isWideScreen) {
-            ref.read(homeProvider.notifier).changeExtended();
-          } else {
-            Scaffold.of(context).openDrawer();
-          }
-        },
-        child: const Icon(Icons.menu, size: 28, color: Colors.white),
-      ),
+      leadingWidth: 132,
+      leading: BrandDrawerLeading(isWideScreen: isWideScreen),
       automaticallyImplyLeading: false,
       // title: animatedTitle(context),
       actions: [

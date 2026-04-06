@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/KeepAliveTabWrapper.dart';
 import 'package:qqai/features/goods/views/goods_view.dart';
+import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -52,17 +53,8 @@ class _IndexPageState extends ConsumerState<IndexPage>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: GestureDetector(
-          onTap: () {
-            if (isWideScreen) {
-              ref.read(homeProvider.notifier).changeExtended();
-            } else {
-              Scaffold.of(context).openDrawer();
-            }
-          },
-          // GIF 每帧重绘是卡顿主因，改用 Icon 可大幅缓解
-          child: const Icon(Icons.menu, size: 28),
-        ),
+        leadingWidth: 132,
+        leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
         title: animatedTitle(),
         actions: [animateActions()],
