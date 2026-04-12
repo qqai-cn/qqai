@@ -36,7 +36,7 @@ class WeatherRepo {
     try {
       String latStr = lat.toStringAsFixed(2);
       String lonStr = lon.toStringAsFixed(2);
-      String data = '?data=$lonStr,$latStr';
+      String data = '?location=$lonStr,$latStr';
       String url = ApiConstant2.HE_FENG_BASE_API + ApiConstant2.REALTIME_WEATHER + data;
       
       final response = await _dio.get(
@@ -73,7 +73,7 @@ class WeatherRepo {
   /// 获取小时天气
   Future<HourWeatherEntity> getHourWeather(String cityId) async {
     try {
-      String url = ApiConstant2.HOUR_WEATHER + '?data=$cityId';
+      String url = ApiConstant2.HOUR_WEATHER + '?location=$cityId';
       
       final response = await _dio.get(
         url,
@@ -94,7 +94,7 @@ class WeatherRepo {
   /// 获取每日天气
   Future<DayWeatherEntity> getDayWeather(String cityId) async {
     try {
-      String url = ApiConstant2.DAY_WEATHER + '?data=$cityId';
+      String url = ApiConstant2.DAY_WEATHER + '?location=$cityId';
       
       final response = await _dio.get(
         url,
@@ -115,7 +115,7 @@ class WeatherRepo {
   /// 获取天气指数
   Future<IndicesWeatherEntity> getDayIndices(String cityId) async {
     try {
-      String url = ApiConstant2.DAY_INDICES + '?type=0&data=$cityId';
+      String url = ApiConstant2.DAY_INDICES + '?type=0&location=$cityId';
       
       final response = await _dio.get(
         url,
