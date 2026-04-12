@@ -1,0 +1,41 @@
+/**
+ * Web：通过 @font-face 从 CDN 加载字体（family 名须与 pubspec 中一致）。
+ *
+ * 1) 将下面四个 URL 中的前缀改成你的 CDN（建议 https，且对页面域配置 CORS）。
+ * 2) 把 assets/fonts/ 下同名字体文件上传到 CDN 对应路径（或用 woff2 并改 format/扩展名）。
+ *
+ * 注意：当前 pubspec 仍声明了这些字体时，Flutter 可能仍会从应用包内再拉一份，
+ * 造成重复下载。若只想走 CDN，需自行调整 Web 构建（例如拆 flavor / 去掉 web 字体 asset），
+ * 本文件只负责「浏览器侧能从 CDN 拿到字库」。
+ */
+@font-face {
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://qiniu.qqai.cn/fonts/Roboto-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://qiniu.qqai.cn/fonts/Roboto-Bold.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Alibaba PuHuiTi';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://qiniu.qqai.cn/fonts/AlibabaPuHuiTi-3-55-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Alibaba PuHuiTi';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://qiniu.qqai.cn/fonts/AlibabaPuHuiTi-3-85-Bold.ttf') format('truetype');
+}

@@ -28,9 +28,13 @@
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
-    <!-- 配合本地 Roboto（见 pubspec fonts + assets/fonts/）可避免请求 fonts.gstatic.com -->
+    <!-- 配合本地 Roboto（见 pubspec fonts + assets/fonts/）可减少引擎对 Roboto 的远程拉取 -->
     <meta name="flutter-font" content="disable">
+    <!-- Noto 等回退字体基址见 web/flutter_bootstrap.js（默认 fonts.gstatic.cn）；可先于 bootstrap 设置 window.__qqaiFontFallbackBaseUrl -->
   <link rel="preload" href="main.dart.js" as="script">
+
+    <!-- 需要 CDN 字体时：先改好 web/fonts_cdn.css 里的 URL，再取消下一行注释。 -->
+    <link rel="stylesheet" href="fonts_cdn.css">
 
     <title>千千Ai</title>
     <link rel="manifest" href="manifest.json">
@@ -85,6 +89,10 @@
 <div class="loading">
     <div class="loader"></div>
 </div>
+<!-- 海外部署：取消注释以改回国际 gstatic 作为回退字体源 -->
+<!-- <script>window.__qqaiFontFallbackBaseUrl = 'https://fonts.gstatic.com/s/';</script> -->
+<!-- KaTeX 等依赖包字体走 /assets/packages/...；要从 CDN 拉时，在下一行填写 build/web 所在 CDN 根 URL（以 / 结尾） -->
+<!-- <script>window.__qqaiAssetBase = 'https://你的CDN/与 build/web 对齐的路径/';</script> -->
 <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
