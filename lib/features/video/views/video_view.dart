@@ -135,6 +135,7 @@ class _VideoView extends ConsumerState<VideoView>
               image: shortVideoMockData['items'][index]['image'],
               controls: ShortVideoControls(),
               autoPlay: true,
+              videoFit: BoxFit.contain,
             ),
           ),
         );

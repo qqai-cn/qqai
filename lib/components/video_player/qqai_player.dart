@@ -10,12 +10,16 @@ class QqaiPlayer extends StatefulWidget {
     required this.controls,
     required this.url,
     required this.autoPlay,
+    /// 默认 [BoxFit.contain]：父区域横竖与视频横竖不一致时仍完整显示（留边不裁切）。
+    /// 竖滑全屏沉浸场景可设为 [BoxFit.cover]。
+    this.videoFit = BoxFit.contain,
   }) : super(key: key);
 
   final String? image;
   final String url;
   final Widget controls;
   final bool autoPlay;
+  final BoxFit videoFit;
 
   @override
   _QqaiPlayerState createState() => _QqaiPlayerState();
@@ -103,6 +107,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
         child: FlickVideoPlayer(
           flickManager: flickManager,
           flickVideoWithControls: FlickVideoWithControls(
+            videoFit: widget.videoFit,
             playerLoadingFallback: Positioned.fill(
               child: Stack(
                 children: <Widget>[
@@ -127,6 +132,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
             controls: widget.controls,
           ),
           flickVideoWithControlsFullscreen: FlickVideoWithControls(
+            videoFit: widget.videoFit,
             playerLoadingFallback: Center(
               child: Image.network(widget.image!, fit: BoxFit.fitWidth),
             ),
