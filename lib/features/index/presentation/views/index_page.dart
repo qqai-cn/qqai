@@ -113,7 +113,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
           child: TextButton.icon(
             onPressed: null,
             icon: const Icon(Icons.search),
-            label: const Text("英雄联盟手游"),
+            label: const Text("网站flutter源码出售，有意联系QQ：807404400"),
           ),
         ),
       );
