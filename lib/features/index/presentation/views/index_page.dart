@@ -53,7 +53,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leadingWidth: 132,
+        leadingWidth: isWideScreen ? 148 : 48,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
         title: animatedTitle(),

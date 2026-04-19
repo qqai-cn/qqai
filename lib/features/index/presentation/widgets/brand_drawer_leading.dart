@@ -139,7 +139,9 @@ class _BrandDrawerLeadingState extends ConsumerState<BrandDrawerLeading>
                         ),
                       ),
                     ),
+                    if(widget.isWideScreen)
                     const SizedBox(width: 8),
+                    if(widget.isWideScreen)
                     Flexible(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
