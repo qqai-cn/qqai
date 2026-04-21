@@ -29,6 +29,9 @@ class Routes {
   static const String qrCodePageUrl = "/qr_code_page";
   static const String ipToolPageUrl = "/ip_tool_page";
   static const String thumbnailPageUrl = "/thumbnail_page";
+  static const String imageFormatConvertPageUrl = "/image_format_convert_page";
+  static const String imageCompressIntroPageUrl = "/image_compress_intro_page";
+  static const String jsonFormatterPageUrl = "/json_formatter_page";
   static const String homeItemPageUrl = "/home_item_page";
   static const String homeAppbarItemPageUrl = "/home_appbar_item_page";
   static const String goodsPageUrl = "/goods_page";

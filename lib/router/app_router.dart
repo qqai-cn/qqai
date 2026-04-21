@@ -14,9 +14,11 @@ import '../../features/search/search_page.dart';
 import '../../features/tool/ai_page.dart';
 import '../../features/tool/calendar_tool_page.dart';
 import '../../features/tool/date_tool_page.dart';
+import '../../features/tool/image_compress_intro_page.dart';
+import '../../features/tool/image_format_convert_page.dart';
 import '../../features/tool/id_tool_page.dart';
 import '../../features/tool/ip_tool_page.dart';
-import '../../features/tool/qr_code_page.dart';
+import '../../features/tool/json_formatter_page.dart';
 import '../../features/tool/thumbnail_page.dart';
 import '../../features/tool/url_tool_page.dart';
 import '../../features/watchvideo/play_video_page.dart' deferred as play_video;
@@ -54,6 +56,7 @@ import '../features/share/data/models/share_page_model.dart';
 import '../features/share/views/share_img_detail_view.dart';
 import '../features/share/views/share_video_detail_view.dart';
 import '../features/square/views/square_blog_view.dart';
+import '../features/tool/qr_code_tool_page.dart';
 import '../features/video/views/video_detail_view.dart';
 import '../providers/auth_providers.dart';
 import 'app_routes.dart';
@@ -219,7 +222,7 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.qrCodePageUrl,
         name: 'qrCode',
-        builder: (c, s) => QrCodePage(),
+        builder: (c, s) => QrCodeToolPage(),
       ),
       GoRoute(
         path: Routes.calendarToolPageUrl,
@@ -239,17 +242,32 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.urlToolPageUrl,
         name: 'urlTool',
-        builder: (c, s) => UrlToolPage(),
+        builder: (c, s) => const UrlToolPage(),
       ),
       GoRoute(
         path: Routes.ipToolPageUrl,
         name: 'ipTool',
-        builder: (c, s) => IpToolPage(),
+        builder: (c, s) => const IpToolPage(),
       ),
       GoRoute(
         path: Routes.thumbnailPageUrl,
         name: 'thumbnail',
         builder: (c, s) => ThumbnailPage(),
+      ),
+      GoRoute(
+        path: Routes.imageFormatConvertPageUrl,
+        name: 'imageFormatConvert',
+        builder: (c, s) => const ImageFormatConvertPage(),
+      ),
+      GoRoute(
+        path: Routes.imageCompressIntroPageUrl,
+        name: 'imageCompressIntro',
+        builder: (c, s) => const ImageCompressIntroPage(),
+      ),
+      GoRoute(
+        path: Routes.jsonFormatterPageUrl,
+        name: 'jsonFormatter',
+        builder: (c, s) => const JsonFormatterPage(),
       ),
 
       /// ========== 内容详情 ==========

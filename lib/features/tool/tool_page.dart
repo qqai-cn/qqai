@@ -84,6 +84,27 @@ class _ToolPage extends State<ToolPage> {
         indexLetter: "erweima",
         clickUrl: Routes.qrCodePageUrl));
     allToolItemBeans.add(ToolItemBean(
+        imageUrl: "imgs/img.svg",
+        title: "图片格式转换",
+        subTitle: "图片工具",
+        desc: "图片格式转换",
+        indexLetter: "imageformat",
+        clickUrl: Routes.imageFormatConvertPageUrl));
+    allToolItemBeans.add(ToolItemBean(
+        imageUrl: "imgs/img.svg",
+        title: "图片压缩",
+        subTitle: "图片工具",
+        desc: "图片压缩介绍与下载",
+        indexLetter: "imagecompress",
+        clickUrl: Routes.imageCompressIntroPageUrl));
+    allToolItemBeans.add(ToolItemBean(
+        imageUrl: "imgs/URL_args.svg",
+        title: "JSON格式化",
+        subTitle: "文本工具",
+        desc: "JSON美化、压缩、复制",
+        indexLetter: "json",
+        clickUrl: Routes.jsonFormatterPageUrl));
+    allToolItemBeans.add(ToolItemBean(
         imageUrl: "imgs/jietu.svg",
         title: "视频工具",
         subTitle: "视频工具",
