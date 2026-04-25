@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyGoodsView extends StatefulWidget {
   final int tabIndex;
@@ -51,6 +52,11 @@ class _TabPageState extends State<MyGoodsView>
   Widget waterCard(double item) {
     var randomNum = new Random();
     var one = randomNum.nextBool();
+    final titleStyle = context.typo.cardTitle.copyWith(
+      fontWeight: FontWeight.normal,
+    );
+    final labelStyle = context.typo.label;
+    final captionStyle = context.typo.caption;
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -81,7 +87,10 @@ class _TabPageState extends State<MyGoodsView>
                         size: 20,
                         color: Colors.white,
                       ),
-                      Text('300', style: TextStyle(color: Colors.white)),
+                      Text(
+                        '300',
+                        style: context.typo.label.copyWith(color: Colors.white),
+                      ),
                     ],
                   ),
                 ),
@@ -92,11 +101,7 @@ class _TabPageState extends State<MyGoodsView>
             padding: EdgeInsets.only(left: 10.w, top: 5),
             child: Text(
               '蓝月亮洗衣液',
-              style: TextStyle(
-                fontSize: 20,
-                color: Colors.black,
-                fontWeight: FontWeight.normal,
-              ),
+              style: titleStyle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
@@ -106,31 +111,29 @@ class _TabPageState extends State<MyGoodsView>
             child: RichText(
               text: TextSpan(
                 text: '¥',
-                style: TextStyle(fontSize: 15, color: Colors.red),
+              style: context.typo.cardSubtitle.copyWith(
+                fontSize: 15,
+                color: Colors.red,
+              ),
                 children: [
                   TextSpan(
                     text: '18.88',
-                    style: TextStyle(
-                      fontSize: 20,
+                    style: context.typo.bodyStrong.copyWith(
+                    fontSize: titleStyle.fontSize,
                       color: Colors.red,
                       fontWeight: FontWeight.bold,
                     ),
                     children: [
                       TextSpan(
                         text: ' 到手价 ',
-                        style: TextStyle(
+                        style: context.typo.cardSubtitle.copyWith(
                           fontSize: 15,
                           color: Colors.red,
-                          fontWeight: FontWeight.normal,
                         ),
                         children: [
                           TextSpan(
                             text: '¥38.8',
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.normal,
-                            ),
+                            style: captionStyle.copyWith(fontSize: 15),
                           ),
                         ],
                       ),
@@ -150,11 +153,7 @@ class _TabPageState extends State<MyGoodsView>
                     ),
                     child: Text(
                       '跨店每满300减40',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.red,
-                      ),
+                      style: labelStyle.copyWith(color: Colors.red),
                     ),
                   ),
                 )
@@ -172,10 +171,9 @@ class _TabPageState extends State<MyGoodsView>
                         ),
                         child: Text(
                           '包邮',
-                          style: TextStyle(
+                          style: context.typo.cardSubtitle.copyWith(
                             fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                            color: Color(0xFFFBC02D),
+                            color: const Color(0xFFFBC02D),
                           ),
                         ),
                       ),
@@ -190,10 +188,9 @@ class _TabPageState extends State<MyGoodsView>
                         ),
                         child: Text(
                           '30天保价',
-                          style: TextStyle(
+                          style: context.typo.cardSubtitle.copyWith(
                             fontSize: 15,
-                            fontWeight: FontWeight.normal,
-                            color: Color(0xFFFBC02D),
+                            color: const Color(0xFFFBC02D),
                           ),
                         ),
                       ),

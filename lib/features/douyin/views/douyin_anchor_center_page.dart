@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../theme/douyin_theme.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 主播中心（数据看板 + 功能入口）
 class DouyinAnchorCenterPage extends StatelessWidget {
@@ -19,7 +20,7 @@ class DouyinAnchorCenterPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         title: Text(
           '主播中心',
-          style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600),
+          style: context.typo.sectionTitle.copyWith(fontSize: 17.sp, fontWeight: FontWeight.w600),
         ),
       ),
       body: ListView(
@@ -28,19 +29,19 @@ class DouyinAnchorCenterPage extends StatelessWidget {
           _StatRow(),
           SizedBox(height: 20.h),
           _SectionTitle('直播服务'),
-          _tile(Icons.analytics_outlined, '直播数据', '场次、时长、观众与互动'),
-          _tile(Icons.gavel_outlined, '违规记录', '近期审核与申诉'),
-          _tile(Icons.settings_outlined, '直播设置', '封面、分类与预告'),
+          _tile(context, Icons.analytics_outlined, '直播数据', '场次、时长、观众与互动'),
+          _tile(context, Icons.gavel_outlined, '违规记录', '近期审核与申诉'),
+          _tile(context, Icons.settings_outlined, '直播设置', '封面、分类与预告'),
           SizedBox(height: 16.h),
           _SectionTitle('成长'),
-          _tile(Icons.school_outlined, '主播课堂', '规则与技巧'),
-          _tile(Icons.campaign_outlined, '活动报名', '平台活动与流量扶持'),
+          _tile(context, Icons.school_outlined, '主播课堂', '规则与技巧'),
+          _tile(context, Icons.campaign_outlined, '活动报名', '平台活动与流量扶持'),
         ],
       ),
     );
   }
 
-  Widget _tile(IconData icon, String title, String sub) {
+  Widget _tile(BuildContext context, IconData icon, String title, String sub) {
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
       child: Material(
@@ -51,11 +52,11 @@ class DouyinAnchorCenterPage extends StatelessWidget {
           leading: Icon(icon, color: DouyinTheme.text),
           title: Text(
             title,
-            style: TextStyle(color: DouyinTheme.text, fontSize: 15.sp),
+            style: context.typo.bodyStrong.copyWith(color: DouyinTheme.text, fontSize: 15.sp),
           ),
           subtitle: Text(
             sub,
-            style: TextStyle(color: DouyinTheme.sub, fontSize: 12.sp),
+            style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 12.sp),
           ),
           trailing: Icon(Icons.chevron_right, color: DouyinTheme.sub, size: 20.sp),
           onTap: () {},
@@ -76,11 +77,7 @@ class _SectionTitle extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 10.h),
       child: Text(
         text,
-        style: TextStyle(
-          color: DouyinTheme.sub,
-          fontSize: 13.sp,
-          fontWeight: FontWeight.w500,
-        ),
+        style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 13.sp, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -130,7 +127,7 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             stat.label,
-            style: TextStyle(color: DouyinTheme.sub, fontSize: 12.sp),
+            style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 12.sp),
           ),
           SizedBox(height: 8.h),
           Row(
@@ -139,18 +136,14 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 stat.value,
-                style: TextStyle(
-                  color: DouyinTheme.text,
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: context.typo.heroTitle.copyWith(color: DouyinTheme.text, fontSize: 20.sp, fontWeight: FontWeight.bold),
               ),
               if (stat.unit.isNotEmpty)
                 Padding(
                   padding: EdgeInsets.only(left: 2.w, bottom: 2.h),
                   child: Text(
                     stat.unit,
-                    style: TextStyle(color: DouyinTheme.sub, fontSize: 12.sp),
+                    style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 12.sp),
                   ),
                 ),
             ],

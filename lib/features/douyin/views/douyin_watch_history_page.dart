@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../providers/watch_history_provider.dart';
 import '../theme/douyin_theme.dart';
@@ -24,7 +25,7 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
         scrolledUnderElevation: 0,
         title: Text(
           '观看历史',
-          style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600),
+          style: context.typo.appBarTitle.copyWith(fontSize: 17.sp),
         ),
         actions: [
           if (items.isNotEmpty)
@@ -34,26 +35,45 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                   context: context,
                   builder: (c) => AlertDialog(
                     backgroundColor: DouyinTheme.card,
-                    title: Text('清空观看历史', style: TextStyle(color: DouyinTheme.text)),
+                    title: Text(
+                      '清空观看历史',
+                      style: context.typo.sectionTitle.copyWith(
+                        color: DouyinTheme.text,
+                      ),
+                    ),
                     content: Text(
                       '确定清空全部记录？',
-                      style: TextStyle(color: DouyinTheme.sub),
+                      style: context.typo.body.copyWith(color: DouyinTheme.sub),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(c, false),
-                        child: Text('取消', style: TextStyle(color: DouyinTheme.sub)),
+                        child: Text(
+                          '取消',
+                          style: context.typo.body.copyWith(color: DouyinTheme.sub),
+                        ),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(c, true),
-                        child: Text('清空', style: TextStyle(color: DouyinTheme.accent)),
+                        child: Text(
+                          '清空',
+                          style: context.typo.bodyStrong.copyWith(
+                            color: DouyinTheme.accent,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 );
                 if (ok == true && context.mounted) await notifier.clear();
               },
-              child: Text('清空', style: TextStyle(color: DouyinTheme.accent, fontSize: 14.sp)),
+              child: Text(
+                '清空',
+                style: context.typo.button.copyWith(
+                  color: DouyinTheme.accent,
+                  fontSize: 14.sp,
+                ),
+              ),
             ),
         ],
       ),
@@ -66,13 +86,19 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                   SizedBox(height: 12.h),
                   Text(
                     '暂无观看记录',
-                    style: TextStyle(color: DouyinTheme.text, fontSize: 15.sp),
+                    style: context.typo.sectionTitle.copyWith(
+                      color: DouyinTheme.text,
+                      fontSize: 15.sp,
+                    ),
                   ),
                   SizedBox(height: 6.h),
                   Text(
                     '刷视频时会自动记录（可接入播放页埋点）',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: DouyinTheme.sub, fontSize: 12.sp),
+                    style: context.typo.caption.copyWith(
+                      color: DouyinTheme.sub,
+                      fontSize: 12.sp,
+                    ),
                   ),
                 ],
               ),
@@ -119,13 +145,19 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                         e.title.isEmpty ? '未命名视频' : e.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: DouyinTheme.text, fontSize: 14.sp),
+                        style: context.typo.body.copyWith(
+                          color: DouyinTheme.text,
+                          fontSize: 14.sp,
+                        ),
                       ),
                       subtitle: Padding(
                         padding: EdgeInsets.only(top: 4.h),
                         child: Text(
                           _format(e.watchedAt),
-                          style: TextStyle(color: DouyinTheme.sub, fontSize: 12.sp),
+                          style: context.typo.caption.copyWith(
+                            color: DouyinTheme.sub,
+                            fontSize: 12.sp,
+                          ),
                         ),
                       ),
                     ),

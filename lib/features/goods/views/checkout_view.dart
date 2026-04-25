@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../router/app_routes.dart';
 import '../models/cart_line.dart';
@@ -84,9 +85,8 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
         foregroundColor: JdGoodsTheme.text,
         title: Text(
           '确认订单',
-          style: TextStyle(
+          style: context.typo.appBarTitle.copyWith(
             fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
             color: JdGoodsTheme.text,
           ),
         ),
@@ -135,7 +135,10 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                       contentPadding: EdgeInsets.symmetric(horizontal: 12.w),
                       title: Text(
                         payLabels[i],
-                        style: TextStyle(fontSize: 15.sp, color: JdGoodsTheme.text),
+                        style: context.typo.body.copyWith(
+                          fontSize: 15.sp,
+                          color: JdGoodsTheme.text,
+                        ),
                       ),
                       trailing: _payIndex == i
                           ? Icon(Icons.check_circle, color: JdGoodsTheme.red, size: 22.sp)
@@ -178,26 +181,27 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                               e.title,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: context.typo.cardTitle.copyWith(
                                 fontSize: 14.sp,
                                 height: 1.3,
                                 color: JdGoodsTheme.text,
-                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             SizedBox(height: 6.h),
                             Text(
                               '¥${e.price.toStringAsFixed(2)} × ${e.quantity}',
-                              style: TextStyle(fontSize: 12.sp, color: JdGoodsTheme.sub),
+                              style: context.typo.caption.copyWith(
+                                fontSize: 12.sp,
+                                color: JdGoodsTheme.sub,
+                              ),
                             ),
                           ],
                         ),
                       ),
                       Text(
                         '¥${e.subtotal.toStringAsFixed(2)}',
-                        style: TextStyle(
+                        style: context.typo.price.copyWith(
                           fontSize: 15.sp,
-                          fontWeight: FontWeight.w700,
                           color: JdGoodsTheme.red,
                         ),
                       ),
@@ -225,9 +229,8 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                     children: [
                       Text(
                         '实付款',
-                        style: TextStyle(
+                        style: context.typo.bodyStrong.copyWith(
                           fontSize: 15.sp,
-                          fontWeight: FontWeight.w600,
                           color: JdGoodsTheme.text,
                         ),
                       ),
@@ -236,7 +239,7 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                         children: [
                           Text(
                             '¥',
-                            style: TextStyle(
+                            style: context.typo.price.copyWith(
                               fontSize: 14.sp,
                               color: JdGoodsTheme.red,
                               fontWeight: FontWeight.w600,
@@ -244,7 +247,7 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                           ),
                           Text(
                             _payTotal.toStringAsFixed(2),
-                            style: TextStyle(
+                            style: context.typo.price.copyWith(
                               fontSize: 22.sp,
                               color: JdGoodsTheme.red,
                               fontWeight: FontWeight.w700,
@@ -297,7 +300,10 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
                   )
                 : Text(
                     '提交订单 ¥${_payTotal.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                    style: context.typo.button.copyWith(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
           ),
         ),
@@ -317,9 +323,8 @@ class _SectionTitle extends StatelessWidget {
       padding: EdgeInsets.only(left: 4.w),
       child: Text(
         title,
-        style: TextStyle(
+        style: context.typo.sectionTitle.copyWith(
           fontSize: 15.sp,
-          fontWeight: FontWeight.w600,
           color: JdGoodsTheme.text,
         ),
       ),
@@ -376,12 +381,18 @@ class _JdTextField extends StatelessWidget {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: TextStyle(fontSize: 14.sp, color: JdGoodsTheme.text),
+        style: context.typo.inputText.copyWith(
+          fontSize: 14.sp,
+          color: JdGoodsTheme.text,
+        ),
         decoration: InputDecoration(
           border: InputBorder.none,
           icon: Icon(icon, size: 20.sp, color: JdGoodsTheme.sub),
           labelText: label,
-          labelStyle: TextStyle(fontSize: 13.sp, color: JdGoodsTheme.sub),
+          labelStyle: context.typo.inputHint.copyWith(
+            fontSize: 13.sp,
+            color: JdGoodsTheme.sub,
+          ),
           floatingLabelBehavior: FloatingLabelBehavior.never,
         ),
       ),
@@ -402,11 +413,17 @@ class _PriceLine extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 14.sp, color: JdGoodsTheme.sub),
+          style: context.typo.caption.copyWith(
+            fontSize: 14.sp,
+            color: JdGoodsTheme.sub,
+          ),
         ),
         Text(
           value,
-          style: TextStyle(fontSize: 14.sp, color: JdGoodsTheme.text),
+          style: context.typo.body.copyWith(
+            fontSize: 14.sp,
+            color: JdGoodsTheme.text,
+          ),
         ),
       ],
     );

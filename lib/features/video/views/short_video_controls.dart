@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:spring/spring.dart';
 
 import '../../../../../constant/constant.dart';
@@ -61,7 +62,10 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                     onTap: () {
                       context.push('${Routes.userDetail}/88/true');
                     },
-                    child: Text('@ 3000万粉丝', style: TextStyle(fontSize: 15)),
+                    child: Text(
+                      '@ 3000万粉丝',
+                      style: context.typo.caption.copyWith(fontSize: 15),
+                    ),
                   ),
                   InkWell(
                     onTap: () {
@@ -78,7 +82,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                       text: TextSpan(
-                        style: TextStyle(color: Colors.white),
+                        style: context.typo.body.copyWith(color: Colors.white),
                         text:
                             '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。我真的很喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是不',
                       ),
@@ -106,7 +110,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                             FlickAutoHideChild(
                               child: Text(
                                 ' / ',
-                                style: TextStyle(
+                                style: context.typo.caption.copyWith(
                                   color: Colors.white,
                                   fontSize: fontSize,
                                 ),
@@ -287,7 +291,10 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
             SizedBox(height: 5),
             Text(
               '2022-12-11 10：12',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+              style: context.typo.caption.copyWith(
+                color: Colors.grey,
+                fontSize: 15,
+              ),
             ),
             SizedBox(height: 5),
           ],

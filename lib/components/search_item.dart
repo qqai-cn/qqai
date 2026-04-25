@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class SearchItem extends StatefulWidget {
   @override
@@ -45,7 +46,7 @@ class _SearchItem extends State<SearchItem> {
                           alignment: Alignment.center,
                           child: TextField(
                             maxLength: 50,
-                            style: TextStyle(fontSize: 20),
+                            style: context.typo.body.copyWith(fontSize: 20),
                             controller: controller,
                             decoration: new InputDecoration(
 //                                    contentPadding: EdgeInsets.only(top: 0.0),

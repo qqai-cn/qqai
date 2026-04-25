@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QrCodeToolPage extends StatefulWidget {
@@ -128,9 +129,12 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '二维码生成',
-            style: TextStyle(fontSize: 32 / 2, fontWeight: FontWeight.w600),
+            style: context.typo.sectionTitle.copyWith(
+              fontSize: 32 / 2,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -149,7 +153,7 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
           ),
           Text(
             '已输入数字：$count/$_maxLen',
-            style: const TextStyle(color: Color(0xFF999999)),
+            style: context.typo.caption.copyWith(color: const Color(0xFF999999)),
           ),
           const SizedBox(height: 14),
           Align(
@@ -166,12 +170,16 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             '1.输入要生成二维码的内容，可以是数字、字母、链接等内容。\n'
             '2.点击“生成二维码”，右侧二维码会立马生成。\n'
             '3.右侧菜单可以美化二维码，包括样式切换等。\n'
             '4.对自己理想的二维码点击“保存二维码”即可下载二维码到您本地。',
-            style: TextStyle(color: Color(0xFF4C4C4C), height: 1.6, fontSize: 15),
+            style: context.typo.body.copyWith(
+              color: const Color(0xFF4C4C4C),
+              height: 1.6,
+              fontSize: 15,
+            ),
           ),
         ],
       ),
@@ -225,15 +233,24 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
             padding: const EdgeInsets.all(10),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   '颜色设置  嵌入Logo  嵌入文字  图案样式  其它设置',
-                  style: TextStyle(color: Color(0xFF6B6B6B), fontSize: 13),
+                  style: context.typo.caption.copyWith(
+                    color: const Color(0xFF6B6B6B),
+                    fontSize: 13,
+                  ),
                 ),
                 SizedBox(height: 10),
-                Text('前景色  黑色       背景色  白色', style: TextStyle(fontSize: 13)),
+                Text(
+                  '前景色  黑色       背景色  白色',
+                  style: context.typo.caption.copyWith(fontSize: 13),
+                ),
                 SizedBox(height: 6),
-                Text('渐变色  关闭       渐变方式  反斜线', style: TextStyle(fontSize: 13)),
+                Text(
+                  '渐变色  关闭       渐变方式  反斜线',
+                  style: context.typo.caption.copyWith(fontSize: 13),
+                ),
               ],
             ),
           ),
@@ -249,9 +266,11 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
                     _activeStyle = 1;
                   });
                 },
-                child: const Text(
+                child: Text(
                   '清除设置',
-                  style: TextStyle(color: Color(0xFFE85A4F), fontWeight: FontWeight.w600),
+                  style: context.typo.bodyStrong.copyWith(
+                    color: const Color(0xFFE85A4F),
+                  ),
                 ),
               ),
               ElevatedButton.icon(
@@ -276,7 +295,7 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
       onTap: () => setState(() => _activeStyle = index),
       child: Text(
         text,
-        style: TextStyle(
+        style: context.typo.body.copyWith(
           color: active ? const Color(0xFF3F7EDB) : const Color(0xFF666666),
           fontWeight: active ? FontWeight.w700 : FontWeight.w500,
           decoration: active ? TextDecoration.underline : TextDecoration.none,

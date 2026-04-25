@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 
 import '../../../../constant/color_constant.dart';
 import '../../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class VideoItemView extends StatelessWidget {
   final String name = "新飞飞";
@@ -15,6 +17,10 @@ class VideoItemView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final titleStyle = context.typo.cardTitle;
+    final creatorStyle = context.typo.cardSubtitle.copyWith(color: Colors.grey, fontSize: titleStyle.fontSize);
+    final metaStyle = context.typo.caption;
+
     return Card(
       child: InkWell(
         onTap: () {
@@ -60,7 +66,7 @@ class VideoItemView extends StatelessWidget {
                           '长风破浪长风破浪长风222,破浪长风破浪长风破浪长风破浪',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 17, color: Colors.black),
+                          style: titleStyle,
                         ),
                         Row(
                           children: [
@@ -72,10 +78,7 @@ class VideoItemView extends StatelessWidget {
                                   Text(
                                     name,
                                     textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 17,
-                                    ),
+                                    style: creatorStyle,
                                     overflow: TextOverflow.ellipsis,
                                     // textScaleFactor: 1.5,
                                   ),
@@ -87,10 +90,7 @@ class VideoItemView extends StatelessWidget {
                                 ' ◉ 1212 次观看  ◉ 2天前',
                                 textAlign: TextAlign.left,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 10,
-                                ),
+                                style: metaStyle,
                               ),
                             ),
                           ],
@@ -118,17 +118,11 @@ class VideoItemView extends StatelessWidget {
                           child: _care
                               ? Text(
                                   "已关注",
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.grey,
-                                  ),
+                                  style: context.typo.button.copyWith(color: Colors.grey),
                                 )
                               : Text(
                                   "关注",
-                                  style: const TextStyle(
-                                    fontSize: 13,
-                                    color: Colors.white,
-                                  ),
+                                  style: context.typo.button,
                                 ),
                           onPressed: () {
                             // setState(() {
@@ -149,28 +143,28 @@ class VideoItemView extends StatelessWidget {
                               value: '0',
                               child: Text(
                                 '收藏',
-                                style: TextStyle(color: Colors.black54),
+                                style: context.typo.body.copyWith(color: Colors.black54),
                               ),
                             ),
                             PopupMenuItem<String>(
                               value: '1',
                               child: Text(
                                 '举报',
-                                style: TextStyle(color: Colors.black54),
+                                style: context.typo.body.copyWith(color: Colors.black54),
                               ),
                             ),
                             PopupMenuItem<String>(
                               value: '2',
                               child: Text(
                                 '不感兴趣',
-                                style: TextStyle(color: Colors.black54),
+                                style: context.typo.body.copyWith(color: Colors.black54),
                               ),
                             ),
                             PopupMenuItem<String>(
                               value: '3',
                               child: Text(
                                 '加入播放队列',
-                                style: TextStyle(color: Colors.black54),
+                                style: context.typo.body.copyWith(color: Colors.black54),
                               ),
                             ),
                           ];

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../components/level_icon.dart';
 import '../../../components/responsive_masonry_grid.dart';
@@ -8,6 +9,7 @@ import '../../../constant/constant.dart';
 import '../blog/providers/blog_providers.dart';
 import 'friend_blog_img_item_view.dart';
 import 'friend_blog_video_item_view.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class FriendBlogView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -69,10 +71,16 @@ class _TabPageState extends ConsumerState<FriendBlogView>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('加载失败: $err', style: const TextStyle(color: Colors.white)),
+            Text(
+              '加载失败: $err',
+              style: context.typo.body.copyWith(color: Colors.white),
+            ),
             ElevatedButton(
               onPressed: () => ref.read(blogProvider.notifier).load(),
-              child: const Text('重试'),
+              child: Text(
+                '重试',
+                style: context.typo.button.copyWith(color: Colors.black),
+              ),
             ),
           ],
         ),
@@ -144,7 +152,7 @@ class _TabPageState extends ConsumerState<FriendBlogView>
             SizedBox(height: 5),
             Text(
               '2022-12-11 10：12',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+              style: context.typo.caption.copyWith(fontSize: 15),
             ),
             SizedBox(height: 5),
           ],

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 // 模板,方便快速创建一个StatefulWidget
 class WaitPlayVideoList extends StatefulWidget {
@@ -63,7 +64,9 @@ class _WaitPlayVideoList extends State<WaitPlayVideoList> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   '爱看电影',
-                                  style: TextStyle(color: Colors.black54),
+                                  style: context.typo.caption.copyWith(
+                                    color: Colors.black54,
+                                  ),
                                 ),
                               ),
                               SizedBox(
@@ -73,7 +76,9 @@ class _WaitPlayVideoList extends State<WaitPlayVideoList> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   '19万次播放',
-                                  style: TextStyle(color: Colors.grey),
+                                  style: context.typo.caption.copyWith(
+                                    color: Colors.grey,
+                                  ),
                                 ),
                               ),
                             ],

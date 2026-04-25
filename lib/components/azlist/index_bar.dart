@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// IndexHintBuilder.
 typedef IndexHintBuilder = Widget Function(BuildContext context, String tag);
@@ -93,15 +94,15 @@ class IndexBarOptions {
   /// downColor = Color(0xFFEEEEEE)
   /// decoration
   /// downDecoration
-  /// textStyle = TextStyle(fontSize: 12, color: Color(0xFF666666))
-  /// downTextStyle = TextStyle(fontSize: 12, color: Colors.white)
-  /// selectTextStyle = TextStyle(fontSize: 12, color: Colors.white)
+  /// textStyle = context.typo.body.copyWith(fontSize: 12, color: Color(0xFF666666))
+  /// downTextStyle = context.typo.body.copyWith(fontSize: 12, color: Colors.white)
+  /// selectTextStyle = context.typo.body.copyWith(fontSize: 12, color: Colors.white)
   /// downItemDecoration = BoxDecoration(shape: BoxShape.circle, color: Colors.blueAccent)
   /// selectItemDecoration = BoxDecoration(shape: BoxShape.circle, color: Colors.blueAccent)
   /// indexHintWidth = 72
   /// indexHintHeight = 72
   /// indexHintDecoration = BoxDecoration(color: Colors.black87, shape: BoxShape.rectangle, borderRadius: BorderRadius.all(Radius.circular(6)),)
-  /// indexHintTextStyle = TextStyle(fontSize: 24.0, color: Colors.white)
+  /// indexHintTextStyle = context.typo.body.copyWith(fontSize: 24.0, color: Colors.white)
   /// indexHintChildAlignment = Alignment.center
   /// indexHintAlignment = Alignment.center
   /// indexHintPosition

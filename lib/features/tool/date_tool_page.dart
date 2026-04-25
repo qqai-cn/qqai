@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class DateToolPage extends StatefulWidget {
   const DateToolPage({super.key});
@@ -138,20 +139,19 @@ class _DateToolPage extends State<DateToolPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
+                        Text(
                           'Temporal Intelligence Console',
-                          style: TextStyle(
-                            color: Color(0xFF8EEFFF),
+                          style: context.typo.heroTitle.copyWith(
+                            color: const Color(0xFF8EEFFF),
                             fontSize: 22,
-                            fontWeight: FontWeight.w700,
                             letterSpacing: 0.4,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           '时间戳 / 日期 智能转换工具',
-                          style: TextStyle(
-                            color: Color(0xFF7C91B5),
+                          style: context.typo.caption.copyWith(
+                            color: const Color(0xFF7C91B5),
                             fontSize: 13,
                           ),
                         ),
@@ -219,28 +219,29 @@ class _DateToolPage extends State<DateToolPage>
       ),
       child: SelectableText.rich(
         TextSpan(
-          style: const TextStyle(fontSize: 15, color: Color(0xFF99B0D8)),
+          style: context.typo.body.copyWith(
+            fontSize: 15,
+            color: const Color(0xFF99B0D8),
+          ),
           children: [
-            const TextSpan(
+            TextSpan(
               text: '当前时间戳（毫秒）：',
-              style: TextStyle(
+              style: context.typo.bodyStrong.copyWith(
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF8CA8D8),
+                color: const Color(0xFF8CA8D8),
               ),
             ),
             TextSpan(
               text: '$currentTimeStamp',
-              style: const TextStyle(
+              style: context.typo.mono.copyWith(
                 color: Color(0xFF6BFFDE),
-                fontFamily: 'monospace',
               ),
             ),
             const TextSpan(text: '\n当前时间：'),
             TextSpan(
               text: currentTime,
-              style: const TextStyle(
+              style: context.typo.mono.copyWith(
                 color: Color(0xFF6BFFDE),
-                fontFamily: 'monospace',
               ),
             ),
           ],
@@ -256,17 +257,18 @@ class _DateToolPage extends State<DateToolPage>
           child: TextField(
             controller: timestampController,
             keyboardType: TextInputType.number,
-            style: const TextStyle(
-              color: Color(0xFFE7F0FF),
+            style: context.typo.mono.copyWith(
+              color: const Color(0xFFE7F0FF),
               fontSize: 16,
-              fontFamily: 'monospace',
             ),
             inputFormatters: [
               FilteringTextInputFormatter.digitsOnly,
               LengthLimitingTextInputFormatter(secondTypeSelect == 1 ? 13 : 10),
             ],
             decoration: InputDecoration(
-              labelStyle: const TextStyle(color: Color(0xFF8CA8D8)),
+              labelStyle: context.typo.label.copyWith(
+                color: const Color(0xFF8CA8D8),
+              ),
               labelText: '请输入时间戳',
               prefixIcon:
                   const Icon(Icons.timer_outlined, color: Color(0xFF53E5FF)),
@@ -274,7 +276,9 @@ class _DateToolPage extends State<DateToolPage>
                 icon: const Icon(Icons.close, color: Color(0xFF8CA8D8)),
                 onPressed: timestampController.clear,
               ),
-              counterStyle: const TextStyle(color: Color(0xFF7C91B5)),
+              counterStyle: context.typo.caption.copyWith(
+                color: const Color(0xFF7C91B5),
+              ),
               filled: true,
               fillColor: const Color(0xAA0A1328),
               border: OutlineInputBorder(
@@ -299,7 +303,9 @@ class _DateToolPage extends State<DateToolPage>
             initialValue: secondTypeSelect,
             decoration: InputDecoration(
               labelText: '单位',
-              labelStyle: const TextStyle(color: Color(0xFF8CA8D8)),
+              labelStyle: context.typo.label.copyWith(
+                color: const Color(0xFF8CA8D8),
+              ),
               filled: true,
               fillColor: const Color(0xAA0A1328),
               border: OutlineInputBorder(
@@ -314,14 +320,24 @@ class _DateToolPage extends State<DateToolPage>
                 borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.4),
               ),
             ),
-            items: const [
+            items: [
               DropdownMenuItem(
                 value: 1,
-                child: Text('毫秒', style: TextStyle(color: Color(0xFFE7F0FF))),
+                child: Text(
+                  '毫秒',
+                  style: context.typo.body.copyWith(
+                    color: const Color(0xFFE7F0FF),
+                  ),
+                ),
               ),
               DropdownMenuItem(
                 value: 2,
-                child: Text('秒', style: TextStyle(color: Color(0xFFE7F0FF))),
+                child: Text(
+                  '秒',
+                  style: context.typo.body.copyWith(
+                    color: const Color(0xFFE7F0FF),
+                  ),
+                ),
               ),
             ],
             onChanged: (value) {
@@ -345,15 +361,18 @@ class _DateToolPage extends State<DateToolPage>
           child: TextField(
             controller: dateController,
             keyboardType: TextInputType.datetime,
-            style: const TextStyle(
-              color: Color(0xFFE7F0FF),
+            style: context.typo.mono.copyWith(
+              color: const Color(0xFFE7F0FF),
               fontSize: 16,
-              fontFamily: 'monospace',
             ),
             maxLength: dateTypeSelect == 1 ? 19 : 10,
             decoration: InputDecoration(
-              labelStyle: const TextStyle(color: Color(0xFF8CA8D8)),
-              hintStyle: const TextStyle(color: Color(0xFF6E86B2)),
+              labelStyle: context.typo.label.copyWith(
+                color: const Color(0xFF8CA8D8),
+              ),
+              hintStyle: context.typo.inputHint.copyWith(
+                color: const Color(0xFF6E86B2),
+              ),
               labelText: dateTypeSelect == 1 ? '请输入日期时间' : '请输入日期',
               hintText:
                   dateTypeSelect == 1 ? '例如 2026-04-21 13:20:00' : '例如 2026-04-21',
@@ -363,7 +382,9 @@ class _DateToolPage extends State<DateToolPage>
                 icon: const Icon(Icons.close, color: Color(0xFF8CA8D8)),
                 onPressed: dateController.clear,
               ),
-              counterStyle: const TextStyle(color: Color(0xFF7C91B5)),
+              counterStyle: context.typo.caption.copyWith(
+                color: const Color(0xFF7C91B5),
+              ),
               filled: true,
               fillColor: const Color(0xAA0A1328),
               border: OutlineInputBorder(
@@ -388,7 +409,9 @@ class _DateToolPage extends State<DateToolPage>
             initialValue: dateTypeSelect,
             decoration: InputDecoration(
               labelText: '格式',
-              labelStyle: const TextStyle(color: Color(0xFF8CA8D8)),
+              labelStyle: context.typo.label.copyWith(
+                color: const Color(0xFF8CA8D8),
+              ),
               filled: true,
               fillColor: const Color(0xAA0A1328),
               border: OutlineInputBorder(
@@ -403,14 +426,24 @@ class _DateToolPage extends State<DateToolPage>
                 borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.4),
               ),
             ),
-            items: const [
+            items: [
               DropdownMenuItem(
                 value: 1,
-                child: Text('日期时间', style: TextStyle(color: Color(0xFFE7F0FF))),
+                child: Text(
+                  '日期时间',
+                  style: context.typo.body.copyWith(
+                    color: const Color(0xFFE7F0FF),
+                  ),
+                ),
               ),
               DropdownMenuItem(
                 value: 2,
-                child: Text('仅日期', style: TextStyle(color: Color(0xFFE7F0FF))),
+                child: Text(
+                  '仅日期',
+                  style: context.typo.body.copyWith(
+                    color: const Color(0xFFE7F0FF),
+                  ),
+                ),
               ),
             ],
             onChanged: (value) {

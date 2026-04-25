@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyWorkItem extends StatefulWidget {
   MyWorkItem({this.id = 0});
@@ -52,14 +53,11 @@ class _MyWorkItem extends State<MyWorkItem> {
             Text(
               name,
               maxLines: 1,
-              style: const TextStyle(overflow: TextOverflow.ellipsis),
+              style: context.typo.body.copyWith(overflow: TextOverflow.ellipsis),
             ),
             Text("关注 123KW ▪ 热度 45W",
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 13,
-                    overflow: TextOverflow.ellipsis)),
+                style: context.typo.caption.copyWith(color: Colors.black54, fontSize: 13, overflow: TextOverflow.ellipsis)),
             Row(
               children: [
                 Spacer(),

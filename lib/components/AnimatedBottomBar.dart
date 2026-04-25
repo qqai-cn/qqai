@@ -1,6 +1,7 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class AnimatedBottomBar extends StatefulWidget {
   final List<BarItem> barItems;
@@ -74,7 +75,7 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
                   curve: Curves.easeInOut,
                   child: AutoSizeText(
                     isSelected ? item.text : "",
-                    style: TextStyle(
+                    style: context.typo.body.copyWith(
                       color: item.color,
                       fontWeight: widget.barStyle.fontWeight,
                       fontSize: widget.barStyle.fontSize,

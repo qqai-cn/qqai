@@ -1,3 +1,4 @@
+import 'package:qqai/config/theme/app_typography.dart';
 // import 'dart:async';
 //
 // import 'package:dash_chat/dash_chat.dart';
@@ -127,7 +128,7 @@
 //       inputMaxLines: 5,
 //       messageContainerPadding: EdgeInsets.only(left: 5.0, right: 5.0),
 //       alwaysShowSend: true,
-//       inputTextStyle: TextStyle(fontSize: 16.0),
+//       inputTextStyle: context.typo.body.copyWith(fontSize: 16.0),
 //       inputContainerStyle: BoxDecoration(
 //         border: Border.all(width: 1.0, color: Colors.grey),
 //         color: Colors.white,

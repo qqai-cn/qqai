@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../constant/color_constant.dart';
 
@@ -56,7 +57,7 @@ class _QrCodePage extends State<QrCodePage> {
               ElevatedButton(
                 child: Text(
                   "生成二维码",
-                  style: TextStyle(color: Colors.white),
+                  style: context.typo.button.copyWith(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
                     backgroundColor: ColorConstant.ThemeGreen,

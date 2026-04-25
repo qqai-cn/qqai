@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../providers/home_providers.dart';
 
@@ -77,7 +78,7 @@ class _BrandDrawerLeadingState extends ConsumerState<BrandDrawerLeading>
                 ),
               ],
             ) ??
-            TextStyle(
+            context.typo.sectionTitle.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.4,

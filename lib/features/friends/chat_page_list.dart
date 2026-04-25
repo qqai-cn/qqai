@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/constant/constant.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../components/chat/chat_widget.dart';
 import '../../providers/auth_providers.dart';
 import '../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 void main() => runApp(MyApp());
 
@@ -114,7 +116,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                     '北京$i群',
                     textAlign: TextAlign.left,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.black, fontSize: 20),
+                    style: context.typo.pageTitle.copyWith(color: Colors.black),
                   ),
                   SizedBox(
                     height: 5,
@@ -123,7 +125,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                     '晴天：大大大大大热大大大大热大大大大热',
                     overflow: TextOverflow.ellipsis,
                     textAlign: TextAlign.left,
-                    style: TextStyle(color: Colors.grey, fontSize: 15),
+                    style: context.typo.cardSubtitle.copyWith(color: Colors.grey),
                   )
                 ],
               ),
@@ -153,7 +155,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                   textAlign: TextAlign.left,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: Colors.grey, fontSize: 15),
+                  style: context.typo.caption.copyWith(fontSize: 15),
                 ),
               ],
             ),

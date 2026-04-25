@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
+import '../../../config/theme/app_typography.dart';
 import '../../../constant/color_constant.dart';
 import '../providers/fabu_providers.dart';
 import 'fabu_aixin_page.dart';
@@ -75,7 +77,10 @@ class _FabuViewState extends ConsumerState<FabuView>
                 // TODO: 实现发布爱心逻辑
               }
             },
-            child: const Text('发布', style: TextStyle(color: Colors.white)),
+            child: Text(
+              '发布',
+              style: context.typo.button.copyWith(color: Colors.white),
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: ColorConstant.ThemeGreen,
             ),

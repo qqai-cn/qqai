@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../providers/auth_providers.dart';
 import '../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -67,8 +69,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -148,18 +148,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ).createShader(bounds),
                         child: Text(
                           '千千AI',
-                          style: theme.textTheme.headlineMedium?.copyWith(
+                          style: context.typo.heroTitle.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 2,
-                            fontSize: 28,
                           ),
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         '欢迎回来',
-                        style: theme.textTheme.titleLarge?.copyWith(
+                        style: context.typo.sectionTitle.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
@@ -168,7 +167,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       const SizedBox(height: 8),
                       Text(
                         '登录你的智能助手账户',
-                        style: theme.textTheme.bodyMedium?.copyWith(
+                        style: context.typo.pageSubtitle.copyWith(
                           color: Colors.white70,
                         ),
                       ),
@@ -200,10 +199,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         children: [
                           TextFormField(
                             controller: _usernameController,
-                            style: const TextStyle(color: Colors.white),
+                            style: context.typo.body.copyWith(color: Colors.white),
                             decoration: InputDecoration(
                               labelText: '手机号',
-                              labelStyle: const TextStyle(color: Colors.white70),
+                              labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
                               prefixIcon: const Icon(Icons.person, color: Colors.white70),
                               filled: true,
                               fillColor: Colors.white.withOpacity(0.03),
@@ -243,10 +242,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _passwordController,
-                            style: const TextStyle(color: Colors.white),
+                            style: context.typo.body.copyWith(color: Colors.white),
                             decoration: InputDecoration(
                               labelText: '密码 123456',
-                              labelStyle: const TextStyle(color: Colors.white70),
+                              labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
                               prefixIcon: const Icon(Icons.lock, color: Colors.white70),
                               filled: true,
                               fillColor: Colors.white.withOpacity(0.03),
@@ -290,7 +289,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           const SizedBox(height: 20),
                           Text(
                             '请拖动滑块完成验证',
-                            style: theme.textTheme.bodyMedium?.copyWith(
+                            style: context.typo.pageSubtitle.copyWith(
                               color: Colors.white70,
                             ),
                           ),
@@ -361,11 +360,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
                                         ),
                                       )
-                                    : const Text(
+                                    : Text(
                                         key: ValueKey('text'),
                                         '登录',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
+                                        style: context.typo.button.copyWith(
+                                          color: Colors.black,
                                           letterSpacing: 0.5,
                                         ),
                                       ),

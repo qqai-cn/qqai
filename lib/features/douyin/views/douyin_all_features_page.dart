@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../router/app_routes.dart';
 import '../theme/douyin_theme.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 全部功能：宫格跳转站内能力
 class DouyinAllFeaturesPage extends StatelessWidget {
@@ -51,7 +52,7 @@ class DouyinAllFeaturesPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         title: Text(
           '全部功能',
-          style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600),
+          style: context.typo.sectionTitle.copyWith(fontSize: 17.sp, fontWeight: FontWeight.w600),
         ),
       ),
       body: ListView(
@@ -62,11 +63,7 @@ class DouyinAllFeaturesPage extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 8.h),
               child: Text(
                 g.title,
-                style: TextStyle(
-                  color: DouyinTheme.sub,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 13.sp, fontWeight: FontWeight.w500),
               ),
             ),
             _FeatureGrid(items: g.items),
@@ -124,7 +121,7 @@ class _FeatureGrid extends StatelessWidget {
                     item.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: DouyinTheme.sub, fontSize: 11.sp),
+                    style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 11.sp),
                   ),
                 ],
               ),

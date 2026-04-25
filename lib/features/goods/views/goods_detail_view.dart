@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../router/app_routes.dart';
 import '../models/cart_line.dart';
@@ -121,14 +122,14 @@ class GoodsDetailView extends ConsumerWidget {
                         children: [
                           Text(
                             '¥',
-                            style: TextStyle(
+                            style: context.typo.caption.copyWith(
                               fontSize: 16.sp,
                               color: theme.colorScheme.error,
                             ),
                           ),
                           Text(
                             d.price.toStringAsFixed(2),
-                            style: TextStyle(
+                            style: context.typo.price.copyWith(
                               fontSize: 28.sp,
                               color: theme.colorScheme.error,
                               fontWeight: FontWeight.bold,
@@ -137,7 +138,7 @@ class GoodsDetailView extends ConsumerWidget {
                           SizedBox(width: 8.w),
                           Text(
                             '¥${d.marketPrice.toStringAsFixed(2)}',
-                            style: TextStyle(
+                            style: context.typo.priceStrikethrough.copyWith(
                               fontSize: 14.sp,
                               color: theme.hintColor,
                               decoration: TextDecoration.lineThrough,
@@ -152,7 +153,12 @@ class GoodsDetailView extends ConsumerWidget {
                         children: d.tags
                             .map(
                               (t) => Chip(
-                                label: Text(t, style: TextStyle(fontSize: 12.sp)),
+                                label: Text(
+                                  t,
+                                  style: context.typo.label.copyWith(
+                                    fontSize: 12.sp,
+                                  ),
+                                ),
                                 visualDensity: VisualDensity.compact,
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,

@@ -1,6 +1,7 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class SearchDefItem extends StatefulWidget {
   String content;
@@ -67,7 +68,7 @@ class _SearchDefItem extends State<SearchDefItem> {
                         ListTile(
                           title: Text(
                             "历史搜索",
-                            style: TextStyle(color: Colors.grey),
+                            style: context.typo.caption.copyWith(color: Colors.grey),
                           ),
                           trailing: IconButton(
                             icon: Icon(Icons.delete_forever),
@@ -91,9 +92,7 @@ class _SearchDefItem extends State<SearchDefItem> {
                                       backgroundColor: Color(0xFFF5F5F5),
                                       label: Text(
                                         e,
-                                        style: TextStyle(
-                                            color: Color(0xFF7C7070),
-                                            fontSize: 13),
+                                        style: context.typo.caption.copyWith(color: const Color(0xFF7C7070), fontSize: 13),
                                       ),
                                     ),
                                     onTap: () {
@@ -104,14 +103,14 @@ class _SearchDefItem extends State<SearchDefItem> {
                         ListTile(
                           title: Text(
                             "搜索发现",
-                            style: TextStyle(color: Colors.grey),
+                            style: context.typo.caption.copyWith(color: Colors.grey),
                           ),
                           trailing: TextButton.icon(
                             icon: Icon(Icons.refresh),
                             onPressed: () {},
                             label: Text(
                               "换一换",
-                              style: TextStyle(color: Colors.grey),
+                              style: context.typo.caption.copyWith(color: Colors.grey),
                             ),
                           ),
                         ),
@@ -125,9 +124,7 @@ class _SearchDefItem extends State<SearchDefItem> {
                                       backgroundColor: Color(0xFFF5F5F5),
                                       label: Text(
                                         e,
-                                        style: TextStyle(
-                                            color: Color(0xFF7C7070),
-                                            fontSize: 13),
+                                        style: context.typo.caption.copyWith(color: const Color(0xFF7C7070), fontSize: 13),
                                       ),
                                     ),
                                     onTap: () {
@@ -144,7 +141,7 @@ class _SearchDefItem extends State<SearchDefItem> {
                   pinned: true,
                   forceElevated: innerBoxIsScrolled,
                   backgroundColor: Colors.white,
-                  titleTextStyle: TextStyle(color: Colors.amber),
+                  titleTextStyle: context.typo.label.copyWith(color: Colors.amber),
                   bottom: TabBar(
                     tabs: _tabs.map((String name) => Tab(text: name)).toList(),
                     labelColor: Colors.green,

@@ -1,7 +1,9 @@
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../../constant/color_constant.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 
 class GoodsFilterPageV2 extends StatefulWidget {
@@ -85,7 +87,9 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                 SizedBox(
                   child: Text(
                     '全部筛选',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.typo.sectionTitle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Container(
@@ -115,7 +119,7 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                                         sel[index]!.isNotEmpty
                                     ? Text(
                                         sel[index]!.length.toString(),
-                                        style: TextStyle(color: Colors.white),
+                                        style: context.typo.label.copyWith(color: Colors.white),
                                       )
                                     : null,
                                 icon: Icon(
@@ -313,7 +317,7 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                               child: Center(
                                 child: Text(
                                   '重置',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.button,
                                 ),
                               ),
                               decoration: BoxDecoration(
@@ -338,7 +342,7 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                           child: Center(
                             child: Text(
                               '完成',
-                              style: TextStyle(color: Colors.white),
+                              style: context.typo.button,
                             ),
                           ),
                           // color: Colors.red,

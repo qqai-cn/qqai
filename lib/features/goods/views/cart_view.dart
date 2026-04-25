@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../router/app_routes.dart';
 import '../models/cart_line.dart';
@@ -42,9 +43,8 @@ class _CartViewState extends ConsumerState<CartView> {
         foregroundColor: JdGoodsTheme.text,
         title: Text(
           '购物车',
-          style: TextStyle(
+          style: context.typo.appBarTitle.copyWith(
             fontSize: 18.sp,
-            fontWeight: FontWeight.w600,
             color: JdGoodsTheme.text,
           ),
         ),
@@ -93,7 +93,10 @@ class _CartViewState extends ConsumerState<CartView> {
                     ),
                     Text(
                       '全选',
-                      style: TextStyle(fontSize: 14.sp, color: JdGoodsTheme.text),
+                      style: context.typo.body.copyWith(
+                        fontSize: 14.sp,
+                        color: JdGoodsTheme.text,
+                      ),
                     ),
                     SizedBox(width: 8.w),
                     Expanded(
@@ -107,14 +110,14 @@ class _CartViewState extends ConsumerState<CartView> {
                             children: [
                               Text(
                                 '合计：',
-                                style: TextStyle(
+                                style: context.typo.caption.copyWith(
                                   fontSize: 13.sp,
                                   color: JdGoodsTheme.sub,
                                 ),
                               ),
                               Text(
                                 '¥',
-                                style: TextStyle(
+                                style: context.typo.price.copyWith(
                                   fontSize: 12.sp,
                                   color: JdGoodsTheme.red,
                                   fontWeight: FontWeight.w600,
@@ -122,7 +125,7 @@ class _CartViewState extends ConsumerState<CartView> {
                               ),
                               Text(
                                 selectedTotal.toStringAsFixed(2),
-                                style: TextStyle(
+                                style: context.typo.price.copyWith(
                                   fontSize: 20.sp,
                                   color: JdGoodsTheme.red,
                                   fontWeight: FontWeight.w700,
@@ -133,7 +136,7 @@ class _CartViewState extends ConsumerState<CartView> {
                           if (selectedCount > 0)
                             Text(
                               '已选 $selectedCount 件',
-                              style: TextStyle(
+                              style: context.typo.caption.copyWith(
                                 fontSize: 11.sp,
                                 color: JdGoodsTheme.sub,
                               ),
@@ -159,7 +162,7 @@ class _CartViewState extends ConsumerState<CartView> {
                       ),
                       child: Text(
                         selectedCount > 0 ? '去结算($selectedCount)' : '去结算',
-                        style: TextStyle(
+                        style: context.typo.button.copyWith(
                           fontSize: 15.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -188,7 +191,7 @@ class _EmptyCart extends StatelessWidget {
           SizedBox(height: 16.h),
           Text(
             '购物车空空如也～',
-            style: TextStyle(
+            style: context.typo.sectionTitle.copyWith(
               fontSize: 16.sp,
               color: JdGoodsTheme.sub,
             ),
@@ -196,7 +199,7 @@ class _EmptyCart extends StatelessWidget {
           SizedBox(height: 8.h),
           Text(
             '快去挑选心仪商品吧',
-            style: TextStyle(
+            style: context.typo.caption.copyWith(
               fontSize: 13.sp,
               color: JdGoodsTheme.sub,
             ),
@@ -263,11 +266,10 @@ class _JdCartItemCard extends StatelessWidget {
                   line.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
+                  style: context.typo.cardTitle.copyWith(
                     fontSize: 14.sp,
                     height: 1.35,
                     color: JdGoodsTheme.text,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 SizedBox(height: 8.h),
@@ -276,7 +278,7 @@ class _JdCartItemCard extends StatelessWidget {
                   children: [
                     Text(
                       '¥',
-                      style: TextStyle(
+                      style: context.typo.price.copyWith(
                         fontSize: 12.sp,
                         color: JdGoodsTheme.red,
                         fontWeight: FontWeight.w600,
@@ -284,7 +286,7 @@ class _JdCartItemCard extends StatelessWidget {
                     ),
                     Text(
                       line.price.toStringAsFixed(2),
-                      style: TextStyle(
+                      style: context.typo.price.copyWith(
                         fontSize: 18.sp,
                         color: JdGoodsTheme.red,
                         fontWeight: FontWeight.w700,
@@ -305,7 +307,10 @@ class _JdCartItemCard extends StatelessWidget {
                     icon: Icon(Icons.delete_outline, size: 18.sp, color: JdGoodsTheme.sub),
                     label: Text(
                       '删除',
-                      style: TextStyle(fontSize: 13.sp, color: JdGoodsTheme.sub),
+                      style: context.typo.caption.copyWith(
+                        fontSize: 13.sp,
+                        color: JdGoodsTheme.sub,
+                      ),
                     ),
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.only(top: 4.h),
@@ -360,9 +365,8 @@ class _JdStepper extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '$qty',
-              style: TextStyle(
+              style: context.typo.bodyStrong.copyWith(
                 fontSize: 14.sp,
-                fontWeight: FontWeight.w600,
                 color: JdGoodsTheme.text,
               ),
             ),

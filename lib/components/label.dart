@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 文本标签：仅 [content] 必填；[color] 默认跟主题，[onTap] 默认可不点。
 class Label extends StatelessWidget {
@@ -23,7 +23,7 @@ class Label extends StatelessWidget {
     final textChild = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
       child: DefaultTextStyle.merge(
-        style: TextStyle(fontSize: MyFonts.labelSize, color: effectiveColor),
+        style: context.typo.label.copyWith(color: effectiveColor),
         child: Text(content),
       ),
     );

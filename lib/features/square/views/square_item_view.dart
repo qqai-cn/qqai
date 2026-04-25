@@ -1,19 +1,36 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qqai/constant/constant.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class SquareItemView extends StatelessWidget {
-  double imgHover = 60;
-  bool _care = false;
-  String SPLIT_O = Constant.SPLIT_O;
+  const SquareItemView({
+    super.key,
+    this.imageUrl = 'https://file.qqai.cn/qqai/2025/09/square.webp',
+    this.avatarAsset = 'imgs/img_default.png',
+    this.title = '长风破浪长风破浪长风222,破浪长风破浪长风破浪长风破浪',
+    this.heatText = '1212 热度',
+    this.timeText = '2天前',
+  });
+
+  final String imageUrl;
+  final String avatarAsset;
+  final String title;
+  final String heatText;
+  final String timeText;
 
   @override
   Widget build(BuildContext context) {
+    const double avatarSize = 60;
+    const SizedBox gapH2 = SizedBox(height: 2);
+    const SizedBox gapH4 = SizedBox(height: 4);
+    const SizedBox gapW8 = SizedBox(width: 8);
+    final TextStyle titleStyle = context.typo.cardTitle;
+    final TextStyle metaStyle = context.typo.caption;
+
     return InkWell(
       onTap: () {
         context.push(Routes.squareBlogView);
@@ -27,122 +44,110 @@ class SquareItemView extends StatelessWidget {
           children: <Widget>[
             Expanded(
               flex: 2,
-              child: Container(
-                width: 1.sw,
-                child: CachedNetworkImage(
-                  imageUrl: 'https://file.qqai.cn/qqai/2025/09/square.webp',
-                  placeholder: (context, url) => CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                  // 图片加载完成后淡入显示（提升体验）
-                  fadeInDuration: Duration(milliseconds: 300),
-                ),
+              child: CachedNetworkImage(
+                width: double.infinity,
+                fit: BoxFit.cover,
+                imageUrl: imageUrl,
+                placeholder:
+                    (context, url) => const ColoredBox(
+                      color: Color(0xFFF3F4F6),
+                      child: Center(
+                        child: SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                    ),
+                errorWidget:
+                    (context, url, error) => const ColoredBox(
+                      color: Color(0xFFF3F4F6),
+                      child: Center(child: Icon(Icons.broken_image_outlined)),
+                    ),
+                fadeInDuration: const Duration(milliseconds: 300),
               ),
             ),
-            Container(height: 2),
-            Container(
+            gapH2,
+            SizedBox(
               height: 80,
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  InkWell(
-                    onHover: (a) {},
-                    onTap: () => {},
-                    child: Image.asset(
-                      'imgs/img_default.png',
-                      width: imgHover,
-                      height: imgHover,
-                    ),
+                  Image.asset(
+                    avatarAsset,
+                    width: avatarSize,
+                    height: avatarSize,
                   ),
+                  gapW8,
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        AutoSizeText(
-                          '长风破浪长风破浪长风222,破浪长风破浪长风破浪长风破浪',
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 17, color: Colors.black),
+                        Expanded(
+                          child: Text(
+                            title,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: titleStyle,
+                          ),
                         ),
+                        gapH4,
                         Row(
                           children: [
-                            InkWell(
-                              onHover: (a) {},
-                              onTap: () => {},
-                              child: Row(
-                                children: <Widget>[
-                                  Text(
-                                    '',
-                                    textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 17,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    // textScaleFactor: 1.5,
-                                  ),
-                                ],
-                              ),
-                            ),
                             Expanded(
                               child: Text(
-                                ' ◉ 1212 热度  ◉ 2天前',
+                                '◉ $heatText  ◉ $timeText',
                                 textAlign: TextAlign.left,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 10,
-                                ),
+                                style: metaStyle,
                               ),
+                            ),
+                            PopupMenuButton<String>(
+                              tooltip: "",
+                              icon: const Icon(
+                                Icons.more_horiz,
+                                color: Colors.black54,
+                              ),
+                              onSelected: (va) {
+                                print(va);
+                              },
+                              itemBuilder: (BuildContext context) {
+                                return <PopupMenuEntry<String>>[
+                                  PopupMenuItem<String>(
+                                    value: '0',
+                                    child: Text(
+                                      '收藏',
+                                      style: context.typo.body.copyWith(color: Colors.black54),
+                                    ),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: '1',
+                                    child: Text(
+                                      '举报',
+                                      style: context.typo.body.copyWith(color: Colors.black54),
+                                    ),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: '2',
+                                    child: Text(
+                                      '不感兴趣',
+                                      style: context.typo.body.copyWith(color: Colors.black54),
+                                    ),
+                                  ),
+                                  PopupMenuItem<String>(
+                                    value: '3',
+                                    child: Text(
+                                      '加入播放队列',
+                                      style: context.typo.body.copyWith(color: Colors.black54),
+                                    ),
+                                  ),
+                                ];
+                              },
                             ),
                           ],
                         ),
-                        Container(height: 5),
                       ],
                     ),
-                  ),
-                  // Spacer(),
-                  Column(
-                    children: [
-                      Spacer(),
-                      PopupMenuButton(
-                        tooltip: "",
-                        icon: Icon(Icons.more_horiz, color: Colors.black54),
-                        onSelected: (va) {
-                          print(va);
-                        },
-                        itemBuilder: (BuildContext context) {
-                          return <PopupMenuEntry<String>>[
-                            PopupMenuItem<String>(
-                              value: '0',
-                              child: Text(
-                                '收藏',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            ),
-                            PopupMenuItem<String>(
-                              value: '1',
-                              child: Text(
-                                '举报',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            ),
-                            PopupMenuItem<String>(
-                              value: '2',
-                              child: Text(
-                                '不感兴趣',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            ),
-                            PopupMenuItem<String>(
-                              value: '3',
-                              child: Text(
-                                '加入播放队列',
-                                style: TextStyle(color: Colors.black54),
-                              ),
-                            ),
-                          ];
-                        },
-                      ),
-                    ],
                   ),
                 ],
               ),
@@ -151,25 +156,5 @@ class SquareItemView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  int getCount(int count) {
-    if (count <= 3) {
-      return count;
-    } else {
-      return 3;
-    }
-  }
-
-  double getRatio(int count) {
-    if (count == 1) {
-      return 5 / 3;
-    } else if (count == 2) {
-      return 1;
-    } else if (count >= 3) {
-      return 1;
-    } else {
-      return 1;
-    }
   }
 }

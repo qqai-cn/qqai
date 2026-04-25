@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class UrlToolPage extends StatefulWidget {
   const UrlToolPage({super.key});
@@ -120,9 +121,9 @@ class _UrlToolPageState extends State<UrlToolPage>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
-                                const Text(
+                                Text(
                                   'URI Codec Matrix',
-                                  style: TextStyle(
+                                  style: context.typo.heroTitle.copyWith(
                                     color: Color(0xFF8EEFFF),
                                     fontSize: 22,
                                     fontWeight: FontWeight.w700,
@@ -130,9 +131,9 @@ class _UrlToolPageState extends State<UrlToolPage>
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
+                                Text(
                                   '粘贴文本，一键 UrlEncode / UrlDecode',
-                                  style: TextStyle(
+                                  style: context.typo.caption.copyWith(
                                     color: Color(0xFF7C91B5),
                                     fontSize: 13,
                                   ),
@@ -144,18 +145,11 @@ class _UrlToolPageState extends State<UrlToolPage>
                                     maxLines: null,
                                     expands: true,
                                     textAlignVertical: TextAlignVertical.top,
-                                    style: const TextStyle(
-                                      color: Color(0xFFE7F0FF),
-                                      fontSize: 15,
-                                      height: 1.45,
-                                      fontFamily: 'monospace',
-                                    ),
+                                    style: context.typo.mono.copyWith(color: const Color(0xFFE7F0FF), fontSize: 15, height: 1.45),
                                     decoration: InputDecoration(
                                       alignLabelWithHint: true,
                                       hintText: '转换的内容粘贴在这里',
-                                      hintStyle: const TextStyle(
-                                        color: Color(0xFF6E86B2),
-                                      ),
+                                      hintStyle: context.typo.inputHint.copyWith(color: const Color(0xFF6E86B2)),
                                       filled: true,
                                       fillColor: const Color(0xAA0A1328),
                                       border: OutlineInputBorder(

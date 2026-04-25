@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../../../constant/color_constant.dart';
 import '../../../../../constant/constant.dart';
@@ -46,6 +47,11 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
   Widget build(BuildContext context) {
     final blogNotifier = ref.read(blogProvider.notifier);
     final isWideScreen = 1.sw > 900;
+    final titleStyle = context.typo.cardTitle.copyWith(
+      fontWeight: FontWeight.bold,
+    );
+    final metaStyle = context.typo.caption;
+    final bodyStyle = context.typo.body;
     return Padding(
       padding: const EdgeInsets.all(8),
       child: Column(
@@ -70,10 +76,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                         onTap: () {},
                         child: AutoSizeText(
                           widget.blogItem.creatorName ?? '未知用户',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: titleStyle,
                           minFontSize: 10,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -83,10 +86,10 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                     ],
                   ),
                   Container(height: 2, color: Colors.white),
-                  const Text(
+                  Text(
                     '关注 32 KW ◉️ 活跃 333 KW',
                     textAlign: TextAlign.left,
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: metaStyle,
                   ),
                 ],
               ),
@@ -106,8 +109,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                         ),
                   child: Text(
                     widget.blogItem.care == 1 ? '已关注' : '关注',
-                    style: TextStyle(
-                      fontSize: 13,
+                    style: context.typo.button.copyWith(
                       color: widget.blogItem.care == 1
                           ? ColorConstant.ThemeGreen
                           : Colors.white,
@@ -125,7 +127,10 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
             scrollPhysics: NeverScrollableScrollPhysics(),
             maxLines: 3,
             minLines: 1,
-            style: TextStyle(fontSize: 20, overflow: TextOverflow.ellipsis),
+            style: bodyStyle.copyWith(
+              fontSize: (bodyStyle.fontSize ?? 16),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
           SizedBox(height: 10),
           LayoutBuilder(
@@ -232,21 +237,21 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                       value: '0',
                       child: Text(
                         '收藏',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '1',
                       child: Text(
                         '举报',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '2',
                       child: Text(
                         '不感兴趣',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                   ];
@@ -329,7 +334,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
             ),
             Text(
               '2022-12-11 10：12',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+              style: context.typo.caption.copyWith(fontSize: 15),
             ),
             SizedBox(
               height: 5,

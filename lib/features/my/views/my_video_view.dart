@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/label.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyVideoView extends StatefulWidget {
   final int tabIndex;
@@ -69,7 +71,10 @@ class _TabPageState extends State<MyVideoView>
                           size: 25,
                           color: Colors.white,
                         ),
-                        Text('300', style: TextStyle(color: Colors.white)),
+                        Text(
+                          '300',
+                          style: context.typo.label.copyWith(color: Colors.white),
+                        ),
                       ],
                     ),
                   ),

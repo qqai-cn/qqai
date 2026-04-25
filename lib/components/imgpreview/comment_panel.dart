@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class CommentPanel extends ConsumerWidget {
   const CommentPanel({super.key});
@@ -21,9 +22,9 @@ class CommentPanel extends ConsumerWidget {
             ),
             child: Row(
               children: [
-                const Text(
+                Text(
                   '评论 (128)',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: context.typo.body.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(

@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../../constant/color_constant.dart';
 import '../../../data/models/huati_entity.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class FilterPage extends StatefulWidget {
   Map<int, String> commonNamesSel = {};
@@ -51,7 +53,9 @@ class _FilterPage extends State<FilterPage> {
             SizedBox(
               child: Text(
                 '标签筛选',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: context.typo.sectionTitle.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             Container(
@@ -100,7 +104,7 @@ class _FilterPage extends State<FilterPage> {
                           child: Center(
                             child: Text(
                               '重置',
-                              style: TextStyle(color: Colors.white),
+                              style: context.typo.button,
                             ),
                           ),
                           decoration: BoxDecoration(
@@ -125,7 +129,7 @@ class _FilterPage extends State<FilterPage> {
                           child: Center(
                             child: Text(
                               '完成',
-                              style: TextStyle(color: Colors.white),
+                              style: context.typo.button,
                             ),
                           ),
                           // color: Colors.red,

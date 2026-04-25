@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/api_constant.dart';
 
 import '../data/models/idCard_bean_entity.dart';
@@ -127,8 +128,8 @@ class _IdToolPage extends State<IdToolPage> with SingleTickerProviderStateMixin 
             child: Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF8CA8D8),
+              style: context.typo.label.copyWith(
+                color: const Color(0xFF8CA8D8),
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
@@ -139,10 +140,9 @@ class _IdToolPage extends State<IdToolPage> with SingleTickerProviderStateMixin 
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: SelectableText(
                 value.isEmpty ? '--' : value,
-                style: const TextStyle(
-                  color: Color(0xFFE7F0FF),
+                style: context.typo.mono.copyWith(
+                  color: const Color(0xFFE7F0FF),
                   fontSize: 14,
-                  fontFamily: 'monospace',
                 ),
               ),
             ),
@@ -250,20 +250,19 @@ class _IdToolPage extends State<IdToolPage> with SingleTickerProviderStateMixin 
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
+                        Text(
                           'Identity Intelligence Scan',
-                          style: TextStyle(
-                            color: Color(0xFF8EEFFF),
+                          style: context.typo.heroTitle.copyWith(
+                            color: const Color(0xFF8EEFFF),
                             fontSize: 22,
-                            fontWeight: FontWeight.w700,
                             letterSpacing: 0.4,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           '输入身份证号码，解析基础身份信息',
-                          style: TextStyle(
-                            color: Color(0xFF7C91B5),
+                          style: context.typo.caption.copyWith(
+                            color: const Color(0xFF7C91B5),
                             fontSize: 13,
                           ),
                         ),
@@ -273,19 +272,20 @@ class _IdToolPage extends State<IdToolPage> with SingleTickerProviderStateMixin 
                             Expanded(
                               child: TextField(
                                 controller: _controller,
-                                style: const TextStyle(
-                                  color: Color(0xFFE7F0FF),
+                                style: context.typo.mono.copyWith(
+                                  color: const Color(0xFFE7F0FF),
                                   fontSize: 16,
-                                  fontFamily: 'monospace',
                                 ),
                                 keyboardType: TextInputType.number,
                                 maxLength: 18,
                                 decoration: InputDecoration(
-                                  counterStyle:
-                                      const TextStyle(color: Color(0xFF7C91B5)),
+                                  counterStyle: context.typo.caption.copyWith(
+                                    color: const Color(0xFF7C91B5),
+                                  ),
                                   labelText: '请输入身份证号码',
-                                  labelStyle:
-                                      const TextStyle(color: Color(0xFF8CA8D8)),
+                                  labelStyle: context.typo.label.copyWith(
+                                    color: const Color(0xFF8CA8D8),
+                                  ),
                                   prefixIcon:
                                       const Icon(Icons.badge_outlined, color: Color(0xFF53E5FF)),
                                   suffixIcon: IconButton(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/adaptive_sp.dart';
 
 import '../../../router/app_routes.dart';
@@ -71,7 +71,10 @@ class DouyinGroupBuyPage extends StatelessWidget {
           SliverPadding(
             padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 0),
             sliver: SliverToBoxAdapter(
-              child: Text('为你推荐', style: MyFonts.getAppFontType),
+              child: Text(
+                '为你推荐',
+                style: context.typo.sectionTitle.copyWith(color: DouyinTheme.text),
+              ),
             ),
           ),
           SliverPadding(
@@ -116,19 +119,12 @@ class _Banner extends StatelessWidget {
         children: [
           Text(
             '直播团购 边看边买',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 20.spClamp(maxSp: 30),
-              fontWeight: FontWeight.bold,
-            ),
+            style: context.typo.sectionTitle.copyWith(color: Colors.white, fontSize: 20.spClamp(maxSp: 30), fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 6.h),
           Text(
             '好价好物 · 限时活动 · 与视频同款',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.9),
-              fontSize: 15.spClamp(maxSp: 20),
-            ),
+            style: context.typo.body.copyWith(color: Colors.white.withValues(alpha: 0.9), fontSize: 15.spClamp(maxSp: 20)),
           ),
         ],
       ),
@@ -188,10 +184,7 @@ class _DealCard extends StatelessWidget {
                         ),
                         child: Text(
                           deal.tag,
-                          style: TextStyle(
-                            color: DouyinTheme.accent,
-                            fontWeight: FontWeight.w200,
-                          ),
+                          style: context.typo.caption.copyWith(color: DouyinTheme.accent, fontWeight: FontWeight.w200),
                         ),
                       ),
                       Text(
@@ -201,10 +194,7 @@ class _DealCard extends StatelessWidget {
                       ),
                       Text(
                         deal.price,
-                        style: TextStyle(
-                          color: DouyinTheme.accent,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: context.typo.price.copyWith(color: DouyinTheme.accent, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),

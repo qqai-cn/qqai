@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:logger/logger.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../config/translations/strings_enum.dart';
 
@@ -20,7 +21,7 @@ Future<void> showLoadingOverLay({
     barrierDismissible: false,
     barrierColor: Colors.black.withOpacity(0.7),
     builder: (context) => Center(
-      child: _getLoadingIndicator(msg: msg),
+      child: _getLoadingIndicator(context, msg: msg),
     ),
   );
 
@@ -37,7 +38,7 @@ Future<void> showLoadingOverLay({
   }
 }
 
-Widget _getLoadingIndicator({String? msg}) {
+Widget _getLoadingIndicator(BuildContext context, {String? msg}) {
   return Container(
     padding: EdgeInsets.symmetric(
       horizontal: 20.w,
@@ -54,7 +55,7 @@ Widget _getLoadingIndicator({String? msg}) {
         SizedBox(width: 8.h),
         Text(
           msg ?? Strings.loading,
-          style: const TextStyle(fontSize: 16),
+          style: context.typo.body.copyWith(fontSize: 16),
         ),
       ],
     ),

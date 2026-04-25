@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'level_icon.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 
 void main() => runApp(MyApp());
@@ -66,7 +67,7 @@ class _WhatArticle extends State<WhatArticle> {
               child: Text(
                 '地下城与勇士吧',
                 textAlign: TextAlign.left,
-                style: TextStyle(fontSize: 15),
+                style: context.typo.body.copyWith(fontSize: 15),
                 textScaleFactor: 1.5,
               ),
             ),
@@ -97,7 +98,7 @@ class _WhatArticle extends State<WhatArticle> {
                         ),
                         Text(
                           '帖子标题',
-                          style: TextStyle(fontSize: 20),
+                          style: context.typo.body.copyWith(fontSize: 20),
                         ),
                         Spacer(),
                         ElevatedButton(
@@ -171,7 +172,7 @@ class _WhatArticle extends State<WhatArticle> {
                                               Text(
                                                 '哒哒哒哒',
                                                 textAlign: TextAlign.left,
-                                                style: TextStyle(
+                                                style: context.typo.body.copyWith(
                                                     color: Colors.black,
                                                     fontSize: 11),
                                                 textScaleFactor: 1.5,
@@ -183,7 +184,7 @@ class _WhatArticle extends State<WhatArticle> {
                                                   color: Colors.blue,
                                                   child: Text(
                                                     '楼主',
-                                                    style: TextStyle(
+                                                    style: context.typo.body.copyWith(
                                                         fontSize: 5,
                                                         color: Colors.white),
                                                   ),
@@ -201,7 +202,7 @@ class _WhatArticle extends State<WhatArticle> {
                                           Text(
                                             '22小时前 ',
                                             textAlign: TextAlign.left,
-                                            style: TextStyle(
+                                            style: context.typo.body.copyWith(
                                                 color: Colors.black87,
                                                 fontSize: 4),
                                           ),
@@ -243,7 +244,7 @@ class _WhatArticle extends State<WhatArticle> {
                                             padding: EdgeInsets.only(top: 10),
                                             child: Text(
                                               '《死路》讲述了一家人在圣诞前夕经历一场恐怖遭遇的故事。别忘点击订阅，打开小铃铛哦~加入频道会员，每周抢先观看2集未发布视频微信公众号：宇哥讲电影（求大家关注商务合作，请加微信yimingfirstfacebook主页：https://www.facebook.com/yugemv/',
-                                              style: TextStyle(fontSize: 15),
+                                              style: context.typo.body.copyWith(fontSize: 15),
                                               maxLines: contentLine,
                                             ),
                                           ),
@@ -262,7 +263,7 @@ class _WhatArticle extends State<WhatArticle> {
                                         },
                                         child: Text(
                                           '回复',
-                                          style: TextStyle(color: Colors.blue),
+                                          style: context.typo.body.copyWith(color: Colors.blue),
                                         ),
                                       ),
                                     ),

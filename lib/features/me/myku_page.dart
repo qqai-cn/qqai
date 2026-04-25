@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../data/models/tool_item_bean.dart';
 import '../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MykuPage extends StatefulWidget {
   final int userId;
@@ -116,7 +117,7 @@ class _MykuPage extends State<MykuPage> {
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 '小金库',
-                style: TextStyle(color: Colors.orange),
+                style: context.typo.price.copyWith(color: Colors.orange),
               ),
               background: Container(
                 color: Colors.white,
@@ -136,10 +137,10 @@ class _MykuPage extends State<MykuPage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          const Text(
+                          Text(
                             '会员等级：99',
                             textAlign: TextAlign.left,
-                            style: TextStyle(fontSize: 25),
+                            style: context.typo.heroTitle.copyWith(fontSize: 25),
                           ),
                           Container(
                             height: 2,
@@ -148,7 +149,7 @@ class _MykuPage extends State<MykuPage> {
                           Text(
                             '认证：地产公司经理',
                             textAlign: TextAlign.left,
-                            style: TextStyle(color: Colors.grey, fontSize: 15),
+                            style: context.typo.caption.copyWith(color: Colors.grey, fontSize: 15),
                             // overflow: TextOverflow.ellipsis,
                             // maxLines: 2,
                           ),
@@ -156,19 +157,19 @@ class _MykuPage extends State<MykuPage> {
                             height: 2,
                             color: Colors.white,
                           ),
-                          const Text(
+                          Text(
                             'U币：121个',
                             textAlign: TextAlign.left,
-                            style: TextStyle(color: Colors.grey, fontSize: 15),
+                            style: context.typo.caption.copyWith(color: Colors.grey, fontSize: 15),
                           ),
                           Container(
                             height: 2,
                             color: Colors.white,
                           ),
-                          const Text(
+                          Text(
                             '累计消费：123个',
                             textAlign: TextAlign.left,
-                            style: TextStyle(color: Colors.grey, fontSize: 15),
+                            style: context.typo.caption.copyWith(color: Colors.grey, fontSize: 15),
                           ),
                         ],
                       ),
@@ -194,7 +195,7 @@ class _MykuPage extends State<MykuPage> {
                 allToolItemBeans[index].title +
                     ' - ' +
                     allToolItemBeans[index].subTitle,
-                style: TextStyle(color: Colors.black, fontSize: 20),
+                style: context.typo.sectionTitle.copyWith(color: Colors.black, fontSize: 20),
               ),
             ),
           );

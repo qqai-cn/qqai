@@ -12,6 +12,7 @@ import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import 'widgets/custom_video_progress_bar.dart';
@@ -212,7 +213,10 @@ class _GenThumbnailImageState extends State<GenThumbnailImage> {
           );
         } else {
           return Center(
-            child: Text('加载中...', style: TextStyle(color: Colors.white)),
+            child: Text(
+              '加载中...',
+              style: context.typo.body.copyWith(color: Colors.white),
+            ),
           );
         }
       },
@@ -288,7 +292,7 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                       },
                       child: Text(
                         '使用教程',
-                        style: TextStyle(
+                        style: context.typo.link.copyWith(
                           color: Colors.blue,
                           decoration: TextDecoration.underline, // 添加下划线
                           decorationColor: Colors.blue,
@@ -384,7 +388,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 ElevatedButton(
                                   child: Text(
                                     "横版封面1",
-                                    style: TextStyle(fontSize: 15),
+                                    style: context.typo.button.copyWith(
+                                      fontSize: 15,
+                                    ),
                                   ),
                                   onPressed: () {
                                     toolController.setStyle(1);
@@ -394,7 +400,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 ElevatedButton(
                                   child: Text(
                                     "横版封面2",
-                                    style: TextStyle(fontSize: 15),
+                                    style: context.typo.button.copyWith(
+                                      fontSize: 15,
+                                    ),
                                   ),
                                   onPressed: () {
                                     toolController.setStyle(2);
@@ -411,7 +419,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 ElevatedButton(
                                   child: Text(
                                     "竖版封面1",
-                                    style: TextStyle(fontSize: 15),
+                                    style: context.typo.button.copyWith(
+                                      fontSize: 15,
+                                    ),
                                   ),
                                   onPressed: () {
                                     toolController.setStyle(3);
@@ -421,7 +431,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 ElevatedButton(
                                   child: Text(
                                     "竖版封面2",
-                                    style: TextStyle(fontSize: 15),
+                                    style: context.typo.button.copyWith(
+                                      fontSize: 15,
+                                    ),
                                   ),
                                   onPressed: () {
                                     toolController.setStyle(4);
@@ -804,7 +816,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                             onPressed: () {},
                             icon: Text(
                               '添加到此1',
-                              style: TextStyle(color: Colors.white),
+                              style: context.typo.body.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
                           )
                           : toolController.imgMap[1],
@@ -882,7 +896,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此2',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[2],
@@ -903,7 +919,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此3',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[3],
@@ -929,7 +947,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此4',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[4],
@@ -950,7 +970,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此5',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[5],
@@ -991,7 +1013,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                             onPressed: () {},
                             icon: Text(
                               '添加到此1',
-                              style: TextStyle(color: Colors.white),
+                              style: context.typo.body.copyWith(
+                                color: Colors.white,
+                              ),
                             ),
                           )
                           : toolController.imgMap[1],
@@ -1054,7 +1078,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此2',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[2],
@@ -1070,7 +1096,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此3',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[3],
@@ -1086,7 +1114,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此4',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[4],
@@ -1107,7 +1137,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此5',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[5],
@@ -1123,7 +1155,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此6',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[6],
@@ -1139,7 +1173,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此7',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[7],
@@ -1160,7 +1196,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此8',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[8],
@@ -1176,7 +1214,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此9',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[9],
@@ -1192,7 +1232,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此10',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[10],
@@ -1257,7 +1299,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此1',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[1],
@@ -1301,7 +1345,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此1',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[1],
@@ -1317,7 +1363,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此2',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[2],
@@ -1333,7 +1381,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此3',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[3],
@@ -1354,7 +1404,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此4',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[4],
@@ -1370,7 +1422,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此5',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[5],
@@ -1386,7 +1440,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                 onPressed: () {},
                                 icon: Text(
                                   '添加到此6',
-                                  style: TextStyle(color: Colors.white),
+                                  style: context.typo.body.copyWith(
+                                    color: Colors.white,
+                                  ),
                                 ),
                               )
                               : toolController.imgMap[6],

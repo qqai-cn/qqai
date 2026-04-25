@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../util/adaptive_sp.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 在 [Text] 外包一层，按**父组件**的宽高比用 [num.spByAspectRatio] 动态改字号。
 ///
@@ -36,10 +37,10 @@ class ParentAspectText extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final themeBody =
-            Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+            Theme.of(context).textTheme.bodyMedium ?? context.typo.body.copyWith();
         final merged = DefaultTextStyle.of(context).style
             .merge(themeBody)
-            .merge(text.style ?? const TextStyle());
+            .merge(text.style ?? context.typo.body.copyWith());
         final d = designSp ?? merged.fontSize ?? 14;
         final fontSize = d.spByAspectRatio(
           constraints.maxWidth,

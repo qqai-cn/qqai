@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 
 import 'FullVideoEntity.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class FullScreenVideoPlayer extends StatefulWidget {
   final dynamic videoItem;
@@ -112,7 +113,7 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer>
           padding: EdgeInsets.all(10),
           child: Text(
             '',
-            style: TextStyle(color: Colors.white),
+            style: context.typo.body.copyWith(color: Colors.white),
           ),
         ),
         Spacer(),
@@ -149,7 +150,7 @@ class _FullScreenVideoPlayerState extends State<FullScreenVideoPlayer>
             ),
             Text(
               '${formartDate(controller.value.position)} / ${formartDate(controller.value.duration)}',
-              style: TextStyle(color: Colors.white),
+              style: context.typo.body.copyWith(color: Colors.white),
             ),
             SizedBox(
               width: 10,

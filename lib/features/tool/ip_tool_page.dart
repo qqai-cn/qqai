@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../data/models/ip_bean_entity.dart';
 
@@ -123,11 +124,7 @@ class _IpToolPageState extends State<IpToolPage>
             child: Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF8CA8D8),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+              style: context.typo.label.copyWith(color: const Color(0xFF8CA8D8), fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(
@@ -135,11 +132,7 @@ class _IpToolPageState extends State<IpToolPage>
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: SelectableText(
                 value.isEmpty ? '--' : value,
-                style: const TextStyle(
-                  color: Color(0xFFE7F0FF),
-                  fontSize: 14,
-                  fontFamily: 'monospace',
-                ),
+                style: context.typo.mono.copyWith(color: const Color(0xFFE7F0FF), fontSize: 14),
               ),
             ),
           ),
@@ -256,9 +249,9 @@ class _IpToolPageState extends State<IpToolPage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Text(
+                          Text(
                             'Geo-IP Intelligence',
-                            style: TextStyle(
+                            style: context.typo.heroTitle.copyWith(
                               color: Color(0xFF8EEFFF),
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
@@ -266,9 +259,9 @@ class _IpToolPageState extends State<IpToolPage>
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                          Text(
                             '解析 IP 归属地、运营商等基础信息',
-                            style: TextStyle(
+                            style: context.typo.caption.copyWith(
                               color: Color(0xFF7C91B5),
                               fontSize: 13,
                             ),
@@ -280,16 +273,10 @@ class _IpToolPageState extends State<IpToolPage>
                                 child: TextField(
                                   controller: _controller,
                                   keyboardType: TextInputType.text,
-                                  style: const TextStyle(
-                                    color: Color(0xFFE7F0FF),
-                                    fontSize: 16,
-                                    fontFamily: 'monospace',
-                                  ),
+                                  style: context.typo.mono.copyWith(color: const Color(0xFFE7F0FF), fontSize: 16),
                                   decoration: InputDecoration(
                                     labelText: '请输入 IP 或 local',
-                                    labelStyle: const TextStyle(
-                                      color: Color(0xFF8CA8D8),
-                                    ),
+                                    labelStyle: context.typo.inputHint.copyWith(color: const Color(0xFF8CA8D8)),
                                     prefixIcon: const Icon(
                                       Icons.public,
                                       color: Color(0xFF53E5FF),

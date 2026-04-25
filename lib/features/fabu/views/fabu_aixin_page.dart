@@ -5,8 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../components/video_player_public/public_video_player.dart';
+import '../../../config/theme/app_typography.dart';
 import '../../data/models/address_entity.dart';
 import '../../index/presentation/views/filter_page.dart';
 import '../providers/fabu_providers.dart';
@@ -49,24 +51,24 @@ class _FabuAiXinPage extends ConsumerState<FabuAiXinPage> {
               maxLines: 10,
               maxLength: 1000,
               controller: textEditingController,
-              style: TextStyle(fontSize: 18),
+              style: context.typo.inputText.copyWith(fontSize: 18),
               decoration: InputDecoration(
                 ///设置输入文本框的提示文字
                 ///输入框获取焦点时 并且没有输入文字时
                 // hintText: "这一刻的想法...",
                 ///设置输入文本框的提示文字的样式
-                hintStyle: TextStyle(
+                hintStyle: context.typo.inputHint.copyWith(
                   color: Colors.grey,
                   textBaseline: TextBaseline.ideographic,
                 ),
 
                 ///输入框内的提示 输入框没有获取焦点时显示
                 labelText: "这一刻的想法...",
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: context.typo.inputHint.copyWith(color: Colors.grey),
 
                 ///输入框获取焦点时才会显示出来 输入文本的前面
                 prefixText: "想法：",
-                prefixStyle: TextStyle(color: Colors.blue),
+                prefixStyle: context.typo.bodyStrong.copyWith(color: Colors.blue),
 
                 ///输入文字后面的小图标
                 suffixIcon: IconButton(
@@ -207,24 +209,26 @@ class _FabuAiXinPage extends ConsumerState<FabuAiXinPage> {
                       minLines: 1,
                       maxLines: 1,
                       controller: textEditingController,
-                      style: TextStyle(fontSize: 18),
+                      style: context.typo.inputText.copyWith(fontSize: 18),
                       decoration: InputDecoration(
                         ///设置输入文本框的提示文字
                         ///输入框获取焦点时 并且没有输入文字时
                         // hintText: "这一刻的想法...",
                         ///设置输入文本框的提示文字的样式
-                        hintStyle: TextStyle(
+                        hintStyle: context.typo.inputHint.copyWith(
                           color: Colors.grey,
                           textBaseline: TextBaseline.ideographic,
                         ),
 
                         ///输入框内的提示 输入框没有获取焦点时显示
                         labelText: "最终目标...",
-                        labelStyle: TextStyle(color: Colors.grey),
+                        labelStyle: context.typo.inputHint.copyWith(color: Colors.grey),
 
                         ///输入框获取焦点时才会显示出来 输入文本的前面
                         prefixText: "目标：",
-                        prefixStyle: TextStyle(color: Colors.blue),
+                        prefixStyle: context.typo.bodyStrong.copyWith(
+                          color: Colors.blue,
+                        ),
 
                         ///输入文字后面的小图标
                         suffixIcon: IconButton(
@@ -306,7 +310,7 @@ class _FabuAiXinPage extends ConsumerState<FabuAiXinPage> {
                         value: 1,
                         child: Text(
                           "元",
-                          style: TextStyle(
+                          style: context.typo.body.copyWith(
                             color: 1 == 1 ? Colors.black54 : Colors.grey,
                           ),
                         ),
@@ -315,7 +319,7 @@ class _FabuAiXinPage extends ConsumerState<FabuAiXinPage> {
                         value: 2,
                         child: Text(
                           "个",
-                          style: TextStyle(
+                          style: context.typo.body.copyWith(
                             color: 1 == 2 ? Colors.black54 : Colors.grey,
                           ),
                         ),
@@ -369,7 +373,7 @@ class _FabuAiXinPage extends ConsumerState<FabuAiXinPage> {
                                 ? null
                                 : Text(
                                     '$detail | $distance',
-                                    style: const TextStyle(color: Colors.grey),
+                                    style: context.typo.caption,
                                   ),
                             trailing:
                                 fabuState.selAddressEntity?.name ==

@@ -2,6 +2,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 
 import 'detail_data_manager.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// Default portrait controls.
 class DetailVideoControl extends StatelessWidget {
@@ -59,7 +60,7 @@ class DetailVideoControl extends StatelessWidget {
                               FlickAutoHideChild(
                                 child: Text(
                                   ' / ',
-                                  style: TextStyle(
+                                  style: context.typo.body.copyWith(
                                     color: Colors.white,
                                     fontSize: fontSize,
                                   ),

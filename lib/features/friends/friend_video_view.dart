@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class FriendVideoView extends StatefulWidget {
   final int tabIndex;
@@ -56,7 +58,7 @@ class _TabPageState extends State<FriendVideoView>
                       child: Center(
                         child: Text(
                           '置顶',
-                          style: TextStyle(fontSize: 15, color: Colors.white),
+                          style: context.typo.label.copyWith(fontSize: 15, color: Colors.white),
                         ),
                       ),
                     ),
@@ -74,7 +76,7 @@ class _TabPageState extends State<FriendVideoView>
                         ),
                         Text(
                           '300',
-                          style: TextStyle(color: Colors.white, fontSize: 15),
+                          style: context.typo.label.copyWith(color: Colors.white, fontSize: 15),
                         ),
                       ],
                     ),

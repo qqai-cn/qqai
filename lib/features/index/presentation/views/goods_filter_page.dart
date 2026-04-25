@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class GoodsFilterPage extends StatefulWidget {
   const GoodsFilterPage({super.key});
@@ -169,7 +171,9 @@ class _GoodsFilterPage extends State<GoodsFilterPage> {
                 SizedBox(
                   child: Text(
                     '全部筛选',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: context.typo.sectionTitle.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Container(
@@ -227,8 +231,10 @@ class _GoodsFilterPage extends State<GoodsFilterPage> {
               alignment: Alignment.center,
               child: Text(
                 _left[index].toString(),
-                style:
-                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                style: context.typo.sectionTitle.copyWith(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           );
@@ -264,10 +270,11 @@ class _GoodsFilterPage extends State<GoodsFilterPage> {
                         Container(
                           child: Text(
                             _left[index],
-                            style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromRGBO(51, 51, 51, 1)),
+                            style: context.typo.sectionTitle.copyWith(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: const Color.fromRGBO(51, 51, 51, 1),
+                            ),
                           ),
                           padding: const EdgeInsets.fromLTRB(11, 0, 11, 0),
                         ),
@@ -336,9 +343,10 @@ class _GoodsFilterPage extends State<GoodsFilterPage> {
                         Container(
                           child: Text(
                             _left[index],
-                            style: const TextStyle(
-                                fontSize: 13,
-                                color: Color.fromRGBO(51, 51, 51, 1)),
+                            style: context.typo.sectionTitle.copyWith(
+                              fontSize: 13,
+                              color: const Color.fromRGBO(51, 51, 51, 1),
+                            ),
                           ),
                           padding: const EdgeInsets.fromLTRB(11, 0, 11, 0),
                         ),
@@ -423,9 +431,10 @@ class _GoodsFilterPage extends State<GoodsFilterPage> {
                         padding: const EdgeInsets.fromLTRB(11, 0, 11, 0),
                         child: Text(
                           _left[index],
-                          style: const TextStyle(
-                              fontSize: 13,
-                              color: Color.fromRGBO(51, 51, 51, 1)),
+                          style: context.typo.sectionTitle.copyWith(
+                            fontSize: 13,
+                            color: const Color.fromRGBO(51, 51, 51, 1),
+                          ),
                         ),
                       ),
                       const Expanded(
@@ -487,9 +496,10 @@ class _GoodsFilterPage extends State<GoodsFilterPage> {
                         padding: const EdgeInsets.fromLTRB(11, 0, 11, 0),
                         child: Text(
                           _left[index],
-                          style: const TextStyle(
-                              fontSize: 13,
-                              color: Color.fromRGBO(51, 51, 51, 1)),
+                          style: context.typo.sectionTitle.copyWith(
+                            fontSize: 13,
+                            color: const Color.fromRGBO(51, 51, 51, 1),
+                          ),
                         ),
                       ),
                       const Expanded(

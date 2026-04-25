@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../features/data/models/tool_item_bean.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 
 class ToolItem extends StatelessWidget {
@@ -23,13 +24,13 @@ class ToolItem extends StatelessWidget {
                 width: 50,
               ),
               title: Text(toolItemBean.title,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: context.typo.body.copyWith(fontWeight: FontWeight.bold)),
               subtitle: Text(toolItemBean.subTitle,
-                  style: TextStyle(color: Colors.green)),
+                  style: context.typo.body.copyWith(color: Colors.green)),
             ),
             ListTile(
               title:
-                  Text(style: TextStyle(color: Colors.grey), toolItemBean.desc),
+                  Text(style: context.typo.caption.copyWith(color: Colors.grey), toolItemBean.desc),
             ),
           ],
         ));

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qqai/constant/constant.dart';
 
 import '../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyVideoImgItemV2 extends StatefulWidget {
   MyVideoImgItemV2({this.id = 0});
@@ -83,7 +84,7 @@ class _MyVideoImgItemV2 extends State<MyVideoImgItemV2> {
                           '长风破浪长风破浪长风222,破浪长风破浪长风破浪长风破浪',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 17, color: Colors.black),
+                          style: context.typo.sectionTitle.copyWith(fontSize: 17, color: Colors.black),
                         ),
                         Spacer(),
                         Row(
@@ -94,7 +95,7 @@ class _MyVideoImgItemV2 extends State<MyVideoImgItemV2> {
                                 textAlign: TextAlign.left,
                                 overflow: TextOverflow.ellipsis,
                                 style:
-                                    TextStyle(color: Colors.grey, fontSize: 12),
+                                    context.typo.caption.copyWith(color: Colors.grey, fontSize: 12),
                               ),
                             ),
                           ],
@@ -144,21 +145,21 @@ class _MyVideoImgItemV2 extends State<MyVideoImgItemV2> {
                               value: '0',
                               child: Text(
                                 '收藏',
-                                style: TextStyle(color: Colors.black54),
+                                style: context.typo.body.copyWith(color: Colors.black54),
                               ),
                             ),
                             PopupMenuItem<String>(
                               value: '1',
                               child: Text(
                                 '举报',
-                                style: TextStyle(color: Colors.black54),
+                                style: context.typo.body.copyWith(color: Colors.black54),
                               ),
                             ),
                             PopupMenuItem<String>(
                               value: '2',
                               child: Text(
                                 '不感兴趣',
-                                style: TextStyle(color: Colors.black54),
+                                style: context.typo.body.copyWith(color: Colors.black54),
                               ),
                             ),
                           ];

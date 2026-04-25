@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 void main() => runApp(MyApp());
 
@@ -82,7 +83,7 @@ class _MyCollectPage extends State<MyCollectPage> {
                                 radius: 6,
                                 child: Text(
                                   'X',
-                                  style: TextStyle(fontSize: 9),
+                                  style: context.typo.caption.copyWith(fontSize: 9),
                                 ),
                               ),
                             ),
@@ -110,7 +111,7 @@ class _MyCollectPage extends State<MyCollectPage> {
                               '长风破浪长风破浪长风222,破浪长风破浪长风破浪长风破浪',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(fontSize: 17),
+                              style: context.typo.sectionTitle.copyWith(fontSize: 17),
                             ),
                           ),
                           Row(
@@ -141,9 +142,7 @@ class _MyCollectPage extends State<MyCollectPage> {
                                         Text(
                                           _items[index],
                                           textAlign: TextAlign.left,
-                                          style: TextStyle(
-                                              color: Colors.black,
-                                              fontSize: 11),
+                                          style: context.typo.label.copyWith(color: Colors.black, fontSize: 11),
                                           textScaleFactor: 1.5,
                                         ),
                                         Image.asset(
@@ -161,8 +160,7 @@ class _MyCollectPage extends State<MyCollectPage> {
                                   Text(
                                     '1212 次观看  ◉ 2天前',
                                     textAlign: TextAlign.left,
-                                    style: TextStyle(
-                                        color: Colors.grey, fontSize: 4),
+                                    style: context.typo.caption.copyWith(color: Colors.grey, fontSize: 4),
                                   ),
                                 ],
                               ),

@@ -1,5 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class ItemControls extends StatelessWidget {
   const ItemControls({Key? key}) : super(key: key);
@@ -48,7 +49,7 @@ class ItemControls extends StatelessWidget {
                     FlickAutoHideChild(
                       child: Text(
                         ' / ',
-                        style: TextStyle(
+                        style: context.typo.body.copyWith(
                           color: Colors.white,
                           fontSize: fontSize,
                         ),

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 与物理行号对齐的一段可折叠 JSON 区间（起止行闭区间）。
 class _JsonFoldRegion {
@@ -423,26 +424,17 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                             ),
                           ],
                         ),
-                        child: const Column(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'JSON Neural Studio',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF8EEFFF),
-                                letterSpacing: 0.3,
-                              ),
+                              style: context.typo.heroTitle.copyWith(fontSize: 22, fontWeight: FontWeight.w700, color: const Color(0xFF8EEFFF), letterSpacing: 0.3),
                             ),
                             SizedBox(height: 10),
                             Text(
                               '单面板工作流：在同一编辑区粘贴、格式化、压缩，并支持代码折叠查看。',
-                              style: TextStyle(
-                                height: 1.5,
-                                color: Color(0xFF7C91B5),
-                                fontSize: 14,
-                              ),
+                              style: context.typo.pageSubtitle.copyWith(height: 1.5, color: const Color(0xFF7C91B5), fontSize: 14),
                             ),
                           ],
                         ),
@@ -521,7 +513,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                                 foregroundColor: const Color(0xFF8EEFFF),
                                 side: const BorderSide(color: Color(0x5500E5FF)),
                               ),
-                              child: const Text('全部展开'),
+                              child: Text('全部展开'),
                             ),
                             OutlinedButton(
                               onPressed: () => _setExpandAll(false),
@@ -529,7 +521,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                                 foregroundColor: const Color(0xFF8EEFFF),
                                 side: const BorderSide(color: Color(0x5500E5FF)),
                               ),
-                              child: const Text('全部收起'),
+                              child: Text('全部收起'),
                             ),
                           ],
                           OutlinedButton.icon(
@@ -592,11 +584,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                               Expanded(
                                 child: Text(
                                   _errorText!,
-                                  style: const TextStyle(
-                                    color: Color(0xFFFFD6D6),
-                                    height: 1.45,
-                                    fontSize: 13,
-                                  ),
+                                  style: context.typo.caption.copyWith(color: const Color(0xFFFFD6D6), height: 1.45, fontSize: 13),
                                 ),
                               ),
                               if (_errorOffset != null)
@@ -605,7 +593,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                                   style: TextButton.styleFrom(
                                     foregroundColor: const Color(0xFF6BFFDE),
                                   ),
-                                  child: const Text('跳到错误'),
+                                  child: Text('跳到错误'),
                                 ),
                             ],
                           ),
@@ -681,10 +669,9 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
+                  style: context.typo.sectionTitle.copyWith(
                     fontSize: 18,
-                    color: Color(0xFF8EEFFF),
+                    color: const Color(0xFF8EEFFF),
                   ),
                 ),
               ),
@@ -758,12 +745,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                                 padding: const EdgeInsets.only(right: 6),
                                 child: Text(
                                   '${i + 1}',
-                                  style: TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 12,
-                                    height: _editorLineHeight,
-                                    color: const Color(0xFF7C9BB8),
-                                  ),
+                                  style: context.typo.mono.copyWith(fontSize: 12, height: _editorLineHeight, color: const Color(0xFF7C9BB8)),
                                 ),
                               ),
                             ),
@@ -788,15 +770,10 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                     expands: true,
                     maxLines: null,
                     minLines: null,
-                    style: const TextStyle(
-                      fontSize: _editorFontSize,
-                      height: _editorLineHeight,
-                      fontFamily: 'monospace',
-                      color: Color(0xFFE7F0FF),
-                    ),
+                    style: context.typo.mono.copyWith(fontSize: _editorFontSize, height: _editorLineHeight, color: const Color(0xFFE7F0FF)),
                     decoration: InputDecoration(
                       hintText: hint,
-                      hintStyle: const TextStyle(color: Color(0xFF6E86B2)),
+                      hintStyle: context.typo.inputHint.copyWith(color: const Color(0xFF6E86B2)),
                       isDense: true,
                       border: InputBorder.none,
                       filled: true,
@@ -840,10 +817,10 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
         border: Border.all(color: const Color(0x5500E5FF)),
       ),
       child: DefaultTextStyle.merge(
-        style: const TextStyle(
+        style: context.typo.label.copyWith(
           fontFamily: 'monospace',
           fontSize: 12,
-          color: Color(0xFF9EC5E8),
+          color: const Color(0xFF9EC5E8),
           height: 1.3,
         ),
         child: Wrap(
@@ -1062,7 +1039,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
   static final RegExp _jsonKeyColon = RegExp(r'"(?:\\.|[^"\\])*"\s*:');
 
   List<InlineSpan> _highlightJsonLine(String line) {
-    const base = TextStyle(fontFamily: 'monospace', fontSize: 13.5, height: 1.45);
+    final base = context.typo.mono.copyWith(fontSize: 13.5, height: 1.45);
     TextStyle c(Color col) => base.copyWith(color: col);
     const def = Color(0xFFD4D4D4);
     const keyC = Color(0xFF9CDCFE);
@@ -1086,7 +1063,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
   }
 
   List<InlineSpan> _highlightJsonValues(String s) {
-    const base = TextStyle(fontFamily: 'monospace', fontSize: 13.5, height: 1.45);
+    final base = context.typo.mono.copyWith(fontSize: 13.5, height: 1.45);
     TextStyle c(Color col) => base.copyWith(color: col);
     const def = Color(0xFFD4D4D4);
     const strC = Color(0xFFCE9178);
@@ -1213,12 +1190,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
                   child: Text(
                     '${row.displayLineNumber}',
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 12,
-                      height: 1.45,
-                      color: Color(0xFF858585),
-                    ),
+                    style: context.typo.mono.copyWith(fontSize: 12, height: 1.45, color: const Color(0xFF858585)),
                   ),
                 ),
               ],
@@ -1227,11 +1199,7 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
           Expanded(
             child: SelectableText.rich(
               TextSpan(children: _highlightJsonLine(row.text)),
-              style: const TextStyle(
-                fontFamily: 'monospace',
-                fontSize: 13.5,
-                height: 1.45,
-              ),
+              style: context.typo.mono.copyWith(fontSize: 13.5, height: 1.45),
             ),
           ),
         ],
@@ -1251,9 +1219,12 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0x5500E5FF)),
       ),
-      child: const Text(
+      child: Text(
         '请先输入合法 JSON，再切换折叠模式',
-        style: TextStyle(color: Color(0xFF7C91B5), fontSize: 14),
+        style: context.typo.pageSubtitle.copyWith(
+          color: const Color(0xFF7C91B5),
+          fontSize: 14,
+        ),
       ),
     );
     }
@@ -1298,10 +1269,10 @@ class _JsonFormatterPageState extends State<JsonFormatterPage>
       ),
       child: Text(
         '$label: $value',
-        style: const TextStyle(
+        style: context.typo.label.copyWith(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF8EEFFF),
+          color: const Color(0xFF8EEFFF),
         ),
       ),
     );

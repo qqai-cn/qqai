@@ -5,8 +5,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../components/video_player_public/public_video_player.dart';
+import '../../../config/theme/app_typography.dart';
 import '../../data/models/address_entity.dart';
 import '../../index/presentation/views/filter_page.dart';
 import '../providers/fabu_providers.dart';
@@ -112,20 +114,20 @@ class _FabuGoodsPage extends ConsumerState<FabuGoodsPage> {
               maxLines: 2,
               maxLength: 100,
               controller: goodsEditingController,
-              style: TextStyle(fontSize: 18),
+              style: context.typo.inputText.copyWith(fontSize: 18),
               decoration: InputDecoration(
-                hintStyle: TextStyle(
+                hintStyle: context.typo.inputHint.copyWith(
                   color: Colors.grey,
                   textBaseline: TextBaseline.ideographic,
                 ),
 
                 ///输入框内的提示 输入框没有获取焦点时显示
                 labelText: "商品标题",
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: context.typo.inputHint.copyWith(color: Colors.grey),
 
                 ///输入框获取焦点时才会显示出来 输入文本的前面
                 prefixText: "标题：",
-                prefixStyle: TextStyle(color: Colors.blue),
+                prefixStyle: context.typo.bodyStrong.copyWith(color: Colors.blue),
 
                 ///输入文字后面的小图标
                 suffixIcon: IconButton(
@@ -199,20 +201,20 @@ class _FabuGoodsPage extends ConsumerState<FabuGoodsPage> {
               maxLines: 1,
               maxLength: 20,
               controller: priceEditingController,
-              style: TextStyle(fontSize: 18),
+              style: context.typo.inputText.copyWith(fontSize: 18),
               decoration: InputDecoration(
-                hintStyle: TextStyle(
+                hintStyle: context.typo.inputHint.copyWith(
                   color: Colors.grey,
                   textBaseline: TextBaseline.ideographic,
                 ),
 
                 ///输入框内的提示 输入框没有获取焦点时显示
                 labelText: "价格",
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: context.typo.inputHint.copyWith(color: Colors.grey),
 
                 ///输入框获取焦点时才会显示出来 输入文本的前面
                 prefixText: "¥：",
-                prefixStyle: TextStyle(color: Colors.blue),
+                prefixStyle: context.typo.bodyStrong.copyWith(color: Colors.blue),
 
                 ///输入文字后面的小图标
                 suffixIcon: IconButton(
@@ -285,20 +287,20 @@ class _FabuGoodsPage extends ConsumerState<FabuGoodsPage> {
               maxLines: 10,
               maxLength: 1000,
               controller: descEditingController,
-              style: TextStyle(fontSize: 18),
+              style: context.typo.inputText.copyWith(fontSize: 18),
               decoration: InputDecoration(
-                hintStyle: TextStyle(
+                hintStyle: context.typo.inputHint.copyWith(
                   color: Colors.grey,
                   textBaseline: TextBaseline.ideographic,
                 ),
 
                 ///输入框内的提示 输入框没有获取焦点时显示
                 labelText: "商品描述",
-                labelStyle: TextStyle(color: Colors.grey),
+                labelStyle: context.typo.inputHint.copyWith(color: Colors.grey),
 
                 ///输入框获取焦点时才会显示出来 输入文本的前面
                 prefixText: "描述：",
-                prefixStyle: TextStyle(color: Colors.blue),
+                prefixStyle: context.typo.bodyStrong.copyWith(color: Colors.blue),
 
                 ///输入文字后面的小图标
                 suffixIcon: IconButton(
@@ -393,7 +395,7 @@ class _FabuGoodsPage extends ConsumerState<FabuGoodsPage> {
                                 ? null
                                 : Text(
                                     '$detail | $distance',
-                                    style: TextStyle(color: Colors.grey),
+                                    style: context.typo.caption,
                                   ),
                             trailing:
                                 fabuState.selAddressEntity?.name ==

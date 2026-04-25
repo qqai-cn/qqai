@@ -4,6 +4,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/help/data/models/help_page_model.dart';
 import 'package:qqai/features/help/providers/help_providers.dart';
 
@@ -35,6 +36,9 @@ class _HelpVideoItemViewState extends ConsumerState<ShareVideoItemView> {
   Widget build(BuildContext context) {
     final shareState = ref.watch(shareProvider);
     final shareNotifier = ref.read(shareProvider.notifier);
+    final titleStyle = context.typo.cardTitle;
+    final metaStyle = context.typo.caption;
+    final bodyStyle = context.typo.body;
     return Padding(
       padding: EdgeInsets.all(2),
       child: Column(
@@ -63,7 +67,7 @@ class _HelpVideoItemViewState extends ConsumerState<ShareVideoItemView> {
                         onTap: () {},
                         child: AutoSizeText(
                           '${widget.helpItem.creatorName}',
-                          style: TextStyle(fontSize: 20),
+                          style: titleStyle,
                           minFontSize: 10,
                           maxLines: 1,
                         ),
@@ -74,7 +78,7 @@ class _HelpVideoItemViewState extends ConsumerState<ShareVideoItemView> {
                   Text(
                     '关注 32 KW $split_o️ 活跃 333 KW',
                     textAlign: TextAlign.left,
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: metaStyle,
                   ),
                 ],
               ),
@@ -98,17 +102,13 @@ class _HelpVideoItemViewState extends ConsumerState<ShareVideoItemView> {
                   child: widget.helpItem.care == 1
                       ? Text(
                           "已关注",
-                          style: const TextStyle(
-                            fontSize: 13,
+                          style: context.typo.button.copyWith(
                             color: ColorConstant.ThemeGreen,
                           ),
                         )
                       : Text(
                           "关注",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.white,
-                          ),
+                          style: context.typo.button,
                         ),
                 ),
               ),
@@ -119,7 +119,10 @@ class _HelpVideoItemViewState extends ConsumerState<ShareVideoItemView> {
             child: SelectableText(
               widget.helpItem.content!,
               maxLines: 1,
-              style: TextStyle(fontSize: 20, overflow: TextOverflow.ellipsis),
+              style: bodyStyle.copyWith(
+                fontSize: (bodyStyle.fontSize ?? 16),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           Container(height: 2, color: Colors.white),
@@ -173,28 +176,28 @@ class _HelpVideoItemViewState extends ConsumerState<ShareVideoItemView> {
                       value: '0',
                       child: Text(
                         '收藏',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '1',
                       child: Text(
                         '举报',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '2',
                       child: Text(
                         '不感兴趣',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '3',
                       child: Text(
                         '加入播放队列',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                   ];
@@ -252,7 +255,7 @@ class _HelpVideoItemViewState extends ConsumerState<ShareVideoItemView> {
             SizedBox(height: 5),
             Text(
               '2022-12-11 10：12',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+              style: context.typo.caption.copyWith(fontSize: 15),
             ),
             SizedBox(height: 5),
           ],

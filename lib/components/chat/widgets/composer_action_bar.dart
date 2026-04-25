@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class ComposerActionButton {
   final IconData icon;
@@ -42,7 +43,7 @@ class ComposerActionBar extends StatelessWidget {
                 ),
                 label: Text(
                   buttons[i].title,
-                  style: TextStyle(
+                  style: context.typo.body.copyWith(
                     color: buttons[i].destructive ? Colors.red : null,
                   ),
                 ),

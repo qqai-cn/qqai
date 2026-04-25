@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../router/app_routes.dart';
 import '../theme/jd_goods_theme.dart';
@@ -44,7 +45,7 @@ class OrderResultView extends StatelessWidget {
                     SizedBox(height: 20.h),
                     Text(
                       '订单提交成功',
-                      style: TextStyle(
+                      style: context.typo.heroTitle.copyWith(
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w700,
                         color: JdGoodsTheme.text,
@@ -53,7 +54,7 @@ class OrderResultView extends StatelessWidget {
                     SizedBox(height: 10.h),
                     Text(
                       '我们会尽快为您安排发货',
-                      style: TextStyle(
+                      style: context.typo.caption.copyWith(
                         fontSize: 14.sp,
                         color: JdGoodsTheme.sub,
                         height: 1.4,
@@ -70,7 +71,7 @@ class OrderResultView extends StatelessWidget {
                       ),
                       child: SelectableText(
                         '订单编号：$orderId',
-                        style: TextStyle(
+                        style: context.typo.body.copyWith(
                           fontSize: 14.sp,
                           color: JdGoodsTheme.text,
                           height: 1.45,
@@ -93,7 +94,10 @@ class OrderResultView extends StatelessWidget {
                 ),
                 child: Text(
                   '查看购物车',
-                  style: TextStyle(fontSize: 15.sp, fontWeight: FontWeight.w500),
+                  style: context.typo.button.copyWith(
+                    fontSize: 15.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               SizedBox(height: 12.h),
@@ -110,7 +114,10 @@ class OrderResultView extends StatelessWidget {
                 ),
                 child: Text(
                   '返回首页',
-                  style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+                  style: context.typo.button.copyWith(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               SizedBox(height: 24.h),

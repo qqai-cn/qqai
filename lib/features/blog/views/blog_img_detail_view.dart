@@ -7,6 +7,7 @@ import '../../blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';
 import '../../comment/views/comment_view.dart';
 import '../../video/views/video_share_view.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class BlogImgDetailView extends ConsumerStatefulWidget {
   final BlogItem? blogItem;
@@ -146,7 +147,7 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
                               ? Icon(Icons.favorite, color: Colors.red)
                               : Icon(Icons.favorite_border),
                         ),
-                        Text('10kw', style: TextStyle(color: Colors.white)),
+                        Text('10kw', style: context.typo.caption.copyWith(color: Colors.white)),
                         SizedBox(height: 10,),
                         IconButton(
                           iconSize: 50,
@@ -156,7 +157,7 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
                           color: Colors.white,
                           icon: Icon(Icons.comment),
                         ),
-                        Text('110kw', style: TextStyle(color: Colors.white)),
+                        Text('110kw', style: context.typo.caption.copyWith(color: Colors.white)),
                         SizedBox(height: 10,),
                         IconButton(
                           iconSize: 50,
@@ -164,10 +165,10 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
                           color: Colors.white,
                           icon: Icon(Icons.star),
                         ),
-                        Text('20kw', style: TextStyle(color: Colors.white)),
+                        Text('20kw', style: context.typo.caption.copyWith(color: Colors.white)),
                         SizedBox(height: 10,),
                         VideoShareView(),
-                        Text('2kw', style: TextStyle(color: Colors.white)),
+                        Text('2kw', style: context.typo.caption.copyWith(color: Colors.white)),
                       ],
                     ),
                   ),

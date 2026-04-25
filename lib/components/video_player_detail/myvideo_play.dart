@@ -4,6 +4,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../router/app_routes.dart';
 import 'FullVideoEntity.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyVideo extends StatefulWidget {
   MyVideo({required this.id,required this.url, this.title, this.color, this.categary});
@@ -119,7 +120,7 @@ class _MyVideo extends State<MyVideo> {
               ),
               Text(
                 '${formartDate(currentPosition)} / ${formartDate(duration)}',
-                style: TextStyle(color: Colors.white),
+                style: context.typo.body.copyWith(color: Colors.white),
               ),
               SizedBox(width: 10),
               Spacer(),

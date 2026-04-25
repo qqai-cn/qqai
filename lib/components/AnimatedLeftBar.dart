@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'AnimatedBottomBar.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class Animatedleftbar extends StatefulWidget {
   final List<BarItem> barItems;
@@ -79,7 +80,7 @@ class _Animatedleftbar extends State<Animatedleftbar>
                     curve: Curves.easeInOut,
                     child: AutoSizeText(
                       item.text,
-                      style: TextStyle(
+                      style: context.typo.body.copyWith(
                         color: item.color,
                         fontWeight: widget.barStyle.fontWeight,
                         fontSize: widget.barStyle.fontSize,
@@ -105,7 +106,7 @@ class _Animatedleftbar extends State<Animatedleftbar>
               },
               child: Text(
                 '京ICP备2022023998号-2',
-                style: TextStyle(color: Colors.grey, fontSize: 8),
+                style: context.typo.body.copyWith(color: Colors.grey, fontSize: 8),
               ),
             ),
           ],

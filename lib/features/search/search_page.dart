@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../router/app_routes.dart';
 import '../goods/theme/jd_goods_theme.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 窄屏单列时内容最大宽度（居中），避免超宽屏一条拉满。
 const double _kNarrowContentMaxWidth = 600;
@@ -252,7 +254,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         children: [
           Text(
             'AI搜索',
-            style: TextStyle(fontSize: 11, color: JdGoodsTheme.sub, fontWeight: FontWeight.w500),
+            style: context.typo.label.copyWith(fontSize: 11, color: JdGoodsTheme.sub, fontWeight: FontWeight.w500),
           ),
           Transform.scale(
             scale: 0.65,
@@ -270,11 +272,12 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               focusNode: _focusNode,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _onSearch(),
-              style: TextStyle(fontSize: 14, color: JdGoodsTheme.text),
+              style: context.typo.body.copyWith(fontSize: 14, color: JdGoodsTheme.text),
+
               decoration: InputDecoration(
                 isDense: true,
                 hintText: '爱玛电动车尾箱',
-                hintStyle: TextStyle(fontSize: 14, color: JdGoodsTheme.sub),
+                hintStyle: context.typo.inputHint.copyWith(fontSize: 14, color: JdGoodsTheme.sub),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
               ),
@@ -300,7 +303,12 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                   ),
                   child: Text(
                     'AI',
-                    style: TextStyle(fontSize: 8, color: Colors.white, height: 1, fontWeight: FontWeight.w600),
+                    style: context.typo.label.copyWith(
+                      fontSize: 8,
+                      color: Colors.white,
+                      height: 1,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
@@ -322,7 +330,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
           padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 9.h),
           child: Text(
             '搜索',
-            style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600),
+            style: context.typo.button.copyWith(fontSize: 14, color: Colors.white, fontWeight: FontWeight.w600),
           ),
         ),
       ),
@@ -422,9 +430,9 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                                     color: JdGoodsTheme.red,
                                     borderRadius: BorderRadius.circular(2.r),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     '促',
-                                    style: TextStyle(fontSize: 10, color: Colors.white, height: 1),
+                                    style: context.typo.label.copyWith(fontSize: 10, color: Colors.white, height: 1),
                                   ),
                                 ),
                               ],
@@ -433,7 +441,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                                   item.text,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
+                                  style: context.typo.body.copyWith(
                                     fontSize: 13,
                                     height: 1.25,
                                     color: JdGoodsTheme.text,
@@ -464,8 +472,8 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                   labelPadding: EdgeInsets.only(right: 20.w),
                   labelColor: JdGoodsTheme.red,
                   unselectedLabelColor: JdGoodsTheme.sub,
-                  labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                  unselectedLabelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.normal),
+                  labelStyle: context.typo.sectionTitle.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
+                  unselectedLabelStyle: context.typo.sectionTitle.copyWith(fontSize: 14, fontWeight: FontWeight.normal),
                   indicatorColor: JdGoodsTheme.red,
                   indicatorWeight: 3,
                   indicatorSize: TabBarIndicatorSize.label,
@@ -509,7 +517,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
       children: [
         Text(
           title,
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: JdGoodsTheme.text),
+          style: context.typo.sectionTitle.copyWith(fontSize: 15, fontWeight: FontWeight.w600, color: JdGoodsTheme.text),
         ),
         const Spacer(),
         trailing,
@@ -526,7 +534,10 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         borderRadius: BorderRadius.circular(4.r),
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
-          child: Text(text, style: TextStyle(fontSize: 13, color: JdGoodsTheme.text)),
+          child: Text(
+            text,
+            style: context.typo.body.copyWith(fontSize: 13, color: JdGoodsTheme.text),
+          ),
         ),
       ),
     );
@@ -579,13 +590,13 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               row.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 14, color: const Color(0xFF5C4033), height: 1.25),
+              style: context.typo.body.copyWith(fontSize: 14, color: const Color(0xFF5C4033), height: 1.25),
             ),
           ),
           SizedBox(width: 8.w),
           Text(
             '热度 ${row.heat}万',
-            style: TextStyle(fontSize: 11, color: JdGoodsTheme.sub),
+            style: context.typo.caption.copyWith(fontSize: 11, color: JdGoodsTheme.sub),
           ),
         ],
       ),
@@ -609,7 +620,12 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         ),
         child: Text(
           '$rank',
-          style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.bold, height: 1),
+          style: context.typo.bodyStrong.copyWith(
+            fontSize: 13,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            height: 1,
+          ),
         ),
       );
     }
@@ -618,7 +634,11 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
       child: Text(
         '$rank',
         textAlign: TextAlign.center,
-        style: TextStyle(fontSize: 14, color: const Color(0xFF8D6E63), fontWeight: FontWeight.w500),
+        style: context.typo.body.copyWith(
+          fontSize: 14,
+          color: const Color(0xFF8D6E63),
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -637,7 +657,10 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
             children: [
               Icon(Icons.feedback_outlined, size: 16, color: Colors.white),
               SizedBox(width: 4.w),
-              Text('反馈', style: TextStyle(fontSize: 12, color: Colors.white)),
+              Text(
+                '反馈',
+                style: context.typo.label.copyWith(fontSize: 12, color: Colors.white),
+              ),
             ],
           ),
         ),
@@ -658,13 +681,13 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               SizedBox(height: 12.h),
               Text(
                 '搜索结果',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: JdGoodsTheme.text),
+                style: context.typo.sectionTitle.copyWith(fontSize: 16, fontWeight: FontWeight.w600, color: JdGoodsTheme.text),
               ),
               SizedBox(height: 8.h),
               Text(
                 '在左侧输入关键词并点击搜索',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: JdGoodsTheme.sub),
+                style: context.typo.pageSubtitle.copyWith(fontSize: 13, color: JdGoodsTheme.sub),
               ),
             ],
           ),
@@ -696,7 +719,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
             '示例商品 ${index + 1} · 「$q」',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(fontSize: 14, color: JdGoodsTheme.text),
+            style: context.typo.body.copyWith(fontSize: 14, color: JdGoodsTheme.text),
           ),
           subtitle: Padding(
             padding: EdgeInsets.only(top: 6.h),
@@ -704,14 +727,17 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               children: [
                 Text(
                   '¥${(99 + index * 10).toStringAsFixed(2)}',
-                  style: TextStyle(
+                  style: context.typo.bodyStrong.copyWith(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: JdGoodsTheme.red,
                   ),
                 ),
                 SizedBox(width: 8.w),
-                Text('自营', style: TextStyle(fontSize: 11, color: JdGoodsTheme.sub)),
+                Text(
+                  '自营',
+                  style: context.typo.caption.copyWith(fontSize: 11, color: JdGoodsTheme.sub),
+                ),
               ],
             ),
           ),

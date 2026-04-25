@@ -41,7 +41,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
       ),
       itemCount: 10,
       itemBuilder: (context, index) {
-        return SquareItemView();
+        return const SquareItemView();
       },
     );
   }

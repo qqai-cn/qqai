@@ -207,7 +207,7 @@ class MyStyles {
 
   static InputDecorationTheme getInputDecorationTheme() {
     return InputDecorationTheme(
-      hintStyle: TextStyle(color: Colors.grey),
+      hintStyle: MyFonts.bodyTextStyle.copyWith(fontSize: MyFonts.bodySmallTextSize, color: Colors.grey),
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class CustomSnackBar {
   static void showCustomSnackBar({
@@ -20,14 +21,14 @@ class CustomSnackBar {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: context.typo.body.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   Text(
                     message,
-                    style: const TextStyle(color: Colors.white),
+                    style: context.typo.body.copyWith(color: Colors.white),
                   ),
                 ],
               ),
@@ -62,14 +63,14 @@ class CustomSnackBar {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: context.typo.body.copyWith(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                   Text(
                     message,
-                    style: const TextStyle(color: Colors.white),
+                    style: context.typo.body.copyWith(color: Colors.white),
                   ),
                 ],
               ),

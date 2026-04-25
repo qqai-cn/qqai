@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../constant/constant.dart';
 import 'level_icon.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 void main() => runApp(MyApp());
 
@@ -127,7 +128,7 @@ class _CommengSecondItem extends State<CommengSecondItem> {
             ),
             Text(
               '2022-12-11 10：12',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+              style: context.typo.body.copyWith(color: Colors.grey, fontSize: 15),
             ),
             SizedBox(
               height: 5,

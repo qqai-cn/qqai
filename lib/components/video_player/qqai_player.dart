@@ -1,5 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -138,7 +139,10 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
             ),
             controls: FlickLandscapeControls(),
             iconThemeData: IconThemeData(size: 40, color: Colors.white),
-            textStyle: TextStyle(fontSize: 16, color: Colors.white),
+            textStyle: context.typo.body.copyWith(
+              fontSize: 16,
+              color: Colors.white,
+            ),
           ),
         ),
       ),

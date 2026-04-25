@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 ///整理
 //TextField 输入文本 decoration 配置边框样式以及提示文本分析篇
@@ -84,30 +85,30 @@ class TextFeildHomePageState extends State {
                 ///输入框获取焦点时 并且没有输入文字时
                 hintText: "请输入用户名",
                 ///设置输入文本框的提示文字的样式
-                hintStyle: TextStyle(color: Colors.grey,textBaseline: TextBaseline.ideographic,),
+                hintStyle: context.typo.body.copyWith(color: Colors.grey,textBaseline: TextBaseline.ideographic,),
                 ///输入框内的提示 输入框没有获取焦点时显示
                 labelText: "用户名",
-                labelStyle: TextStyle(color: Colors.blue),
+                labelStyle: context.typo.body.copyWith(color: Colors.blue),
                 ///显示在输入框下面的文字
                 helperText: "这里是帮助提示语",
-                helperStyle: TextStyle(color: Colors.green),
+                helperStyle: context.typo.body.copyWith(color: Colors.green),
 
                 ///显示在输入框下面的文字
                 ///会覆盖了 helperText 内容
                 errorText: "这里是错误文本提示",
-                errorStyle: TextStyle(color: Colors.red),
+                errorStyle: context.typo.body.copyWith(color: Colors.red),
 
                 ///输入框获取焦点时才会显示出来 输入文本的前面
                 prefixText: "prefix",
-                prefixStyle: TextStyle(color: Colors.deepPurple),
+                prefixStyle: context.typo.body.copyWith(color: Colors.deepPurple),
                 ///输入框获取焦点时才会显示出来 输入文本的后面
                 suffixText: "suf ",
-                suffixStyle: TextStyle(color: Colors.black),
+                suffixStyle: context.typo.body.copyWith(color: Colors.black),
 
                 ///文本输入框右下角显示的文本
                 ///文字计数器默认使用
                 counterText: "count",
-                counterStyle:TextStyle(color: Colors.deepPurple[800]),
+                counterStyle:context.typo.body.copyWith(color: Colors.deepPurple[800]),
 
                 ///输入文字前的小图标
                 prefixIcon: Icon(Icons.phone),

@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:qqai/constant/constant.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../util/utils.dart';
 import '../../components/azlist/az_common.dart';
@@ -14,6 +15,7 @@ import '../../components/azlist/index_bar.dart';
 import '../../router/app_routes.dart';
 import '../data/models/contact.dart';
 import 'friends_detail_view.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 void main() => runApp(MyApp());
 
@@ -162,7 +164,7 @@ class _FriendsPage extends State<FriendsPage> {
             indexBarOptions: IndexBarOptions(
               needRebuild: true,
               ignoreDragCancel: true,
-              downTextStyle: TextStyle(fontSize: 12, color: Colors.white),
+              downTextStyle: context.typo.label.copyWith(fontSize: 12, color: Colors.white),
               downItemDecoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: Colors.green,
@@ -230,7 +232,7 @@ class _FriendsPage extends State<FriendsPage> {
                 PinyinHelper.getPinyinE(
                   model.name,
                 ).substring(0, 1).toUpperCase(),
-                style: TextStyle(color: Colors.blue),
+                style: context.typo.bodyStrong.copyWith(color: Colors.blue),
               )
             : Icon(model.iconData, color: Colors.white, size: 20),
       ),

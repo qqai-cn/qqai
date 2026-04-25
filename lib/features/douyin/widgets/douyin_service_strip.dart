@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../components/icon_button_h.dart';
 import '../../../router/app_routes.dart';
 import '../theme/douyin_theme.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 抖音「我的」顶部横向入口：圆标 + 文案
 class DouyinServiceStrip extends StatelessWidget {
@@ -114,11 +115,7 @@ class _DouyinEntryTile extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 11.sp,
-                  color: DouyinTheme.sub,
-                  height: 1.3,
-                ),
+                style: context.typo.caption.copyWith(fontSize: 11.sp, color: DouyinTheme.sub, height: 1.3),
               ),
             ),
           ),

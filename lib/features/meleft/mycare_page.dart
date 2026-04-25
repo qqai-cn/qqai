@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../components/level_icon.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 
 void main() => runApp(MyApp());
@@ -79,7 +80,7 @@ class _MyCarePage extends State<MyCarePage> {
                             radius: 6,
                             child: Text(
                               'X',
-                              style: TextStyle(fontSize: 9),
+                              style: context.typo.caption.copyWith(fontSize: 9),
                             ),
                           ),
                         ),
@@ -100,7 +101,7 @@ class _MyCarePage extends State<MyCarePage> {
                               alignment: Alignment.centerRight,
                               child: Text(
                                 '大大大,奥大大奥大大奥迪' + _items[index],
-                                style: TextStyle(fontSize: 15),
+                                style: context.typo.body.copyWith(fontSize: 15),
                                 overflow: TextOverflow.visible,
                                 maxLines: 3,
                               ),
@@ -135,7 +136,7 @@ class _MyCarePage extends State<MyCarePage> {
                         children: [
                           Text(
                             '2020-12-12 12:12:12',
-                            style: TextStyle(color: Colors.grey),
+                            style: context.typo.caption.copyWith(color: Colors.grey),
                           ),
                         ],
                       )

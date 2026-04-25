@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/features/comment/views/wait_video_view.dart';
 
+import '../../../config/theme/app_typography.dart';
 import '../providers/comment_providers.dart';
 import 'comment_list_view.dart';
 
@@ -72,10 +74,7 @@ class _CommentViewState extends ConsumerState<CommentView>
           alignment: Alignment.center,
           child: Text(
             e,
-            style: const TextStyle(
-              color: Colors.black54,
-              fontWeight: FontWeight.bold,
-            ),
+            style: context.typo.sectionTitle.copyWith(color: Colors.black54, fontWeight: FontWeight.bold),
           ),
         );
       }).toList(),

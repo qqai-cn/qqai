@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -35,6 +36,11 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
   Widget build(BuildContext context) {
     final blogNotifier = ref.read(blogProvider.notifier);
     final isWideScreen = 1.sw > 900;
+    final titleStyle = context.typo.cardTitle.copyWith(
+      fontWeight: FontWeight.bold,
+    );
+    final metaStyle = context.typo.caption;
+    final bodyStyle = context.typo.body;
     const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
     return Padding(
       padding: EdgeInsets.all(2),
@@ -64,10 +70,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                         onTap: () {},
                         child: AutoSizeText(
                           widget.blogItem.creatorName ?? '未知用户',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: titleStyle,
                           minFontSize: 10,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -79,7 +82,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   Text(
                     '关注 32 KW $split_o️ 活跃 333 KW',
                     textAlign: TextAlign.left,
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: metaStyle,
                   ),
                 ],
               ),
@@ -103,17 +106,13 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   child: widget.blogItem.care == 1
                       ? Text(
                           "已关注",
-                          style: const TextStyle(
-                            fontSize: 13,
+                          style: context.typo.button.copyWith(
                             color: ColorConstant.ThemeGreen,
                           ),
                         )
                       : Text(
                           "关注",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.white,
-                          ),
+                          style: context.typo.button,
                         ),
                 ),
               ),
@@ -125,7 +124,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
               widget.blogItem.content!,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 20),
+              style: bodyStyle.copyWith(fontSize: (bodyStyle.fontSize ?? 16)),
             ),
           ),
           Container(height: 2, color: Colors.white),
@@ -197,28 +196,28 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                       value: '0',
                       child: Text(
                         '收藏',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '1',
                       child: Text(
                         '举报',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '2',
                       child: Text(
                         '不感兴趣',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '3',
                       child: Text(
                         '加入播放队列',
-                        style: TextStyle(color: Colors.black54),
+                        style: context.typo.body.copyWith(color: Colors.black54),
                       ),
                     ),
                   ];
@@ -276,7 +275,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
             SizedBox(height: 5),
             Text(
               '2022-12-11 10：12',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+              style: context.typo.caption.copyWith(fontSize: 15),
             ),
             SizedBox(height: 5),
           ],

@@ -2,6 +2,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 
 import 'public_data_manager.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// Default portrait controls.
 class PublicVideoControl extends StatelessWidget {
@@ -47,7 +48,7 @@ class PublicVideoControl extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.black26,
                 ),
-                textStyle: TextStyle(color: Colors.white, fontSize: 20),
+                textStyle: context.typo.body.copyWith(color: Colors.white, fontSize: 20),
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               ),
             ),
@@ -106,7 +107,7 @@ class PublicVideoControl extends StatelessWidget {
                               FlickAutoHideChild(
                                 child: Text(
                                   ' / ',
-                                  style: TextStyle(
+                                  style: context.typo.body.copyWith(
                                       color: Colors.white, fontSize: fontSize),
                                 ),
                               ),

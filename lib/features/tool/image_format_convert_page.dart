@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 在线图片格式转换
 class ImageFormatConvertPage extends StatefulWidget {
@@ -413,7 +414,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
       borderRadius: BorderRadius.circular(12),
-      items: const [
+      items: [
         DropdownMenuItem(value: 'jpg', child: Text('JPG (.jpg)')),
         DropdownMenuItem(value: 'jpeg', child: Text('JPEG (.jpeg)')),
         DropdownMenuItem(value: 'gif', child: Text('GIF (.gif)')),
@@ -468,7 +469,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                   color: Colors.white,
                 ),
               )
-            : const Text('立即转换', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            : Text('立即转换', style: context.typo.button.copyWith(fontSize: 16, fontWeight: FontWeight.w600)),
       ),
     );
 
@@ -578,11 +579,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                       ),
                       child: Text(
                         '${i + 1}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
+                        style: context.typo.label.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -607,13 +604,9 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                     gradient: const LinearGradient(colors: [_teal, _tealLight]),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Text(
+                  child: Text(
                     '4',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                    style: context.typo.label.copyWith(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -624,14 +617,11 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                         height: 1.45,
                         color: theme.colorScheme.onSurface,
                       ),
-                      children: const [
+                      children: [
                         TextSpan(text: '点击图片预览，或使用'),
                         TextSpan(
                           text: '「下载图片」',
-                          style: TextStyle(
-                            color: Color(0xFFE53935),
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: context.typo.bodyStrong.copyWith(color: const Color(0xFFE53935), fontWeight: FontWeight.w600),
                         ),
                         TextSpan(text: '保存到本地'),
                       ],
@@ -834,7 +824,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               icon: const Icon(Icons.download_outlined),
-              label: const Text('下载图片', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              label: Text('下载图片', style: context.typo.button.copyWith(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ],
         ),

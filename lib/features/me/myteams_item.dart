@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../constant/constant.dart';
 import '../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyTeamsItem extends StatefulWidget {
   MyTeamsItem({this.id = 0});
@@ -64,7 +66,7 @@ class _MyTeamsItem extends State<MyTeamsItem> {
                     Text(
                       name,
                       textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.white, fontSize: 20),
+                      style: context.typo.pageTitle.copyWith(color: Colors.white),
                     ),
                     Image.asset(
                       'imgs/img_default.png',
@@ -80,7 +82,7 @@ class _MyTeamsItem extends State<MyTeamsItem> {
                 Text(
                   '关注 32 KW $split_o 评分 5.0分',
                   textAlign: TextAlign.left,
-                  style: TextStyle(color: Colors.white, fontSize: 10),
+                  style: context.typo.label.copyWith(color: Colors.white),
                 ),
               ],
             ),
@@ -123,7 +125,7 @@ class _MyTeamsItem extends State<MyTeamsItem> {
               child: Text(
                 '主要卖一些10元商品：铅笔，橡皮，玩具车，玩家足球，玩偶等，品类多多',
                 maxLines: 4,
-                style: TextStyle(fontSize: 17, color: Colors.blue),
+                style: context.typo.body.copyWith(fontSize: 17, color: Colors.blue),
               ),
             ),
           ],

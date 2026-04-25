@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 自定义按钮
 class ButtonImg extends StatelessWidget {
@@ -34,7 +35,7 @@ class ButtonImg extends StatelessWidget {
           ),
           Text(
             text,
-            style: TextStyle(color: textColor,fontSize: textSize),
+            style: context.typo.body.copyWith(color: textColor,fontSize: textSize),
           ),
         ],
       ),

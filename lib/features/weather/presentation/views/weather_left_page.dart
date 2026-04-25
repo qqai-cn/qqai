@@ -4,11 +4,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_weather_bg_null_safety/bg/weather_bg.dart';
 import 'package:flutter_weather_bg_null_safety/utils/weather_type.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../router/app_routes.dart';
 import '../../../../constant/constant.dart';
 import '../../../data/models/weather_city_entity.dart';
 import '../providers/weather_providers.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class WeatherLeftPage extends ConsumerWidget {
   const WeatherLeftPage({super.key});
@@ -87,10 +89,11 @@ class ListItemWidget extends StatelessWidget {
                 selected
                     ? '👉 ${city.province}-${city.county}'
                     : '${city.province}-${city.county}',
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold),
+                style: context.typo.pageTitle.copyWith(
+                  color: Colors.white,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             Container(
@@ -98,10 +101,11 @@ class ListItemWidget extends StatelessWidget {
               height: 100,
               child: Text(
                 weatherText,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold),
+                style: context.typo.pageTitle.copyWith(
+                  color: Colors.white,
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             )
           ],

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../router/app_routes.dart';
 import '../../blog/data/models/blog_page_model.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyVideoListView extends StatefulWidget {
   final int tabIndex;
@@ -73,7 +75,10 @@ class _TabPageState extends State<MyVideoListView>
                                   size: 20,
                                   color: Colors.white,
                                 ),
-                                Text('300', style: TextStyle(color: Colors.white)),
+                                Text(
+                                  '300',
+                                  style: context.typo.label.copyWith(color: Colors.white),
+                                ),
                               ],
                             ),
                           ),
@@ -86,11 +91,11 @@ class _TabPageState extends State<MyVideoListView>
                     child: ListTile(
                       title: Text(
                         '情深深雨蒙蒙',
-                        style: TextStyle(fontWeight: .bold),
+                        style: context.typo.sectionTitle.copyWith(fontWeight: FontWeight.bold),
                       ),
                       subtitle: Text(
                         '7集/38集',
-                        style: TextStyle(color: Colors.grey),
+                        style: context.typo.caption,
                       ),
                     ),
                   ),

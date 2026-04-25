@@ -7,6 +7,7 @@ import 'package:lunar/calendar/Lunar.dart';
 import 'package:lunar/calendar/Solar.dart';
 import 'package:lunar/calendar/Tao.dart';
 import 'package:lunar/calendar/util/HolidayUtil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/api_constant.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -80,7 +81,9 @@ class _CalendarToolPage extends State<CalendarToolPage>
                     ),
                   ),
                 ),
-                titleTextStyle: const TextStyle(color: Colors.amber),
+                titleTextStyle: context.typo.sectionTitle.copyWith(
+                  color: Colors.amber,
+                ),
                 bottom: TabBar(
                   controller: _tabController,
                   isScrollable: true,
@@ -919,7 +922,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     final config = CalendarDatePicker2Config(
       selectedDayHighlightColor: Colors.amber[900],
       weekdayLabels: ['日', '一', '二', '三', '四', '五', '六'],
-      weekdayLabelTextStyle: const TextStyle(
+      weekdayLabelTextStyle: context.typo.label.copyWith(
         color: Colors.black87,
         fontWeight: FontWeight.bold,
       ),
@@ -943,18 +946,16 @@ class _CalendarToolPage extends State<CalendarToolPage>
           color: Colors.lightBlue,
         ),
       ),
-      controlsTextStyle: const TextStyle(
+      controlsTextStyle: context.typo.sectionTitle.copyWith(
         color: Colors.black,
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
-      dayTextStyle: const TextStyle(
+      dayTextStyle: context.typo.bodyStrong.copyWith(
         color: Colors.amber,
         fontWeight: FontWeight.bold,
       ),
-      disabledDayTextStyle: const TextStyle(
-        color: Colors.grey,
-      ),
+      disabledDayTextStyle: context.typo.caption.copyWith(color: Colors.grey),
       dayBuilder: ({
         required date,
         textStyle,
@@ -1056,20 +1057,22 @@ class _CalendarToolPage extends State<CalendarToolPage>
                   padding: const EdgeInsets.only(right: 25, bottom: 15),
                   child: Text(
                     work,
-                    style: TextStyle(
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                        color: ifWork ? Colors.red : Colors.lightGreen),
+                    style: context.typo.caption.copyWith(
+                      fontSize: 8,
+                      fontWeight: FontWeight.bold,
+                      color: ifWork ? Colors.red : Colors.lightGreen,
+                    ),
                   ),
                 )
               ],
             ),
             Text(
               text,
-              style: TextStyle(
-                  fontSize: 8,
-                  color: hasFestival ? Colors.red : Colors.grey,
-                  fontWeight: FontWeight.bold),
+              style: context.typo.caption.copyWith(
+                fontSize: 8,
+                color: hasFestival ? Colors.red : Colors.grey,
+                fontWeight: FontWeight.bold,
+              ),
             )
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import 'component_item.dart';
 import 'wait_play_video_list.dart';
@@ -61,8 +62,10 @@ class _MyTabBarVideo extends State<MyTabBarVideo> with SingleTickerProviderState
           alignment: Alignment.center,
           child: Text(
             e,
-            style:
-                TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+            style: context.typo.tab.copyWith(
+              color: Colors.black54,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         );
       }).toList(),

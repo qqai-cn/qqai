@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/label.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../constant/constant.dart';
 import '../../douyin/widgets/douyin_service_strip.dart';
@@ -103,10 +104,9 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                   Expanded(
                                     child: SelectableText(
                                       '名称：QQAI',
-                                      style: TextStyle(
+                                      style: context.typo.pageTitle.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       maxLines: 1,
@@ -116,9 +116,8 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                     child: SelectableText(
                                       '@Skuu.com',
                                       textAlign: TextAlign.left,
-                                      style: TextStyle(
+                                      style: context.typo.cardSubtitle.copyWith(
                                         color: Colors.white,
-                                        fontSize: 15,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -146,18 +145,14 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                   children: [
                                     Text(
                                       '5.6W',
-                                      style: TextStyle(
+                                      style: context.typo.pageTitle.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20,
                                       ),
                                     ),
                                     SizedBox(width: 5),
                                     Text(
                                       '获赞',
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontSize: 15,
-                                      ),
+                                      style: context.typo.cardSubtitle,
                                     ),
                                   ],
                                 ),
@@ -166,18 +161,14 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                   children: [
                                     Text(
                                       '3W',
-                                      style: TextStyle(
+                                      style: context.typo.pageTitle.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20,
                                       ),
                                     ),
                                     SizedBox(width: 5),
                                     Text(
                                       '互关',
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontSize: 15,
-                                      ),
+                                      style: context.typo.cardSubtitle,
                                     ),
                                   ],
                                 ),
@@ -186,18 +177,14 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                   children: [
                                     Text(
                                       '3.2W',
-                                      style: TextStyle(
+                                      style: context.typo.pageTitle.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20,
                                       ),
                                     ),
                                     SizedBox(width: 5),
                                     Text(
                                       '关注',
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontSize: 15,
-                                      ),
+                                      style: context.typo.cardSubtitle,
                                     ),
                                   ],
                                 ),
@@ -206,18 +193,14 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                   children: [
                                     Text(
                                       '3000W',
-                                      style: TextStyle(
+                                      style: context.typo.pageTitle.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        fontSize: 20,
                                       ),
                                     ),
                                     SizedBox(width: 5),
                                     Text(
                                       '粉丝',
-                                      style: TextStyle(
-                                        color: Colors.black54,
-                                        fontSize: 15,
-                                      ),
+                                      style: context.typo.cardSubtitle,
                                     ),
                                   ],
                                 ),
@@ -230,15 +213,12 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                             ),
                             Text.rich(
                               TextSpan(
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Colors.black,
-                                ),
+                                style: context.typo.body,
                                 children: [
                                   TextSpan(text: '人生终究 '),
                                   TextSpan(
                                     text: '一场梦',
-                                    style: TextStyle(
+                                    style: context.typo.bodyStrong.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blue,
                                     ),

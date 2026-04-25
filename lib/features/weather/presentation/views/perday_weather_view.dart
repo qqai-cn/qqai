@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../components/custom_process_widget.dart';
 import '../../../data/models/day_weather_entity.dart';
 import '../../../data/models/hour_weather_entity.dart';
 import '../providers/weather_providers.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 
 class PerDayWeatherView extends ConsumerWidget {
@@ -15,6 +17,8 @@ class PerDayWeatherView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final weatherState = ref.watch(weatherProvider);
     final weatherNotifier = ref.read(weatherProvider.notifier);
+    final Color primaryTextColor =
+        weatherState.ifOnHour ? Colors.red : Colors.white;
     
     return Padding(
         padding: EdgeInsets.only(top: 10, bottom: 10),
@@ -47,19 +51,11 @@ class PerDayWeatherView extends ConsumerWidget {
                           ),
                           Text(
                             '${weatherNotifier.getCurWeatherCityData().province}|${weatherNotifier.getCurWeatherCityData().county}',
-                            style: TextStyle(
-                                fontSize: 20,
-                                color: weatherState.ifOnHour
-                                    ? Colors.red
-                                    : Colors.white),
+                            style: context.typo.pageTitle.copyWith(fontSize: 20, color: primaryTextColor),
                           ),
                           Text(
                             '温度：${weatherNotifier.getCurRealTimeWeather().now.temp} ℃   |  体感温度：${weatherNotifier.getCurRealTimeWeather().now.feelsLike} ℃',
-                            style: TextStyle(
-                                fontSize: 20,
-                                color: weatherState.ifOnHour
-                                    ? Colors.red
-                                    : Colors.white),
+                            style: context.typo.body.copyWith(fontSize: 20, color: primaryTextColor),
                           ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -77,11 +73,7 @@ class PerDayWeatherView extends ConsumerWidget {
                               ),
                               Text(
                                 '${weatherNotifier.getCurRealTimeWeather().now.text}',
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    color: weatherState.ifOnHour
-                                        ? Colors.red
-                                        : Colors.white),
+                                style: context.typo.sectionTitle.copyWith(fontSize: 20, color: primaryTextColor),
                               ),
                             ],
                           ),
@@ -95,10 +87,7 @@ class PerDayWeatherView extends ConsumerWidget {
                                   weatherNotifier.getCurCard1().entries.map((entry) {
                                 return Text(
                                   '${entry.key} \n ${entry.value}',
-                                  style: TextStyle(
-                                      color: weatherState.ifOnHour
-                                          ? Colors.red
-                                          : Colors.white),
+                                  style: context.typo.body.copyWith(color: primaryTextColor),
                                 );
                               }).toList())
                         ],
@@ -129,7 +118,7 @@ class PerDayWeatherView extends ConsumerWidget {
                                 children: [
                                   Text(
                                     '24小时天气',
-                                    style: TextStyle(color: Colors.white),
+                                    style: context.typo.sectionTitle.copyWith(color: Colors.white),
                                   ),
                                 ],
                               ),
@@ -154,10 +143,8 @@ class PerDayWeatherView extends ConsumerWidget {
                                             children: [
                                               Text(
                                                 '${item.fxTime}',
-                                                style: TextStyle(
-                                                    color: weatherState.ifOnHour
-                                                        ? Colors.red
-                                                        : Colors.white),
+                                                style: context.typo.caption
+                                                    .copyWith(color: primaryTextColor),
                                               ),
                                               SvgPicture.asset(
                                                 'imgs/weather/${item.icon}.svg',
@@ -170,10 +157,8 @@ class PerDayWeatherView extends ConsumerWidget {
                                               ),
                                               Text(
                                                 '${item.temp}℃',
-                                                style: TextStyle(
-                                                    color: weatherState.ifOnHour
-                                                        ? Colors.red
-                                                        : Colors.white),
+                                                style: context.typo.body
+                                                    .copyWith(color: primaryTextColor),
                                               ),
                                             ],
                                           ),
@@ -211,10 +196,7 @@ class PerDayWeatherView extends ConsumerWidget {
                                 children: [
                                   Text(
                                     '最近10天天气',
-                                    style: TextStyle(
-                                        color: weatherState.ifOnHour
-                                            ? Colors.red
-                                            : Colors.white),
+                                    style: context.typo.sectionTitle.copyWith(color: primaryTextColor),
                                   ),
                                 ],
                               ),
@@ -225,10 +207,7 @@ class PerDayWeatherView extends ConsumerWidget {
                                   children: [
                                     Text(
                                       '${item.fxDate}',
-                                      style: TextStyle(
-                                          color: weatherState.ifOnHour
-                                              ? Colors.red
-                                              : Colors.white),
+                                      style: context.typo.caption.copyWith(color: primaryTextColor),
                                     ),
                                     Padding(
                                       padding:
@@ -244,10 +223,7 @@ class PerDayWeatherView extends ConsumerWidget {
                                     ),
                                     Text(
                                       '${item.tempMin}℃',
-                                      style: TextStyle(
-                                          color: weatherState.ifOnHour
-                                              ? Colors.red
-                                              : Colors.white),
+                                      style: context.typo.body.copyWith(color: primaryTextColor),
                                     ),
                                     Expanded(
                                         child: CustomeProcess(
@@ -258,10 +234,7 @@ class PerDayWeatherView extends ConsumerWidget {
                                             5)),
                                     Text(
                                       '${item.tempMax}℃',
-                                      style: TextStyle(
-                                          color: weatherState.ifOnHour
-                                              ? Colors.red
-                                              : Colors.white),
+                                      style: context.typo.body.copyWith(color: primaryTextColor),
                                     ),
                                   ],
                                 )
@@ -293,10 +266,7 @@ class PerDayWeatherView extends ConsumerWidget {
                                 children: [
                                   Text(
                                     '生活指数',
-                                    style: TextStyle(
-                                        color: weatherState.ifOnHour
-                                            ? Colors.red
-                                            : Colors.white),
+                                    style: context.typo.sectionTitle.copyWith(color: primaryTextColor),
                                   ),
                                 ],
                               ),
@@ -320,17 +290,11 @@ class PerDayWeatherView extends ConsumerWidget {
                                       ),
                                       title: Text(
                                         '${weatherState.indicesDaily[index].name}',
-                                        style: TextStyle(
-                                            color: weatherState.ifOnHour
-                                                ? Colors.red
-                                                : Colors.white),
+                                        style: context.typo.bodyStrong.copyWith(color: primaryTextColor),
                                       ),
                                       subtitle: Text(
                                         '${weatherState.indicesDaily[index].category}',
-                                        style: TextStyle(
-                                            color: weatherState.ifOnHour
-                                                ? Colors.red
-                                                : Colors.white),
+                                        style: context.typo.caption.copyWith(color: primaryTextColor),
                                       ),
                                     );
                                   },

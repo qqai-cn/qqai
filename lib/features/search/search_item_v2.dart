@@ -1,6 +1,8 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class SearchItemV2 extends StatefulWidget {
   const SearchItemV2({super.key});
@@ -82,7 +84,9 @@ class _SearchItemV2 extends State<SearchItemV2>
                   ListTile(
                     title: Text(
                       "历史搜索",
-                      style: TextStyle(color: Colors.grey),
+                      style: context.typo.sectionTitle.copyWith(
+                        color: Colors.grey,
+                      ),
                     ),
                     trailing: IconButton(
                       icon: Icon(Icons.delete_forever),
@@ -105,22 +109,24 @@ class _SearchItemV2 extends State<SearchItemV2>
                             onPressed: () {},
                             child: Text(
                               e,
-                              style: TextStyle(
-                                  color: Color(0xFF7C7070), fontSize: 10),
+                              style: context.typo.label.copyWith(
+                                color: const Color(0xFF7C7070),
+                                fontSize: 10,
+                              ),
                             )))
                         .toList(),
                   ),
                   // ListTile(
                   //   title: Text(
                   //     "搜索发现",
-                  //     style: TextStyle(color: Colors.grey),
+                  //     style: context.typo.caption.copyWith(color: Colors.grey),
                   //   ),
                   //   trailing: TextButton.icon(
                   //     icon: Icon(Icons.refresh),
                   //     onPressed: () {},
                   //     label: Text(
                   //       "换一换",
-                  //       style: TextStyle(color: Colors.grey),
+                  //       style: context.typo.caption.copyWith(color: Colors.grey),
                   //     ),
                   //   ),
                   // ),
@@ -132,7 +138,7 @@ class _SearchItemV2 extends State<SearchItemV2>
             snap: true,
             pinned: true,
             backgroundColor: Colors.white,
-            titleTextStyle: TextStyle(color: Colors.amber),
+            titleTextStyle: context.typo.sectionTitle.copyWith(color: Colors.amber),
             bottom: TabBar(
               controller: _tabController,
               tabs: _tabs.map((String name) => Tab(text: name)).toList(),

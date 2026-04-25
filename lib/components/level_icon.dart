@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class LevelIcon extends StatelessWidget {
   late int lv;
@@ -30,7 +31,7 @@ class LevelIcon extends StatelessWidget {
     //   )),
     //   child: Text(
     //     lv.toString(),
-    //     style: TextStyle(fontSize: 5, color: Colors.white),
+    //     style: context.typo.body.copyWith(fontSize: 5, color: Colors.white),
     //   ),
     // );
   }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../router/app_routes.dart';
 import '../theme/douyin_theme.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 /// 我的订单（Tab + 列表占位，可对接真实订单接口）
 class DouyinMyOrdersPage extends StatefulWidget {
@@ -35,7 +36,7 @@ class _DouyinMyOrdersPageState extends State<DouyinMyOrdersPage>
         scrolledUnderElevation: 0,
         title: Text(
           '我的订单',
-          style: TextStyle(fontSize: 17.sp, fontWeight: FontWeight.w600),
+          style: context.typo.sectionTitle.copyWith(fontSize: 17.sp, fontWeight: FontWeight.w600),
         ),
         actions: [
           IconButton(
@@ -88,13 +89,13 @@ class _OrderList extends StatelessWidget {
             SizedBox(height: 16.h),
             Text(
               '暂无$kind订单',
-              style: TextStyle(color: DouyinTheme.text, fontSize: 16.sp),
+              style: context.typo.bodyStrong.copyWith(color: DouyinTheme.text, fontSize: 16.sp),
             ),
             SizedBox(height: 8.h),
             Text(
               '商城订单将展示在这里',
               textAlign: TextAlign.center,
-              style: TextStyle(color: DouyinTheme.sub, fontSize: 13.sp),
+              style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 13.sp),
             ),
             SizedBox(height: 24.h),
             FilledButton(

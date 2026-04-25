@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/watchvideo/wait_play_video_list.dart';
 import 'package:qqai/constant/constant.dart';
 import '../../../constant/color_constant.dart';
@@ -99,7 +100,7 @@ class _PlayVideoPage extends State<PlayVideoPage>
                     alignment: Alignment.centerLeft,
                     child: Text(
                       '妹子跟小伙在海里撒尿，哇，热乎乎的！韩国爆笑电影《海盗》',
-                      style: TextStyle(fontSize: 20),
+                      style: context.typo.sectionTitle.copyWith(fontSize: 20),
                     ),
                   );
                 if (index == 2)
@@ -109,7 +110,10 @@ class _PlayVideoPage extends State<PlayVideoPage>
                       children: [
                         Text(
                           '5,509次观看 • 2020年6月12日',
-                          style: TextStyle(fontSize: 15, color: Colors.black54),
+                          style: context.typo.caption.copyWith(
+                            fontSize: 15,
+                            color: Colors.black54,
+                          ),
                         ),
                         Spacer(),
                         if (hiddenRight)
@@ -175,8 +179,10 @@ class _PlayVideoPage extends State<PlayVideoPage>
                             child: Text(
                               '哒哒哒哒',
                               textAlign: TextAlign.left,
-                              style:
-                                  TextStyle(color: Colors.black, fontSize: 20),
+                              style: context.typo.sectionTitle.copyWith(
+                                color: Colors.black,
+                                fontSize: 20,
+                              ),
                               // textScaleFactor: 1.5,
                             ),
                           ),
@@ -193,7 +199,10 @@ class _PlayVideoPage extends State<PlayVideoPage>
                       Text(
                         '粉丝 32 KW ',
                         textAlign: TextAlign.left,
-                        style: TextStyle(color: Colors.black87, fontSize: 15),
+                        style: context.typo.caption.copyWith(
+                          color: Colors.black87,
+                          fontSize: 15,
+                        ),
                       ),
                       Container(
                         height: 2,
@@ -220,13 +229,17 @@ class _PlayVideoPage extends State<PlayVideoPage>
                       child: _care
                           ? Text(
                               "已关注",
-                              style: const TextStyle(
-                                  fontSize: 13, color: Colors.grey),
+                              style: context.typo.button.copyWith(
+                                fontSize: 13,
+                                color: Colors.grey,
+                              ),
                             )
                           : Text(
                               "关注",
-                              style: const TextStyle(
-                                  fontSize: 13, color: Colors.white),
+                              style: context.typo.button.copyWith(
+                                fontSize: 13,
+                                color: Colors.white,
+                              ),
                             ),
                       onPressed: () {
                         setState(() {

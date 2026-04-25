@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
+
+import '../../../config/theme/app_typography.dart';
 
 // 模板,方便快速创建一个StatefulWidget
 class WaitVideoView extends StatefulWidget {
@@ -55,6 +58,7 @@ class _WaitVideoView extends State<WaitVideoView> {
                                 '女教官不甘心输给男新兵，非要比一场，让全场特种兵直呼精彩!',
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
+                                style: context.typo.body,
                               ),
                               SizedBox(
                                 height: 10,
@@ -63,7 +67,7 @@ class _WaitVideoView extends State<WaitVideoView> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   '爱看电影',
-                                  style: TextStyle(color: Colors.black54),
+                                  style: context.typo.cardSubtitle,
                                 ),
                               ),
                               SizedBox(
@@ -73,7 +77,7 @@ class _WaitVideoView extends State<WaitVideoView> {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   '19万次播放',
-                                  style: TextStyle(color: Colors.grey),
+                                  style: context.typo.caption,
                                 ),
                               ),
                             ],

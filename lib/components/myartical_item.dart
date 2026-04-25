@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class MyArticalItem extends StatefulWidget {
   MyArticalItem({this.id = 0});
@@ -52,7 +53,7 @@ class _MyArticalItem extends State<MyArticalItem> {
                     Text(
                       name,
                       textAlign: TextAlign.left,
-                      style: TextStyle(color: Colors.white, fontSize: 11),
+                      style: context.typo.body.copyWith(color: Colors.white, fontSize: 11),
                       textScaleFactor: 1.5,
                     ),
                     Image.asset(
@@ -69,7 +70,7 @@ class _MyArticalItem extends State<MyArticalItem> {
                 Text(
                   '关注 32 KW  活跃 333 KW',
                   textAlign: TextAlign.left,
-                  style: TextStyle(color: Colors.white, fontSize: 4),
+                  style: context.typo.body.copyWith(color: Colors.white, fontSize: 4),
                 ),
               ],
             ),
@@ -98,7 +99,7 @@ class _MyArticalItem extends State<MyArticalItem> {
             child: Text(
               '长风破浪长风破浪长风,破浪长风破浪蓉长风破浪蓉长风破浪蓉长风破浪长风破浪长风破浪',
               maxLines: 4,
-              style: TextStyle(fontSize: 17, color: Colors.blue),
+              style: context.typo.body.copyWith(fontSize: 17, color: Colors.blue),
             ),
           ),
         ),

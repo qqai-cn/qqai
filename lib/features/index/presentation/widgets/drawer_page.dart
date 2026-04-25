@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../../router/app_routes.dart';
 
@@ -40,7 +41,7 @@ class _DrawerPage extends State<DrawerPage> {
                   ),
                   Text(
                     '新飞飞',
-                    style: TextStyle(
+                    style: context.typo.sectionTitle.copyWith(
                       color: Colors.white,
                     ),
                   ),
@@ -49,7 +50,10 @@ class _DrawerPage extends State<DrawerPage> {
                   ),
                   Text(
                     '关注 122  粉丝 999',
-                    style: TextStyle(color: Colors.white, fontSize: 10),
+                    style: context.typo.caption.copyWith(
+                      color: Colors.white,
+                      fontSize: 10,
+                    ),
                   )
                 ],
               )),

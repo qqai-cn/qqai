@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../providers/help_providers.dart';
 import 'help_img_item_view.dart';
 import 'help_video_item_view.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class HelpView extends ConsumerStatefulWidget {
   final int categary;
@@ -62,10 +64,16 @@ class _HelpViewState extends ConsumerState<HelpView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('加载失败: $err', style: const TextStyle(color: Colors.white)),
+              Text(
+                '加载失败: $err',
+                style: context.typo.body.copyWith(color: Colors.white),
+              ),
               ElevatedButton(
                 onPressed: () => helpNotifier.load(),
-                child: const Text('重试'),
+                child: Text(
+                  '重试',
+                  style: context.typo.button.copyWith(color: Colors.black),
+                ),
               ),
             ],
           ),

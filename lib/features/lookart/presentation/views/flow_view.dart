@@ -4,12 +4,14 @@ import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../components/comment_second_item.dart';
 import '../../../../components/level_icon.dart';
 import '../../../blog/data/models/blog_page_model.dart';
 import '../providers/lookart_providers.dart';
 import 'look_art_right.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 class FlowView extends ConsumerStatefulWidget {
   final List<BlogItem> blogItems;
@@ -70,7 +72,7 @@ class _FlowViewState extends ConsumerState<FlowView>
             ) {
               if (index == 0)
                 return SelectableText.rich(
-                  style: const TextStyle(fontSize: 15),
+                  style: context.typo.body.copyWith(fontSize: 15),
                   TextSpan(text: lookArtState.text),
                 );
               return Padding(
@@ -89,7 +91,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                   onPressed: () => {lookArtNotifier.changeSelectRange()},
                   child: Text(
                     '全部回复',
-                    style: TextStyle(
+                    style: context.typo.body.copyWith(
                       color: lookArtState.allComment
                           ? Colors.blue
                           : Colors.grey,
@@ -100,7 +102,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                   onPressed: () => {lookArtNotifier.changeSelectRange()},
                   child: Text(
                     '只看楼主',
-                    style: TextStyle(
+                    style: context.typo.body.copyWith(
                       color: !lookArtState.allComment
                           ? Colors.blue
                           : Colors.grey,
@@ -112,7 +114,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                   child: DropdownButton2(
                     hint: Text(
                       '排序',
-                      style: TextStyle(
+                      style: context.typo.label.copyWith(
                         fontSize: 14,
                         color: Theme.of(context).hintColor,
                       ),
@@ -123,7 +125,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                             value: item,
                             child: Text(
                               item,
-                              style: const TextStyle(fontSize: 14),
+                              style: context.typo.label.copyWith(fontSize: 14),
                             ),
                           ),
                         )
@@ -185,7 +187,12 @@ class _FlowViewState extends ConsumerState<FlowView>
             children: [
               Row(
                 children: [
-                  InkWell(child: Text('新飞飞', style: TextStyle(fontSize: 17))),
+                  InkWell(
+                    child: Text(
+                      '新飞飞',
+                      style: context.typo.sectionTitle.copyWith(fontSize: 17),
+                    ),
+                  ),
                   LevelIcon(lv: 5),
                   Spacer(),
                   Image.asset('imgs/zan.png', width: 50, height: 30),
@@ -202,14 +209,18 @@ class _FlowViewState extends ConsumerState<FlowView>
                           value: '0',
                           child: Text(
                             '收藏',
-                            style: TextStyle(color: Colors.black54),
+                            style: context.typo.body.copyWith(
+                              color: Colors.black54,
+                            ),
                           ),
                         ),
                         PopupMenuItem<String>(
                           value: '1',
                           child: Text(
                             '举报',
-                            style: TextStyle(color: Colors.black54),
+                            style: context.typo.body.copyWith(
+                              color: Colors.black54,
+                            ),
                           ),
                         ),
                       ];
@@ -221,7 +232,7 @@ class _FlowViewState extends ConsumerState<FlowView>
               SizedBox(height: 5),
               Text(
                 '第$i楼  2022-12-11 10：12',
-                style: TextStyle(color: Colors.grey, fontSize: 15),
+                style: context.typo.caption.copyWith(fontSize: 15),
               ),
               SizedBox(height: 5),
               Container(
@@ -235,7 +246,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                         children: [
                           TextSpan(
                             text: '新飞飞1',
-                            style: TextStyle(color: Colors.grey, height: 1.8),
+                            style: context.typo.caption.copyWith(height: 1.8),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 print('新飞飞1');
@@ -243,7 +254,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                           ),
                           TextSpan(
                             text: '：' + lookArtState.text,
-                            style: TextStyle(height: 1.8),
+                            style: context.typo.body.copyWith(height: 1.8),
                           ),
                         ],
                       ),
@@ -253,7 +264,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                         children: [
                           TextSpan(
                             text: '新飞飞1：',
-                            style: TextStyle(color: Colors.grey, height: 1.8),
+                            style: context.typo.caption.copyWith(height: 1.8),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 print('新飞飞1');
@@ -261,7 +272,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                           ),
                           TextSpan(
                             text: '：' + lookArtState.text,
-                            style: TextStyle(height: 1.8),
+                            style: context.typo.body.copyWith(height: 1.8),
                           ),
                         ],
                       ),
@@ -271,7 +282,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                         children: [
                           TextSpan(
                             text: '新飞飞1：',
-                            style: TextStyle(color: Colors.grey, height: 1.8),
+                            style: context.typo.caption.copyWith(height: 1.8),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 print('新飞飞1');
@@ -279,7 +290,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                           ),
                           TextSpan(
                             text: '：' + lookArtState.text,
-                            style: TextStyle(height: 1.8),
+                            style: context.typo.body.copyWith(height: 1.8),
                           ),
                         ],
                       ),
@@ -289,7 +300,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                         children: [
                           TextSpan(
                             text: '新飞飞1：',
-                            style: TextStyle(color: Colors.grey, height: 1.8),
+                            style: context.typo.caption.copyWith(height: 1.8),
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 print('新飞飞1');
@@ -297,7 +308,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                           ),
                           TextSpan(
                             text: '：' + lookArtState.text,
-                            style: TextStyle(height: 1.8),
+                            style: context.typo.body.copyWith(height: 1.8),
                           ),
                         ],
                       ),
