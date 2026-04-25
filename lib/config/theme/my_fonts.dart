@@ -83,13 +83,13 @@ class MyFonts
   static TextStyle caption(BuildContext context) {
     if (isWideScreen(context)) {
       return bodyTextStyle.copyWith(
-        fontSize: 10,
+        fontSize: 13,
         height: 1.2,
         color: Colors.grey,
       );
     }
     return bodyTextStyle.copyWith(
-      fontSize: 9,
+      fontSize: 11,
       height: 1.2,
       color: Colors.grey,
     );
