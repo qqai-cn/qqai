@@ -6,6 +6,7 @@ import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/features/share/views/share_img_item_view.dart';
 import 'package:qqai/features/share/views/share_video_item_view.dart';
 
+import '../../../components/responsive_masonry_grid.dart';
 import '../providers/share_providers.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -40,26 +41,26 @@ class _HelpViewState extends ConsumerState<ShareView> {
     return Scaffold(
       backgroundColor: Colors.black12,
       body: shareState.sharePageModelData.when(
-        data: (data) {
-          return MasonryGridView.count(
-            itemCount: data.list!.length,
-            crossAxisCount: 2,
-            controller: scrollController,
-            itemBuilder: (context, index) {
-              final helpItem = data.list![index];
-              if (helpItem.blogType == 1) {
-                return Card(child: ShareImgItemView(widget.categary, helpItem));
-              } else {
-                return Card(
-                  child: SizedBox(
-                    height: shareNotifier.getVideoItemHeightWithWidth(2, 1.sw),
-                    child: ShareVideoItemView(widget.categary, helpItem),
+        data: (data) => ResponsiveMasonryGrid(
+          itemCount: data.list!.length,
+          minColumnWidth: 400,
+          itemBuilder: (context, index) {
+            final helpItem = data.list![index];
+            if (helpItem.blogType == 1) {
+              return Card(child: ShareImgItemView(widget.categary, helpItem));
+            } else {
+              return Card(
+                child: SizedBox(
+                  height: shareNotifier.getVideoItemHeightWithWidth(
+                    1.sw <= 800 ? 1 : 2,
+                    1.sw,
                   ),
-                );
-              }
-            },
-          );
-        },
+                  child: ShareVideoItemView(widget.categary, helpItem),
+                ),
+              );
+            }
+          },
+        ),
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

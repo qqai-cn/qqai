@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
+import '../../../components/responsive_masonry_grid.dart';
 import '../providers/help_providers.dart';
 import 'help_img_item_view.dart';
 import 'help_video_item_view.dart';
-import 'package:qqai/config/theme/app_typography.dart';
 
 class HelpView extends ConsumerStatefulWidget {
   final int categary;
@@ -40,26 +39,26 @@ class _HelpViewState extends ConsumerState<HelpView> {
     return Scaffold(
       backgroundColor: Colors.black12,
       body: helpState.helpPageModelData.when(
-        data: (data) {
-         return MasonryGridView.count(
-            itemCount: data.list!.length,
-            crossAxisCount: 2,
-            controller: scrollController,
-            itemBuilder: (context, index) {
-              final helpItem = data.list![index];
-              if (helpItem.blogType == 1) {
-                return Card(child: HelpImgItemView(widget.categary, helpItem));
-              } else {
-                return Card(
-                  child: SizedBox(
-                    height: helpNotifier.getVideoItemHeightWithWidth(2, 1.sw),
-                    child: HelpVideoItemView(widget.categary, helpItem),
+        data: (data) => ResponsiveMasonryGrid(
+          itemCount: data.list!.length,
+          minColumnWidth: 400,
+          itemBuilder: (context, index) {
+            final helpItem = data.list![index];
+            if (helpItem.blogType == 1) {
+              return Card(child: HelpImgItemView(widget.categary, helpItem));
+            } else {
+              return Card(
+                child: SizedBox(
+                  height: helpNotifier.getVideoItemHeightWithWidth(
+                    1.sw <= 800 ? 1 : 2,
+                    1.sw,
                   ),
-                );
-              }
-            },
-          );
-        },
+                  child: HelpVideoItemView(widget.categary, helpItem),
+                ),
+              );
+            }
+          },
+        ),
         error: (err, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

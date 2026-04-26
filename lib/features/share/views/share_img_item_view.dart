@@ -146,7 +146,7 @@ class _HelpImgItemViewState extends ConsumerState<ShareImgItemView> {
                 children: List.generate(imageCount, (i) {
                   final url = _imageUrls[i];
                   final heroTag =
-                      'lookBlogImg-${widget.category}-${widget.shareItem.id}-$i';
+                      'shareBlogImg-${widget.category}-${widget.shareItem.id}-$i';
                   return InkWell(
                     onTap: () {
                       shareNotifier.onBlogImgItemTap(
@@ -154,6 +154,7 @@ class _HelpImgItemViewState extends ConsumerState<ShareImgItemView> {
                         widget.shareItem,
                         i,
                         heroTag,
+                        _imageUrls,
                       );
                     },
                     child: Hero(

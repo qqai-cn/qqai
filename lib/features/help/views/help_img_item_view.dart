@@ -145,7 +145,7 @@ class _HelpImgItemViewState extends ConsumerState<HelpImgItemView> {
                 children: List.generate(imageCount, (i) {
                   final url = _imageUrls[i];
                   final heroTag =
-                      'lookBlogImg-${widget.category}-${widget.helpItem.id}-$i';
+                      'lookHelpImg-${widget.category}-${widget.helpItem.id}-$i';
                   return InkWell(
                     onTap: () {
                       helpNotifier.onBlogImgItemTap(
@@ -153,6 +153,7 @@ class _HelpImgItemViewState extends ConsumerState<HelpImgItemView> {
                         widget.helpItem,
                         i,
                         heroTag,
+                        _imageUrls,
                       );
                     },
                     child: Hero(

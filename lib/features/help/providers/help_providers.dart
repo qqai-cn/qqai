@@ -95,12 +95,14 @@ class HelpNotifier extends _$HelpNotifier {
       HelpItem blogItem,
       int index,
       String heroTag,
+      List<String> imageUrls,
       ) {
     PreviewImg previewImg = PreviewImg().copyWith(
       id: blogItem.id!.toInt(),
       url: blogItem.resources,
       index: index,
       heroTag: heroTag,
+      allUris: imageUrls,
     );
     context.push(Routes.watchImgUrl, extra: previewImg);
   }
