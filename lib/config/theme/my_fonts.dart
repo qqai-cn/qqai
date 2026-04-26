@@ -28,11 +28,13 @@ class MyFonts
 
   // appbar font size
   // static double get appBarTittleSize => 18.sp;
-  static double get appBarTittleSize => 18;
+  static double get appBarTittleSize => 20;
+  static double get appBarTittleSizeW => 22;
 
   // body font size
   static double get bodySmallTextSize => 11;
   static double get bodyMediumSize => 18; // default font
+  static double get bodyMediumSizeW => 20;
   static double get bodyLargeSize => 16;
   // display font size
   static double get displayLargeSize => 20;
@@ -65,14 +67,32 @@ class MyFonts
   static TextStyle cardTitle(BuildContext context) {
     if (isWideScreen(context)) {
       return displayTextStyle.copyWith(
-        fontSize: 17,
+        fontSize: 20,
         height: 1.3,
         color: Colors.black,
         fontWeight: FontWeight.w500,
       );
     }
     return displayTextStyle.copyWith(
-      fontSize: 15,
+      fontSize: 18,
+      height: 1.3,
+      color: Colors.black,
+      fontWeight: FontWeight.w500,
+    );
+  }
+
+  // 卡片主标题：用于信息流卡片标题、商品标题、内容卡片第一层级标题。
+  static TextStyle cardTitle2(BuildContext context) {
+    if (isWideScreen(context)) {
+      return displayTextStyle.copyWith(
+        fontSize: 15,
+        height: 1.3,
+        color: Colors.black,
+        fontWeight: FontWeight.w500,
+      );
+    }
+    return displayTextStyle.copyWith(
+      fontSize: 13,
       height: 1.3,
       color: Colors.black,
       fontWeight: FontWeight.w500,
@@ -153,14 +173,14 @@ class MyFonts
   static TextStyle appBarTitle(BuildContext context) {
     if (isWideScreen(context)) {
       return appBarTextStyle.copyWith(
-        fontSize: appBarTittleSize,
+        fontSize: appBarTittleSizeW,
         height: 1.2,
         color: Colors.black,
         fontWeight: FontWeight.w600,
       );
     }
     return appBarTextStyle.copyWith(
-      fontSize: 16,
+      fontSize: appBarTittleSize,
       height: 1.2,
       color: Colors.black,
       fontWeight: FontWeight.w600,
@@ -189,14 +209,14 @@ class MyFonts
   static TextStyle body(BuildContext context) {
     if (isWideScreen(context)) {
       return bodyTextStyle.copyWith(
-        fontSize: bodyMediumSize,
+        fontSize: bodyMediumSizeW,
         height: 1.4,
         color: Colors.black87,
         fontWeight: FontWeight.w400,
       );
     }
     return bodyTextStyle.copyWith(
-      fontSize: 15,
+      fontSize: bodyMediumSize,
       height: 1.4,
       color: Colors.black87,
       fontWeight: FontWeight.w400,

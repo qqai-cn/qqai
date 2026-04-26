@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/blog/comment_preview_sheet.dart';
 import 'package:qqai/components/blog/creator_header_row.dart';
 import 'package:qqai/components/blog/feed_action_bar.dart';
+import 'package:qqai/components/blog/feed_video_more_menu.dart';
 import 'package:qqai/components/blog/visibility_video_slot.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -83,46 +84,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                     showCommentPreviewSheet(context, text);
                   }
                 },
-                menuBuilder: (context) {
-                  return <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: '0',
-                      child: Text(
-                        '收藏',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '1',
-                      child: Text(
-                        '举报',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '2',
-                      child: Text(
-                        '不感兴趣',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '3',
-                      child: Text(
-                        '加入播放队列',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                  ];
-                },
+                menuBuilder: feedVideoMoreMenuEntries,
               ),
             ],
           ),

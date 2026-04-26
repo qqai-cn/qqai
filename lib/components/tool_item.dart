@@ -15,6 +15,7 @@ class ToolItem extends StatelessWidget {
     return Card(
         surfaceTintColor: Colors.white,
         child: Column(
+          mainAxisAlignment: .center,
           children: [
             ListTile(
               leading: SvgPicture.asset(
@@ -26,7 +27,7 @@ class ToolItem extends StatelessWidget {
               title: Text(toolItemBean.title,
                   style: context.typo.body.copyWith(fontWeight: FontWeight.bold)),
               subtitle: Text(toolItemBean.subTitle,
-                  style: context.typo.body.copyWith(color: Colors.green)),
+                  style: context.typo.sectionTitle.copyWith(color: Colors.green)),
             ),
             ListTile(
               title:

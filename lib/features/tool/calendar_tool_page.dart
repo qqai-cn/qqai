@@ -29,7 +29,6 @@ class _CalendarToolPage extends State<CalendarToolPage>
   final _tabs = <String>['今日热榜', '往日', '农历', '阳历', '佛历', '道历'];
   final _tabViews = [];
   List<dynamic> hot = [];
-  late Widget calendar;
 
   @override
   void initState() {
@@ -45,7 +44,6 @@ class _CalendarToolPage extends State<CalendarToolPage>
     _tabViews.add(getYangLi());
     _tabViews.add(getFoLi());
     _tabViews.add(getDaoLi());
-    calendar = _buildCalendarView();
   }
 
   @override
@@ -77,7 +75,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
                   background: Center(
                     child: SizedBox(
                       width: 500,
-                      child: calendar,
+                      child: _buildCalendarView(),
                     ),
                   ),
                 ),

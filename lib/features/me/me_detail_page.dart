@@ -4,7 +4,7 @@ import 'package:qqai/constant/constant.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../constant/color_constant.dart';
-import '../video/views/video_item_view.dart';
+import 'package:qqai/features/video/views/video_item_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class MeDetailPage extends StatefulWidget {

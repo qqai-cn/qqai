@@ -19,6 +19,7 @@ class AppTypography {
   TextStyle get pageSubtitle => MyFonts.pageSubtitle(context);
   TextStyle get sectionTitle => MyFonts.sectionTitle(context);
   TextStyle get cardTitle => MyFonts.cardTitle(context);
+  TextStyle get cardTitle2 => MyFonts.cardTitle2(context);
   TextStyle get cardSubtitle => MyFonts.cardSubtitle(context);
   TextStyle get body => MyFonts.body(context);
   TextStyle get bodyStrong => MyFonts.bodyStrong(context);
