@@ -4,11 +4,10 @@ import '../../../../components/video_player/item_controls.dart';
 import '../../../../components/video_player/qqai_player.dart';
 
 class VideoItemPlayer extends StatefulWidget {
-  String url;
-  String imgUrl;
+  final String url;
+  final String imgUrl;
 
-  VideoItemPlayer({Key? key, required this.url, required this.imgUrl})
-    : super(key: key);
+  const VideoItemPlayer({super.key, required this.url, required this.imgUrl});
 
   @override
   _FeedPlayerState createState() => _FeedPlayerState();

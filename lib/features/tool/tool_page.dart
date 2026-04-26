@@ -160,7 +160,7 @@ class _ToolPage extends State<ToolPage> {
           itemBuilder: (context, index) {
             return InkWell(
               child: Container(
-                height: 120,
+                height: 122,
                 child: ToolItem(showToolItemBeans[index]),
               ),
               // onHover: (a) {},

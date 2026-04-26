@@ -1,0 +1,83 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_typography.dart';
+
+import '../../../../../constant/constant.dart';
+import '../../../../components/level_icon.dart';
+
+void showBlogCommentPreviewSheet(BuildContext context, String text) {
+  showModalBottomSheet(
+    constraints: BoxConstraints(maxHeight: 0.6.sh),
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext build) {
+      return ListView(
+        children: [
+          BlogCommentPreviewRow(text: text),
+          BlogCommentPreviewRow(text: text),
+          BlogCommentPreviewRow(text: text),
+          BlogCommentPreviewRow(text: text),
+        ],
+      );
+    },
+  );
+}
+
+class BlogCommentPreviewRow extends StatelessWidget {
+  final String text;
+
+  const BlogCommentPreviewRow({super.key, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      hoverColor: Colors.white,
+      focusColor: Colors.white,
+      titleAlignment: ListTileTitleAlignment.titleHeight,
+      leading: Image.asset(
+        'imgs/defbak.png',
+        width: Constant.HEAD_IMG_SEZE.w,
+        height: Constant.HEAD_IMG_SEZE.w,
+        fit: BoxFit.fill,
+      ),
+      title: Container(
+        decoration: const UnderlineTabIndicator(
+          borderSide: BorderSide(color: Colors.black12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const InkWell(child: Text('新飞飞')),
+                LevelIcon(lv: 5),
+                const Spacer(),
+                Image.asset('imgs/zan.png', width: 50, height: 30),
+                const Text('212'),
+                PopupMenuButton<String>(
+                  tooltip: '',
+                  icon: const Icon(Icons.more_vert, color: Colors.black54),
+                  onSelected: (va) {},
+                  itemBuilder: (BuildContext context) {
+                    return const <PopupMenuEntry<String>>[
+                      PopupMenuItem<String>(value: '0', child: Text('收藏')),
+                      PopupMenuItem<String>(value: '1', child: Text('举报')),
+                    ];
+                  },
+                ),
+              ],
+            ),
+            SelectableText(text),
+            const SizedBox(height: 5),
+            Text(
+              '2022-12-11 10：12',
+              style: context.typo.caption.copyWith(fontSize: 15),
+            ),
+            const SizedBox(height: 5),
+          ],
+        ),
+      ),
+      onTap: () {},
+    );
+  }
+}

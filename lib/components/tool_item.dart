@@ -20,7 +20,7 @@ class ToolItem extends StatelessWidget {
               leading: SvgPicture.asset(
                 toolItemBean.imageUrl,
                 fit: BoxFit.cover,
-                height: 50,
+                height: 60,
                 width: 50,
               ),
               title: Text(toolItemBean.title,
