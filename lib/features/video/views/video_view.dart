@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/video_player/qqai_player.dart';
-import 'package:qqai/config/theme/my_fonts.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/video/views/short_video_controls.dart';
 import 'package:qqai/features/video/views/video_list_view.dart';
 
@@ -14,7 +14,6 @@ import '../../index/presentation/widgets/brand_drawer_leading.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/providers/home_providers.dart';
 import '../data/mock_data.dart';
-import 'package:qqai/config/theme/app_typography.dart';
 
 class VideoView extends ConsumerStatefulWidget {
   const VideoView({Key? key}) : super(key: key);
