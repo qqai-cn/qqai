@@ -62,7 +62,7 @@ class _DetailControls
                   onTap: () {
                     context.push('${Routes.userDetail}/88/true');
                   },
-                  child: Text('@ 3000万粉丝', style: context.typo.body.copyWith(fontSize: 15)),
+                  child: Text('@ 3000万粉丝', style: context.typo.bodyStrong.copyWith(color: Colors.white)),
                 ),
                 InkWell(
                   onTap: () {
