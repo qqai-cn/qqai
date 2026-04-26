@@ -80,12 +80,13 @@ class HelpNotifier extends _$HelpNotifier {
       state = state.copyWith(error: '删除失败: $e');
     }
   }
+
   // 跳转到博客详情页
   void onHelpItemTap(BuildContext context, HelpItem blogItem) {
     if (blogItem.blogType == 1) {
-      context.push(Routes.whatArticle, extra: blogItem);
+      context.push(Routes.helpImgDetailView, extra: blogItem);
     } else {
-      context.push(Routes.watchVideo, extra: blogItem);
+      context.push(Routes.helpVideoDetailView, extra: blogItem);
     }
   }
 

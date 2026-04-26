@@ -2,19 +2,19 @@ import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/constant/color_constant.dart';
 
-import '../../../../../constant/color_constant.dart';
-import '../../../../components/level_icon.dart';
-
-class BlogAuthorHeader extends StatelessWidget {
+/// 头像、昵称、等级、关注按钮与一行 meta 文案。
+class CreatorHeaderRow extends StatelessWidget {
   final String creatorName;
   final int care;
   final VoidCallback onCareTap;
   final String metaText;
   final double avatarSize;
 
-  const BlogAuthorHeader({
+  const CreatorHeaderRow({
     super.key,
     required this.creatorName,
     required this.care,

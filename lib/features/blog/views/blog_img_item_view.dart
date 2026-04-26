@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
+import 'package:qqai/components/blog/comment_preview_sheet.dart';
+import 'package:qqai/components/blog/creator_header_row.dart';
+import 'package:qqai/components/blog/feed_action_bar.dart';
+import 'package:qqai/components/blog/hero_image_wrap_grid.dart';
+
 import '../../../../../constant/constant.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_providers.dart';
-import 'components/blog_action_bar.dart';
-import 'components/blog_author_header.dart';
-import 'components/blog_comment_preview_sheet.dart';
-import 'components/blog_image_grid.dart';
 
 class BlogImgItemView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
@@ -50,7 +51,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            BlogAuthorHeader(
+            CreatorHeaderRow(
               creatorName: widget.blogItem.creatorName ?? '未知用户',
               care: widget.blogItem.care ?? 0,
               metaText: '关注 32 KW ◉️ 活跃 333 KW',
@@ -68,7 +69,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
               ),
             ),
             SizedBox(height: 10),
-            BlogImageGrid(
+            HeroImageWrapGrid(
               imageUrls: _imageUrls,
               heroTagBuilder: (i) =>
                   'lookBlogImg-${widget.category}-${widget.blogItem.id}-$i',
@@ -82,7 +83,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                 );
               },
             ),
-            BlogActionBar(
+            FeedActionBar(
               liked: widget.blogItem.zan == 1,
               onLike: () =>
                   ref.read(blogProvider.notifier).onZanTap(widget.blogItem),
@@ -90,7 +91,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                 if (isWideScreen) {
                   blogNotifier.onBlogItemTap(context, widget.blogItem);
                 } else {
-                  showBlogCommentPreviewSheet(context, text);
+                  showCommentPreviewSheet(context, text);
                 }
               },
               menuBuilder: (context) {

@@ -81,11 +81,11 @@ class ShareNotifier extends _$ShareNotifier {
   }
 
   // 跳转到博客详情页
-  void onHelpItemTap(BuildContext context, ShareItem blogItem) {
+  void onShareItemTap(BuildContext context, ShareItem blogItem) {
     if (blogItem.blogType == 1) {
-      context.push(Routes.whatArticle, extra: blogItem);
+      context.push(Routes.shareImgDetailView, extra: blogItem);
     } else {
-      context.push(Routes.watchVideo, extra: blogItem);
+      context.push(Routes.shareVideoDetailView, extra: blogItem);
     }
   }
 

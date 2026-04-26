@@ -1,14 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'image_tile_layout.dart';
 
-import '../utils/blog_layout_utils.dart';
-
-class BlogImageGrid extends StatelessWidget {
+/// Hero + 圆角宫格，点击回调带 index 与 tag。
+class HeroImageWrapGrid extends StatelessWidget {
   final List<String> imageUrls;
   final String Function(int index) heroTagBuilder;
   final void Function(int index, String heroTag) onImageTap;
 
-  const BlogImageGrid({
+  const HeroImageWrapGrid({
     super.key,
     required this.imageUrls,
     required this.heroTagBuilder,
@@ -22,7 +22,7 @@ class BlogImageGrid extends StatelessWidget {
       builder: (BuildContext context, BoxConstraints constraints) {
         final parentWidth = constraints.maxWidth;
         final imageCount = imageUrls.length;
-        final itemSize = getImgGridHeight(imageCount, parentWidth);
+        final itemSize = tileExtentForWrapImageGrid(imageCount, parentWidth);
         return Wrap(
           spacing: 10,
           runSpacing: 10,

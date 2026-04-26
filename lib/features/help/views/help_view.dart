@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/components/blog/async_masonry_feed.dart';
 
-import '../../../components/responsive_masonry_grid.dart';
+import '../data/models/help_page_model.dart';
 import '../providers/help_providers.dart';
 import 'help_img_item_view.dart';
 import 'help_video_item_view.dart';
@@ -21,11 +20,6 @@ class _HelpViewState extends ConsumerState<HelpView> {
   final ScrollController scrollController = ScrollController();
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   void dispose() {
     scrollController.dispose();
     super.dispose();
@@ -35,49 +29,20 @@ class _HelpViewState extends ConsumerState<HelpView> {
   Widget build(BuildContext context) {
     final helpState = ref.watch(helpProvider);
     final helpNotifier = ref.read(helpProvider.notifier);
-
+    final asyncItems = helpState.helpPageModelData.whenData(
+      (data) => data.list ?? [],
+    );
     return Scaffold(
       backgroundColor: Colors.black12,
-      body: helpState.helpPageModelData.when(
-        data: (data) => ResponsiveMasonryGrid(
-          itemCount: data.list!.length,
-          minColumnWidth: 400,
-          itemBuilder: (context, index) {
-            final helpItem = data.list![index];
-            if (helpItem.blogType == 1) {
-              return Card(child: HelpImgItemView(widget.categary, helpItem));
-            } else {
-              return Card(
-                child: SizedBox(
-                  height: helpNotifier.getVideoItemHeightWithWidth(
-                    1.sw <= 800 ? 1 : 2,
-                    1.sw,
-                  ),
-                  child: HelpVideoItemView(widget.categary, helpItem),
-                ),
-              );
-            }
-          },
-        ),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '加载失败: $err',
-                style: context.typo.body.copyWith(color: Colors.white),
-              ),
-              ElevatedButton(
-                onPressed: () => helpNotifier.load(),
-                child: Text(
-                  '重试',
-                  style: context.typo.button.copyWith(color: Colors.black),
-                ),
-              ),
-            ],
-          ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+      body: AsyncMasonryFeed<HelpItem>(
+        asyncItems: asyncItems,
+        onRetry: () => helpNotifier.load(),
+        itemBuilder: (context, index, helpItem) {
+          if (helpItem.blogType == 1) {
+            return HelpImgItemView(widget.categary, helpItem);
+          }
+          return HelpVideoItemView(widget.categary, helpItem);
+        },
       ),
     );
   }

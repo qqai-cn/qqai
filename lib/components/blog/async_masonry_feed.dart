@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/responsive_masonry_grid.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
-class BlogFeedGrid<T> extends StatelessWidget {
+/// 异步列表 + 瀑布流 + 加载/错误占位。
+class AsyncMasonryFeed<T> extends StatelessWidget {
   final AsyncValue<List<T>> asyncItems;
   final double minColumnWidth;
   final Widget Function(BuildContext context, int index, T item) itemBuilder;
   final VoidCallback onRetry;
 
-  const BlogFeedGrid({
+  const AsyncMasonryFeed({
     super.key,
     required this.asyncItems,
     required this.itemBuilder,

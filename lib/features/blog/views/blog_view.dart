@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/components/blog/async_masonry_feed.dart';
 
 import '../providers/blog_providers.dart';
 import 'blog_img_item_view.dart';
 import 'blog_video_item_view.dart';
-import 'components/blog_feed_grid.dart';
 
 class BlogView extends ConsumerStatefulWidget {
   final int category;
@@ -33,13 +33,12 @@ class _BlogViewState extends ConsumerState<BlogView> {
   @override
   Widget build(BuildContext context) {
     final blogState = ref.watch(blogProvider);
-    final blogNotifier = ref.read(blogProvider.notifier);
     final asyncItems = blogState.blogPageData.whenData(
       (data) => data.list ?? [],
     );
     return Scaffold(
       backgroundColor: Colors.black12,
-      body: BlogFeedGrid(
+      body: AsyncMasonryFeed(
         asyncItems: asyncItems,
         onRetry: () => ref.read(blogProvider.notifier).load(),
         itemBuilder: (context, index, blogItem) {

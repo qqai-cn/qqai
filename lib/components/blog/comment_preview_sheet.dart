@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/constant/constant.dart';
 
-import '../../../../../constant/constant.dart';
-import '../../../../components/level_icon.dart';
-
-void showBlogCommentPreviewSheet(BuildContext context, String text) {
+void showCommentPreviewSheet(BuildContext context, String text) {
   showModalBottomSheet(
     constraints: BoxConstraints(maxHeight: 0.6.sh),
     context: context,
@@ -13,20 +12,20 @@ void showBlogCommentPreviewSheet(BuildContext context, String text) {
     builder: (BuildContext build) {
       return ListView(
         children: [
-          BlogCommentPreviewRow(text: text),
-          BlogCommentPreviewRow(text: text),
-          BlogCommentPreviewRow(text: text),
-          BlogCommentPreviewRow(text: text),
+          CommentPreviewRow(text: text),
+          CommentPreviewRow(text: text),
+          CommentPreviewRow(text: text),
+          CommentPreviewRow(text: text),
         ],
       );
     },
   );
 }
 
-class BlogCommentPreviewRow extends StatelessWidget {
+class CommentPreviewRow extends StatelessWidget {
   final String text;
 
-  const BlogCommentPreviewRow({super.key, required this.text});
+  const CommentPreviewRow({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {

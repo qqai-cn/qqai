@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/blog/comment_preview_sheet.dart';
+import 'package:qqai/components/blog/creator_header_row.dart';
+import 'package:qqai/components/blog/feed_action_bar.dart';
+import 'package:qqai/components/blog/visibility_video_slot.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../../../constant/constant.dart';
-import 'components/blog_action_bar.dart';
-import 'components/blog_author_header.dart';
-import 'components/blog_comment_preview_sheet.dart';
-import 'components/lazy_video_placeholder.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_providers.dart';
 
@@ -34,18 +34,17 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     final bodyStyle = context.typo.body;
     const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
     return Card(
-
       child: SizedBox(
-          height: blogNotifier.getVideoItemHeightWithWidth(
-            1.sw <= 800 ? 1 : 2,
-            1.sw,
-          ),
-        child:  Padding(
+        height: blogNotifier.getVideoItemHeightWithWidth(
+          1.sw <= 800 ? 1 : 2,
+          1.sw,
+        ),
+        child: Padding(
           padding: EdgeInsets.all(2),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              BlogAuthorHeader(
+              CreatorHeaderRow(
                 creatorName: widget.blogItem.creatorName ?? '未知用户',
                 care: widget.blogItem.care ?? 0,
                 metaText: '关注 32 KW $split_o️ 活跃 333 KW',
@@ -57,7 +56,9 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   widget.blogItem.content!,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: bodyStyle.copyWith(fontSize: (bodyStyle.fontSize ?? 16)),
+                  style: bodyStyle.copyWith(
+                    fontSize: (bodyStyle.fontSize ?? 16),
+                  ),
                 ),
               ),
               Container(height: 2, color: Colors.white),
@@ -65,21 +66,21 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 flex: 9,
                 child: AspectRatio(
                   aspectRatio: 15 / 9,
-                  child: LazyVideoPlaceholder(
+                  child: VisibilityVideoSlot(
                     key: Key('blog_video_${widget.blogItem.id}'),
                     url: widget.blogItem.resources!,
                     imgUrl: coverUrl,
                   ),
                 ),
               ),
-              BlogActionBar(
+              FeedActionBar(
                 liked: widget.blogItem.zan == 1,
                 onLike: () => blogNotifier.onZanTap(widget.blogItem),
                 onComment: () {
                   if (isWideScreen) {
                     blogNotifier.onBlogItemTap(context, widget.blogItem);
                   } else {
-                    showBlogCommentPreviewSheet(context, text);
+                    showCommentPreviewSheet(context, text);
                   }
                 },
                 menuBuilder: (context) {
@@ -88,28 +89,36 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                       value: '0',
                       child: Text(
                         '收藏',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '1',
                       child: Text(
                         '举报',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '2',
                       child: Text(
                         '不感兴趣',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '3',
                       child: Text(
                         '加入播放队列',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                   ];
@@ -117,10 +126,8 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
               ),
             ],
           ),
-        )
-      )
-
-
+        ),
+      ),
     );
   }
 }

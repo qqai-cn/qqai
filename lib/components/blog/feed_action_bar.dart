@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:qqai/components/myshare_page.dart';
 
-class BlogActionBar extends StatelessWidget {
+/// 点赞、评论、分享、更多菜单。
+class FeedActionBar extends StatelessWidget {
   final bool liked;
   final VoidCallback onLike;
   final VoidCallback onComment;
   final List<PopupMenuEntry<String>> Function(BuildContext context) menuBuilder;
 
-  const BlogActionBar({
+  const FeedActionBar({
     super.key,
     required this.liked,
     required this.onLike,
