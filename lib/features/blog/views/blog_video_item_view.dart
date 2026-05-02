@@ -54,7 +54,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
               Padding(
                 padding: EdgeInsets.only(left: 5, right: 5),
                 child: Text(
-                  widget.blogItem.content!,
+                  widget.blogItem.content ?? '',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: bodyStyle.copyWith(
@@ -69,7 +69,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   aspectRatio: 15 / 9,
                   child: VisibilityVideoSlot(
                     key: Key('blog_video_${widget.blogItem.id}'),
-                    url: widget.blogItem.resources!,
+                    url: widget.blogItem.resources ?? '',
                     imgUrl: coverUrl,
                   ),
                 ),

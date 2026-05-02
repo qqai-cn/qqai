@@ -186,15 +186,23 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
                         fabuState.files.length < 6 &&
                         fabuState.videoFiles.isEmpty,
                     child: InkWell(
-                      onTap: () {
-                        _openImageFile(context, ref).then(
-                          (value) => {fabuNotifier.selectFile(value, context)},
-                        );
+                      onTap: () async {
+                        final value = await _openImageFile(context, ref);
+                        if (value.isNotEmpty) {
+                          await fabuNotifier.selectFile(value, context);
+                        }
                       },
-                      child: Icon(
-                        Icons.add_box,
-                        size: 0.3.sh,
-                        color: Colors.black12,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_box,
+                            size: 0.3.sh,
+                            color: Colors.black12,
+                          ),
+                          if (fabuState.isUploading)
+                            CircularProgressIndicator(),
+                        ],
                       ),
                     ),
                   ),
@@ -274,7 +282,7 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
                   context: context,
                   isScrollControlled: true,
                   builder: (BuildContext build) {
-                    return FilterPage(fabuState.huatiSel);
+                    return FilterPage(fabuState.huatiSel, fabuState.topicList);
                   },
                 ).then((value) {
                   if (value != null) {
@@ -370,23 +378,25 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
       return Future.value([]);
     }
     final videoFiles = <XFile>[];
+    final imageFiles = <XFile>[];
     files.forEach((element) {
       String suf = element.name.split(".").last;
       if (videoList.contains(suf)) {
         videoFiles.add(element);
         return;
       }
+      imageFiles.add(element);
     });
 
     if (videoFiles.isNotEmpty) {
       final notifier = ref.read(fabuProvider.notifier);
-      notifier.addVideoFiles(videoFiles);
+      await notifier.addVideoFiles(videoFiles);
     }
 
     if (context.mounted) {
       final state = ref.read(fabuProvider);
       return Future.value(
-        state.videoFiles.isNotEmpty ? state.videoFiles : files,
+        state.videoFiles.isNotEmpty ? state.videoFiles : imageFiles,
       );
     }
     return Future.value([]);

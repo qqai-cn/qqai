@@ -1,6 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../constant/api_constant.dart';
+import '../../../../util/api_base_client.dart';
 import '../models/fabu_model.dart';
+import '../models/topic_model.dart';
 
 // Repo Provider（按 blog 的格式：Provider 放在 repo 文件里）
 final fabuRepoProvider = Provider<IFabuRepo>(
@@ -13,6 +16,7 @@ abstract class IFabuRepo {
   Future<void> addFabu(FabuModel item);
   Future<void> updateFabu(FabuModel item);
   Future<void> deleteFabu(String id);
+  Future<List<SkuuTopicResVO>> getTopicList(int pageNo, int pageSize);
 }
 
 class FabuRepo implements IFabuRepo {
@@ -51,5 +55,16 @@ class FabuRepo implements IFabuRepo {
   Future<void> deleteFabu(String id) async {
     await Future.delayed(const Duration(milliseconds: 300));
     _items.removeWhere((item) => item.id == id);
+  }
+
+  @override
+  Future<List<SkuuTopicResVO>> getTopicList(int pageNo, int pageSize) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.TOPIC_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
+    );
+    final result = TopicPageResponse.fromJson(response.data);
+    return result.data?.list ?? [];
   }
 }

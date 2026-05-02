@@ -268,7 +268,7 @@ class _FabuShortVideoPage extends ConsumerState<FabuShortVideoPage> {
                   context: context,
                   isScrollControlled: true,
                   builder: (BuildContext build) {
-                    return FilterPage(fabuState.huatiSel);
+                    return FilterPage(fabuState.huatiSel, fabuState.topicList);
                   },
                 ).then((value) {
                   if (value != null) {

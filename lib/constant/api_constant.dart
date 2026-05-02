@@ -11,7 +11,10 @@ class ApiConstant {
       '/app-api/blog/weather-user-city/detail-list';
   static const String BLOG_PAGE = '/app-api/blog/qqai/page';
   static const String BLOG_SAVE = '/app-api/blog/qqai/save';
+  static const String TOPIC_PAGE = '/app-api/blog/topic/page';
+  static const String FILE_UPLOAD = '/app-api/infra/file/upload';
 
   // Auth
   static const String LOGIN = '/app-api/member/auth/login';
+  static const String REFRESH_TOKEN = '/app-api/member/auth/refresh-token';
 }

@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:file_selector/file_selector.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -12,6 +12,57 @@ import 'api_exceptions.dart';
 enum RequestType { get, post, put, delete }
 
 class ApiBaseClient {
+  static bool _isRefreshing = false;
+  static final List<Completer<void>> _refreshCompleters = [];
+  static Future<void> Function()? _onRefreshToken;
+  static Future<void> Function()? _onLogout;
+
+  static void setRefreshCallbacks({
+    required Future<void> Function() onRefreshToken,
+    required Future<void> Function() onLogout,
+  }) {
+    _onRefreshToken = onRefreshToken;
+    _onLogout = onLogout;
+  }
+
+  static Future<Response<dynamic>> _handle401AndRetry(RequestOptions requestOptions) async {
+    if (_isRefreshing) {
+      // 已经在刷新中，等待刷新完成后重试
+      final completer = Completer<void>();
+      _refreshCompleters.add(completer);
+      await completer.future;
+      return await _retry(requestOptions);
+    }
+
+    _isRefreshing = true;
+    try {
+      // 尝试刷新令牌
+      if (_onRefreshToken != null) {
+        await _onRefreshToken!();
+      }
+      // 通知所有等待的请求
+      for (final completer in _refreshCompleters) {
+        completer.complete();
+      }
+      _refreshCompleters.clear();
+      // 重试原请求
+      return await _retry(requestOptions);
+    } catch (refreshError) {
+      // 刷新失败，清除所有等待并拒绝
+      for (final completer in _refreshCompleters) {
+        completer.completeError(refreshError);
+      }
+      _refreshCompleters.clear();
+      // 登出
+      if (_onLogout != null) {
+        await _onLogout!();
+      }
+      rethrow;
+    } finally {
+      _isRefreshing = false;
+    }
+  }
+
   static final Dio _dio =
       Dio(
           BaseOptions(
@@ -32,7 +83,54 @@ class ApiBaseClient {
             compact: true,
             maxWidth: 90,
           ),
+        )
+        ..interceptors.add(
+          InterceptorsWrapper(
+            onResponse: (response, handler) async {
+              // 检查业务代码 401
+              final data = response.data;
+              if (data is Map && data['code'] == 401 && 
+                  response.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
+                try {
+                  // 处理业务代码 401
+                  final retryResponse = await _handle401AndRetry(response.requestOptions);
+                  return handler.resolve(retryResponse);
+                } catch (e) {
+                  // 如果刷新失败，直接返回原响应
+                  return handler.next(response);
+                }
+              }
+              return handler.next(response);
+            },
+            onError: (error, handler) async {
+              // 检查 HTTP 状态码 401 且不是刷新令牌接口本身
+              if (error.response?.statusCode == 401 && 
+                  error.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
+                try {
+                  final retryResponse = await _handle401AndRetry(error.requestOptions);
+                  return handler.resolve(retryResponse);
+                } catch (e) {
+                  // 如果刷新失败，继续传播错误
+                  return handler.next(error);
+                }
+              }
+              return handler.next(error);
+            },
+          ),
         );
+
+  static Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
+    final options = Options(
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+    );
+    return _dio.request<dynamic>(
+      requestOptions.path,
+      data: requestOptions.data,
+      queryParameters: requestOptions.queryParameters,
+      options: options,
+    );
+  }
 
   static String? _authorization;
 
@@ -116,10 +214,6 @@ class ApiBaseClient {
     } on TimeoutException {
       // Api call went out of time
       _handleTimeoutException(url: url, onError: null);
-      rethrow;
-    } on SocketException {
-      // No internet connection
-      _handleSocketException(url: url, onError: null);
       rethrow;
     } catch (error, stackTrace) {
       // print the line of code that throw unexpected exception
@@ -263,6 +357,35 @@ class ApiBaseClient {
   static void handleApiError(ApiException apiException) {
     String msg = apiException.toString();
     Logger().e('API Error: $msg');
+  }
+
+  static Future<String> uploadFile({
+    required XFile file,
+    String? directory,
+  }) async {
+    try {
+      final bytes = await file.readAsBytes();
+      final multipartFile = MultipartFile.fromBytes(
+        bytes,
+        filename: file.name,
+      );
+      
+      final formData = FormData.fromMap({
+        'file': multipartFile,
+        if (directory != null) 'directory': directory,
+      });
+      
+      final response = await safeApiCall(
+        ApiConstant.FILE_UPLOAD,
+        RequestType.post,
+        data: formData,
+      );
+      
+      return response.data['data'] as String;
+    } catch (error) {
+      Logger().e('File upload error: $error');
+      rethrow;
+    }
   }
 
   static void _handleError(String msg) {

@@ -15,6 +15,7 @@ sealed class AuthState with _$AuthState {
     @Default(false) bool isAuthenticated,
     String? userId,
     String? token,
+    String? refreshToken,
     String? username,
   }) = _AuthState;
 }
@@ -26,6 +27,7 @@ class AuthNotifier extends _$AuthNotifier {
   AuthState build() {
     // 从本地存储加载认证状态
     final token = MySharedPref.getAuthToken();
+    final refreshToken = MySharedPref.getRefreshToken();
     final isAuthenticated = token != null && token.isNotEmpty;
 
     if (isAuthenticated) {
@@ -35,6 +37,7 @@ class AuthNotifier extends _$AuthNotifier {
     return AuthState(
       isAuthenticated: isAuthenticated,
       token: token,
+      refreshToken: refreshToken,
     );
   }
 
@@ -45,6 +48,10 @@ class AuthNotifier extends _$AuthNotifier {
 
     await MySharedPref.setAuthToken(resp.token);
     if (!ref.mounted) return;
+    if (resp.refreshToken != null) {
+      await MySharedPref.setRefreshToken(resp.refreshToken!);
+    }
+    if (!ref.mounted) return;
 
     ApiBaseClient.setAuthorization('Bearer ${resp.token}');
     state = state.copyWith(
@@ -52,12 +59,39 @@ class AuthNotifier extends _$AuthNotifier {
       userId: resp.userId,
       username: username,
       token: resp.token,
+      refreshToken: resp.refreshToken,
+    );
+  }
+
+  // 刷新令牌
+  Future<void> refreshToken() async {
+    final currentRefreshToken = state.refreshToken;
+    if (currentRefreshToken == null || currentRefreshToken.isEmpty) {
+      throw '无可用的刷新令牌';
+    }
+
+    final resp = await refreshTokenApi(refreshToken: currentRefreshToken);
+    if (!ref.mounted) return;
+
+    await MySharedPref.setAuthToken(resp.token);
+    if (!ref.mounted) return;
+    if (resp.refreshToken != null) {
+      await MySharedPref.setRefreshToken(resp.refreshToken!);
+    }
+    if (!ref.mounted) return;
+
+    ApiBaseClient.setAuthorization('Bearer ${resp.token}');
+    state = state.copyWith(
+      isAuthenticated: true,
+      userId: resp.userId,
+      token: resp.token,
+      refreshToken: resp.refreshToken,
     );
   }
 
   // 登出
   Future<void> logout() async {
-    await MySharedPref.clearAuthToken();
+    await MySharedPref.clearAuthTokens();
     if (!ref.mounted) return;
     ApiBaseClient.setAuthorization(null);
     state = const AuthState(isAuthenticated: false);

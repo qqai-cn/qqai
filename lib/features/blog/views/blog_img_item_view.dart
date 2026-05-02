@@ -59,7 +59,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
               onCareTap: () => blogNotifier.onCareTap(widget.blogItem),
             ),
             SelectableText(
-              widget.blogItem.content!,
+              widget.blogItem.content ?? '',
               scrollPhysics: NeverScrollableScrollPhysics(),
               maxLines: 3,
               minLines: 1,

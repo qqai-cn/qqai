@@ -8,6 +8,8 @@ import 'package:qqai/router/app_router.dart';
 import 'config/theme/my_theme.dart';
 import 'config/translations/localization_service.dart';
 import 'util/my_shared_pref.dart';
+import 'util/api_base_client.dart';
+import 'providers/auth_providers.dart';
 import 'providers/app_config_providers.dart';
 
 Future<void> main() async {
@@ -23,11 +25,30 @@ Future<void> main() async {
   ));
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends ConsumerState<MyApp> {
+  @override
+  void initState() {
+    super.initState();
+    // 在 initState 后通过 addPostFrameCallback 安全地设置回调
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        ApiBaseClient.setRefreshCallbacks(
+          onRefreshToken: () => ref.read(authProvider.notifier).refreshToken(),
+          onLogout: () => ref.read(authProvider.notifier).logout(),
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final themeIsLight = ref.watch(appThemeModeProvider);
     final locale = ref.watch(appLocaleProvider);
     // watch：登录态变化或路由表更新后使用新的 GoRouter，避免一直用首次创建的实例

@@ -489,6 +489,7 @@ bool _requiresAuth(String path) {
   const protectedPaths = [
     Routes.mePage, // 我的页面
     Routes.messagePage, // 消息页面
+    Routes.publishZuoPinPageUrl, // 消息页面
   ];
 
   return protectedPaths.any((protected) => path.startsWith(protected));

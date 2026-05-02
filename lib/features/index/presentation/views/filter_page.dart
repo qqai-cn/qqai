@@ -1,17 +1,15 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../../constant/color_constant.dart';
-import '../../../data/models/huati_entity.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/fabu/data/models/topic_model.dart';
 
 class FilterPage extends StatefulWidget {
   Map<int, String> commonNamesSel = {};
+  final List<SkuuTopicResVO> topicList;
 
-  FilterPage(this.commonNamesSel, {super.key});
+  FilterPage(this.commonNamesSel, this.topicList, {super.key});
 
   @override
   State<StatefulWidget> createState() {
@@ -20,24 +18,12 @@ class FilterPage extends StatefulWidget {
 }
 
 class _FilterPage extends State<FilterPage> {
-  // List<String> commonNames = [];
-  Map<int, String> commonNameMap = {};
+  late Map<int, String> _selectedTopics;
 
   @override
   void initState() {
-    loadHuatiData();
-    print('$commonNameMap');
     super.initState();
-  }
-
-  void loadHuatiData() async {
-    await rootBundle.loadString('mock/huati.json').then((value) {
-      List list = json.decode(value);
-      list.forEach((v) {
-        HuatiEntity huatiEntity = HuatiEntity.fromJson(v);
-        commonNameMap[huatiEntity.code] = huatiEntity.name;
-      });
-    });
+    _selectedTopics = Map.from(widget.commonNamesSel);
   }
 
   @override
@@ -61,34 +47,47 @@ class _FilterPage extends State<FilterPage> {
             Container(
               height: 10,
             ),
-            Wrap(
-              spacing: 8.0, // 主轴(水平)方向间距
-              runSpacing: 4.0, // 纵轴（垂直）方向间距
-              alignment: WrapAlignment.start, //沿主轴方向居中
-              children: <Widget>[
-                for (int value in commonNameMap.keys)
-                  ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: ColorConstant.lightBlue),
-                      onPressed: () {
-                        setState(() {
-                          if (widget.commonNamesSel.containsKey(value)) {
-                            widget.commonNamesSel.remove(value);
-                          } else {
-                            widget.commonNamesSel.addAll({value:commonNameMap[value]!});
-                          }
-                        });
-                      },
-                      icon: widget.commonNamesSel.containsKey(value)
-                          ? Icon(Icons.offline_pin)
-                          : Icon(
-                              Icons.add_circle,
-                              color: Colors.green,
+            Expanded(
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 8.0, // 主轴(水平)方向间距
+                  runSpacing: 4.0, // 纵轴（垂直）方向间距
+                  alignment: WrapAlignment.start, //沿主轴方向居中
+                  children: <Widget>[
+                    for (var topic in widget.topicList)
+                      ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedTopics.containsKey(topic.id)
+                                  ? Colors.blue // 选中时显示蓝色
+                                  : ColorConstant.lightBlue),
+                          onPressed: () {
+                            setState(() {
+                              if (topic.id == null) return;
+                              if (_selectedTopics.containsKey(topic.id)) {
+                                _selectedTopics.remove(topic.id);
+                              } else {
+                                _selectedTopics[topic.id!] = topic.topicName ?? '';
+                              }
+                            });
+                          },
+                          icon: _selectedTopics.containsKey(topic.id)
+                              ? Icon(Icons.check_circle, color: Colors.white)
+                              : Icon(
+                                  Icons.add_circle_outline,
+                                  color: Colors.grey,
+                                ),
+                          label: Text(
+                            topic.topicName ?? '',
+                            style: TextStyle(
+                              color: _selectedTopics.containsKey(topic.id)
+                                  ? Colors.white // 选中时文字白色
+                                  : Colors.black87,
                             ),
-                      label: Text(commonNameMap[value]!))
-              ],
+                          ))
+                  ],
+                ),
+              ),
             ),
-            Spacer(),
             Container(
               height: 60,
               child: Row(
@@ -97,7 +96,7 @@ class _FilterPage extends State<FilterPage> {
                     child: InkWell(
                         onTap: () {
                           setState(() {
-                            widget.commonNamesSel.clear();
+                            _selectedTopics.clear();
                           });
                         },
                         child: Container(
@@ -118,7 +117,7 @@ class _FilterPage extends State<FilterPage> {
                   Expanded(
                     child: InkWell(
                         onTap: () {
-                          Navigator.pop(context, widget.commonNamesSel);
+                          Navigator.pop(context, _selectedTopics);
                         },
                         child: Container(
                           decoration: BoxDecoration(

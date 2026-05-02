@@ -9,9 +9,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../util/api_base_client.dart';
 import '../../data/models/address_entity.dart';
 import '../data/repos/fabu_repo.dart';
 import '../data/models/fabu_model.dart';
+import '../data/models/topic_model.dart';
 import '../../blog/data/models/blog_save_req_vo.dart';
 import '../../blog/data/repos/blog_repo.dart';
 
@@ -26,7 +28,10 @@ sealed class FabuState with _$FabuState {
     @Default(const AsyncLoading()) AsyncValue<List<FabuModel>> items,
     @Default([]) List<XFile> files,
     @Default([]) List<XFile> videoFiles,
+    @Default([]) List<String> uploadedFileUrls,
+    @Default([]) List<String> uploadedVideoUrls,
     @Default([]) List<AddressEntity> addressList,
+    @Default([]) List<SkuuTopicResVO> topicList,
     @Default([]) List<String> whoCanSee,
     AddressEntity? selAddressEntity,
     @Default(0) int? whoCanSeeSel,
@@ -34,6 +39,7 @@ sealed class FabuState with _$FabuState {
     @Default({}) Map<int, String> huatiSel,
     String? error,
     @Default(false) bool isLoading,
+    @Default(false) bool isUploading,
     @Default('') String textContent,
   }) = _FabuState;
 }
@@ -105,16 +111,67 @@ class FabuNotifier extends _$FabuNotifier {
     }
   }
 
+  Future<void> loadTopicList() async {
+    try {
+      final topics = await _repo.getTopicList(1, 200);
+      state = state.copyWith(topicList: topics);
+    } catch (e) {
+      print('Error loading topic list: $e');
+    }
+  }
+
+  Future<void> uploadFiles(List<XFile> files, bool isVideo) async {
+    if (files.isEmpty) return;
+    
+    state = state.copyWith(isUploading: true);
+    
+    try {
+      List<String> newUrls = [];
+      for (var file in files) {
+        final url = await ApiBaseClient.uploadFile(file: file);
+        newUrls.add(url);
+      }
+      
+      if (isVideo) {
+        final updatedUrls = List<String>.from(state.uploadedVideoUrls)..addAll(newUrls);
+        state = state.copyWith(uploadedVideoUrls: updatedUrls);
+      } else {
+        final updatedUrls = List<String>.from(state.uploadedFileUrls)..addAll(newUrls);
+        state = state.copyWith(uploadedFileUrls: updatedUrls);
+      }
+    } catch (e) {
+      print('Upload error: $e');
+    } finally {
+      state = state.copyWith(isUploading: false);
+    }
+  }
+
   void clearList(XFile file) {
+    final fileIndex = state.files.indexOf(file);
     final newFiles = List<XFile>.from(state.files)..remove(file);
-    state = state.copyWith(files: newFiles, videoFiles: []);
+    
+    // Also remove the corresponding uploaded URL
+    final newUrls = List<String>.from(state.uploadedFileUrls);
+    if (fileIndex >= 0 && fileIndex < newUrls.length) {
+      newUrls.removeAt(fileIndex);
+    }
+    
+    state = state.copyWith(
+      files: newFiles, 
+      uploadedFileUrls: newUrls,
+      videoFiles: [],
+      uploadedVideoUrls: []
+    );
   }
 
   void clearVideo() {
-    state = state.copyWith(videoFiles: []);
+    state = state.copyWith(
+      videoFiles: [],
+      uploadedVideoUrls: []
+    );
   }
 
-  void selectFile(List<XFile> value, BuildContext context) {
+  Future<void> selectFile(List<XFile> value, BuildContext context) async {
     final allEmpty = state.files.isNotEmpty && state.videoFiles.isNotEmpty;
     if (allEmpty) {
       clearVideo();
@@ -156,13 +213,17 @@ class FabuNotifier extends _$FabuNotifier {
     if (value.isNotEmpty) {
       final newFiles = List<XFile>.from(state.files)..addAll(value);
       state = state.copyWith(files: newFiles);
+      // Upload immediately
+      await uploadFiles(value, false);
     }
   }
 
-  void addVideoFiles(List<XFile> videoFiles) {
+  Future<void> addVideoFiles(List<XFile> videoFiles) async {
     final newVideoFiles = List<XFile>.from(state.videoFiles)
       ..addAll(videoFiles);
     state = state.copyWith(videoFiles: newVideoFiles);
+    // Upload immediately
+    await uploadFiles(videoFiles, true);
   }
 
   void setWhoCanSee(int who) {
@@ -198,10 +259,18 @@ class FabuNotifier extends _$FabuNotifier {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final blogRepo = ref.read(blogRepoProvider);
-      // Use provided content if available, otherwise use state.textContent
       final blogContent = content ?? state.textContent;
-      // For now, we'll just pass resources as is—you might want to process files/videos here
-      final blogResources = resources;
+      
+      // Collect already uploaded URLs
+      List<String> allUrls = [];
+      allUrls.addAll(state.uploadedFileUrls);
+      allUrls.addAll(state.uploadedVideoUrls);
+      
+      // Join urls with commas
+      final blogResources = allUrls.isNotEmpty 
+          ? allUrls.join(',') 
+          : resources;
+      
       final req = BlogSaveReqVO(
         squareId: squareId,
         topicIds: topicIds,

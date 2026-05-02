@@ -33,9 +33,10 @@ class _FabuViewState extends ConsumerState<FabuView>
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabTitle.length, vsync: this);
-    // 加载地址数据
+    // 加载地址数据和话题列表
     Future.microtask(() {
       ref.read(fabuProvider.notifier).loadAddressData();
+      ref.read(fabuProvider.notifier).loadTopicList();
     });
   }
 
@@ -56,7 +57,7 @@ class _FabuViewState extends ConsumerState<FabuView>
         blogType: fabuState.videoFiles.isNotEmpty ? 2 : 1,
         addressId: fabuState.selAddressEntity?.id,
         shareType: fabuState.whoCanSeeSel,
-        topicIds: fabuState.huatiSel.isNotEmpty ? fabuState.huatiSel.values.join(',') : null,
+        topicIds: fabuState.huatiSel.isNotEmpty ? fabuState.huatiSel.keys.join(',') : null,
       );
 
       if (mounted) {

@@ -440,7 +440,7 @@ class _FabuGoodsPage extends ConsumerState<FabuGoodsPage> {
                   context: context,
                   isScrollControlled: true,
                   builder: (BuildContext build) {
-                    return FilterPage(fabuState.huatiSel);
+                    return FilterPage(fabuState.huatiSel, fabuState.topicList);
                   },
                 ).then((value) {
                   if (value != null) {
