@@ -3,31 +3,116 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/responsive_masonry_grid.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
-/// 异步列表 + 瀑布流 + 加载/错误占位。
-class AsyncMasonryFeed<T> extends StatelessWidget {
+/// 异步列表 + 瀑布流 + 加载/错误占位 + 下拉刷新 + 上拉加载更多。
+class AsyncMasonryFeed<T> extends StatefulWidget {
   final AsyncValue<List<T>> asyncItems;
+  final List<T>? items;
   final double minColumnWidth;
   final Widget Function(BuildContext context, int index, T item) itemBuilder;
   final VoidCallback onRetry;
+  final Future<void> Function()? onRefresh;
+  final Future<void> Function()? onLoadMore;
+  final bool isLoadingMore;
+  final bool hasMore;
 
   const AsyncMasonryFeed({
     super.key,
     required this.asyncItems,
+    this.items,
     required this.itemBuilder,
     required this.onRetry,
     this.minColumnWidth = 400,
+    this.onRefresh,
+    this.onLoadMore,
+    this.isLoadingMore = false,
+    this.hasMore = true,
   });
 
   @override
+  State<AsyncMasonryFeed<T>> createState() => _AsyncMasonryFeedState<T>();
+}
+
+class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoadingMoreLocally = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didUpdateWidget(AsyncMasonryFeed<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isLoadingMore && !widget.isLoadingMore) {
+      _isLoadingMoreLocally = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() async {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoadingMoreLocally &&
+        !widget.isLoadingMore &&
+        widget.hasMore &&
+        widget.onLoadMore != null) {
+      _isLoadingMoreLocally = true;
+      await widget.onLoadMore!();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return asyncItems.when(
-      data: (items) => ResponsiveMasonryGrid(
-        itemCount: items.length,
-        minColumnWidth: minColumnWidth,
-        itemBuilder: (context, index) {
-          return itemBuilder(context, index, items[index]);
-        },
-      ),
+    return widget.asyncItems.when(
+      data: (dataItems) {
+        final displayItems = widget.items ?? dataItems;
+        final List<Widget> footerWidgets = [];
+        if (widget.isLoadingMore) {
+          footerWidgets.add(
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+        if (!widget.hasMore && displayItems.isNotEmpty) {
+          footerWidgets.add(
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Center(
+                child: Text(
+                  '没有更多了',
+                  style: TextStyle(color: Colors.white54),
+                ),
+              ),
+            ),
+          );
+        }
+        final child = ResponsiveMasonryGrid(
+          itemCount: displayItems.length,
+          minColumnWidth: widget.minColumnWidth,
+          controller: _scrollController,
+          footerWidgets: footerWidgets,
+          itemBuilder: (context, index) {
+            return widget.itemBuilder(context, index, displayItems[index]);
+          },
+        );
+        if (widget.onRefresh != null) {
+          return RefreshIndicator(
+            onRefresh: widget.onRefresh!,
+            child: child,
+          );
+        }
+        return child;
+      },
       error: (err, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -36,7 +121,7 @@ class AsyncMasonryFeed<T> extends StatelessWidget {
               '加载失败: $err',
               style: context.typo.body.copyWith(color: Colors.white),
             ),
-            ElevatedButton(onPressed: onRetry, child: const Text('重试')),
+            ElevatedButton(onPressed: widget.onRetry, child: const Text('重试')),
           ],
         ),
       ),

@@ -20,6 +20,8 @@ abstract class IHelpRepo {
   Future<void> deleteHelp(String id);
 
   Future<HelpPageModelData> getHelpPageModelData(String id);
+
+  Future<HelpPageModelData> getHelpPageModelDataWithPage(int page);
 }
 
 class HelpRepo implements IHelpRepo {
@@ -65,6 +67,16 @@ class HelpRepo implements IHelpRepo {
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.BLOG_PAGE,
       RequestType.get,
+    );
+    return HelpPageModel.fromJson(response.data).data!;
+  }
+
+  @override
+  Future<HelpPageModelData> getHelpPageModelDataWithPage(int page) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': page, 'pageSize': 10},
     );
     return HelpPageModel.fromJson(response.data).data!;
   }

@@ -41,7 +41,7 @@ final class HelpNotifierProvider
   }
 }
 
-String _$helpNotifierHash() => r'73207bf2dc17e7b5fee980b92d1160a66288a9c5';
+String _$helpNotifierHash() => r'6b935b5df89a53dd1143d71d22e125a7050e1796';
 
 abstract class _$HelpNotifier extends $Notifier<HelpState> {
   HelpState build();

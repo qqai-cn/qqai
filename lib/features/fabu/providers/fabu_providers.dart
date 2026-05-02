@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -12,6 +12,8 @@ import 'package:uuid/uuid.dart';
 import '../../data/models/address_entity.dart';
 import '../data/repos/fabu_repo.dart';
 import '../data/models/fabu_model.dart';
+import '../../blog/data/models/blog_save_req_vo.dart';
+import '../../blog/data/repos/blog_repo.dart';
 
 part 'fabu_providers.freezed.dart';
 
@@ -31,6 +33,8 @@ sealed class FabuState with _$FabuState {
     @Default(0) int aixinType,
     @Default({}) Map<int, String> huatiSel,
     String? error,
+    @Default(false) bool isLoading,
+    @Default('') String textContent,
   }) = _FabuState;
 }
 
@@ -114,23 +118,39 @@ class FabuNotifier extends _$FabuNotifier {
     final allEmpty = state.files.isNotEmpty && state.videoFiles.isNotEmpty;
     if (allEmpty) {
       clearVideo();
-      AwesomeDialog(
+      showDialog(
         context: context,
-        dialogType: DialogType.warning,
-        animType: AnimType.rightSlide,
-        desc: '请上传图片',
-        btnOkOnPress: () {},
-      )..show();
+        builder: (context) => AlertDialog(
+          title: const Text('提示'),
+          content: const Text('请上传图片'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
       return;
     }
     if (state.files.length + value.length > 6) {
-      AwesomeDialog(
+      showDialog(
         context: context,
-        dialogType: DialogType.warning,
-        animType: AnimType.rightSlide,
-        desc: '图片超出最大限制：6个',
-        btnOkOnPress: () {},
-      )..show();
+        builder: (context) => AlertDialog(
+          title: const Text('提示'),
+          content: const Text('图片超出最大限制：6个'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        ),
+      );
       return;
     }
     if (value.isNotEmpty) {
@@ -159,5 +179,44 @@ class FabuNotifier extends _$FabuNotifier {
 
   void changeAiXinType(int t) {
     state = state.copyWith(aixinType: t);
+  }
+
+  void updateTextContent(String text) {
+    state = state.copyWith(textContent: text);
+  }
+
+  Future<void> publishBlog({
+    int? squareId,
+    String? topicIds,
+    int? categary,
+    int? blogType,
+    String? content,
+    String? resources,
+    int? addressId,
+    int? shareType,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final blogRepo = ref.read(blogRepoProvider);
+      // Use provided content if available, otherwise use state.textContent
+      final blogContent = content ?? state.textContent;
+      // For now, we'll just pass resources as is—you might want to process files/videos here
+      final blogResources = resources;
+      final req = BlogSaveReqVO(
+        squareId: squareId,
+        topicIds: topicIds,
+        categary: categary,
+        blogType: blogType,
+        content: blogContent,
+        resources: blogResources,
+        addressId: addressId,
+        shareType: shareType,
+      );
+      await blogRepo.createBlog(req);
+      state = state.copyWith(isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      rethrow;
+    }
   }
 }

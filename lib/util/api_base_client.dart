@@ -62,6 +62,8 @@ class ApiBaseClient {
         if (_authorization != null) 'Authorization': _authorization,
         ...?headers,
       };
+      // Only set sendTimeout when there's data to send (avoids Web warning)
+      final bool hasData = data != null;
       if (requestType == RequestType.get) {
         response = await _dio.get(
           url,
@@ -69,7 +71,6 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: const Duration(seconds: _timeoutInSeconds),
           ),
         );
       } else if (requestType == RequestType.post) {
@@ -80,7 +81,7 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: const Duration(seconds: _timeoutInSeconds),
+            sendTimeout: hasData ? const Duration(seconds: _timeoutInSeconds) : null,
           ),
         );
       } else if (requestType == RequestType.put) {
@@ -91,7 +92,7 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: const Duration(seconds: _timeoutInSeconds),
+            sendTimeout: hasData ? const Duration(seconds: _timeoutInSeconds) : null,
           ),
         );
       } else {
@@ -102,7 +103,7 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: const Duration(seconds: _timeoutInSeconds),
+            sendTimeout: hasData ? const Duration(seconds: _timeoutInSeconds) : null,
           ),
         );
       }
@@ -143,7 +144,7 @@ class ApiBaseClient {
         savePath,
         options: Options(
           receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-          sendTimeout: const Duration(seconds: _timeoutInSeconds),
+          // No sendTimeout for download (no request body)
         ),
         onReceiveProgress: onReceiveProgress,
       );

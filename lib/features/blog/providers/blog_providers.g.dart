@@ -41,7 +41,7 @@ final class BlogNotifierProvider
   }
 }
 
-String _$blogNotifierHash() => r'e43a064849e98c141febba638c468f837c093e4e';
+String _$blogNotifierHash() => r'd0191a2dcf33a657b55ce367a53d8ab3024b1a60';
 
 abstract class _$BlogNotifier extends $Notifier<BlogState> {
   BlogState build();

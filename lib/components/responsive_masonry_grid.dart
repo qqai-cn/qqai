@@ -9,6 +9,8 @@ class ResponsiveMasonryGrid extends StatelessWidget {
   final IndexedWidgetBuilder itemBuilder;
   final int? itemCount;
   final int maxColumn;
+  final ScrollController? controller;
+  final List<Widget>? footerWidgets;
 
   const ResponsiveMasonryGrid({
     super.key,
@@ -18,42 +20,44 @@ class ResponsiveMasonryGrid extends StatelessWidget {
     this.maxColumn = 2,
     required this.itemBuilder,
     this.itemCount,
+    this.controller,
+    this.footerWidgets,
   });
 
   @override
   Widget build(BuildContext context) {
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableWidth = constraints.maxWidth;
         // 处理 Infinity 情况（当约束未确定时）
+        double useWidth;
         if (availableWidth.isInfinite || availableWidth <= 0) {
-          // 使用默认值或从 MediaQuery 获取屏幕宽度
-          final screenWidth = MediaQuery.of(context).size.width;
-          final columns = (screenWidth / minColumnWidth).floor().clamp(1, maxColumn);
-          return MasonryGridView.builder(
-            gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columns,
-            ),
-            mainAxisSpacing: mainAxisSpacing,
-            crossAxisSpacing: crossAxisSpacing,
-            itemCount: itemCount,
-            itemBuilder: itemBuilder,
-            cacheExtent: 400,
-            addAutomaticKeepAlives: false,
-            addRepaintBoundaries: true,
-          );
+          useWidth = MediaQuery.of(context).size.width;
+        } else {
+          useWidth = availableWidth;
         }
-        // 至少 1 列，最多 2 列
-        final columns = (availableWidth / minColumnWidth).floor().clamp(1, maxColumn);
+        // 至少 1 列，最多 maxColumn 列
+        final columns = (useWidth / minColumnWidth).floor().clamp(1, maxColumn);
+        final totalCount = (itemCount ?? 0) + (footerWidgets?.length ?? 0);
         return MasonryGridView.builder(
           gridDelegate: SliverSimpleGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columns,
           ),
           mainAxisSpacing: mainAxisSpacing,
           crossAxisSpacing: crossAxisSpacing,
-          itemCount: itemCount,
-          itemBuilder: itemBuilder,
+          itemCount: totalCount,
+          controller: controller,
+          itemBuilder: (context, index) {
+            if (index < (itemCount ?? 0)) {
+              return itemBuilder(context, index);
+            } else {
+              final footerIndex = index - (itemCount ?? 0);
+              return SizedBox(
+                width: double.infinity,
+                child: footerWidgets![footerIndex],
+              );
+            }
+          },
           cacheExtent: 400,
           addAutomaticKeepAlives: false,
           addRepaintBoundaries: true,

@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$ShareState {
 
 // freezed 的 @Default 必须是 const
- AsyncValue<SharePageModelData> get sharePageModelData; String? get error;
+ AsyncValue<SharePageModelData> get sharePageModelData; List<ShareItem> get allItems; int get currentPage; bool get isLoadingMore; bool get hasMore; String? get error;
 /// Create a copy of ShareState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $ShareStateCopyWith<ShareState> get copyWith => _$ShareStateCopyWithImpl<ShareSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ShareState&&(identical(other.sharePageModelData, sharePageModelData) || other.sharePageModelData == sharePageModelData)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ShareState&&(identical(other.sharePageModelData, sharePageModelData) || other.sharePageModelData == sharePageModelData)&&const DeepCollectionEquality().equals(other.allItems, allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sharePageModelData,error);
+int get hashCode => Object.hash(runtimeType,sharePageModelData,const DeepCollectionEquality().hash(allItems),currentPage,isLoadingMore,hasMore,error);
 
 @override
 String toString() {
-  return 'ShareState(sharePageModelData: $sharePageModelData, error: $error)';
+  return 'ShareState(sharePageModelData: $sharePageModelData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, hasMore: $hasMore, error: $error)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $ShareStateCopyWith<$Res>  {
   factory $ShareStateCopyWith(ShareState value, $Res Function(ShareState) _then) = _$ShareStateCopyWithImpl;
 @useResult
 $Res call({
- AsyncValue<SharePageModelData> sharePageModelData, String? error
+ AsyncValue<SharePageModelData> sharePageModelData, List<ShareItem> allItems, int currentPage, bool isLoadingMore, bool hasMore, String? error
 });
 
 
@@ -63,10 +63,14 @@ class _$ShareStateCopyWithImpl<$Res>
 
 /// Create a copy of ShareState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? sharePageModelData = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? sharePageModelData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? hasMore = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
 sharePageModelData: null == sharePageModelData ? _self.sharePageModelData : sharePageModelData // ignore: cast_nullable_to_non_nullable
-as AsyncValue<SharePageModelData>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as AsyncValue<SharePageModelData>,allItems: null == allItems ? _self.allItems : allItems // ignore: cast_nullable_to_non_nullable
+as List<ShareItem>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
+as int,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
+as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -149,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<SharePageModelData> sharePageModelData,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<SharePageModelData> sharePageModelData,  List<ShareItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ShareState() when $default != null:
-return $default(_that.sharePageModelData,_that.error);case _:
+return $default(_that.sharePageModelData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);case _:
   return orElse();
 
 }
@@ -170,10 +174,10 @@ return $default(_that.sharePageModelData,_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<SharePageModelData> sharePageModelData,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<SharePageModelData> sharePageModelData,  List<ShareItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _ShareState():
-return $default(_that.sharePageModelData,_that.error);}
+return $default(_that.sharePageModelData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -187,10 +191,10 @@ return $default(_that.sharePageModelData,_that.error);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<SharePageModelData> sharePageModelData,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<SharePageModelData> sharePageModelData,  List<ShareItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _ShareState() when $default != null:
-return $default(_that.sharePageModelData,_that.error);case _:
+return $default(_that.sharePageModelData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);case _:
   return null;
 
 }
@@ -202,11 +206,21 @@ return $default(_that.sharePageModelData,_that.error);case _:
 
 
 class _ShareState implements ShareState {
-  const _ShareState({this.sharePageModelData = const AsyncLoading(), this.error});
+  const _ShareState({this.sharePageModelData = const AsyncLoading(), final  List<ShareItem> allItems = const [], this.currentPage = 1, this.isLoadingMore = false, this.hasMore = false, this.error}): _allItems = allItems;
   
 
 // freezed 的 @Default 必须是 const
 @override@JsonKey() final  AsyncValue<SharePageModelData> sharePageModelData;
+ final  List<ShareItem> _allItems;
+@override@JsonKey() List<ShareItem> get allItems {
+  if (_allItems is EqualUnmodifiableListView) return _allItems;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_allItems);
+}
+
+@override@JsonKey() final  int currentPage;
+@override@JsonKey() final  bool isLoadingMore;
+@override@JsonKey() final  bool hasMore;
 @override final  String? error;
 
 /// Create a copy of ShareState
@@ -219,16 +233,16 @@ _$ShareStateCopyWith<_ShareState> get copyWith => __$ShareStateCopyWithImpl<_Sha
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ShareState&&(identical(other.sharePageModelData, sharePageModelData) || other.sharePageModelData == sharePageModelData)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _ShareState&&(identical(other.sharePageModelData, sharePageModelData) || other.sharePageModelData == sharePageModelData)&&const DeepCollectionEquality().equals(other._allItems, _allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,sharePageModelData,error);
+int get hashCode => Object.hash(runtimeType,sharePageModelData,const DeepCollectionEquality().hash(_allItems),currentPage,isLoadingMore,hasMore,error);
 
 @override
 String toString() {
-  return 'ShareState(sharePageModelData: $sharePageModelData, error: $error)';
+  return 'ShareState(sharePageModelData: $sharePageModelData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, hasMore: $hasMore, error: $error)';
 }
 
 
@@ -239,7 +253,7 @@ abstract mixin class _$ShareStateCopyWith<$Res> implements $ShareStateCopyWith<$
   factory _$ShareStateCopyWith(_ShareState value, $Res Function(_ShareState) _then) = __$ShareStateCopyWithImpl;
 @override @useResult
 $Res call({
- AsyncValue<SharePageModelData> sharePageModelData, String? error
+ AsyncValue<SharePageModelData> sharePageModelData, List<ShareItem> allItems, int currentPage, bool isLoadingMore, bool hasMore, String? error
 });
 
 
@@ -256,10 +270,14 @@ class __$ShareStateCopyWithImpl<$Res>
 
 /// Create a copy of ShareState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? sharePageModelData = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? sharePageModelData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? hasMore = null,Object? error = freezed,}) {
   return _then(_ShareState(
 sharePageModelData: null == sharePageModelData ? _self.sharePageModelData : sharePageModelData // ignore: cast_nullable_to_non_nullable
-as AsyncValue<SharePageModelData>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as AsyncValue<SharePageModelData>,allItems: null == allItems ? _self._allItems : allItems // ignore: cast_nullable_to_non_nullable
+as List<ShareItem>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
+as int,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
+as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

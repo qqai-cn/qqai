@@ -33,12 +33,69 @@ class _FabuViewState extends ConsumerState<FabuView>
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabTitle.length, vsync: this);
+    // 加载地址数据
+    Future.microtask(() {
+      ref.read(fabuProvider.notifier).loadAddressData();
+    });
   }
 
   @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  Future<void> _publish() async {
+    final fabuState = ref.read(fabuProvider);
+    final fabuNotifier = ref.read(fabuProvider.notifier);
+    
+    try {
+      // For now, we'll just pass null for resources—you might want to process files/videos here
+      await fabuNotifier.publishBlog(
+        categary: 1,
+        blogType: fabuState.videoFiles.isNotEmpty ? 2 : 1,
+        addressId: fabuState.selAddressEntity?.id,
+        shareType: fabuState.whoCanSeeSel,
+        topicIds: fabuState.huatiSel.isNotEmpty ? fabuState.huatiSel.values.join(',') : null,
+      );
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('发布成功'),
+            content: const Text('博客已成功发布！'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pop(context);
+                },
+                child: const Text('确定'),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('发布失败'),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('确定'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -61,34 +118,26 @@ class _FabuViewState extends ConsumerState<FabuView>
           }).toList(),
         ),
         actions: [
-          ElevatedButton(
-            onPressed: () {
-              final index = _tabController.index;
-              if (index == 0) {
-                // 发布动态
-              } else if (index == 1) {
-                // 发布视频
-                // TODO: 实现发布视频逻辑
-              } else if (index == 2) {
-                // 发布商品
-                // TODO: 实现发布商品逻辑
-              } else if (index == 3) {
-                // 发布爱心
-                // TODO: 实现发布爱心逻辑
-              }
-            },
-            child: Text(
-              '发布',
-              style: context.typo.button.copyWith(color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: ColorConstant.ThemeGreen,
-            ),
+          TextButton(
+            onPressed: fabuState.isLoading ? null : _publish,
+            child: fabuState.isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(
+                    '发布',
+                    style: TextStyle(color: Colors.blue),
+                  ),
           ),
-          const SizedBox(width: 5),
         ],
       ),
-      body: TabBarView(controller: _tabController, children: _tabBoby),
+      body: TabBarView(
+        controller: _tabController,
+        children: _tabBoby,
+      ),
     );
   }
+
 }

@@ -26,6 +26,9 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
   void initState() {
     super.initState();
     textEditingController = TextEditingController();
+    textEditingController.addListener(() {
+      ref.read(fabuProvider.notifier).updateTextContent(textEditingController.text);
+    });
   }
 
   @override

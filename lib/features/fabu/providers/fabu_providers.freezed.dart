@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$FabuState {
 
 // freezed 的 @Default 必须是 const
- AsyncValue<List<FabuModel>> get items; List<XFile> get files; List<XFile> get videoFiles; List<AddressEntity> get addressList; List<String> get whoCanSee; AddressEntity? get selAddressEntity; int? get whoCanSeeSel; int get aixinType; Map<int, String> get huatiSel; String? get error;
+ AsyncValue<List<FabuModel>> get items; List<XFile> get files; List<XFile> get videoFiles; List<AddressEntity> get addressList; List<String> get whoCanSee; AddressEntity? get selAddressEntity; int? get whoCanSeeSel; int get aixinType; Map<int, String> get huatiSel; String? get error; bool get isLoading; String get textContent;
 /// Create a copy of FabuState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $FabuStateCopyWith<FabuState> get copyWith => _$FabuStateCopyWithImpl<FabuState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is FabuState&&(identical(other.items, items) || other.items == items)&&const DeepCollectionEquality().equals(other.files, files)&&const DeepCollectionEquality().equals(other.videoFiles, videoFiles)&&const DeepCollectionEquality().equals(other.addressList, addressList)&&const DeepCollectionEquality().equals(other.whoCanSee, whoCanSee)&&(identical(other.selAddressEntity, selAddressEntity) || other.selAddressEntity == selAddressEntity)&&(identical(other.whoCanSeeSel, whoCanSeeSel) || other.whoCanSeeSel == whoCanSeeSel)&&(identical(other.aixinType, aixinType) || other.aixinType == aixinType)&&const DeepCollectionEquality().equals(other.huatiSel, huatiSel)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is FabuState&&(identical(other.items, items) || other.items == items)&&const DeepCollectionEquality().equals(other.files, files)&&const DeepCollectionEquality().equals(other.videoFiles, videoFiles)&&const DeepCollectionEquality().equals(other.addressList, addressList)&&const DeepCollectionEquality().equals(other.whoCanSee, whoCanSee)&&(identical(other.selAddressEntity, selAddressEntity) || other.selAddressEntity == selAddressEntity)&&(identical(other.whoCanSeeSel, whoCanSeeSel) || other.whoCanSeeSel == whoCanSeeSel)&&(identical(other.aixinType, aixinType) || other.aixinType == aixinType)&&const DeepCollectionEquality().equals(other.huatiSel, huatiSel)&&(identical(other.error, error) || other.error == error)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.textContent, textContent) || other.textContent == textContent));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,items,const DeepCollectionEquality().hash(files),const DeepCollectionEquality().hash(videoFiles),const DeepCollectionEquality().hash(addressList),const DeepCollectionEquality().hash(whoCanSee),selAddressEntity,whoCanSeeSel,aixinType,const DeepCollectionEquality().hash(huatiSel),error);
+int get hashCode => Object.hash(runtimeType,items,const DeepCollectionEquality().hash(files),const DeepCollectionEquality().hash(videoFiles),const DeepCollectionEquality().hash(addressList),const DeepCollectionEquality().hash(whoCanSee),selAddressEntity,whoCanSeeSel,aixinType,const DeepCollectionEquality().hash(huatiSel),error,isLoading,textContent);
 
 @override
 String toString() {
-  return 'FabuState(items: $items, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel, error: $error)';
+  return 'FabuState(items: $items, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel, error: $error, isLoading: $isLoading, textContent: $textContent)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $FabuStateCopyWith<$Res>  {
   factory $FabuStateCopyWith(FabuState value, $Res Function(FabuState) _then) = _$FabuStateCopyWithImpl;
 @useResult
 $Res call({
- AsyncValue<List<FabuModel>> items, List<XFile> files, List<XFile> videoFiles, List<AddressEntity> addressList, List<String> whoCanSee, AddressEntity? selAddressEntity, int? whoCanSeeSel, int aixinType, Map<int, String> huatiSel, String? error
+ AsyncValue<List<FabuModel>> items, List<XFile> files, List<XFile> videoFiles, List<AddressEntity> addressList, List<String> whoCanSee, AddressEntity? selAddressEntity, int? whoCanSeeSel, int aixinType, Map<int, String> huatiSel, String? error, bool isLoading, String textContent
 });
 
 
@@ -63,7 +63,7 @@ class _$FabuStateCopyWithImpl<$Res>
 
 /// Create a copy of FabuState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? files = null,Object? videoFiles = null,Object? addressList = null,Object? whoCanSee = null,Object? selAddressEntity = freezed,Object? whoCanSeeSel = freezed,Object? aixinType = null,Object? huatiSel = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? files = null,Object? videoFiles = null,Object? addressList = null,Object? whoCanSee = null,Object? selAddressEntity = freezed,Object? whoCanSeeSel = freezed,Object? aixinType = null,Object? huatiSel = null,Object? error = freezed,Object? isLoading = null,Object? textContent = null,}) {
   return _then(_self.copyWith(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as AsyncValue<List<FabuModel>>,files: null == files ? _self.files : files // ignore: cast_nullable_to_non_nullable
@@ -75,7 +75,9 @@ as AddressEntity?,whoCanSeeSel: freezed == whoCanSeeSel ? _self.whoCanSeeSel : w
 as int?,aixinType: null == aixinType ? _self.aixinType : aixinType // ignore: cast_nullable_to_non_nullable
 as int,huatiSel: null == huatiSel ? _self.huatiSel : huatiSel // ignore: cast_nullable_to_non_nullable
 as Map<int, String>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,textContent: null == textContent ? _self.textContent : textContent // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 
@@ -157,10 +159,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<List<FabuModel>> items,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  int? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<List<FabuModel>> items,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  int? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel,  String? error,  bool isLoading,  String textContent)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FabuState() when $default != null:
-return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel,_that.error);case _:
+return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel,_that.error,_that.isLoading,_that.textContent);case _:
   return orElse();
 
 }
@@ -178,10 +180,10 @@ return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<List<FabuModel>> items,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  int? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<List<FabuModel>> items,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  int? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel,  String? error,  bool isLoading,  String textContent)  $default,) {final _that = this;
 switch (_that) {
 case _FabuState():
-return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel,_that.error);}
+return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel,_that.error,_that.isLoading,_that.textContent);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -195,10 +197,10 @@ return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<List<FabuModel>> items,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  int? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<List<FabuModel>> items,  List<XFile> files,  List<XFile> videoFiles,  List<AddressEntity> addressList,  List<String> whoCanSee,  AddressEntity? selAddressEntity,  int? whoCanSeeSel,  int aixinType,  Map<int, String> huatiSel,  String? error,  bool isLoading,  String textContent)?  $default,) {final _that = this;
 switch (_that) {
 case _FabuState() when $default != null:
-return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel,_that.error);case _:
+return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that.whoCanSee,_that.selAddressEntity,_that.whoCanSeeSel,_that.aixinType,_that.huatiSel,_that.error,_that.isLoading,_that.textContent);case _:
   return null;
 
 }
@@ -210,7 +212,7 @@ return $default(_that.items,_that.files,_that.videoFiles,_that.addressList,_that
 
 
 class _FabuState implements FabuState {
-  const _FabuState({this.items = const AsyncLoading(), final  List<XFile> files = const [], final  List<XFile> videoFiles = const [], final  List<AddressEntity> addressList = const [], final  List<String> whoCanSee = const [], this.selAddressEntity, this.whoCanSeeSel = 0, this.aixinType = 0, final  Map<int, String> huatiSel = const {}, this.error}): _files = files,_videoFiles = videoFiles,_addressList = addressList,_whoCanSee = whoCanSee,_huatiSel = huatiSel;
+  const _FabuState({this.items = const AsyncLoading(), final  List<XFile> files = const [], final  List<XFile> videoFiles = const [], final  List<AddressEntity> addressList = const [], final  List<String> whoCanSee = const [], this.selAddressEntity, this.whoCanSeeSel = 0, this.aixinType = 0, final  Map<int, String> huatiSel = const {}, this.error, this.isLoading = false, this.textContent = ''}): _files = files,_videoFiles = videoFiles,_addressList = addressList,_whoCanSee = whoCanSee,_huatiSel = huatiSel;
   
 
 // freezed 的 @Default 必须是 const
@@ -254,6 +256,8 @@ class _FabuState implements FabuState {
 }
 
 @override final  String? error;
+@override@JsonKey() final  bool isLoading;
+@override@JsonKey() final  String textContent;
 
 /// Create a copy of FabuState
 /// with the given fields replaced by the non-null parameter values.
@@ -265,16 +269,16 @@ _$FabuStateCopyWith<_FabuState> get copyWith => __$FabuStateCopyWithImpl<_FabuSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FabuState&&(identical(other.items, items) || other.items == items)&&const DeepCollectionEquality().equals(other._files, _files)&&const DeepCollectionEquality().equals(other._videoFiles, _videoFiles)&&const DeepCollectionEquality().equals(other._addressList, _addressList)&&const DeepCollectionEquality().equals(other._whoCanSee, _whoCanSee)&&(identical(other.selAddressEntity, selAddressEntity) || other.selAddressEntity == selAddressEntity)&&(identical(other.whoCanSeeSel, whoCanSeeSel) || other.whoCanSeeSel == whoCanSeeSel)&&(identical(other.aixinType, aixinType) || other.aixinType == aixinType)&&const DeepCollectionEquality().equals(other._huatiSel, _huatiSel)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _FabuState&&(identical(other.items, items) || other.items == items)&&const DeepCollectionEquality().equals(other._files, _files)&&const DeepCollectionEquality().equals(other._videoFiles, _videoFiles)&&const DeepCollectionEquality().equals(other._addressList, _addressList)&&const DeepCollectionEquality().equals(other._whoCanSee, _whoCanSee)&&(identical(other.selAddressEntity, selAddressEntity) || other.selAddressEntity == selAddressEntity)&&(identical(other.whoCanSeeSel, whoCanSeeSel) || other.whoCanSeeSel == whoCanSeeSel)&&(identical(other.aixinType, aixinType) || other.aixinType == aixinType)&&const DeepCollectionEquality().equals(other._huatiSel, _huatiSel)&&(identical(other.error, error) || other.error == error)&&(identical(other.isLoading, isLoading) || other.isLoading == isLoading)&&(identical(other.textContent, textContent) || other.textContent == textContent));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,items,const DeepCollectionEquality().hash(_files),const DeepCollectionEquality().hash(_videoFiles),const DeepCollectionEquality().hash(_addressList),const DeepCollectionEquality().hash(_whoCanSee),selAddressEntity,whoCanSeeSel,aixinType,const DeepCollectionEquality().hash(_huatiSel),error);
+int get hashCode => Object.hash(runtimeType,items,const DeepCollectionEquality().hash(_files),const DeepCollectionEquality().hash(_videoFiles),const DeepCollectionEquality().hash(_addressList),const DeepCollectionEquality().hash(_whoCanSee),selAddressEntity,whoCanSeeSel,aixinType,const DeepCollectionEquality().hash(_huatiSel),error,isLoading,textContent);
 
 @override
 String toString() {
-  return 'FabuState(items: $items, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel, error: $error)';
+  return 'FabuState(items: $items, files: $files, videoFiles: $videoFiles, addressList: $addressList, whoCanSee: $whoCanSee, selAddressEntity: $selAddressEntity, whoCanSeeSel: $whoCanSeeSel, aixinType: $aixinType, huatiSel: $huatiSel, error: $error, isLoading: $isLoading, textContent: $textContent)';
 }
 
 
@@ -285,7 +289,7 @@ abstract mixin class _$FabuStateCopyWith<$Res> implements $FabuStateCopyWith<$Re
   factory _$FabuStateCopyWith(_FabuState value, $Res Function(_FabuState) _then) = __$FabuStateCopyWithImpl;
 @override @useResult
 $Res call({
- AsyncValue<List<FabuModel>> items, List<XFile> files, List<XFile> videoFiles, List<AddressEntity> addressList, List<String> whoCanSee, AddressEntity? selAddressEntity, int? whoCanSeeSel, int aixinType, Map<int, String> huatiSel, String? error
+ AsyncValue<List<FabuModel>> items, List<XFile> files, List<XFile> videoFiles, List<AddressEntity> addressList, List<String> whoCanSee, AddressEntity? selAddressEntity, int? whoCanSeeSel, int aixinType, Map<int, String> huatiSel, String? error, bool isLoading, String textContent
 });
 
 
@@ -302,7 +306,7 @@ class __$FabuStateCopyWithImpl<$Res>
 
 /// Create a copy of FabuState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? files = null,Object? videoFiles = null,Object? addressList = null,Object? whoCanSee = null,Object? selAddressEntity = freezed,Object? whoCanSeeSel = freezed,Object? aixinType = null,Object? huatiSel = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? files = null,Object? videoFiles = null,Object? addressList = null,Object? whoCanSee = null,Object? selAddressEntity = freezed,Object? whoCanSeeSel = freezed,Object? aixinType = null,Object? huatiSel = null,Object? error = freezed,Object? isLoading = null,Object? textContent = null,}) {
   return _then(_FabuState(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as AsyncValue<List<FabuModel>>,files: null == files ? _self._files : files // ignore: cast_nullable_to_non_nullable
@@ -314,7 +318,9 @@ as AddressEntity?,whoCanSeeSel: freezed == whoCanSeeSel ? _self.whoCanSeeSel : w
 as int?,aixinType: null == aixinType ? _self.aixinType : aixinType // ignore: cast_nullable_to_non_nullable
 as int,huatiSel: null == huatiSel ? _self._huatiSel : huatiSel // ignore: cast_nullable_to_non_nullable
 as Map<int, String>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,isLoading: null == isLoading ? _self.isLoading : isLoading // ignore: cast_nullable_to_non_nullable
+as bool,textContent: null == textContent ? _self.textContent : textContent // ignore: cast_nullable_to_non_nullable
+as String,
   ));
 }
 

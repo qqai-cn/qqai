@@ -4,6 +4,7 @@ import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import '../../../../constant/api_constant.dart';
 import '../../../../util/api_base_client.dart';
 import '../models/blog_model.dart';
+import '../models/blog_save_req_vo.dart';
 
 final blogRepoProvider = Provider<IBlogRepo>((ref) => BlogRepo());
 
@@ -19,6 +20,10 @@ abstract class IBlogRepo {
   Future<void> deleteBlog(String id);
 
   Future<BlogPageModelData> getBlogPageModelData();
+  
+  Future<BlogPageModelData> getBlogPageModelDataWithPage(int page);
+  
+  Future<void> createBlog(BlogSaveReqVO req);
 }
 
 class BlogRepo implements IBlogRepo {
@@ -66,5 +71,24 @@ class BlogRepo implements IBlogRepo {
       RequestType.get,
     );
     return BlogPageModel.fromJson(response.data).data!;
+  }
+
+  @override
+  Future<BlogPageModelData> getBlogPageModelDataWithPage(int page) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': page, 'pageSize': 10},
+    );
+    return BlogPageModel.fromJson(response.data).data!;
+  }
+  
+  @override
+  Future<void> createBlog(BlogSaveReqVO req) async {
+    await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_SAVE,
+      RequestType.post,
+      data: req.toJson(),
+    );
   }
 }

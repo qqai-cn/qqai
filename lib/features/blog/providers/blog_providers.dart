@@ -9,6 +9,7 @@ import '../../../router/app_routes.dart';
 import '../data/models/blog_model.dart';
 import '../data/models/blog_page_model.dart';
 import '../data/repos/blog_repo.dart';
+import '../data/models/blog_save_req_vo.dart';
 
 part 'blog_providers.freezed.dart';
 part 'blog_providers.g.dart';
@@ -18,6 +19,10 @@ sealed class BlogState with _$BlogState {
   const factory BlogState({
     // freezed 的 @Default 必须是 const
     @Default(const AsyncLoading()) AsyncValue<BlogPageModelData> blogPageData,
+    @Default([]) List<BlogItem> allItems,
+    @Default(1) int currentPage,
+    @Default(false) bool isLoadingMore,
+    @Default(false) bool hasMore,
     String? error,
   }) = _BlogState;
 }
@@ -37,11 +42,51 @@ class BlogNotifier extends _$BlogNotifier {
   Future<void> load() async {
     state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
-      final items = await _repo.getBlogPageModelData();
-      state = state.copyWith(blogPageData: AsyncData(items));
+      final items = await _repo.getBlogPageModelDataWithPage(1);
+      state = state.copyWith(
+        blogPageData: AsyncData(items),
+        allItems: items.list ?? [],
+        currentPage: 1,
+        hasMore: (items.list?.length ?? 0) >= 10,
+      );
     } catch (e, st) {
       state = state.copyWith(
         blogPageData: AsyncError(e, st),
+        error: e.toString(),
+      );
+    }
+  }
+
+  Future<void> refresh() async {
+    try {
+      final items = await _repo.getBlogPageModelDataWithPage(1);
+      state = state.copyWith(
+        blogPageData: AsyncData(items),
+        allItems: items.list ?? [],
+        currentPage: 1,
+        hasMore: (items.list?.length ?? 0) >= 10,
+      );
+    } catch (e, st) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.hasMore) return;
+    state = state.copyWith(isLoadingMore: true);
+    try {
+      final nextPage = state.currentPage + 1;
+      final items = await _repo.getBlogPageModelDataWithPage(nextPage);
+      final newItems = items.list ?? [];
+      state = state.copyWith(
+        allItems: [...state.allItems, ...newItems],
+        currentPage: nextPage,
+        hasMore: newItems.length >= 10,
+        isLoadingMore: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoadingMore: false,
         error: e.toString(),
       );
     }
@@ -121,6 +166,16 @@ class BlogNotifier extends _$BlogNotifier {
   }
 
   // 点赞
+
+  Future<void> createBlog(BlogSaveReqVO req) async {
+    try {
+      await _repo.createBlog(req);
+    } catch (e) {
+      state = state.copyWith(error: '发布失败: $e');
+      rethrow;
+    }
+  }
+
   void onZanTap(BlogItem blogItem) {
     // TODO: 实现点赞功能
   }

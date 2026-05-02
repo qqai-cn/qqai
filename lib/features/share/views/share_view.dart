@@ -18,14 +18,6 @@ class ShareView extends ConsumerStatefulWidget {
 }
 
 class _ShareViewState extends ConsumerState<ShareView> {
-  final ScrollController scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final shareState = ref.watch(shareProvider);
@@ -37,7 +29,12 @@ class _ShareViewState extends ConsumerState<ShareView> {
       backgroundColor: Colors.black12,
       body: AsyncMasonryFeed<ShareItem>(
         asyncItems: asyncItems,
+        items: shareState.allItems,
+        isLoadingMore: shareState.isLoadingMore,
+        hasMore: shareState.hasMore,
         onRetry: () => shareNotifier.load(),
+        onRefresh: () => shareNotifier.refresh(),
+        onLoadMore: () => shareNotifier.loadMore(),
         itemBuilder: (context, index, item) {
           if (item.blogType == 1) {
             return Card(child: ShareImgItemView(widget.categary, item));

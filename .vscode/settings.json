@@ -1,3 +1,6 @@
 {
-  "dart.flutterRunAdditionalArgs": ["--no-web-resources-cdn"]
+  "dart.flutterRunAdditionalArgs": [
+    "--no-web-resources-cdn"
+  ],
+  "editorjumper.selectedIDE": "IDEA"
 }

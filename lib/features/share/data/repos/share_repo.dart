@@ -20,6 +20,8 @@ abstract class IShareRepo {
   Future<void> deleteShare(String id);
 
   Future<SharePageModelData> getSharePageModel(String id);
+
+  Future<SharePageModelData> getSharePageModelWithPage(int page);
 }
 
 class ShareRepo implements IShareRepo {
@@ -65,6 +67,16 @@ class ShareRepo implements IShareRepo {
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.BLOG_PAGE,
       RequestType.get,
+    );
+    return SharePageModel.fromJson(response.data).data!;
+  }
+
+  @override
+  Future<SharePageModelData> getSharePageModelWithPage(int page) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': page, 'pageSize': 10},
     );
     return SharePageModel.fromJson(response.data).data!;
   }

@@ -16,20 +16,6 @@ class BlogView extends ConsumerStatefulWidget {
 }
 
 class _BlogViewState extends ConsumerState<BlogView> {
-  ScrollController? _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-  }
-
-  @override
-  void dispose() {
-    _scrollController?.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final blogState = ref.watch(blogProvider);
@@ -40,7 +26,12 @@ class _BlogViewState extends ConsumerState<BlogView> {
       backgroundColor: Colors.black12,
       body: AsyncMasonryFeed(
         asyncItems: asyncItems,
+        items: blogState.allItems,
+        isLoadingMore: blogState.isLoadingMore,
+        hasMore: blogState.hasMore,
         onRetry: () => ref.read(blogProvider.notifier).load(),
+        onRefresh: () => ref.read(blogProvider.notifier).refresh(),
+        onLoadMore: () => ref.read(blogProvider.notifier).loadMore(),
         itemBuilder: (context, index, blogItem) {
           if (blogItem.blogType == 1) {
             return BlogImgItemView(widget.category, blogItem);

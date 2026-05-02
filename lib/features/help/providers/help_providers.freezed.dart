@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$HelpState {
 
 // freezed 的 @Default 必须是 const
- AsyncValue<HelpPageModelData> get helpPageModelData; String? get error;
+ AsyncValue<HelpPageModelData> get helpPageModelData; List<HelpItem> get allItems; int get currentPage; bool get isLoadingMore; bool get hasMore; String? get error;
 /// Create a copy of HelpState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $HelpStateCopyWith<HelpState> get copyWith => _$HelpStateCopyWithImpl<HelpState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is HelpState&&(identical(other.helpPageModelData, helpPageModelData) || other.helpPageModelData == helpPageModelData)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is HelpState&&(identical(other.helpPageModelData, helpPageModelData) || other.helpPageModelData == helpPageModelData)&&const DeepCollectionEquality().equals(other.allItems, allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,helpPageModelData,error);
+int get hashCode => Object.hash(runtimeType,helpPageModelData,const DeepCollectionEquality().hash(allItems),currentPage,isLoadingMore,hasMore,error);
 
 @override
 String toString() {
-  return 'HelpState(helpPageModelData: $helpPageModelData, error: $error)';
+  return 'HelpState(helpPageModelData: $helpPageModelData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, hasMore: $hasMore, error: $error)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $HelpStateCopyWith<$Res>  {
   factory $HelpStateCopyWith(HelpState value, $Res Function(HelpState) _then) = _$HelpStateCopyWithImpl;
 @useResult
 $Res call({
- AsyncValue<HelpPageModelData> helpPageModelData, String? error
+ AsyncValue<HelpPageModelData> helpPageModelData, List<HelpItem> allItems, int currentPage, bool isLoadingMore, bool hasMore, String? error
 });
 
 
@@ -63,10 +63,14 @@ class _$HelpStateCopyWithImpl<$Res>
 
 /// Create a copy of HelpState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? helpPageModelData = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? helpPageModelData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? hasMore = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
 helpPageModelData: null == helpPageModelData ? _self.helpPageModelData : helpPageModelData // ignore: cast_nullable_to_non_nullable
-as AsyncValue<HelpPageModelData>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as AsyncValue<HelpPageModelData>,allItems: null == allItems ? _self.allItems : allItems // ignore: cast_nullable_to_non_nullable
+as List<HelpItem>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
+as int,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
+as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -149,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<HelpPageModelData> helpPageModelData,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<HelpPageModelData> helpPageModelData,  List<HelpItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _HelpState() when $default != null:
-return $default(_that.helpPageModelData,_that.error);case _:
+return $default(_that.helpPageModelData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);case _:
   return orElse();
 
 }
@@ -170,10 +174,10 @@ return $default(_that.helpPageModelData,_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<HelpPageModelData> helpPageModelData,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<HelpPageModelData> helpPageModelData,  List<HelpItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _HelpState():
-return $default(_that.helpPageModelData,_that.error);}
+return $default(_that.helpPageModelData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -187,10 +191,10 @@ return $default(_that.helpPageModelData,_that.error);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<HelpPageModelData> helpPageModelData,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<HelpPageModelData> helpPageModelData,  List<HelpItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _HelpState() when $default != null:
-return $default(_that.helpPageModelData,_that.error);case _:
+return $default(_that.helpPageModelData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);case _:
   return null;
 
 }
@@ -202,11 +206,21 @@ return $default(_that.helpPageModelData,_that.error);case _:
 
 
 class _HelpState implements HelpState {
-  const _HelpState({this.helpPageModelData = const AsyncLoading(), this.error});
+  const _HelpState({this.helpPageModelData = const AsyncLoading(), final  List<HelpItem> allItems = const [], this.currentPage = 1, this.isLoadingMore = false, this.hasMore = false, this.error}): _allItems = allItems;
   
 
 // freezed 的 @Default 必须是 const
 @override@JsonKey() final  AsyncValue<HelpPageModelData> helpPageModelData;
+ final  List<HelpItem> _allItems;
+@override@JsonKey() List<HelpItem> get allItems {
+  if (_allItems is EqualUnmodifiableListView) return _allItems;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_allItems);
+}
+
+@override@JsonKey() final  int currentPage;
+@override@JsonKey() final  bool isLoadingMore;
+@override@JsonKey() final  bool hasMore;
 @override final  String? error;
 
 /// Create a copy of HelpState
@@ -219,16 +233,16 @@ _$HelpStateCopyWith<_HelpState> get copyWith => __$HelpStateCopyWithImpl<_HelpSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HelpState&&(identical(other.helpPageModelData, helpPageModelData) || other.helpPageModelData == helpPageModelData)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _HelpState&&(identical(other.helpPageModelData, helpPageModelData) || other.helpPageModelData == helpPageModelData)&&const DeepCollectionEquality().equals(other._allItems, _allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,helpPageModelData,error);
+int get hashCode => Object.hash(runtimeType,helpPageModelData,const DeepCollectionEquality().hash(_allItems),currentPage,isLoadingMore,hasMore,error);
 
 @override
 String toString() {
-  return 'HelpState(helpPageModelData: $helpPageModelData, error: $error)';
+  return 'HelpState(helpPageModelData: $helpPageModelData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, hasMore: $hasMore, error: $error)';
 }
 
 
@@ -239,7 +253,7 @@ abstract mixin class _$HelpStateCopyWith<$Res> implements $HelpStateCopyWith<$Re
   factory _$HelpStateCopyWith(_HelpState value, $Res Function(_HelpState) _then) = __$HelpStateCopyWithImpl;
 @override @useResult
 $Res call({
- AsyncValue<HelpPageModelData> helpPageModelData, String? error
+ AsyncValue<HelpPageModelData> helpPageModelData, List<HelpItem> allItems, int currentPage, bool isLoadingMore, bool hasMore, String? error
 });
 
 
@@ -256,10 +270,14 @@ class __$HelpStateCopyWithImpl<$Res>
 
 /// Create a copy of HelpState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? helpPageModelData = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? helpPageModelData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? hasMore = null,Object? error = freezed,}) {
   return _then(_HelpState(
 helpPageModelData: null == helpPageModelData ? _self.helpPageModelData : helpPageModelData // ignore: cast_nullable_to_non_nullable
-as AsyncValue<HelpPageModelData>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as AsyncValue<HelpPageModelData>,allItems: null == allItems ? _self._allItems : allItems // ignore: cast_nullable_to_non_nullable
+as List<HelpItem>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
+as int,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
+as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

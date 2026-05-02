@@ -17,14 +17,6 @@ class HelpView extends ConsumerStatefulWidget {
 }
 
 class _HelpViewState extends ConsumerState<HelpView> {
-  final ScrollController scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final helpState = ref.watch(helpProvider);
@@ -36,7 +28,12 @@ class _HelpViewState extends ConsumerState<HelpView> {
       backgroundColor: Colors.black12,
       body: AsyncMasonryFeed<HelpItem>(
         asyncItems: asyncItems,
+        items: helpState.allItems,
+        isLoadingMore: helpState.isLoadingMore,
+        hasMore: helpState.hasMore,
         onRetry: () => helpNotifier.load(),
+        onRefresh: () => helpNotifier.refresh(),
+        onLoadMore: () => helpNotifier.loadMore(),
         itemBuilder: (context, index, helpItem) {
           if (helpItem.blogType == 1) {
             return HelpImgItemView(widget.categary, helpItem);

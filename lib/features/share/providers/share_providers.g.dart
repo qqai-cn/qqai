@@ -41,7 +41,7 @@ final class ShareNotifierProvider
   }
 }
 
-String _$shareNotifierHash() => r'38b75949d73388acbf936b203c6d831b02fdf96e';
+String _$shareNotifierHash() => r'aee6441b9ac6f82f1a29e4a90cbd354fbd1dd7bc';
 
 abstract class _$ShareNotifier extends $Notifier<ShareState> {
   ShareState build();

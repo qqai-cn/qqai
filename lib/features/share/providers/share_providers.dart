@@ -19,6 +19,10 @@ sealed class ShareState with _$ShareState {
   const factory ShareState({
     // freezed 的 @Default 必须是 const
     @Default(const AsyncLoading()) AsyncValue<SharePageModelData> sharePageModelData,
+    @Default([]) List<ShareItem> allItems,
+    @Default(1) int currentPage,
+    @Default(false) bool isLoadingMore,
+    @Default(false) bool hasMore,
     String? error,
   }) = _ShareState;
 }
@@ -37,10 +41,50 @@ class ShareNotifier extends _$ShareNotifier {
   Future<void> load() async {
     state = state.copyWith(sharePageModelData: const AsyncLoading(), error: null);
     try {
-      final items = await _repo.getSharePageModel("1");
-      state = state.copyWith(sharePageModelData: AsyncData(items));
+      final items = await _repo.getSharePageModelWithPage(1);
+      state = state.copyWith(
+        sharePageModelData: AsyncData(items),
+        allItems: items.list ?? [],
+        currentPage: 1,
+        hasMore: (items.list?.length ?? 0) >= 10,
+      );
     } catch (e, st) {
       state = state.copyWith(sharePageModelData: AsyncError(e, st), error: e.toString());
+    }
+  }
+
+  Future<void> refresh() async {
+    try {
+      final items = await _repo.getSharePageModelWithPage(1);
+      state = state.copyWith(
+        sharePageModelData: AsyncData(items),
+        allItems: items.list ?? [],
+        currentPage: 1,
+        hasMore: (items.list?.length ?? 0) >= 10,
+      );
+    } catch (e, st) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  Future<void> loadMore() async {
+    if (state.isLoadingMore || !state.hasMore) return;
+    state = state.copyWith(isLoadingMore: true);
+    try {
+      final nextPage = state.currentPage + 1;
+      final items = await _repo.getSharePageModelWithPage(nextPage);
+      final newItems = items.list ?? [];
+      state = state.copyWith(
+        allItems: [...state.allItems, ...newItems],
+        currentPage: nextPage,
+        hasMore: newItems.length >= 10,
+        isLoadingMore: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoadingMore: false,
+        error: e.toString(),
+      );
     }
   }
 

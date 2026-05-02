@@ -29,6 +29,7 @@ class QqaiPlayer extends StatefulWidget {
 class _QqaiPlayerState extends State<QqaiPlayer> {
   late FlickManager flickManager;
   late VideoPlayerController videoController;
+  bool _isDisposed = false;
 
   @override
   void initState() {
@@ -46,12 +47,14 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
 
     // 使用 postFrameCallback 延迟设置音量，确保 FlickManager 完全初始化
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _setVolumeIfNeeded();
+      if (!_isDisposed && mounted) {
+        _setVolumeIfNeeded();
+      }
     });
   }
 
   void _videoListener() {
-    if (mounted && videoController.value.isInitialized) {
+    if (!_isDisposed && mounted && videoController.value.isInitialized) {
       // 每次状态变化时都检查音量
       if (videoController.value.volume == 0.0) {
         _setVolumeIfNeeded();
@@ -60,30 +63,34 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
   }
 
   void _setVolumeIfNeeded() {
-    if (!mounted) return;
-
-    if (videoController.value.isInitialized) {
-      // 始终设置音量为 1.0（不检查 _volumeSet，因为可能被重置）
-      if (videoController.value.volume != 1.0) {
-        videoController.setVolume(1.0);
+    if (!_isDisposed && mounted) {
+      if (videoController.value.isInitialized) {
+        // 始终设置音量为 1.0（不检查 _volumeSet，因为可能被重置）
+        if (videoController.value.volume != 1.0) {
+          videoController.setVolume(1.0);
+        }
+        // 确保 FlickManager 不是静音状态
+        flickManager.flickControlManager?.unmute();
       }
-      // 确保 FlickManager 不是静音状态
-      flickManager.flickControlManager?.unmute();
     }
   }
 
   ///If you have subtitle assets
 
   Future<ClosedCaptionFile> _loadCaptions() async {
-    final String fileContents = await DefaultAssetBundle.of(
-      context,
-    ).loadString('imgs/defbak.png');
-    flickManager.flickControlManager!.toggleSubtitle();
-    return SubRipCaptionFile(fileContents);
+    if (!_isDisposed && mounted) {
+      final String fileContents = await DefaultAssetBundle.of(
+        context,
+      ).loadString('imgs/defbak.png');
+      flickManager.flickControlManager!.toggleSubtitle();
+      return SubRipCaptionFile(fileContents);
+    }
+    return SubRipCaptionFile('');
   }
 
   @override
   void dispose() {
+    _isDisposed = true;
     // 移除监听器
     videoController.removeListener(_videoListener);
     flickManager.dispose();
@@ -95,13 +102,15 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     return VisibilityDetector(
       key: ObjectKey(flickManager),
       onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction > 0.9 && widget.autoPlay) {
-          flickManager.flickControlManager?.autoResume();
-          // 每次恢复播放时确保音量正确
-          _setVolumeIfNeeded();
-        }
-        if (visibility.visibleFraction == 0 && mounted) {
-          flickManager.flickControlManager?.autoPause();
+        if (!_isDisposed && mounted) {
+          if (visibility.visibleFraction > 0.9 && widget.autoPlay) {
+            flickManager.flickControlManager?.autoResume();
+            // 每次恢复播放时确保音量正确
+            _setVolumeIfNeeded();
+          }
+          if (visibility.visibleFraction == 0) {
+            flickManager.flickControlManager?.autoPause();
+          }
         }
       },
       child: Container(

@@ -1,0 +1,58 @@
+digraph G {
+  graph [
+    rankdir=TB,
+    bgcolor="white",
+    splines=polyline,
+    nodesep=0.6,
+    ranksep=0.8,
+    pad="0.28"
+  ];
+
+  node [
+    shape=box,
+    style="filled",
+    color="#2F2F2F",
+    fillcolor="#FCFCFC",
+    fontcolor="#111111",
+    fontname="Microsoft YaHei",
+    fontsize=16,
+    penwidth=1.6,
+    margin="0.16,0.12"
+  ];
+
+  edge [
+    color="#2B2B2B",
+    arrowsize=0.8,
+    penwidth=1.35,
+    fontcolor="#1A1A1A",
+    fontname="Microsoft YaHei",
+    fontsize=13
+  ];
+
+  start      [label="开始"];
+  req        [label="系统需求分析"];
+  overall    [label="总体方案设计"];
+  hardware   [label="硬件设计\n（传感器选型、电路设计）"];
+  integ      [label="系统集成与联合调试"];
+  matlab     [label="MATLAB仿真验证"];
+  platform   [label="实物平台测试"];
+  decision   [shape=diamond, label="结果是否满足要求？", margin="0.24,0.13", fillcolor="#F6F6F6"];
+  optimize   [label="优化设计"];
+  software   [label="软件设计\n（算法设计、程序编写）"];
+  finish     [label="完成课题研究"];
+  end        [label="结束"];
+
+  start -> req -> overall -> hardware -> integ;
+  integ -> matlab;
+  integ -> platform;
+  matlab -> decision;
+  platform -> decision;
+
+  decision -> finish [label="是", labeldistance=2.0];
+  finish -> end;
+
+  decision -> optimize [label="否", labeldistance=2.0];
+  optimize -> software;
+  software -> hardware;
+  software -> integ [constraint=false];
+}
