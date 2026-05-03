@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/features/blog/views/blog_img_detail_view.dart';
 import 'package:qqai/features/blog/views/blog_video_detail_view.dart';
@@ -11,7 +12,7 @@ import '../../features/lookart/presentation/views/look_art_view.dart'
 import '../../features/meleft/mycare_page.dart' deferred as my_care;
 import '../../features/meleft/mycollect_page.dart' deferred as my_collect;
 import '../../features/search/search_page.dart';
-import '../../features/tool/ai_page.dart';
+import '../../features/tool/ai_page.dart' hide ChatWidget;
 import '../../features/tool/calendar_tool_page.dart';
 import '../../features/tool/date_tool_page.dart';
 import '../../features/tool/image_compress_intro_page.dart';
@@ -27,6 +28,7 @@ import '../../features/weather/presentation/views/weather_detail_view.dart';
 import '../../features/weather/presentation/views/weather_home_page.dart';
 import '../../features/weather/presentation/views/weather_left_page.dart';
 import '../cache/deferred_widget.dart';
+import '../components/chat/chat_widget.dart';
 import '../components/imgpreview/image_detail_page.dart';
 import '../components/imgpreview/preview_img.dart';
 import '../components/video_player_detail/FullScreenVideoPlayer.dart';
@@ -43,6 +45,9 @@ import '../features/douyin/views/douyin_group_buy_page.dart';
 import '../features/douyin/views/douyin_my_orders_page.dart';
 import '../features/douyin/views/douyin_watch_history_page.dart';
 import '../features/goods/views/goods_view.dart';
+import '../providers/auth_providers.dart';
+import '../util/api_base_client.dart';
+import '../features/friends/friend_requests_page.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
 import '../features/help/data/models/help_page_model.dart';
 import '../features/help/views/help_img_detail_view.dart';
@@ -58,23 +63,32 @@ import '../features/share/views/share_video_detail_view.dart';
 import '../features/square/views/square_blog_view.dart';
 import '../features/tool/qr_code_tool_page.dart';
 import '../features/video/views/video_detail_view.dart';
-import '../providers/auth_providers.dart';
 import 'app_routes.dart';
 
 part 'app_router.g.dart';
 
+/// 认证变化时通知 GoRouter 重新执行 [redirect]，**不得**为此重建 [GoRouter]，
+/// 否则新实例会回到 [Routes.HOME]，发布页等栈会丢失（例如 401 刷新失败后像「跳回首页」）。
+final class _AuthRefreshListenable extends ChangeNotifier {
+  _AuthRefreshListenable(this._ref) {
+    _ref.listen(authProvider, (previous, next) => notifyListeners());
+  }
+
+  final Ref _ref;
+}
+
 // GoRouter Provider - 与 Riverpod 集成
 @Riverpod(keepAlive: true)
 GoRouter appRouter(Ref ref) {
-  // 认证状态变化时重建 GoRouter，避免热重载/首次 read 后一直用旧实例导致新路由不生效
-  ref.watch(authProvider);
+  final authRefresh = _AuthRefreshListenable(ref);
+  ref.onDispose(authRefresh.dispose);
 
   return GoRouter(
     initialLocation: Routes.HOME,
+    refreshListenable: authRefresh,
     // 路由重定向守卫
     redirect: (context, state) {
-      // 使用 watch 监听认证状态，登录成功后能触发重定向
-      final authState = ref.watch(authProvider);
+      final authState = ref.read(authProvider);
       final isAuthenticated = authState.isAuthenticated;
       final path = state.uri.path;
       final requiresAuth = _requiresAuth(path);
@@ -409,6 +423,11 @@ GoRouter appRouter(Ref ref) {
         ),
       ),
       GoRoute(
+        path: Routes.friendPendingIncoming,
+        name: 'friendPendingIncoming',
+        builder: (c, s) => const FriendRequestsPage(),
+      ),
+      GoRoute(
         path: '${Routes.userDetail}/:userId/:showAppBar',
         name: 'userDetail',
         builder: (context, state) {
@@ -428,9 +447,29 @@ GoRouter appRouter(Ref ref) {
         path: '${Routes.chat}/:chatId',
         name: 'chat',
         builder: (context, state) {
-          final chatId = state.pathParameters['chatId'] ?? '';
-          // TODO: 需要实现 ChatWidget 页面，接收 chatId 参数
-          return Scaffold(body: Center(child: Text('Chat page for: $chatId')));
+          final id = int.tryParse(state.pathParameters['chatId'] ?? '') ?? 0;
+          if (id == 0) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('聊天')),
+              body: const Center(child: Text('无效会话')),
+            );
+          }
+          return Consumer(
+            builder: (context, ref, _) {
+              final auth = ref.watch(authProvider);
+              return Scaffold(
+                appBar: AppBar(title: const Text('聊天')),
+                body: ChatWidget(
+                  key: ValueKey<int>(id),
+                  currentUserId: auth.userId ?? '0',
+                  conversationId: id,
+                  initialMessages: const [],
+                  dio: ApiBaseClient.dio,
+                  token: auth.token,
+                ),
+              );
+            },
+          );
         },
       ),
 

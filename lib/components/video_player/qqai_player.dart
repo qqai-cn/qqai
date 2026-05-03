@@ -1,5 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -114,7 +115,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
         }
       },
       child: Container(
-        child: FlickVideoPlayer(
+        child: SafeFlickVideoPlayer(
           flickManager: flickManager,
           flickVideoWithControls: FlickVideoWithControls(
             videoFit: widget.videoFit,

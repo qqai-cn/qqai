@@ -4,11 +4,13 @@ import 'package:cross_cache/cross_cache.dart';
 import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_link_previewer/flutter_link_previewer.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flyer_chat_file_message/flyer_chat_file_message.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
 import 'package:flyer_chat_system_message/flyer_chat_system_message.dart';
@@ -16,6 +18,10 @@ import 'package:flyer_chat_text_message/flyer_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:qqai/components/chat/socketio_service.dart';
+import 'package:qqai/constant/api_constant.dart';
+import 'package:qqai/features/chat/data/chat_message_mapper.dart';
+import 'package:qqai/features/chat/data/models/chat_models.dart';
+import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:uuid/uuid.dart';
 
 import 'chat_api_service.dart';
@@ -24,74 +30,183 @@ import 'create_message.dart';
 import 'upload_file.dart';
 import 'widgets/composer_action_bar.dart';
 
-const baseUrl = 'https://qqai.cn';
-// Base origin for Socket.IO; path is configured in SocketioService
-const host = 'https://qqai.cn';
-
-class ChatWidget extends StatefulWidget {
+class ChatWidget extends ConsumerStatefulWidget {
   final UserID currentUserId;
-  final String chatId;
+  /// 业务会话 ID（与接口 `conversationId` 一致）
+  final int conversationId;
   final List<Message> initialMessages;
   final Dio dio;
   /// 登录 token，用于 Socket.IO 连接鉴权
   final String? token;
+  /// 是否连接 Socket.IO（默认关闭，仅走 HTTP 收发）
+  final bool enableSocket;
 
   const ChatWidget({
     super.key,
     required this.currentUserId,
-    required this.chatId,
+    required this.conversationId,
     required this.initialMessages,
     required this.dio,
     this.token,
+    this.enableSocket = false,
   });
 
   @override
-  _ChatWidget createState() => _ChatWidget();
+  ConsumerState<ChatWidget> createState() => _ChatWidgetState();
 }
 
-class _ChatWidget extends State<ChatWidget> {
+class _ChatWidgetState extends ConsumerState<ChatWidget> {
   final _crossCache = CrossCache();
   final _uuid = const Uuid();
 
   late final ChatApiService _apiService;
-  late final SocketioService _webSocketService;
-  late final StreamSubscription<WebSocketEvent> _webSocketSubscription;
+  SocketioService? _webSocketService;
+  StreamSubscription<WebSocketEvent>? _webSocketSubscription;
   late final ChatController _chatController;
   final _systemUser = const User(id: 'system');
-  final _currentUser = const User(
-    id: 'me',
-    imageSource: 'https://file.qqai.cn/qqai/2025/09/1.webp',
-    name: '马化腾',
-  );
-  final _recipient = const User(
-    id: 'recipient',
-    imageSource: 'https://file.qqai.cn/qqai/2025/09/1.webp',
-    name: '马云',
-  );
+  late final User _meUser;
+  final _defaultAvatar = 'https://file.qqai.cn/qqai/2025/09/1.webp';
   bool _isTyping = false;
+
+  static const int _historyPageSize = 30;
+  int _nextOlderPage = 2;
+  bool _hasMoreOlder = true;
+  bool _loadingOlder = false;
+  bool _initialHistoryReady = false;
 
   @override
   void initState() {
     super.initState();
+    _meUser = User(
+      id: widget.currentUserId,
+      imageSource: _defaultAvatar,
+      name: '我',
+    );
     _chatController = InMemoryChatController(messages: widget.initialMessages);
+    final repo = ref.read(chatRepoProvider);
     _apiService = ChatApiService(
-      baseUrl: baseUrl,
-      chatId: widget.chatId,
-      dio: widget.dio,
+      repo: repo,
+      conversationId: widget.conversationId,
     );
-    _webSocketService = SocketioService(
-      host: host,
-      chatId: widget.chatId,
-      authorId: widget.currentUserId,
-      token: widget.token,
+    if (widget.enableSocket) {
+      _webSocketService = SocketioService(
+        host: ApiConstant.BASE_URL,
+        chatId: widget.conversationId.toString(),
+        authorId: widget.currentUserId,
+        token: widget.token,
+      );
+      _connectToWs();
+    }
+    Future.microtask(_loadInitialHistory);
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.conversationId != widget.conversationId) {
+      _nextOlderPage = 2;
+      _hasMoreOlder = true;
+      _loadingOlder = false;
+      _initialHistoryReady = false;
+      Future.microtask(_loadInitialHistory);
+    }
+  }
+
+  List<Message> _messagesFromDtos(List<ChatMessageDto> dtos) {
+    final messages = <Message>[];
+    for (final dto in dtos) {
+      final m = mapChatMessageDtoToMessage(dto);
+      if (m != null) messages.add(m);
+    }
+    messages.sort(
+      (a, b) => (a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+          .toUtc()
+          .compareTo(
+            (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)).toUtc(),
+          ),
     );
-    _connectToWs();
+    return messages;
+  }
+
+  List<Message> _mergeById(List<Message> a, List<Message> b) {
+    final map = <String, Message>{};
+    for (final m in a) {
+      map[m.id] = m;
+    }
+    for (final m in b) {
+      map[m.id] = m;
+    }
+    final out = map.values.toList();
+    out.sort((x, y) {
+      final tx = x.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      final ty = y.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+      return tx.toUtc().compareTo(ty.toUtc());
+    });
+    return out;
+  }
+
+  Future<void> _loadInitialHistory() async {
+    if (!mounted) return;
+    _initialHistoryReady = false;
+    _nextOlderPage = 2;
+    _hasMoreOlder = true;
+    try {
+      final page = await ref.read(chatRepoProvider).getMessagePage(
+            conversationId: widget.conversationId,
+            pageNo: 1,
+            pageSize: _historyPageSize,
+          );
+      final raw = [...?page.list];
+      final messages = _messagesFromDtos(raw);
+      if (mounted) {
+        await _chatController.setMessages(messages);
+        _hasMoreOlder = (page.list?.length ?? 0) >= _historyPageSize;
+      }
+    } catch (e) {
+      debugPrint('chat history: $e');
+    } finally {
+      if (mounted) {
+        _initialHistoryReady = true;
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _loadOlderHistory() async {
+    if (!mounted || _loadingOlder || !_hasMoreOlder) return;
+    _loadingOlder = true;
+    try {
+      final page = await ref.read(chatRepoProvider).getMessagePage(
+            conversationId: widget.conversationId,
+            pageNo: _nextOlderPage,
+            pageSize: _historyPageSize,
+          );
+      final batch = [...?page.list];
+      if (batch.isEmpty) {
+        if (mounted) {
+          _hasMoreOlder = false;
+          setState(() {});
+        }
+        return;
+      }
+      final newMessages = _messagesFromDtos(batch);
+      if (!mounted) return;
+      final merged = _mergeById(_chatController.messages, newMessages);
+      await _chatController.setMessages(merged);
+      _nextOlderPage++;
+      _hasMoreOlder = batch.length >= _historyPageSize;
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint('chat older history: $e');
+    } finally {
+      if (mounted) _loadingOlder = false;
+    }
   }
 
   @override
   void dispose() {
-    _webSocketSubscription.cancel();
-    _webSocketService.dispose();
+    _webSocketSubscription?.cancel();
+    _webSocketService?.dispose();
     _chatController.dispose();
     _crossCache.dispose();
     super.dispose();
@@ -114,6 +229,11 @@ class _ChatWidget extends State<ChatWidget> {
                     if (message is SystemMessage) return Duration.zero;
                     return null;
                   },
+                  onEndReached: (_initialHistoryReady && _hasMoreOlder)
+                      ? () async {
+                          await _loadOlderHistory();
+                        }
+                      : null,
                 );
               },
               customMessageBuilder:
@@ -153,6 +273,8 @@ class _ChatWidget extends State<ChatWidget> {
                     MessageGroupStatus? groupStatus,
                   }) => FlyerChatSystemMessage(message: message, index: index),
               composerBuilder: (context) => Composer(
+                // Web / 桌面键盘：Enter 发送，Shift+Enter 换行（库默认相反）
+                sendOnEnter: kIsWeb,
                 topWidget: ComposerActionBar(
                   buttons: [
                     ComposerActionButton(
@@ -218,7 +340,7 @@ class _ChatWidget extends State<ChatWidget> {
                     final isLastInGroup = groupStatus?.isLast ?? true;
                     final shouldShowAvatar =
                         !isSystemMessage && isLastInGroup && isRemoved != true;
-                    final isCurrentUser = message.authorId == _currentUser.id;
+                    final isCurrentUser = message.authorId == _meUser.id;
                     final shouldShowUsername =
                         !isSystemMessage && isFirstInGroup && isRemoved != true;
 
@@ -275,7 +397,7 @@ class _ChatWidget extends State<ChatWidget> {
             ),
             chatController: _chatController,
             crossCache: _crossCache,
-            currentUserId: _currentUser.id,
+            currentUserId: _meUser.id,
             decoration: BoxDecoration(
               color: theme.brightness == Brightness.dark
                   ? ChatColors.dark().surface
@@ -296,20 +418,24 @@ class _ChatWidget extends State<ChatWidget> {
             // onMessageTap: _removeItem1,
             onMessageLongPress: _handleMessageLongPress,
             resolveUser: (id) => Future.value(switch (id) {
-              'me' => _currentUser,
-              'recipient' => _recipient,
+              final same when same == _meUser.id => _meUser,
               'system' => _systemUser,
-              _ => null,
+              _ => User(
+                  id: id,
+                  name: '用户 $id',
+                  imageSource: _defaultAvatar,
+                ),
             }),
             theme: theme.brightness == Brightness.dark
                 ? ChatTheme.dark()
                 : ChatTheme.light(),
           ),
-          Positioned(
-            top: 16,
-            left: 16,
-            child: ConnectionStatus(webSocketService: _webSocketService),
-          ),
+          if (_webSocketService != null)
+            Positioned(
+              top: 16,
+              left: 16,
+              child: ConnectionStatus(webSocketService: _webSocketService!),
+            ),
         ],
       ),
     );
@@ -391,7 +517,9 @@ class _ChatWidget extends State<ChatWidget> {
   }
 
   void _connectToWs() {
-    _webSocketSubscription = _webSocketService.connect().listen((event) {
+    final ws = _webSocketService;
+    if (ws == null) return;
+    _webSocketSubscription = ws.connect().listen((event) {
       if (!mounted) return;
 
       switch (event.type) {
@@ -474,7 +602,7 @@ class _ChatWidget extends State<ChatWidget> {
                   if (image != null) {
                     final imageMessage = ImageMessage(
                       id: _uuid.v4(),
-                      authorId: _currentUser.id,
+                      authorId: _meUser.id,
                       createdAt: DateTime.now().toUtc(),
                       sentAt: DateTime.now().toUtc(),
                       source: image.path,
@@ -503,7 +631,7 @@ class _ChatWidget extends State<ChatWidget> {
                     // Create a proper file message
                     final fileMessage = FileMessage(
                       id: _uuid.v4(),
-                      authorId: _currentUser.id,
+                      authorId: _meUser.id,
                       createdAt: DateTime.now().toUtc(),
                       sentAt: DateTime.now().toUtc(),
                       source: filePath,

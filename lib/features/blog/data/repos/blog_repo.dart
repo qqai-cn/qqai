@@ -21,7 +21,11 @@ abstract class IBlogRepo {
 
   Future<BlogPageModelData> getBlogPageModelData();
   
-  Future<BlogPageModelData> getBlogPageModelDataWithPage(int page);
+  Future<BlogPageModelData> getBlogPageModelDataWithPage(
+    int page, {
+    int pageSize = 10,
+    int? blogType,
+  });
   
   Future<void> createBlog(BlogSaveReqVO req);
 }
@@ -74,11 +78,22 @@ class BlogRepo implements IBlogRepo {
   }
 
   @override
-  Future<BlogPageModelData> getBlogPageModelDataWithPage(int page) async {
+  Future<BlogPageModelData> getBlogPageModelDataWithPage(
+    int page, {
+    int pageSize = 10,
+    int? blogType,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': page,
+      'pageSize': pageSize,
+    };
+    if (blogType != null) {
+      query['blogType'] = blogType;
+    }
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.BLOG_PAGE,
       RequestType.get,
-      queryParameters: {'pageNo': page, 'pageSize': 10},
+      queryParameters: query,
     );
     return BlogPageModel.fromJson(response.data).data!;
   }

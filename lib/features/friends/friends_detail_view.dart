@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
-import '../../../components/mybutton.dart';
+import 'data/friend_repo.dart';
+import 'providers/friend_providers.dart';
 import '../../../constant/constant.dart';
 import '../../components/label.dart';
 import '../douyin/widgets/douyin_service_strip.dart';
@@ -55,11 +57,118 @@ class _MyViewState extends ConsumerState<FriendsDetailView>
     if (mounted) setState(() {}); // 触发 rebuild，更新 currentIndex
   }
 
+  Future<void> _showEditRemarkDialog() async {
+    final cache = ref.read(friendRemarkCacheProvider);
+    final initial = cache[widget.userId] ?? '';
+    final ctrl = TextEditingController(text: initial);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('修改备注'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: '留空则清除备注',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('保存'),
+          ),
+        ],
+      ),
+    );
+    try {
+      if (ok == true && mounted) {
+        final text = ctrl.text.trim();
+        await ref.read(friendRepoProvider).updateRemark(
+              friendUserId: widget.userId,
+              remark: text,
+            );
+        ref.read(friendRemarkCacheProvider.notifier).setRemark(
+              widget.userId,
+              text,
+            );
+        ref.invalidate(friendListGroupedProvider);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('备注已更新')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('修改失败：$e')),
+        );
+      }
+    } finally {
+      ctrl.dispose();
+    }
+  }
+
+  Future<void> _confirmDeleteFriend() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('删除好友'),
+        content: const Text('确定删除该好友？删除后将无法恢复。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: FilledButton.styleFrom(foregroundColor: Colors.white),
+            child: const Text('删除'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await ref.read(friendRepoProvider).deleteFriend(
+            friendUserId: widget.userId,
+          );
+      ref.read(friendRemarkCacheProvider.notifier).setRemark(
+            widget.userId,
+            '',
+          );
+      ref.invalidate(friendListGroupedProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已删除好友')),
+      );
+      if (context.canPop()) {
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('删除失败：$e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final myState = ref.watch(myProvider);
     final myNotifier = ref.read(myProvider.notifier);
     final isWideScreen = 1.sw > 800;
+    final remarkMap = ref.watch(friendRemarkCacheProvider);
+    final remark = remarkMap[widget.userId];
+    final headerName = (remark != null && remark.isNotEmpty)
+        ? remark
+        : '好友 ${widget.userId}';
 
     return NestedScrollView(
       controller: _scrollviewController,
@@ -75,6 +184,31 @@ class _MyViewState extends ConsumerState<FriendsDetailView>
               expandedHeight: 450,
               automaticallyImplyLeading: false,
               backgroundColor: Colors.white,
+              actions: [
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_horiz),
+                  onSelected: (value) {
+                    if (value == 'remark') {
+                      _showEditRemarkDialog();
+                    } else if (value == 'delete') {
+                      _confirmDeleteFriend();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'remark',
+                      child: Text('修改备注'),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text(
+                        '删除好友',
+                        style: TextStyle(color: Theme.of(context).colorScheme.error),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 collapseMode: CollapseMode.pin, //视差效果
                 background: Column(
@@ -112,7 +246,7 @@ class _MyViewState extends ConsumerState<FriendsDetailView>
                                   Spacer(),
                                   Expanded(
                                     child: SelectableText(
-                                      '名称：QQAI',
+                                      '名称：$headerName',
                                       style: context.typo.pageTitle.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -143,9 +277,9 @@ class _MyViewState extends ConsumerState<FriendsDetailView>
                       height: 220,
                       color: Colors.white,
                       child: Padding(
-                        padding: .all(10),
+                        padding: const EdgeInsets.all(10),
                         child: Column(
-                          crossAxisAlignment: .start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 5,
                           children: [
                             Row(

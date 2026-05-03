@@ -5,7 +5,7 @@ set -e
 cd "$(dirname "$0")"
 exec flutter run -d chrome --no-web-resources-cdn "$@"
 
-flutter pub run build_runner build --delete-conflicting-outputs
+dart run build_runner build --delete-conflicting-outputs
 
 # 发布（单独执行）:
 flutter build web --release --no-web-resources-cdn

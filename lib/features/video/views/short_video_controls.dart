@@ -63,8 +63,8 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                       context.push('${Routes.userDetail}/88/true');
                     },
                     child: Text(
-                      '@ 3000万粉丝',
-                      style: context.typo.caption.copyWith(fontSize: 15),
+                      '@3000万粉丝',
+                      style: context.typo.cardTitle.copyWith(color: Colors.white),
                     ),
                   ),
                   InkWell(
@@ -79,10 +79,10 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                       );
                     },
                     child: RichText(
-                      maxLines: 3,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       text: TextSpan(
-                        style: context.typo.body.copyWith(color: Colors.white),
+                        style: context.typo.cardTitle2.copyWith(color: Colors.white),
                         text:
                             '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。我真的很喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是不',
                       ),

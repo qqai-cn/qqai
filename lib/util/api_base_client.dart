@@ -154,7 +154,7 @@ class ApiBaseClient {
   }
 
   // request timeout (default 10 seconds)
-  static const int _timeoutInSeconds = 10;
+  static const int _timeoutInSeconds = 100;
 
   /// dio getter (used for testing)
   static Dio get dio => _dio;

@@ -1,54 +1,52 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
-import 'package:qqai/util/api_base_client.dart';
 
+import '../../features/chat/data/repos/chat_repo.dart';
+
+/// 将 [Message] 发到业务接口 `/app-api/infra/chat/message/send`。
 class ChatApiService {
-  final String baseUrl;
-  final String chatId;
-  final Dio dio;
-
   ChatApiService({
-    required this.baseUrl,
-    required this.chatId,
-    required this.dio,
+    required this.repo,
+    required this.conversationId,
   });
 
-  Future<dynamic> send(Message message) async {
-    try {
-      final response = ApiBaseClient.safeApiCall(
-        '$baseUrl/app-api/infra/chat/message/send',
-        RequestType.post,
-      );
-      return response;
-    } catch (e) {
-      throw 'Failed to send message: $e';
-    }
+  final IChatRepo repo;
+  final int conversationId;
+
+  int _messageType(Message message) {
+    if (message is TextMessage) return 1;
+    if (message is ImageMessage) return 2;
+    if (message is FileMessage) return 4;
+    return 1;
+  }
+
+  String? _content(Message message) {
+    if (message is TextMessage) return message.text;
+    if (message is ImageMessage) return message.source;
+    if (message is FileMessage) return message.source;
+    return null;
+  }
+
+  /// 返回供 UI 更新的字段：`id`（服务端）、`ts`（毫秒 UTC，来自 createTime）。
+  Future<Map<String, dynamic>> send(Message message) async {
+    final dto = await repo.sendMessage(
+      conversationId: conversationId,
+      type: _messageType(message),
+      content: _content(message),
+      extra: message.metadata?.toString(),
+    );
+    final t = dto.createTimeParsed?.toUtc().millisecondsSinceEpoch ??
+        DateTime.now().toUtc().millisecondsSinceEpoch;
+    return {
+      'id': dto.id?.toString() ?? message.id,
+      'ts': t,
+    };
   }
 
   Future<void> delete(Message message) async {
-    try {
-      await dio.delete(
-        '$baseUrl/chat/$chatId/message',
-        data: {'id': message.id},
-      );
-    } catch (e) {
-      throw 'Failed to delete message: $e';
-    }
+    // 后端未提供删除接口时占位
   }
 
-  Future<void> flush() async {
-    try {
-      await dio.post('$baseUrl/chat/$chatId/message-flush');
-    } catch (e) {
-      throw 'Failed to flush messages: $e';
-    }
-  }
+  Future<void> flush() async {}
 
-  Future<void> seen(MessageID messageId) async {
-    try {
-      await dio.post('$baseUrl/chat/$chatId/seen', data: {'msgId': messageId});
-    } catch (e) {
-      throw 'Failed to mark message as seen: $e';
-    }
-  }
+  Future<void> seen(MessageID messageId) async {}
 }

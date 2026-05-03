@@ -8,6 +8,7 @@ import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
 import '../../../../router/app_routes.dart';
 import '../../../friends/chat_page_list.dart';
+import '../../../friends/create_group_chat_dialog.dart';
 import '../../../friends/friends_page.dart';
 
 class MessagePage extends ConsumerStatefulWidget {
@@ -57,6 +58,11 @@ class _MessagePageState extends ConsumerState<MessagePage>
         ),
         actions: [
           IconButton(
+            tooltip: '创建群聊',
+            icon: const Icon(Icons.group_add),
+            onPressed: () => showCreateGroupChatDialog(context, ref),
+          ),
+          IconButton(
             icon: const Icon(Icons.add_circle_sharp),
             onPressed: () => context.push(Routes.publishZuoPinPageUrl),
           ),
@@ -70,7 +76,7 @@ class _MessagePageState extends ConsumerState<MessagePage>
       body: TabBarView(
         controller: _tabController,
         physics: const NeverScrollableScrollPhysics(),
-        children: [ChatPageList(), FriendsPage()],
+        children: [const ChatPageList(), const FriendsPage()],
       ),
     );
   }

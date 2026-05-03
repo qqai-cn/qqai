@@ -48,6 +48,9 @@ class ContactInfo extends ISuspensionBean {
   @override
   String getSuspensionTag() => tagIndex!;
 
+  /// 顶部固定行（新的朋友、群聊等）
+  bool get isTopEntry => tagIndex == '↑';
+
   @override
   String toString() => json.encode(this);
 }

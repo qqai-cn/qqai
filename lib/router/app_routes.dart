@@ -7,6 +7,8 @@ class Routes {
   static const String mePage = "/me_page";
   static const String chat = "/chat";
   static const String friendDetail = "/friend_detail";
+  /// 新的朋友（待处理好友申请）
+  static const String friendPendingIncoming = "/friend/pending-incoming";
   static const String userDetail = "/user_detail";
   static const String care = "/cares";
   static const String collect = "/collects";

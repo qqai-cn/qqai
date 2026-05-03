@@ -22,7 +22,7 @@ Future<Message> createMessage(
       authorId: authorId,
       createdAt: DateTime.now().toUtc(),
       sentAt: localOnly == true ? DateTime.now().toUtc() : null,
-      text: text.toString(),
+      text: text ?? '',
       metadata: isOnlyEmoji(text ?? '') ? {'isOnlyEmoji': true} : null,
     );
   } else {
