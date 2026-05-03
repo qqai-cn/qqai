@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,11 +20,13 @@ Future<void> main() async {
   // GoogleFonts.config.allowRuntimeFetching = false;
   // init shared preference
   await MySharedPref.init();
-  intl.initializeDateFormatting().then((_) => runApp(
+  // 先上屏再补全 locale 日期符号，避免 initializeDateFormatting 拖住首帧
+  runApp(
     const ProviderScope(
       child: MyApp(),
     ),
-  ));
+  );
+  unawaited(intl.initializeDateFormatting());
 }
 
 class MyApp extends ConsumerStatefulWidget {
@@ -62,7 +66,6 @@ class _MyAppState extends ConsumerState<MyApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       useInheritedMediaQuery: true,
-      rebuildFactor: (old, data) => true,
       builder: (context, child) {
         return MaterialApp.router(
           title: '千千Ai',

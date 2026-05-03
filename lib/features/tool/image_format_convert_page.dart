@@ -1,11 +1,10 @@
-import 'dart:convert';
-import 'dart:html' as html;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/web_blob_helpers.dart';
 
 /// 在线图片格式转换
 class ImageFormatConvertPage extends StatefulWidget {
@@ -95,23 +94,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
   }
 
   Future<Uint8List?> _encodeWebp(img.Image image) async {
-    final pngBytes = img.encodePng(image);
-    final blob = html.Blob([pngBytes], 'image/png');
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    final imgEl = html.ImageElement()..src = url;
-    try {
-      await imgEl.onLoad.first;
-      final w = image.width;
-      final h = image.height;
-      final canvas = html.CanvasElement(width: w, height: h);
-      canvas.context2D.drawImage(imgEl, 0, 0);
-      final webpDataUrl = canvas.toDataUrl('image/webp', 0.92);
-      final parts = webpDataUrl.split(',');
-      if (parts.length < 2) return null;
-      return Uint8List.fromList(base64Decode(parts[1]));
-    } finally {
-      html.Url.revokeObjectUrl(url);
-    }
+    return encodeWebpViaBrowserCanvas(image);
   }
 
   Future<Uint8List?> _encodeTo(img.Image source, String ext) async {
@@ -224,12 +207,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
     final bytes = _convertedBytes;
     final name = _convertedFileName;
     if (bytes == null || name == null) return;
-    final blob = html.Blob([bytes]);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    html.AnchorElement(href: url)
-      ..setAttribute('download', name)
-      ..click();
-    html.Url.revokeObjectUrl(url);
+    downloadUint8ListAsFile(bytes, name);
   }
 
   @override

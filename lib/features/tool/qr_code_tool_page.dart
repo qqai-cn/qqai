@@ -1,9 +1,9 @@
-import 'dart:html' as html;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/web_blob_helpers.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class QrCodeToolPage extends StatefulWidget {
@@ -68,13 +68,12 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
       return;
     }
     final bytes = Uint8List.view(byteData.buffer);
-    final blob = html.Blob([bytes], 'image/png');
-    final url = html.Url.createObjectUrlFromBlob(blob);
     final ts = DateTime.now().millisecondsSinceEpoch;
-    html.AnchorElement(href: url)
-      ..setAttribute('download', 'qrcode_$ts.png')
-      ..click();
-    html.Url.revokeObjectUrl(url);
+    downloadUint8ListAsFile(
+      bytes,
+      'qrcode_$ts.png',
+      mimeType: 'image/png',
+    );
   }
 
   @override

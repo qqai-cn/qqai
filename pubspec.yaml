@@ -80,6 +80,7 @@ dependencies:
   hive_ce: ^2.11.3
   hive_ce_flutter: ^2.3.1
   http: '>=0.13.6 <2.0.0'
+  web: ^1.1.1
   flutter_chat_types: ^3.6.2
   mime: ^2.0.0
   open_filex: ^4.3.2
@@ -90,7 +91,8 @@ dependencies:
   pretty_dio_logger: ^1.3.1
   uuid: ^4.5.1
   shared_preferences: ^2.5.4
-  get_thumbnail_video: ^0.7.3
+  get_thumbnail_video:
+    path: packages/get_thumbnail_video
   image_picker: ^1.1.2
   image: ^4.1.3
   geolocator: ^14.0.0
@@ -104,6 +106,10 @@ dependencies:
   cached_network_image: ^3.4.1
   photo_view: ^0.15.0
   carousel_slider_plus: ^7.1.1
+
+dependency_overrides:
+  socket_io_common:
+    path: packages/socket_io_common
 
 dev_dependencies:
   flutter_lints: ^6.0.0

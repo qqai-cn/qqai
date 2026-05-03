@@ -27,15 +27,30 @@ class _IndexPageState extends ConsumerState<IndexPage>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
+  /// 已挂载内容的 Tab 索引；首屏只建 0 与相邻页，其余懒建以降低首帧与首包成本。
+  final Set<int> _mountedTabIndices = {0};
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 8, vsync: this);
     _tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _expandTabsAround(_tabController.index);
+    });
+  }
+
+  /// 当前 Tab 与左右各一屏，便于横向滑动时下一页已就绪。
+  void _expandTabsAround(int i) {
+    if (!mounted) return;
+    setState(() {
+      _mountedTabIndices.addAll({i, if (i > 0) i - 1, if (i < 7) i + 1});
+    });
   }
 
   void _onTabChanged() {
-    if (!_tabController.indexIsChanging && mounted) setState(() {});
+    if (_tabController.indexIsChanging || !mounted) return;
+    _expandTabsAround(_tabController.index);
   }
 
   @override
@@ -65,20 +80,39 @@ class _IndexPageState extends ConsumerState<IndexPage>
         child: TabBarView(
           controller: _tabController,
           physics: const ClampingScrollPhysics(),
-          children: [
-            // 仅首 Tab 保活：避免 8 路全部 KeepAlive 后 Web 上多页瀑布流/视频常驻内存、拖慢 INP/LCP。
-            KeepAliveTabWrapper(child: BlogView(0)),
-            BlogView(1),
-            BlogView(2),
-            SquareView(),
-            GoodsView(),
-            HelpView(6),
-            ShareView(7),
-            ToolPage(),
-          ],
+          children: List.generate(8, _tabBody),
         ),
       ),
     );
+  }
+
+  Widget _tabBody(int index) {
+    if (!_mountedTabIndices.contains(index)) {
+      return const ColoredBox(
+        color: Colors.black12,
+        child: SizedBox.expand(),
+      );
+    }
+    switch (index) {
+      case 0:
+        return const KeepAliveTabWrapper(child: BlogView(0));
+      case 1:
+        return const BlogView(1);
+      case 2:
+        return const BlogView(2);
+      case 3:
+        return const SquareView();
+      case 4:
+        return const GoodsView();
+      case 5:
+        return const HelpView(6);
+      case 6:
+        return const ShareView(7);
+      case 7:
+        return ToolPage();
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   Widget animatedTitle() {

@@ -1,10 +1,10 @@
-import 'dart:html' as html;
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/web_blob_helpers.dart';
 
 /// 图片压缩页（真实可用版）
 class ImageCompressIntroPage extends StatefulWidget {
@@ -224,12 +224,7 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
   }
 
   void _downloadBytes(Uint8List bytes, String name) {
-    final blob = html.Blob([bytes]);
-    final url = html.Url.createObjectUrlFromBlob(blob);
-    html.AnchorElement(href: url)
-      ..setAttribute('download', name)
-      ..click();
-    html.Url.revokeObjectUrl(url);
+    downloadUint8ListAsFile(bytes, name);
   }
 
   String _downloadName({required String originalName, required String targetExt}) {
