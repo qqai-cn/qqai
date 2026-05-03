@@ -4,8 +4,12 @@ import 'package:qqai/constant/constant.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../constant/color_constant.dart';
+import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/video/views/video_item_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+
+const String _kMeDetailVideoPlaceholderCover =
+    'https://file.qqai.cn/qqai/2025/09/1.webp';
 
 class MeDetailPage extends StatefulWidget {
   final int userId;
@@ -192,10 +196,22 @@ class _MeDetailPage extends State<MeDetailPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          VideoItemView(),
-          VideoItemView(),
-          VideoItemView(),
-          VideoItemView(),
+          VideoItemView(
+            item: const BlogItem(),
+            defaultCover: _kMeDetailVideoPlaceholderCover,
+          ),
+          VideoItemView(
+            item: const BlogItem(),
+            defaultCover: _kMeDetailVideoPlaceholderCover,
+          ),
+          VideoItemView(
+            item: const BlogItem(),
+            defaultCover: _kMeDetailVideoPlaceholderCover,
+          ),
+          VideoItemView(
+            item: const BlogItem(),
+            defaultCover: _kMeDetailVideoPlaceholderCover,
+          ),
         ],
       ),
     );

@@ -80,7 +80,7 @@ class _VideoView extends ConsumerState<VideoView>
           indicatorSize: TabBarIndicatorSize.label,
           indicator: BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: getFontColor(_tabController), width: 3),
+              bottom: const BorderSide(color: Colors.white, width: 3),
             ),
           ),
           isScrollable: true,
@@ -92,7 +92,7 @@ class _VideoView extends ConsumerState<VideoView>
                 child: Text(
                   e,
                   style: context.typo.sectionTitle
-                      .copyWith(color: getFontColor(_tabController)),
+                      .copyWith(color: Colors.white),
                 ),
               ),
             );
@@ -101,12 +101,12 @@ class _VideoView extends ConsumerState<VideoView>
         actions: [
           IconButton(
             icon: const Icon(Icons.add_circle_sharp),
-            color: getFontColor(_tabController),
+            color: Colors.white,
             onPressed: () => context.push(Routes.publishZuoPinPageUrl),
           ),
           IconButton(
             icon: const Icon(Icons.search),
-            color: getFontColor(_tabController),
+            color: Colors.white,
             onPressed: () => context.push(Routes.searchPage),
           ),
         ],
@@ -206,13 +206,5 @@ class _VideoView extends ConsumerState<VideoView>
         );
       },
     );
-  }
-
-  Color getFontColor(TabController tabController) {
-    if (tabController.index == 0) {
-      return Colors.white;
-    } else {
-      return Colors.black;
-    }
   }
 }

@@ -23,6 +23,8 @@ class HeroImageWrapGrid extends StatelessWidget {
         final parentWidth = constraints.maxWidth;
         final imageCount = imageUrls.length;
         final itemSize = tileExtentForWrapImageGrid(imageCount, parentWidth);
+        final dpr = MediaQuery.devicePixelRatioOf(context);
+        final memPx = (itemSize * dpr).round().clamp(96, 900);
         return Wrap(
           spacing: 10,
           runSpacing: 10,
@@ -40,6 +42,8 @@ class HeroImageWrapGrid extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: itemSize,
                     height: itemSize,
+                    memCacheWidth: memPx,
+                    memCacheHeight: memPx,
                     placeholder: (context, url) =>
                         const Center(child: CircularProgressIndicator()),
                     errorWidget: (context, url, error) =>
