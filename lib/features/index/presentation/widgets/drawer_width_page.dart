@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../providers/auth_providers.dart';
 import '../../../../router/app_routes.dart';
 import '../../providers/home_providers.dart';
 
@@ -185,8 +186,11 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
               fit: BoxFit.fill,
             ),
             title: Text('退出登陆'),
-            onTap: () {
+            onTap: () async {
               Navigator.of(context).pop();
+              await ref.read(authProvider.notifier).logout();
+              if (!mounted) return;
+              context.go(Routes.login);
             },
           ),
         ],

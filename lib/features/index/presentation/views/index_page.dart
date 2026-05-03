@@ -60,6 +60,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
         actions: [animateActions()],
       ),
       drawer: isWideScreen ? null : const DrawerPage(),
+      endDrawer: isWideScreen ? const DrawerPage() : null,
       body: RepaintBoundary(
         child: TabBarView(
           controller: _tabController,
@@ -144,6 +145,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
   }
 
   Widget getActions() {
+    final isWideScreen = 1.sw > 800;
     if (_tabController.index == 0) {
       return Row(
         children: [
@@ -159,6 +161,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
             icon: const Icon(Icons.add_circle_sharp),
             onPressed: () => context.push(Routes.publishZuoPinPageUrl),
           ),
+          if (isWideScreen) _avatarEndDrawerAction(),
         ],
       );
     } else {
@@ -176,8 +179,22 @@ class _IndexPageState extends ConsumerState<IndexPage>
               context.push(Routes.searchPage);
             },
           ),
+          if (isWideScreen) _avatarEndDrawerAction(),
         ],
       );
     }
+  }
+
+  Widget _avatarEndDrawerAction() {
+    return Builder(
+      builder: (ctx) => IconButton(
+        tooltip: '个人中心',
+        onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+        icon: const CircleAvatar(
+          radius: 14,
+          backgroundImage: AssetImage('imgs/user_default.png'),
+        ),
+      ),
+    );
   }
 }

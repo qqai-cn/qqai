@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
+import '../../../../providers/auth_providers.dart';
 import '../../../../router/app_routes.dart';
 
-
-class DrawerPage extends StatefulWidget {
+class DrawerPage extends ConsumerStatefulWidget {
   const DrawerPage({super.key});
 
   @override
-  State<StatefulWidget> createState() {
-    return _DrawerPage();
-  }
+  ConsumerState<DrawerPage> createState() => _DrawerPageState();
 }
 
-class _DrawerPage extends State<DrawerPage> {
+class _DrawerPageState extends ConsumerState<DrawerPage> {
   @override
   Widget build(BuildContext context) {
     return myDrawer();
@@ -219,8 +218,11 @@ class _DrawerPage extends State<DrawerPage> {
               fit: BoxFit.fill,
             ),
             title: Text('退出登陆'),
-            onTap: () {
+            onTap: () async {
               Navigator.of(context).pop();
+              await ref.read(authProvider.notifier).logout();
+              if (!mounted) return;
+              context.go(Routes.login);
             },
           ),
         ],
