@@ -86,6 +86,13 @@ class ApiBaseClient {
         )
         ..interceptors.add(
           InterceptorsWrapper(
+            onRequest: (options, handler) {
+              // 每次请求都添加最新的 Authorization 头
+              if (_authorization != null) {
+                options.headers['Authorization'] = _authorization;
+              }
+              return handler.next(options);
+            },
             onResponse: (response, handler) async {
               // 检查业务代码 401
               final data = response.data;
@@ -120,10 +127,17 @@ class ApiBaseClient {
         );
 
   static Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
+    // 复制请求头并确保使用最新的 Authorization
+    final headers = Map<String, dynamic>.from(requestOptions.headers);
+    if (_authorization != null) {
+      headers['Authorization'] = _authorization;
+    }
+    
     final options = Options(
       method: requestOptions.method,
-      headers: requestOptions.headers,
+      headers: headers,
     );
+    
     return _dio.request<dynamic>(
       requestOptions.path,
       data: requestOptions.data,

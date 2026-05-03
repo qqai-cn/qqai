@@ -56,6 +56,7 @@ class _FabuViewState extends ConsumerState<FabuView>
         categary: 1,
         blogType: fabuState.videoFiles.isNotEmpty ? 2 : 1,
         addressId: fabuState.selAddressEntity?.id,
+        address: fabuState.selAddressEntity?.name,
         shareType: fabuState.whoCanSeeSel,
         topicIds: fabuState.huatiSel.isNotEmpty ? fabuState.huatiSel.keys.join(',') : null,
       );

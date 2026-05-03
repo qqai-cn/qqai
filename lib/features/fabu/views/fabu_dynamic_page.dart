@@ -21,6 +21,7 @@ class FabuDynamicPage extends ConsumerStatefulWidget {
 
 class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
   late TextEditingController textEditingController;
+  bool _hasLoadedGPS = false;
 
   @override
   void initState() {
@@ -35,6 +36,13 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
   void dispose() {
     super.dispose();
     textEditingController.dispose();
+  }
+
+  Future<void> _loadGPSAddress() async {
+    if (!_hasLoadedGPS) {
+      _hasLoadedGPS = true;
+      await ref.read(fabuProvider.notifier).loadGPSAddress();
+    }
   }
 
   @override
@@ -216,43 +224,75 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
               endIndent: 20,
             ),
             InkWell(
-              onTap: () {
+              onTap: () async {
+                // Load GPS address when user taps location
+                await _loadGPSAddress();
+                
                 showModalBottomSheet(
                   constraints: BoxConstraints(maxHeight: 0.8.sh),
                   context: context,
                   isScrollControlled: true,
                   builder: (BuildContext build) {
-                    return Padding(
-                      padding: EdgeInsets.only(top: 50.h),
-                      child: ListView.separated(
-                        itemCount: fabuState.addressList.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          AddressEntity addressEntity =
-                              fabuState.addressList[index];
-                          String detail = addressEntity.detail;
-                          String distance = addressEntity.distance;
-                          return ListTile(
-                            title: Text(addressEntity.name),
-                            subtitle: index == 0
-                                ? null
-                                : Text(
-                                    '$detail | $distance',
-                                    style: context.typo.caption,
+                    return Consumer(
+                      builder: (context, ref, child) {
+                        final state = ref.watch(fabuProvider);
+                        return Padding(
+                          padding: EdgeInsets.only(top: 50.h),
+                          child: Stack(
+                            children: [
+                              ListView.separated(
+                                itemCount: state.addressList.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  AddressEntity addressEntity =
+                                      state.addressList[index];
+                                  String detail = addressEntity.detail;
+                                  String distance = addressEntity.distance;
+                                  return ListTile(
+                                    title: Text(addressEntity.name),
+                                    subtitle: index == 0
+                                        ? null
+                                        : Text(
+                                            '$detail | $distance',
+                                            style: context.typo.caption,
+                                          ),
+                                    trailing:
+                                        state.selAddressEntity?.name ==
+                                            addressEntity.name
+                                        ? const Icon(Icons.check)
+                                        : null,
+                                    onTap: () {
+                                      fabuNotifier.setAddress(addressEntity);
+                                      Navigator.pop(context);
+                                    },
+                                  );
+                                },
+                                separatorBuilder: (BuildContext context, int index) =>
+                                    Divider(height: 1.0, color: Colors.grey),
+                              ),
+                              if (state.isLoadingGPS)
+                                Positioned(
+                                  top: 10,
+                                  left: 0,
+                                  right: 0,
+                                  child: Center(
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text('获取位置中...'),
+                                      ],
+                                    ),
                                   ),
-                            trailing:
-                                fabuState.selAddressEntity?.name ==
-                                    addressEntity.name
-                                ? const Icon(Icons.check)
-                                : null,
-                            onTap: () {
-                              fabuNotifier.setAddress(addressEntity);
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                        separatorBuilder: (BuildContext context, int index) =>
-                            Divider(height: 1.0, color: Colors.grey),
-                      ),
+                                ),
+                            ],
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -307,7 +347,7 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
             InkWell(
               onTap: () {
                 showModalBottomSheet(
-                  constraints: BoxConstraints(minHeight: 0.8.sh),
+                  constraints: BoxConstraints(minHeight: 0.5.sh),
                   context: context,
                   builder: (BuildContext build) {
                     return Padding(
@@ -335,7 +375,7 @@ class _FabuDynamicPage extends ConsumerState<FabuDynamicPage> {
               },
               child: ListTile(
                 leading: Icon(Icons.perm_identity),
-                title: fabuState.whoCanSeeSel == 0
+                title: fabuState.whoCanSeeSel == null
                     ? const Text('谁可以看')
                     : Text(fabuState.whoCanSee[fabuState.whoCanSeeSel!]),
                 trailing: const Icon(Icons.chevron_right),

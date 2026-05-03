@@ -77,9 +77,10 @@ GoRouter appRouter(Ref ref) {
       final authState = ref.watch(authProvider);
       final isAuthenticated = authState.isAuthenticated;
       final path = state.uri.path;
-
+      final requiresAuth = _requiresAuth(path);
+      
       // 未登录：只有需要认证的页面才跳转登录
-      if (!isAuthenticated && _requiresAuth(path) && path != Routes.login) {
+      if (!isAuthenticated && requiresAuth && path != Routes.login) {
         return Routes.login;
       }
 
@@ -491,6 +492,5 @@ bool _requiresAuth(String path) {
     Routes.messagePage, // 消息页面
     Routes.publishZuoPinPageUrl, // 消息页面
   ];
-
   return protectedPaths.any((protected) => path.startsWith(protected));
 }

@@ -4,6 +4,7 @@ import '../../../../constant/api_constant.dart';
 import '../../../../util/api_base_client.dart';
 import '../models/fabu_model.dart';
 import '../models/topic_model.dart';
+import '../models/qqai_weather_city_model.dart';
 
 // Repo Provider（按 blog 的格式：Provider 放在 repo 文件里）
 final fabuRepoProvider = Provider<IFabuRepo>(
@@ -17,6 +18,7 @@ abstract class IFabuRepo {
   Future<void> updateFabu(FabuModel item);
   Future<void> deleteFabu(String id);
   Future<List<SkuuTopicResVO>> getTopicList(int pageNo, int pageSize);
+  Future<QqaiWeatherCityResVO?> getWeatherCityByGPS(String? lat, String? lon);
 }
 
 class FabuRepo implements IFabuRepo {
@@ -66,5 +68,21 @@ class FabuRepo implements IFabuRepo {
     );
     final result = TopicPageResponse.fromJson(response.data);
     return result.data?.list ?? [];
+  }
+
+  @override
+  Future<QqaiWeatherCityResVO?> getWeatherCityByGPS(String? lat, String? lon) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.getByGPS,
+      RequestType.get,
+      queryParameters: {
+        if (lat != null) 'lat': lat,
+        if (lon != null) 'lon': lon,
+      },
+    );
+    if (response.data['code'] == 0 && response.data['data'] != null) {
+      return QqaiWeatherCityResVO.fromJson(response.data['data']);
+    }
+    return null;
   }
 }

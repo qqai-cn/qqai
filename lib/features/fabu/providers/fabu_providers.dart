@@ -8,12 +8,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../../../util/api_base_client.dart';
 import '../../data/models/address_entity.dart';
 import '../data/repos/fabu_repo.dart';
 import '../data/models/fabu_model.dart';
 import '../data/models/topic_model.dart';
+import '../data/models/qqai_weather_city_model.dart';
 import '../../blog/data/models/blog_save_req_vo.dart';
 import '../../blog/data/repos/blog_repo.dart';
 
@@ -32,7 +34,7 @@ sealed class FabuState with _$FabuState {
     @Default([]) List<String> uploadedVideoUrls,
     @Default([]) List<AddressEntity> addressList,
     @Default([]) List<SkuuTopicResVO> topicList,
-    @Default([]) List<String> whoCanSee,
+    @Default(['公开', '仅自己可见', '部分好友可见', '部分好友不可见']) List<String> whoCanSee,
     AddressEntity? selAddressEntity,
     @Default(0) int? whoCanSeeSel,
     @Default(0) int aixinType,
@@ -41,6 +43,7 @@ sealed class FabuState with _$FabuState {
     @Default(false) bool isLoading,
     @Default(false) bool isUploading,
     @Default('') String textContent,
+    @Default(false) bool isLoadingGPS,
   }) = _FabuState;
 }
 
@@ -108,6 +111,58 @@ class FabuNotifier extends _$FabuNotifier {
       state = state.copyWith(addressList: addressList);
     } catch (e) {
       print('Error loading address data: $e');
+    }
+  }
+
+  Future<void> loadGPSAddress() async {
+    state = state.copyWith(isLoadingGPS: true);
+    try {
+      // Check location permission
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        return;
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        return;
+      }
+
+      // Get current position
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+
+      // Call API to get weather city
+      final weatherCity = await _repo.getWeatherCityByGPS(
+        position.latitude.toString(),
+        position.longitude.toString(),
+      );
+
+      if (weatherCity != null) {
+        final addressEntity = AddressEntity.fromWeatherCity(weatherCity);
+        final addressEntityOnly = AddressEntity.fromWeatherCityOnly(weatherCity);
+        
+        // Add GPS address to the top of the list
+        final addressList = List<AddressEntity>.from(state.addressList);
+        addressList.insert(1, addressEntityOnly);
+        addressList.insert(2, addressEntity);
+        state = state.copyWith(addressList: addressList);
+      }
+    } catch (e) {
+      print('Error loading GPS address: $e');
+    } finally {
+      state = state.copyWith(isLoadingGPS: false);
     }
   }
 
@@ -254,6 +309,7 @@ class FabuNotifier extends _$FabuNotifier {
     String? content,
     String? resources,
     int? addressId,
+    String? address,
     int? shareType,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
@@ -271,6 +327,9 @@ class FabuNotifier extends _$FabuNotifier {
           ? allUrls.join(',') 
           : resources;
       
+      // Get address from selected address if not provided
+      final selectedAddress = address ?? state.selAddressEntity?.name;
+      
       final req = BlogSaveReqVO(
         squareId: squareId,
         topicIds: topicIds,
@@ -279,6 +338,7 @@ class FabuNotifier extends _$FabuNotifier {
         content: blogContent,
         resources: blogResources,
         addressId: addressId,
+        address: selectedAddress,
         shareType: shareType,
       );
       await blogRepo.createBlog(req);

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:qqai/generated/json/address_entity.g.dart';
 import 'package:qqai/generated/json/base/json_field.dart';
+import '../../fabu/data/models/qqai_weather_city_model.dart';
 
 export 'package:qqai/generated/json/address_entity.g.dart';
 
@@ -21,5 +22,23 @@ class AddressEntity {
 	@override
 	String toString() {
 		return jsonEncode(this);
+	}
+
+	// Convert QqaiWeatherCityResVO to AddressEntity
+  factory AddressEntity.fromWeatherCity(QqaiWeatherCityResVO weatherCity) {
+		final address = AddressEntity();
+		address.id = weatherCity.adCode ?? 0;
+		address.name = '${weatherCity.city ?? ''}${weatherCity.county ?? ''}';
+		address.distance = '';
+		address.detail = '${weatherCity.province ?? ''} ${weatherCity.city ?? ''} ${weatherCity.county ?? ''}';
+		return address;
+	}
+  factory AddressEntity.fromWeatherCityOnly(QqaiWeatherCityResVO weatherCity) {
+		final address = AddressEntity();
+		address.id = weatherCity.adCode ?? 0;
+		address.name = '${weatherCity.city}';
+		address.distance = '';
+		address.detail = '${weatherCity.province ?? ''} ${weatherCity.city ?? ''} ${weatherCity.county ?? ''}';
+		return address;
 	}
 }
