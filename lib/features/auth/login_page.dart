@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../providers/auth_providers.dart';
 import '../../router/app_routes.dart';
@@ -16,20 +15,37 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _usernameController = TextEditingController();
+  final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _nicknameController = TextEditingController();
+  final _idCardController = TextEditingController();
+  bool _isRegisterMode = false;
   bool _isLoading = false;
   double _sliderValue = 0;
   bool _sliderVerified = false;
 
+  static final _mobileRe = RegExp(r'^1\d{10}$');
+  static final _idCardRe = RegExp(r'^\d{15}$|^\d{17}[\dXx]$');
+
   @override
   void dispose() {
-    _usernameController.dispose();
+    _mobileController.dispose();
     _passwordController.dispose();
+    _nicknameController.dispose();
+    _idCardController.dispose();
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _setAuthMode(bool register) {
+    if (_isRegisterMode == register) return;
+    setState(() {
+      _isRegisterMode = register;
+      _sliderValue = 0;
+      _sliderVerified = false;
+    });
+  }
+
+  Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_sliderVerified) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -42,22 +58,31 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       _isLoading = true;
     });
 
+    final authNotifier = ref.read(authProvider.notifier);
     try {
-      final authNotifier = ref.read(authProvider.notifier);
-      await authNotifier.login(
-        _usernameController.text.trim(),
-        _passwordController.text,
-      );
+      if (_isRegisterMode) {
+        await authNotifier.register(
+          mobile: _mobileController.text.trim(),
+          password: _passwordController.text,
+          username: _nicknameController.text.trim(),
+          idCard: _idCardController.text.trim(),
+        );
+      } else {
+        await authNotifier.login(
+          _mobileController.text.trim(),
+          _passwordController.text,
+        );
+      }
 
       if (mounted) {
         context.go(Routes.HOME);
       }
     } catch (e) {
       if (!mounted) return;
+      final prefix = _isRegisterMode ? '注册失败' : '登录失败';
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('登录失败: $e')),
+        SnackBar(content: Text('$prefix: $e')),
       );
-      print('登录失败: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -81,14 +106,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             ],
           ),
         ),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 420),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
                   // Logo / Title（品牌图：imgs/qqai_logo.png）
                   Column(
                     children: [
@@ -157,7 +188,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '欢迎回来',
+                        _isRegisterMode ? '创建账号' : '欢迎回来',
                         style: context.typo.sectionTitle.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w600,
@@ -166,7 +197,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        '登录你的智能助手账户',
+                        _isRegisterMode
+                            ? '注册'
+                            : '登录你的智能助手账户',
+                        textAlign: TextAlign.center,
                         style: context.typo.pageSubtitle.copyWith(
                           color: Colors.white70,
                         ),
@@ -197,8 +231,71 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.06),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white.withOpacity(0.12)),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => _setAuthMode(false),
+                                      borderRadius: const BorderRadius.horizontal(
+                                        left: Radius.circular(16),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        child: Text(
+                                          '登录',
+                                          textAlign: TextAlign.center,
+                                          style: context.typo.body.copyWith(
+                                            color: !_isRegisterMode
+                                                ? const Color(0xFF00D9F5)
+                                                : Colors.white54,
+                                            fontWeight:
+                                                !_isRegisterMode ? FontWeight.w700 : FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(width: 1, height: 28, color: Colors.white24),
+                                Expanded(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () => _setAuthMode(true),
+                                      borderRadius: const BorderRadius.horizontal(
+                                        right: Radius.circular(16),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 12),
+                                        child: Text(
+                                          '注册',
+                                          textAlign: TextAlign.center,
+                                          style: context.typo.body.copyWith(
+                                            color: _isRegisterMode
+                                                ? const Color(0xFF00D9F5)
+                                                : Colors.white54,
+                                            fontWeight:
+                                                _isRegisterMode ? FontWeight.w700 : FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
                           TextFormField(
-                            controller: _usernameController,
+                            controller: _mobileController,
                             style: context.typo.body.copyWith(color: Colors.white),
                             decoration: InputDecoration(
                               labelText: '手机号',
@@ -232,19 +329,115 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 ),
                               ),
                             ),
+                            keyboardType: TextInputType.phone,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
+                              final v = value?.trim() ?? '';
+                              if (v.isEmpty) {
                                 return '请输入手机号';
+                              }
+                              if (!_mobileRe.hasMatch(v)) {
+                                return '请输入 11 位有效手机号';
                               }
                               return null;
                             },
                           ),
+                          if (_isRegisterMode) ...[
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _nicknameController,
+                              style: context.typo.body.copyWith(color: Colors.white),
+                              decoration: InputDecoration(
+                                labelText: '用户名',
+                                labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
+                                prefixIcon: const Icon(Icons.badge_outlined, color: Colors.white70),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.03),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withOpacity(0.15),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF00D9F5),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                              ),
+                              validator: (value) {
+                                final v = value?.trim() ?? '';
+                                if (v.isEmpty) return '请输入用户名';
+                                if (v.length > 32) return '用户名不超过 32 字';
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            TextFormField(
+                              controller: _idCardController,
+                              style: context.typo.body.copyWith(color: Colors.white),
+                              decoration: InputDecoration(
+                                labelText: '身份证号',
+                                labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
+                                prefixIcon: const Icon(Icons.credit_card, color: Colors.white70),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.03),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: BorderSide(
+                                    color: Colors.white.withOpacity(0.15),
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFF00D9F5),
+                                    width: 1.5,
+                                  ),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                                focusedErrorBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                  borderSide: const BorderSide(
+                                    color: Colors.redAccent,
+                                  ),
+                                ),
+                              ),
+                              keyboardType: TextInputType.text,
+                              validator: (value) {
+                                final v = value?.trim() ?? '';
+                                if (v.isEmpty) return '请输入身份证号';
+                                if (!_idCardRe.hasMatch(v)) {
+                                  return '请输入 15 或 18 位合法身份证号';
+                                }
+                                return null;
+                              },
+                            ),
+                          ],
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _passwordController,
                             style: context.typo.body.copyWith(color: Colors.white),
                             decoration: InputDecoration(
-                              labelText: '密码 123456',
+                              labelText: _isRegisterMode ? '密码' : '密码 123456',
                               labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
                               prefixIcon: const Icon(Icons.lock, color: Colors.white70),
                               filled: true,
@@ -339,7 +532,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           SizedBox(
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleLogin,
+                              onPressed: _isLoading ? null : _handleSubmit,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF00D9F5),
                                 foregroundColor: Colors.black,
@@ -362,7 +555,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                       )
                                     : Text(
                                         key: ValueKey('text'),
-                                        '登录',
+                                        _isRegisterMode ? '注册' : '登录',
                                         style: context.typo.button.copyWith(
                                           color: Colors.black,
                                           letterSpacing: 0.5,
@@ -376,9 +569,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
                 ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );

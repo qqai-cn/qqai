@@ -41,11 +41,7 @@ class AuthNotifier extends _$AuthNotifier {
     );
   }
 
-  // 登录
-  Future<void> login(String username, String password) async {
-    final resp = await loginApi(username: username, password: password);
-    if (!ref.mounted) return;
-
+  Future<void> _persistSession(LoginResponse resp, {String? usernameForState}) async {
     await MySharedPref.setAuthToken(resp.token);
     if (!ref.mounted) return;
     if (resp.refreshToken != null) {
@@ -57,10 +53,34 @@ class AuthNotifier extends _$AuthNotifier {
     state = state.copyWith(
       isAuthenticated: true,
       userId: resp.userId,
-      username: username,
+      username: usernameForState,
       token: resp.token,
       refreshToken: resp.refreshToken,
     );
+  }
+
+  // 登录
+  Future<void> login(String username, String password) async {
+    final resp = await loginApi(username: username, password: password);
+    if (!ref.mounted) return;
+    await _persistSession(resp, usernameForState: username);
+  }
+
+  /// 注册成功后与登录一致写入 token 并进入已登录态
+  Future<void> register({
+    required String mobile,
+    required String password,
+    required String username,
+    required String idCard,
+  }) async {
+    final resp = await registerApi(
+      mobile: mobile,
+      password: password,
+      username: username,
+      idCard: idCard,
+    );
+    if (!ref.mounted) return;
+    await _persistSession(resp, usernameForState: username);
   }
 
   // 刷新令牌
@@ -72,21 +92,7 @@ class AuthNotifier extends _$AuthNotifier {
 
     final resp = await refreshTokenApi(refreshToken: currentRefreshToken);
     if (!ref.mounted) return;
-
-    await MySharedPref.setAuthToken(resp.token);
-    if (!ref.mounted) return;
-    if (resp.refreshToken != null) {
-      await MySharedPref.setRefreshToken(resp.refreshToken!);
-    }
-    if (!ref.mounted) return;
-
-    ApiBaseClient.setAuthorization('Bearer ${resp.token}');
-    state = state.copyWith(
-      isAuthenticated: true,
-      userId: resp.userId,
-      token: resp.token,
-      refreshToken: resp.refreshToken,
-    );
+    await _persistSession(resp, usernameForState: state.username);
   }
 
   // 登出

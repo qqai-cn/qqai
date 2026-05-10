@@ -16,6 +16,7 @@ class ApiConstant {
 
   // Auth
   static const String LOGIN = '/app-api/member/auth/login';
+  static const String REGISTER = '/app-api/member/auth/register';
   static const String REFRESH_TOKEN = '/app-api/member/auth/refresh-token';
 
   // 好友

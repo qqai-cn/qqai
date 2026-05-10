@@ -11,22 +11,15 @@ class LoginResponse {
   const LoginResponse({required this.token, this.refreshToken, this.userId});
 }
 
-Future<LoginResponse> loginApi({
-  required String username,
-  required String password,
-}) async {
-  final Response response = await ApiBaseClient.safeApiCall(
-    ApiConstant.LOGIN,
-    RequestType.post,
-    data: {
-      'mobile': username,
-      'password': password,
-    },
-  );
+bool _isAuthApiSuccessCode(dynamic code) =>
+    code == null || code == 0 || code == '0';
 
-  final data = response.data;
+LoginResponse _parseAuthLoginEnvelope(dynamic data, {required String badFormatMessage}) {
   if (data is! Map) {
-    throw '登录接口返回格式错误';
+    throw badFormatMessage;
+  }
+  if (!_isAuthApiSuccessCode(data['code'])) {
+    throw data['msg']?.toString() ?? data['message']?.toString() ?? '请求失败';
   }
 
   // Common patterns:
@@ -55,6 +48,42 @@ Future<LoginResponse> loginApi({
   return LoginResponse(token: token, refreshToken: refreshToken, userId: userId);
 }
 
+Future<LoginResponse> loginApi({
+  required String username,
+  required String password,
+}) async {
+  final Response response = await ApiBaseClient.safeApiCall(
+    ApiConstant.LOGIN,
+    RequestType.post,
+    data: {
+      'mobile': username,
+      'password': password,
+    },
+  );
+
+  return _parseAuthLoginEnvelope(response.data, badFormatMessage: '登录接口返回格式错误');
+}
+
+Future<LoginResponse> registerApi({
+  required String mobile,
+  required String password,
+  required String username,
+  required String idCard,
+}) async {
+  final Response response = await ApiBaseClient.safeApiCall(
+    ApiConstant.REGISTER,
+    RequestType.post,
+    data: {
+      'mobile': mobile,
+      'password': password,
+      'username': username,
+      'idCard': idCard,
+    },
+  );
+
+  return _parseAuthLoginEnvelope(response.data, badFormatMessage: '注册接口返回格式错误');
+}
+
 Future<LoginResponse> refreshTokenApi({
   required String refreshToken,
 }) async {
@@ -66,30 +95,6 @@ Future<LoginResponse> refreshTokenApi({
     },
   );
 
-  final data = response.data;
-  if (data is! Map) {
-    throw '刷新令牌接口返回格式错误';
-  }
-
-  final dynamic payload = (data['data'] is Map) ? data['data'] : data;
-
-  String? token;
-  String? newRefreshToken;
-  if (payload is Map) {
-    token =
-        (payload['accessToken'] ??
-                payload['token'] ??
-                payload['access_token'] ??
-                payload['tokenValue'])
-            ?.toString();
-    newRefreshToken = (payload['refreshToken'] ?? payload['refresh_token'])?.toString();
-  }
-
-  if (token == null || token.isEmpty) {
-    throw data['msg']?.toString() ?? data['message']?.toString() ?? '未获取到 token';
-  }
-
-  final userId = (payload is Map ? payload['userId'] : null)?.toString();
-  return LoginResponse(token: token, refreshToken: newRefreshToken, userId: userId);
+  return _parseAuthLoginEnvelope(response.data, badFormatMessage: '刷新令牌接口返回格式错误');
 }
 

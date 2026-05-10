@@ -26,8 +26,11 @@ if [[ "${CANVASKIT_CDN_URL: -1}" != "/" ]]; then
   exit 1
 fi
 
-flutter build web --release \
+flutter build web --release --wasm \
   --no-web-resources-cdn \
   --dart-define=FLUTTER_WEB_CANVASKIT_URL="$CANVASKIT_CDN_URL"
 
 echo "完成。部署时可不将 build/web/canvaskit/ 上传到业务机（仅保留在 CDN），以减小源站体积。"
+
+flutter build web --release --wasm \
+  --no-web-resources-cdn

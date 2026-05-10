@@ -66,6 +66,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       useInheritedMediaQuery: true,
+      rebuildFactor: (old, data) => true,
       builder: (context, child) {
         return MaterialApp.router(
           title: '千千Ai',
