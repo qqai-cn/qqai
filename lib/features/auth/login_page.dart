@@ -2,9 +2,59 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../providers/app_config_providers.dart';
 import '../../providers/auth_providers.dart';
 import '../../router/app_routes.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+
+/// 登录页随 Material 亮/暗色切换的外观
+class _LoginPageColors {
+  _LoginPageColors._(this.isDark);
+  final bool isDark;
+
+  factory _LoginPageColors.of(BuildContext context) {
+    return _LoginPageColors._(Theme.of(context).brightness == Brightness.dark);
+  }
+
+  LinearGradient get backgroundGradient => LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: isDark
+            ? const [Color(0xFF141E30), Color(0xFF243B55)]
+            : const [Color(0xFFD8E1EB), Color(0xFFF2F5F9)],
+      );
+
+  Color get bodyText => isDark ? Colors.white : const Color(0xFF15202B);
+  Color get secondaryText => isDark ? Colors.white70 : const Color(0xFF4A5568);
+  Color get hintStyle => isDark ? Colors.white70 : const Color(0xFF6B7280);
+  Color get iconSecondary => isDark ? Colors.white70 : const Color(0xFF5C6570);
+  Color get fieldFill =>
+      isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFF5F7FA);
+  Color get borderSubtle =>
+      isDark ? Colors.white.withValues(alpha: 0.15) : const Color(0x33000000);
+  Color get cardBg =>
+      isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white.withValues(alpha: 0.88);
+  Color get cardBorder => isDark
+      ? Colors.white.withValues(alpha: 0.15)
+      : Colors.black.withValues(alpha: 0.06);
+  List<BoxShadow> get cardShadow => [
+        BoxShadow(
+          color: isDark ? const Color(0x66000000) : const Color(0x14000000),
+          blurRadius: 24,
+          offset: const Offset(0, 16),
+        ),
+      ];
+  Color get pillFill =>
+      isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white.withValues(alpha: 0.75);
+  Color get pillBorder => isDark
+      ? Colors.white.withValues(alpha: 0.12)
+      : Colors.black.withValues(alpha: 0.06);
+  Color get inactiveTab => isDark ? Colors.white54 : const Color(0xFF7A8698);
+  Color get sliderTrackBg => isDark ? Colors.white24 : const Color(0xFFCFD8E0);
+  Color get verifyIconInactive => isDark ? Colors.white54 : const Color(0xFF9CA3AF);
+  Color get logoShadowCyan => const Color(0xFF00D9F5).withValues(alpha: 0.45);
+  Color get logoShadowDark => Colors.black.withValues(alpha: isDark ? 0.35 : 0.18);
+}
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -92,21 +142,50 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
+  InputDecoration _loginFieldDecoration(
+    _LoginPageColors c, {
+    required String label,
+    required IconData prefixIcon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: context.typo.inputHint.copyWith(color: c.hintStyle),
+      prefixIcon: Icon(prefixIcon, color: c.iconSecondary),
+      filled: true,
+      fillColor: c.fieldFill,
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide(color: c.borderSubtle),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(
+          color: Color(0xFF00D9F5),
+          width: 1.5,
+        ),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.redAccent),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: Colors.redAccent),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final c = _LoginPageColors.of(context);
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF141E30),
-              Color(0xFF243B55),
-            ],
-          ),
-        ),
-        child: LayoutBuilder(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(gradient: c.backgroundGradient),
+              child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -128,13 +207,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF00D9F5).withValues(alpha: 0.45),
+                              color: c.logoShadowCyan,
                               blurRadius: 28,
                               spreadRadius: 2,
                               offset: const Offset(0, 10),
                             ),
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.35),
+                              color: c.logoShadowDark,
                               blurRadius: 16,
                               offset: const Offset(0, 8),
                             ),
@@ -190,7 +269,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Text(
                         _isRegisterMode ? '创建账号' : '欢迎回来',
                         style: context.typo.sectionTitle.copyWith(
-                          color: Colors.white,
+                          color: c.bodyText,
                           fontWeight: FontWeight.w600,
                           letterSpacing: 0.5,
                         ),
@@ -202,7 +281,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             : '登录你的智能助手账户',
                         textAlign: TextAlign.center,
                         style: context.typo.pageSubtitle.copyWith(
-                          color: Colors.white70,
+                          color: c.secondaryText,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -212,18 +291,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.06),
+                      color: c.cardBg,
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.15),
-                      ),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x66000000),
-                          blurRadius: 24,
-                          offset: Offset(0, 16),
-                        ),
-                      ],
+                      border: Border.all(color: c.cardBorder),
+                      boxShadow: c.cardShadow,
                     ),
                     child: Form(
                       key: _formKey,
@@ -233,9 +304,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         children: [
                           DecoratedBox(
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.06),
+                              color: c.pillFill,
                               borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withOpacity(0.12)),
+                              border: Border.all(color: c.pillBorder),
                             ),
                             child: Row(
                               children: [
@@ -255,7 +326,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           style: context.typo.body.copyWith(
                                             color: !_isRegisterMode
                                                 ? const Color(0xFF00D9F5)
-                                                : Colors.white54,
+                                                : c.inactiveTab,
                                             fontWeight:
                                                 !_isRegisterMode ? FontWeight.w700 : FontWeight.w500,
                                           ),
@@ -264,7 +335,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                     ),
                                   ),
                                 ),
-                                Container(width: 1, height: 28, color: Colors.white24),
+                                Container(width: 1, height: 28, color: c.borderSubtle),
                                 Expanded(
                                   child: Material(
                                     color: Colors.transparent,
@@ -281,7 +352,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           style: context.typo.body.copyWith(
                                             color: _isRegisterMode
                                                 ? const Color(0xFF00D9F5)
-                                                : Colors.white54,
+                                                : c.inactiveTab,
                                             fontWeight:
                                                 _isRegisterMode ? FontWeight.w700 : FontWeight.w500,
                                           ),
@@ -296,38 +367,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _mobileController,
-                            style: context.typo.body.copyWith(color: Colors.white),
-                            decoration: InputDecoration(
-                              labelText: '手机号',
-                              labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
-                              prefixIcon: const Icon(Icons.person, color: Colors.white70),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.03),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withOpacity(0.15),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF00D9F5),
-                                  width: 1.5,
-                                ),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Colors.redAccent,
-                                ),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Colors.redAccent,
-                                ),
-                              ),
+                            style: context.typo.body.copyWith(color: c.bodyText),
+                            decoration: _loginFieldDecoration(
+                              c,
+                              label: '手机号',
+                              prefixIcon: Icons.person,
                             ),
                             keyboardType: TextInputType.phone,
                             validator: (value) {
@@ -345,38 +389,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _nicknameController,
-                              style: context.typo.body.copyWith(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: '用户名',
-                                labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
-                                prefixIcon: const Icon(Icons.badge_outlined, color: Colors.white70),
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.03),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(
-                                    color: Colors.white.withOpacity(0.15),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF00D9F5),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Colors.redAccent,
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Colors.redAccent,
-                                  ),
-                                ),
+                              style: context.typo.body.copyWith(color: c.bodyText),
+                              decoration: _loginFieldDecoration(
+                                c,
+                                label: '用户名',
+                                prefixIcon: Icons.badge_outlined,
                               ),
                               validator: (value) {
                                 final v = value?.trim() ?? '';
@@ -388,38 +405,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             const SizedBox(height: 16),
                             TextFormField(
                               controller: _idCardController,
-                              style: context.typo.body.copyWith(color: Colors.white),
-                              decoration: InputDecoration(
-                                labelText: '身份证号',
-                                labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
-                                prefixIcon: const Icon(Icons.credit_card, color: Colors.white70),
-                                filled: true,
-                                fillColor: Colors.white.withOpacity(0.03),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: BorderSide(
-                                    color: Colors.white.withOpacity(0.15),
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFF00D9F5),
-                                    width: 1.5,
-                                  ),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Colors.redAccent,
-                                  ),
-                                ),
-                                focusedErrorBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                  borderSide: const BorderSide(
-                                    color: Colors.redAccent,
-                                  ),
-                                ),
+                              style: context.typo.body.copyWith(color: c.bodyText),
+                              decoration: _loginFieldDecoration(
+                                c,
+                                label: '身份证号',
+                                prefixIcon: Icons.credit_card,
                               ),
                               keyboardType: TextInputType.text,
                               validator: (value) {
@@ -435,38 +425,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           const SizedBox(height: 16),
                           TextFormField(
                             controller: _passwordController,
-                            style: context.typo.body.copyWith(color: Colors.white),
-                            decoration: InputDecoration(
-                              labelText: _isRegisterMode ? '密码' : '密码 123456',
-                              labelStyle: context.typo.inputHint.copyWith(color: Colors.white70),
-                              prefixIcon: const Icon(Icons.lock, color: Colors.white70),
-                              filled: true,
-                              fillColor: Colors.white.withOpacity(0.03),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: BorderSide(
-                                  color: Colors.white.withOpacity(0.15),
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFF00D9F5),
-                                  width: 1.5,
-                                ),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Colors.redAccent,
-                                ),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: Colors.redAccent,
-                                ),
-                              ),
+                            style: context.typo.body.copyWith(color: c.bodyText),
+                            decoration: _loginFieldDecoration(
+                              c,
+                              label: _isRegisterMode ? '密码' : '密码 123456',
+                              prefixIcon: Icons.lock,
                             ),
                             obscureText: true,
                             validator: (value) {
@@ -483,7 +446,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           Text(
                             '请拖动滑块完成验证',
                             style: context.typo.pageSubtitle.copyWith(
-                              color: Colors.white70,
+                              color: c.secondaryText,
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -494,7 +457,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   data: SliderTheme.of(context).copyWith(
                                     trackHeight: 6,
                                     activeTrackColor: const Color(0xFF00D9F5),
-                                    inactiveTrackColor: Colors.white24,
+                                    inactiveTrackColor: c.sliderTrackBg,
                                     thumbColor: const Color(0xFF00F5A0),
                                     overlayColor: const Color(0x3300D9F5),
                                   ),
@@ -523,7 +486,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 child: Icon(
                                   _sliderVerified ? Icons.check_circle : Icons.radio_button_unchecked,
                                   key: ValueKey(_sliderVerified),
-                                  color: _sliderVerified ? const Color(0xFF00F5A0) : Colors.white54,
+                                  color: _sliderVerified ? const Color(0xFF00F5A0) : c.verifyIconInactive,
                                 ),
                               ),
                             ],
@@ -577,6 +540,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             );
           },
         ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: SafeArea(
+              child: IconButton(
+                tooltip: c.isDark ? '切换到浅色' : '切换到夜间',
+                icon: Icon(
+                  c.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+                  color: c.bodyText.withValues(alpha: 0.82),
+                ),
+                onPressed: () => ref.read(appThemeModeProvider.notifier).toggle(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

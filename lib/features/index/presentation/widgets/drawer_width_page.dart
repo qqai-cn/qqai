@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../providers/app_config_providers.dart';
 import '../../../../providers/auth_providers.dart';
 import '../../../../router/app_routes.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import '../../providers/home_providers.dart';
 
 class DrawerWidthPage extends ConsumerStatefulWidget {
@@ -154,16 +156,24 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
               Navigator.of(context).pop();
             },
           ),
-          ListTile(
-            leading: SvgPicture.asset(
+          SwitchListTile(
+            secondary: SvgPicture.asset(
               imgPath + 'night.svg',
               width: 35,
               height: 35,
               fit: BoxFit.fill,
             ),
-            title: Text('夜间模式'),
-            onTap: () {
-              Navigator.of(context).pop();
+            title: const Text('夜间模式'),
+            subtitle: Text(
+              ref.watch(appThemeModeProvider) ? '当前：浅色' : '当前：深色',
+              style: context.typo.caption,
+            ),
+            value: !ref.watch(appThemeModeProvider),
+            onChanged: (wantDark) {
+              final isLight = ref.read(appThemeModeProvider);
+              if (wantDark == isLight) {
+                ref.read(appThemeModeProvider.notifier).toggle();
+              }
             },
           ),
           ListTile(
