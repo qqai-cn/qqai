@@ -428,7 +428,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             style: context.typo.body.copyWith(color: c.bodyText),
                             decoration: _loginFieldDecoration(
                               c,
-                              label: _isRegisterMode ? '密码' : '密码 123456',
+                              label:'密码',
                               prefixIcon: Icons.lock,
                             ),
                             obscureText: true,
