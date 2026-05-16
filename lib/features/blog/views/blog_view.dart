@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/blog/async_masonry_feed.dart';
 
+import '../data/models/blog_page_model.dart';
 import '../providers/blog_providers.dart';
 import 'blog_img_item_view.dart';
 import 'blog_video_item_view.dart';
@@ -24,7 +25,7 @@ class _BlogViewState extends ConsumerState<BlogView> {
     );
     return Scaffold(
       backgroundColor: Colors.black12,
-      body: AsyncMasonryFeed(
+      body: AsyncMasonryFeed<BlogItem>(
         asyncItems: asyncItems,
         items: blogState.allItems,
         isLoadingMore: blogState.isLoadingMore,

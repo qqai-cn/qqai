@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
-import '../../../../../constant/color_constant.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
@@ -46,7 +42,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
           Padding(
             padding: EdgeInsets.only(left: 5, right: 5),
             child: Text(
-              widget.blogItem.content!,
+              widget.blogItem.content ?? '',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: bodyStyle.copyWith(fontSize: (bodyStyle.fontSize ?? 16)),

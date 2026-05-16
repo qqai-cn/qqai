@@ -1,12 +1,8 @@
-import 'dart:math';
-
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../../constant/color_constant.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
@@ -53,7 +49,7 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           SelectableText(
-            widget.blogItem.content!,
+            widget.blogItem.content ?? '',
             scrollPhysics: NeverScrollableScrollPhysics(),
             maxLines: 3,
             minLines: 1,

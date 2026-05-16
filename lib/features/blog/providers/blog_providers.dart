@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:go_router/go_router.dart';
@@ -165,7 +167,35 @@ class BlogNotifier extends _$BlogNotifier {
     // TODO: 实现关注功能
   }
 
-  // 点赞
+  // 点赞：POST …/profile/blog/{id}/like；取消：DELETE 同路径
+  void onZanTap(BlogItem blogItem) {
+    unawaited(_toggleZan(blogItem));
+  }
+
+  Future<void> _toggleZan(BlogItem blogItem) async {
+    final id = blogItem.id;
+    if (id == null) return;
+    final current = blogItem.zan ?? 0;
+    try {
+      final next = await _repo.toggleBlogZan(id, currentZan: current);
+      BlogItem patch(BlogItem b) => b.id == id ? b.copyWith(zan: next) : b;
+      final newItems = state.allItems.map(patch).toList();
+      final newPageData = switch (state.blogPageData) {
+        AsyncData(:final value) => AsyncData(
+            value.copyWith(
+              list: (value.list ?? []).map(patch).toList(),
+            ),
+          ),
+        _ => state.blogPageData,
+      };
+      state = state.copyWith(
+        allItems: newItems,
+        blogPageData: newPageData,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
 
   Future<void> createBlog(BlogSaveReqVO req) async {
     try {
@@ -174,10 +204,6 @@ class BlogNotifier extends _$BlogNotifier {
       state = state.copyWith(error: '发布失败: $e');
       rethrow;
     }
-  }
-
-  void onZanTap(BlogItem blogItem) {
-    // TODO: 实现点赞功能
   }
 
   void setScrollOffset(double curScrollOffset) {

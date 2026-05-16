@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 
@@ -28,6 +29,9 @@ abstract class IBlogRepo {
   });
   
   Future<void> createBlog(BlogSaveReqVO req);
+
+  /// 切换点赞，返回更新后的 `zan`：0 未赞 / 1 已赞。
+  Future<int> toggleBlogZan(int blogId, {required int currentZan});
 }
 
 class BlogRepo implements IBlogRepo {
@@ -105,5 +109,27 @@ class BlogRepo implements IBlogRepo {
       RequestType.post,
       data: req.toJson(),
     );
+  }
+
+  @override
+  Future<int> toggleBlogZan(int blogId, {required int currentZan}) async {
+    final liked = currentZan == 1;
+    final url = ApiConstant.profileBlogLikePath(blogId);
+    final Response response = await ApiBaseClient.safeApiCall(
+      url,
+      liked ? RequestType.delete : RequestType.post,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '点赞接口返回格式错误';
+    }
+    final code = data['code'];
+    if (code != null && code != 0 && code != '0') {
+      throw data['msg']?.toString() ?? '操作失败';
+    }
+    if (data['data'] != true) {
+      throw data['msg']?.toString() ?? '操作失败';
+    }
+    return liked ? 0 : 1;
   }
 }

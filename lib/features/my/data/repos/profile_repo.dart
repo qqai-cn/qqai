@@ -1,0 +1,256 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../../constant/api_constant.dart';
+import '../../../../util/api_base_client.dart';
+import '../../../blog/data/models/blog_page_model.dart';
+import '../models/profile_models.dart';
+
+final profileRepoProvider = Provider<IProfileRepo>((ref) => ProfileRepo());
+
+abstract class IProfileRepo {
+  Future<BlogShopResp?> getMyShop();
+
+  Future<BlogPageModelData> getMyWorksPage(
+    int pageNo, {
+    int pageSize = 12,
+    int? blogType,
+  });
+
+  Future<BlogPageModelData> getMyLikesPage(int pageNo, {int pageSize = 12});
+
+  Future<BlogCollectionPageData> getMyCollectionsPage(
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
+  });
+
+  Future<BlogShopProductPageData> getMyShopProductsPage(
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
+    int? status,
+  });
+
+  Future<int> createShopProduct(BlogShopProductSaveReq req);
+
+  Future<bool> deleteShopProduct(int id);
+
+  Future<bool> addCollectionItem({
+    required int collectionId,
+    required int blogId,
+    int? sort,
+  });
+
+  Future<bool> removeCollectionItem({
+    required int collectionId,
+    required int blogId,
+  });
+}
+
+bool _isOkCode(dynamic code) =>
+    code == null || code == 0 || code == '0';
+
+void _ensureEnvelope(Map<String, dynamic> root) {
+  if (!_isOkCode(root['code'])) {
+    throw root['msg']?.toString() ?? '请求失败';
+  }
+}
+
+class ProfileRepo implements IProfileRepo {
+  @override
+  Future<BlogShopResp?> getMyShop() async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_SHOP,
+      RequestType.get,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '店铺接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner == null) return null;
+    if (inner is! Map<String, dynamic>) return null;
+    return BlogShopResp.fromJson(inner);
+  }
+
+  @override
+  Future<BlogPageModelData> getMyWorksPage(
+    int pageNo, {
+    int pageSize = 12,
+    int? blogType,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': pageNo,
+      'pageSize': pageSize,
+    };
+    if (blogType != null) query['blogType'] = blogType;
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_WORKS_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    return _parseBlogPage(response.data);
+  }
+
+  @override
+  Future<BlogPageModelData> getMyLikesPage(int pageNo, {int pageSize = 12}) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_LIKES_PAGE,
+      RequestType.get,
+      queryParameters: {
+        'pageNo': pageNo,
+        'pageSize': pageSize,
+      },
+    );
+    return _parseBlogPage(response.data);
+  }
+
+  @override
+  Future<BlogCollectionPageData> getMyCollectionsPage(
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': pageNo,
+      'pageSize': pageSize,
+    };
+    if (name != null && name.isNotEmpty) query['name'] = name;
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_COLLECTIONS_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '合集接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogCollectionPageData(list: [], total: 0);
+    }
+    return BlogCollectionPageData.fromJson(inner);
+  }
+
+  @override
+  Future<BlogShopProductPageData> getMyShopProductsPage(
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
+    int? status,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': pageNo,
+      'pageSize': pageSize,
+    };
+    if (name != null && name.isNotEmpty) query['name'] = name;
+    if (status != null) query['status'] = status;
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_SHOP_PRODUCTS_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '商品接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogShopProductPageData(list: [], total: 0);
+    }
+    return BlogShopProductPageData.fromJson(inner);
+  }
+
+  @override
+  Future<int> createShopProduct(BlogShopProductSaveReq req) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_SHOP_PRODUCTS,
+      RequestType.post,
+      data: req.toJson(),
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '创建商品返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final id = data['data'];
+    if (id is num) return id.toInt();
+    throw '未返回商品 id';
+  }
+
+  @override
+  Future<bool> deleteShopProduct(int id) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      '${ApiConstant.PROFILE_MY_SHOP_PRODUCTS}/$id',
+      RequestType.delete,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '删除商品返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final ok = data['data'];
+    return ok == true;
+  }
+
+  @override
+  Future<bool> addCollectionItem({
+    required int collectionId,
+    required int blogId,
+    int? sort,
+  }) async {
+    final body = <String, dynamic>{
+      'collectionId': collectionId,
+      'blogId': blogId,
+    };
+    if (sort != null) body['sort'] = sort;
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_COLLECTIONS_ITEMS,
+      RequestType.post,
+      data: body,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '合集添加作品返回格式错误';
+    }
+    _ensureEnvelope(data);
+    return data['data'] == true;
+  }
+
+  @override
+  Future<bool> removeCollectionItem({
+    required int collectionId,
+    required int blogId,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_COLLECTIONS_ITEMS,
+      RequestType.delete,
+      queryParameters: {
+        'collectionId': collectionId,
+        'blogId': blogId,
+      },
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '合集移除作品返回格式错误';
+    }
+    _ensureEnvelope(data);
+    return data['data'] == true;
+  }
+
+  BlogPageModelData _parseBlogPage(dynamic raw) {
+    if (raw is! Map<String, dynamic>) {
+      throw '作品分页返回格式错误';
+    }
+    _ensureEnvelope(raw);
+    final inner = raw['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogPageModelData(list: [], total: 0);
+    }
+    return BlogPageModelData.fromJson(inner);
+  }
+}

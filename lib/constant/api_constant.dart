@@ -11,6 +11,11 @@ class ApiConstant {
       '/app-api/blog/weather-user-city/detail-list';
   static const String BLOG_PAGE = '/app-api/blog/qqai/page';
   static const String BLOG_SAVE = '/app-api/blog/qqai/save';
+
+  /// 博客点赞（POST）/ 取消点赞（DELETE）：`/app-api/blog/qqai/profile/blog/{blogId}/like`
+  static String profileBlogLikePath(int blogId) =>
+      '/app-api/blog/qqai/profile/blog/$blogId/like';
+
   static const String TOPIC_PAGE = '/app-api/blog/topic/page';
   static const String FILE_UPLOAD = '/app-api/infra/file/upload';
 
@@ -41,4 +46,19 @@ class ApiConstant {
       '/app-api/infra/chat/conversation/get';
   static const String CHAT_CONVERSATION_GROUP =
       '/app-api/infra/chat/conversation/group';
+
+  /// 个人中心 / 我的（QQAI blog profile）
+  static const String PROFILE_MY_SHOP = '/app-api/blog/qqai/profile/my/shop';
+  static const String PROFILE_MY_SHOP_PRODUCTS =
+      '/app-api/blog/qqai/profile/my/shop/products';
+  static const String PROFILE_MY_SHOP_PRODUCTS_PAGE =
+      '/app-api/blog/qqai/profile/my/shop/products/page';
+  static const String PROFILE_MY_WORKS_PAGE =
+      '/app-api/blog/qqai/profile/my/works/page';
+  static const String PROFILE_MY_LIKES_PAGE =
+      '/app-api/blog/qqai/profile/my/likes/page';
+  static const String PROFILE_MY_COLLECTIONS_PAGE =
+      '/app-api/blog/qqai/profile/my/collections/page';
+  static const String PROFILE_COLLECTIONS_ITEMS =
+      '/app-api/blog/qqai/profile/collections/items';
 }

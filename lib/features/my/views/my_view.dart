@@ -1,12 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/label.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
-import '../../../constant/constant.dart';
 import '../../douyin/widgets/douyin_service_strip.dart';
-import '../providers/my_providers.dart';
+import '../../../providers/auth_providers.dart';
+import '../providers/my_shop_profile.dart';
 import 'my_blog_view.dart';
 import 'my_goods_view.dart';
 import 'my_video_list_view.dart';
@@ -22,9 +23,9 @@ class MyView extends ConsumerStatefulWidget {
 class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
   late ScrollController _scrollviewController;
   late TabController _tabController;
-  final _pageStorageBucket = PageStorageBucket();
-  bool _care = true;
-  String split_o = Constant.SPLIT_O;
+
+  static const String _defaultCover =
+      'https://file.qqai.cn/qqai/2025/09/1.webp';
 
   @override
   void initState() {
@@ -43,14 +44,35 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
   }
 
   void _handleTabChange() {
-    if (mounted) setState(() {}); // 触发 rebuild，更新 currentIndex
+    if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final myState = ref.watch(myProvider);
-    final myNotifier = ref.read(myProvider.notifier);
-    final isWideScreen = 1.sw > 800;
+    final auth = ref.watch(authProvider);
+    final shopAsync = ref.watch(myShopProfileProvider);
+    final shop = switch (shopAsync) {
+      AsyncData(:final value) => value,
+      _ => null,
+    };
+    final nameTrim = shop?.name?.trim();
+    final displayName = (nameTrim != null && nameTrim.isNotEmpty)
+        ? nameTrim
+        : (auth.username?.trim().isNotEmpty == true
+            ? auth.username!.trim()
+            : '我的主页');
+    final subtitle = auth.userId != null && auth.userId!.isNotEmpty
+        ? 'ID ${auth.userId}'
+        : '';
+    final coverTrim = shop?.coverUrl?.trim();
+    final bannerUrl =
+        (coverTrim != null && coverTrim.isNotEmpty) ? coverTrim : _defaultCover;
+    final avatarUrl = bannerUrl;
+    final introTrim = shop?.intro?.trim();
+    final intro = (introTrim != null && introTrim.isNotEmpty)
+        ? introTrim
+        : '这个人很懒，还没有写签名。';
+    final productCount = shop?.productCount;
 
     return NestedScrollView(
       controller: _scrollviewController,
@@ -67,17 +89,15 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
               automaticallyImplyLeading: false,
               backgroundColor: Colors.white,
               flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin, //视差效果
+                collapseMode: CollapseMode.pin,
                 background: Column(
                   children: [
                     Container(
                       height: 180,
                       decoration: BoxDecoration(
                         image: DecorationImage(
-                          image: NetworkImage(
-                            'https://file.qqai.cn/qqai/2025/09/1.webp',
-                          ),
-                          fit: BoxFit.cover, // 图片适应方式
+                          image: CachedNetworkImageProvider(bannerUrl),
+                          fit: BoxFit.cover,
                         ),
                       ),
                       child: Center(
@@ -86,24 +106,24 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                           height: 0.2.sh - 50,
                           child: Row(
                             children: <Widget>[
-                              SizedBox(width: 20),
+                              const SizedBox(width: 20),
                               InkWell(
                                 onTap: () {},
                                 child: CircleAvatar(
                                   radius: 50,
-                                  backgroundImage: NetworkImage(
-                                    'https://file.qqai.cn/qqai/2025/09/1.webp',
+                                  backgroundImage: CachedNetworkImageProvider(
+                                    avatarUrl,
                                   ),
                                 ),
                               ),
-                              Container(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Spacer(),
-                                  Expanded(
-                                    child: SelectableText(
-                                      '名称：QQAI',
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    const Spacer(),
+                                    SelectableText(
+                                      displayName,
                                       style: context.typo.pageTitle.copyWith(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,
@@ -111,19 +131,18 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                       ),
                                       maxLines: 1,
                                     ),
-                                  ),
-                                  Expanded(
-                                    child: SelectableText(
-                                      '@Skuu.com',
-                                      textAlign: TextAlign.left,
-                                      style: context.typo.cardSubtitle.copyWith(
-                                        color: Colors.white,
-                                        overflow: TextOverflow.ellipsis,
+                                    if (subtitle.isNotEmpty)
+                                      SelectableText(
+                                        subtitle,
+                                        style: context.typo.cardSubtitle.copyWith(
+                                          color: Colors.white,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        maxLines: 1,
                                       ),
-                                    ),
-                                  ),
-                                  Spacer(),
-                                ],
+                                    const Spacer(),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -134,115 +153,63 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                       height: 220,
                       color: Colors.white,
                       child: Padding(
-                        padding: .all(10),
+                        padding: const EdgeInsets.all(10),
                         child: Column(
-                          crossAxisAlignment: .start,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           spacing: 5,
                           children: [
                             Row(
                               children: [
-                                Column(
-                                  children: [
-                                    Text(
-                                      '5.6W',
-                                      style: context.typo.pageTitle.copyWith(
-                                        fontWeight: FontWeight.bold,
+                                if (productCount != null)
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '$productCount',
+                                        style: context.typo.pageTitle.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      '获赞',
-                                      style: context.typo.cardSubtitle,
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(width: 20),
-                                Column(
-                                  children: [
-                                    Text(
-                                      '3W',
-                                      style: context.typo.pageTitle.copyWith(
-                                        fontWeight: FontWeight.bold,
+                                      Text(
+                                        '在售商品',
+                                        style: context.typo.cardSubtitle,
                                       ),
-                                    ),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      '互关',
-                                      style: context.typo.cardSubtitle,
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(width: 20),
-                                Column(
-                                  children: [
-                                    Text(
-                                      '3.2W',
-                                      style: context.typo.pageTitle.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      '关注',
-                                      style: context.typo.cardSubtitle,
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(width: 20),
-                                Column(
-                                  children: [
-                                    Text(
-                                      '3000W',
-                                      style: context.typo.pageTitle.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      '粉丝',
-                                      style: context.typo.cardSubtitle,
-                                    ),
-                                  ],
-                                ),
-                                Spacer(),
+                                    ],
+                                  ),
+                                if (productCount != null) const SizedBox(width: 20),
+                                const Spacer(),
                                 ElevatedButton(
-                                  onPressed: () {},
-                                  child: Text("编辑主页"),
+                                  onPressed: () {
+                                    ref.invalidate(myShopProfileProvider);
+                                  },
+                                  child: const Text('刷新店铺'),
                                 ),
                               ],
                             ),
-                            Text.rich(
-                              TextSpan(
-                                style: context.typo.body,
-                                children: [
-                                  TextSpan(text: '人生终究 '),
-                                  TextSpan(
-                                    text: '一场梦',
-                                    style: context.typo.bodyStrong.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue,
-                                    ),
-                                  ),
-                                  TextSpan(text: ' 而已！\n'),
-                                  TextSpan(text: ' 遗憾！！！'),
-                                ],
-                              ),
+                            Text(
+                              intro,
+                              style: context.typo.body,
+                              maxLines: 4,
+                              overflow: TextOverflow.ellipsis,
                             ),
                             Row(
                               spacing: 10,
                               children: [
+                                if (shop != null && shop.status != null)
+                                  Label(
+                                    content: '店铺状态: ${shop.status}',
+                                    backgroundColor: Colors.black12,
+                                  ),
                                 Label(
-                                  content: 'IP: 澳大利亚',
-                                  backgroundColor: Colors.black12,
-                                ),
-                                Label(
-                                  content: '女: 18岁',
+                                  content: shopAsync.isLoading
+                                      ? '店铺加载中…'
+                                      : (shopAsync.hasError ? '店铺加载失败' : '已登录'),
                                   backgroundColor: Colors.black12,
                                 ),
                               ],
                             ),
-                            Spacer(),
-                            DouyinServiceStrip(),
+                            const Spacer(),
+                            const DouyinServiceStrip(),
                           ],
                         ),
                       ),
@@ -257,12 +224,12 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                 unselectedLabelColor: Colors.grey,
                 isScrollable: false,
                 indicatorSize: TabBarIndicatorSize.label,
-                tabs: [
-                  Tab(text: "作品"),
-                  Tab(text: "合集"),
-                  Tab(text: "日常"),
-                  Tab(text: "店铺"),
-                  Tab(text: "喜欢"),
+                tabs: const [
+                  Tab(text: '作品'),
+                  Tab(text: '合集'),
+                  Tab(text: '日常'),
+                  Tab(text: '店铺'),
+                  Tab(text: '喜欢'),
                 ],
               ),
             ),
@@ -272,11 +239,28 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
       body: TabBarView(
         controller: _tabController,
         children: [
-          MyVideoView(tabIndex: 0, currentIndex: _tabController.index),
-          MyVideoListView(tabIndex: 1, currentIndex: _tabController.index),
-          MyBlogView(tabIndex: 2, currentIndex: _tabController.index),
-          MyGoodsView(tabIndex: 3, currentIndex: _tabController.index),
-          MyVideoView(tabIndex: 4, currentIndex: _tabController.index),
+          MyVideoView(
+            tabIndex: 0,
+            currentIndex: _tabController.index,
+            kind: MyProfileWorkGridKind.works,
+          ),
+          MyVideoListView(
+            tabIndex: 1,
+            currentIndex: _tabController.index,
+          ),
+          MyBlogView(
+            tabIndex: 2,
+            currentIndex: _tabController.index,
+          ),
+          MyGoodsView(
+            tabIndex: 3,
+            currentIndex: _tabController.index,
+          ),
+          MyVideoView(
+            tabIndex: 4,
+            currentIndex: _tabController.index,
+            kind: MyProfileWorkGridKind.likes,
+          ),
         ],
       ),
     );
