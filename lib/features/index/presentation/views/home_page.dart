@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../components/AnimatedBottomBar.dart';
 import '../../../../components/AnimatedLeftBar.dart';
 import '../../providers/home_providers.dart';
+import '../../providers/main_shell_tab_reselect_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key, required this.navigationShell});
@@ -18,7 +19,12 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   void _onMainTabTap(int index) {
-    widget.navigationShell.goBranch(index);
+    final shell = widget.navigationShell;
+    if (shell.currentIndex == index) {
+      ref.read(mainShellTabReselectProvider(index).notifier).bump();
+    } else {
+      shell.goBranch(index);
+    }
   }
 
   @override

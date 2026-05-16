@@ -6,7 +6,13 @@ import 'package:qqai/components/KeepAliveTabWrapper.dart';
 import 'package:qqai/features/goods/views/goods_view.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
+import 'package:qqai/features/blog/providers/blog_providers.dart';
+import 'package:qqai/features/help/providers/help_providers.dart';
+import 'package:qqai/features/index/providers/home_follow_feed_providers.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
+import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
+import 'package:qqai/features/share/providers/share_providers.dart';
+import 'package:qqai/features/square/providers/square_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 
 import '../../../blog/views/blog_list_kind.dart';
@@ -52,6 +58,39 @@ class _IndexPageState extends ConsumerState<IndexPage>
   void _onTabChanged() {
     if (_tabController.indexIsChanging || !mounted) return;
     _expandTabsAround(_tabController.index);
+    setState(() {});
+  }
+
+  void _onHomeTabTap(int index) {
+    if (index == _tabController.index) {
+      _refreshHomeTabAt(index);
+    }
+  }
+
+  Future<void> _refreshRecommendTab() async {
+    if (_tabController.index != 0) {
+      _tabController.animateTo(0);
+    }
+    await ref.read(blogProvider(0).notifier).refresh();
+  }
+
+  Future<void> _refreshHomeTabAt(int index) async {
+    switch (index) {
+      case 0:
+        await ref.read(blogProvider(0).notifier).refresh();
+      case 1:
+        await ref.read(homeFollowFeedProvider.notifier).refresh();
+      case 2:
+        await ref.read(blogProvider(2).notifier).refresh();
+      case 3:
+        await ref.read(squareProvider.notifier).load();
+      case 5:
+        await ref.read(helpProvider.notifier).refresh();
+      case 6:
+        await ref.read(shareProvider.notifier).refresh();
+      default:
+        break;
+    }
   }
 
   @override
@@ -63,6 +102,12 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(mainShellTabReselectProvider(0), (int? previous, int next) {
+      if (previous != null && next > previous) {
+        _refreshRecommendTab();
+      }
+    });
+
     final isWideScreen = 1.sw > 800;
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -137,13 +182,12 @@ class _IndexPageState extends ConsumerState<IndexPage>
   Widget getTitleWidget() {
     if (_tabController.index == 0) {
       return InkWell(
-        onTap: () {
-          context.push(Routes.searchPage);
-        },
+        key: const ValueKey('home_search_title'),
+        onTap: () => context.push(Routes.searchPage),
         child: Container(
           width: 0.5.sw,
           height: 40,
-          margin: EdgeInsets.all(10.0),
+          margin: const EdgeInsets.all(10),
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
@@ -152,17 +196,18 @@ class _IndexPageState extends ConsumerState<IndexPage>
           child: TextButton.icon(
             onPressed: null,
             icon: const Icon(Icons.search),
-            label: const Text("网站flutter源码出售，有意联系QQ：807404400"),
+            label: const Text('网站flutter源码出售，有意联系QQ：807404400'),
           ),
         ),
       );
-    } else {
-      return TabBar(
-        controller: _tabController,
-        isScrollable: true,
-        tabs: HomeNotifier.tabItems.map((m) => Tab(text: m)).toList(),
-      );
     }
+    return TabBar(
+      key: const ValueKey('home_tab_bar_title'),
+      controller: _tabController,
+      isScrollable: true,
+      onTap: _onHomeTabTap,
+      tabs: HomeNotifier.tabItems.map((m) => Tab(text: m)).toList(),
+    );
   }
 
   Widget animateActions() {
