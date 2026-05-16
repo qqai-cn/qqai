@@ -12,8 +12,10 @@ import '../../blog/views/blog_img_item_view.dart';
 import '../../blog/views/blog_video_item_view.dart';
 import '../data/models/square_model.dart';
 import '../data/repos/square_repo.dart';
+import '../../../providers/auth_providers.dart';
 import '../providers/square_blogs_provider.dart';
 import '../providers/square_detail_provider.dart';
+import 'edit_square_dialog.dart';
 
 /// 广场详情：展示广场信息与该广场下公开博客流（头部随列表滚动）。
 class SquareBlogView extends ConsumerStatefulWidget {
@@ -213,6 +215,7 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
   Widget build(BuildContext context) {
     final squareId = widget.squareId;
     final detailAsync = ref.watch(squareDetailProvider(squareId));
+    final authUserId = ref.watch(authProvider).userId;
     final blogsState = ref.watch(squareBlogsProvider(squareId));
     final blogsNotifier = ref.read(squareBlogsProvider(squareId).notifier);
 
@@ -233,6 +236,21 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
           ),
           orElse: () => const Text('广场'),
         ),
+        actions: [
+          detailAsync.maybeWhen(
+            data: (square) {
+              if (!isSquareOwner(square, authUserId)) {
+                return const SizedBox.shrink();
+              }
+              return IconButton(
+                tooltip: '编辑广场',
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => showEditSquareDialog(context, ref, square: square),
+              );
+            },
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: _onRefresh,

@@ -94,9 +94,14 @@
     </style>
 </head>
 <body>
-<div class="loading">
+<div id="loading" class="loading">
     <div class="loader"></div>
 </div>
+<script>
+    window.addEventListener('flutter-first-frame', function () {
+        document.getElementById('loading')?.remove();
+    });
+</script>
 <!-- 海外部署：取消注释以改回国际 gstatic 作为回退字体源 -->
 <!-- <script>window.__qqaiFontFallbackBaseUrl = 'https://fonts.gstatic.com/s/';</script> -->
 <!-- KaTeX 等依赖包字体走 /assets/packages/...；要从 CDN 拉时，在下一行填写 build/web 所在 CDN 根 URL（以 / 结尾） -->

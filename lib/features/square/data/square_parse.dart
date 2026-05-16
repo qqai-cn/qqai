@@ -54,6 +54,23 @@ SquareConversationJoinResult parseSquareJoinConversationEnvelope(
   return SquareConversationJoinResult.fromJson(inner);
 }
 
+bool parseSquareBooleanEnvelope(
+  dynamic raw, {
+  String errorMessage = '更新广场失败',
+}) {
+  if (raw is! Map<String, dynamic>) {
+    throw errorMessage;
+  }
+  final code = raw['code'];
+  if (code != null && code != 0 && code != '0') {
+    throw raw['msg']?.toString() ?? errorMessage;
+  }
+  if (raw['data'] != true) {
+    throw raw['msg']?.toString() ?? errorMessage;
+  }
+  return true;
+}
+
 List<SquareItem> parseSquareListEnvelope(
   dynamic raw, {
   String errorMessage = '广场列表返回格式错误',

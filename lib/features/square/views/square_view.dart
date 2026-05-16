@@ -18,6 +18,38 @@ class _SquareViewState extends ConsumerState<SquareView> {
   static const _maxCross = 500.0;
   static const _crossGap = 2.0;
 
+  final ScrollController _scrollController = ScrollController();
+  bool _loadingMoreGuard = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final squareState = ref.read(squareProvider);
+    if (!squareState.hasMore ||
+        squareState.isLoadingMore ||
+        _loadingMoreGuard) {
+      return;
+    }
+    final position = _scrollController.position;
+    if (!position.hasContentDimensions || position.maxScrollExtent <= 0) {
+      return;
+    }
+    if (position.maxScrollExtent - position.pixels > 200) return;
+    _loadingMoreGuard = true;
+    ref.read(squareProvider.notifier).loadMore();
+  }
+
   Widget _createSquareRow() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
@@ -32,25 +64,24 @@ class _SquareViewState extends ConsumerState<SquareView> {
     );
   }
 
+  /// 单格宽度（与 [SliverGridDelegateWithMaxCrossAxisExtent] 列数算法一致）
+  double _tileWidth(double gridW) {
+    final crossAxisCount =
+        math.max(1, (gridW / (_maxCross + _crossGap)).ceil());
+    return (gridW - _crossGap * (crossAxisCount - 1)) / crossAxisCount;
+  }
+
+  /// 卡片内图片:文字 = 2:1，据此反推网格 cell 宽高比
   SliverGridDelegate _gridDelegate(double gridW) {
-    final crossAxisCount = math.max(1, (gridW / (_maxCross + _crossGap)).ceil());
-    final double childAspectRatio;
-    if (crossAxisCount == 1) {
-      childAspectRatio = (gridW / 300).clamp(1.52, 3.15);
-    } else if (gridW < 400) {
-      childAspectRatio = 0.68;
-    } else if (gridW < 560) {
-      childAspectRatio = 0.78;
-    } else if (gridW < 800) {
-      childAspectRatio = 0.92;
-    } else {
-      childAspectRatio = 1.5;
-    }
+    final tileW = _tileWidth(gridW);
+    // 文字区最小高度；总高度 = 3 × 文字区（占 1/3）
+    final textMinH = tileW < 260 ? 68.0 : 76.0;
+    final tileH = textMinH * 3;
     return SliverGridDelegateWithMaxCrossAxisExtent(
       maxCrossAxisExtent: _maxCross,
       mainAxisSpacing: 2,
       crossAxisSpacing: _crossGap,
-      childAspectRatio: childAspectRatio,
+      childAspectRatio: tileW / tileH,
     );
   }
 
@@ -89,10 +120,19 @@ class _SquareViewState extends ConsumerState<SquareView> {
           SliverGrid(
             gridDelegate: _gridDelegate(gridW),
             delegate: SliverChildBuilderDelegate(
-              (context, index) => SquareItemView(square: items[index]),
+              (context, index) => SizedBox.expand(
+                child: SquareItemView(square: items[index]),
+              ),
               childCount: items.length,
             ),
           ),
+          if (squareState.isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
         ];
       },
     );
@@ -103,6 +143,12 @@ class _SquareViewState extends ConsumerState<SquareView> {
     final squareState = ref.watch(squareProvider);
     final notifier = ref.read(squareProvider.notifier);
 
+    ref.listen(squareProvider, (prev, next) {
+      if (prev?.isLoadingMore == true && !next.isLoadingMore) {
+        _loadingMoreGuard = false;
+      }
+    });
+
     return MediaQuery.removePadding(
       context: context,
       removeTop: true,
@@ -112,6 +158,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
           return RefreshIndicator(
             onRefresh: notifier.refresh,
             child: CustomScrollView(
+              controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               slivers: [
                 SliverToBoxAdapter(

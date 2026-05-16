@@ -130,14 +130,15 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
             child: FutureBuilder(
               future: file.readAsBytes(),
               builder: (context, snap) {
+                const previewHeight = 200.0;
                 if (!snap.hasData) {
                   return const SizedBox(
-                    height: 72,
-                    width: 72,
+                    height: previewHeight,
+                    width: double.infinity,
                     child: Center(
                       child: SizedBox(
-                        width: 20,
-                        height: 20,
+                        width: 24,
+                        height: 24,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
@@ -145,8 +146,8 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
                 }
                 return Image.memory(
                   snap.data!,
-                  height: 72,
-                  width: 72,
+                  height: previewHeight,
+                  width: double.infinity,
                   fit: BoxFit.cover,
                 );
               },

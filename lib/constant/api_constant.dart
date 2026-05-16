@@ -110,6 +110,9 @@ class ApiConstant {
   /// 创建广场（自动创建专属群聊）
   static const String SQUARE_CREATE = '/app-api/blog/qqai/square/create';
 
+  /// 更新广场
+  static const String SQUARE_UPDATE = '/app-api/blog/qqai/square/update';
+
   static String squareDetailPath(int id) => '/app-api/blog/qqai/square/$id';
 
   static String squareBlogsPagePath(int id) =>

@@ -5,6 +5,7 @@ import '../../../../util/api_base_client.dart';
 import '../../../blog/data/blog_page_parse.dart';
 import '../../../blog/data/models/blog_page_model.dart';
 import '../models/square_create_req_vo.dart';
+import '../models/square_save_req_vo.dart';
 import '../models/square_model.dart';
 import '../square_parse.dart';
 
@@ -30,6 +31,8 @@ abstract class ISquareRepo {
   Future<SquareConversationJoinResult> joinSquareConversation(int squareId);
 
   Future<SquareItem> createSquare(SquareCreateReqVO req);
+
+  Future<bool> updateSquare(SquareSaveReqVO req);
 }
 
 class SquareRepo implements ISquareRepo {
@@ -115,6 +118,19 @@ class SquareRepo implements ISquareRepo {
     return parseSquareDetailEnvelope(
       response.data,
       errorMessage: '创建广场返回格式错误',
+    );
+  }
+
+  @override
+  Future<bool> updateSquare(SquareSaveReqVO req) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.SQUARE_UPDATE,
+      RequestType.put,
+      data: req.toJson(),
+    );
+    return parseSquareBooleanEnvelope(
+      response.data,
+      errorMessage: '更新广场失败',
     );
   }
 }
