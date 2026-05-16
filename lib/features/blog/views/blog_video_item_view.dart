@@ -28,7 +28,11 @@ class BlogVideoItemView extends ConsumerStatefulWidget {
     this.category,
     this.blogItem, {
     this.listKind = BlogListKind.recommend,
+    this.feedActions,
   });
+
+  /// 指定时用于广场等独立列表，覆盖 [listKind] / [blogProvider] 解析。
+  final BlogFeedListActions? feedActions;
 
   @override
   ConsumerState<BlogVideoItemView> createState() {
@@ -42,9 +46,10 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
   @override
   Widget build(BuildContext context) {
     final follow = widget.listKind == BlogListKind.followFeed;
-    final BlogFeedListActions blogNotifier = follow
-        ? ref.read(homeFollowFeedProvider.notifier)
-        : ref.read(blogProvider(widget.category).notifier);
+    final BlogFeedListActions blogNotifier = widget.feedActions ??
+        (follow
+            ? ref.read(homeFollowFeedProvider.notifier)
+            : ref.read(blogProvider(widget.category).notifier));
     final auth = ref.watch(authProvider);
     final myShop = switch (ref.watch(myShopProfileProvider)) {
       AsyncData(:final value) => value,
@@ -61,12 +66,14 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
         ? blogAvatarHeroTag(widget.category, widget.blogItem)
         : null;
     final isWideScreen = 1.sw > 900;
-    final item = resolveFeedBlogItem(
-      ref,
-      widget.blogItem,
-      followFeed: follow,
-      feedCategory: widget.category,
-    );
+    final item = widget.feedActions != null
+        ? widget.blogItem
+        : resolveFeedBlogItem(
+            ref,
+            widget.blogItem,
+            followFeed: follow,
+            feedCategory: widget.category,
+          );
     final bodyStyle = context.typo.body;
     const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
     return Card(

@@ -4,33 +4,59 @@ import 'package:go_router/go_router.dart';
 
 import '../../../components/video/wrap_grid_card_item.dart';
 import '../../../router/app_routes.dart';
+import '../../../util/conversation_list_time_format.dart';
+import '../../../util/format_count.dart';
+import '../../../util/media_url.dart';
+import '../data/models/square_model.dart';
+
+Widget _squareOwnerAvatar(String? avatarUrl, double size) {
+  const fallback = 'imgs/img_default.png';
+  if (avatarUrl == null) {
+    return Image.asset(
+      fallback,
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+    );
+  }
+  return CachedNetworkImage(
+    imageUrl: avatarUrl,
+    width: size,
+    height: size,
+    fit: BoxFit.cover,
+    errorWidget: (_, _, _) => Image.asset(
+      fallback,
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+    ),
+  );
+}
 
 class SquareItemView extends StatelessWidget {
-  const SquareItemView({
-    super.key,
-    this.imageUrl = 'https://file.qqai.cn/qqai/2025/09/square.webp',
-    this.avatarAsset = 'imgs/img_default.png',
-    this.title = '长风破浪长风破浪长风222,破浪长风破浪长风破浪长风破浪',
-    this.creatorName = '新飞飞',
-    this.heatText = '1212 热度',
-    this.timeText = '2天前',
-  });
+  const SquareItemView({super.key, required this.square});
 
-  final String imageUrl;
-  final String avatarAsset;
-  final String title;
-  final String creatorName;
-  final String heatText;
-  final String timeText;
+  final SquareItem square;
 
   @override
   Widget build(BuildContext context) {
+    final coverUrl = resolveMediaUrl(square.squareImg) ??
+        'https://file.qqai.cn/qqai/2025/09/square.webp';
+    final avatarUrl = resolveMediaUrl(square.userAvatar);
+    final title = (square.squareName?.trim().isNotEmpty ?? false)
+        ? square.squareName!.trim()
+        : '广场';
+    final heatText =
+        '${formatCompactCount(square.blogCount?.toInt())} 作品';
+    final timeText = formatConversationListTime(square.createTime);
+    final squareId = square.id;
+
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () {
-          context.push(Routes.squareBlogView);
-        },
+        onTap: squareId == null
+            ? null
+            : () => context.push(Routes.squareBlogView, extra: squareId),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final narrowTile = constraints.maxWidth < 260;
@@ -43,7 +69,7 @@ class SquareItemView extends StatelessWidget {
                       top: Radius.circular(4),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl: imageUrl,
+                      imageUrl: coverUrl,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       alignment: Alignment.center,
@@ -70,18 +96,18 @@ class SquareItemView extends StatelessWidget {
                 const SizedBox(height: 2),
                 WrapGridCardItem(
                   title: title,
-                  creatorName: creatorName,
-                  metaText: ' ◉ $heatText  ◉ $timeText',
-                  followed: false,
+                  creatorName: title,
+                  metaText: timeText.isEmpty
+                      ? ' ◉ $heatText'
+                      : ' ◉ $heatText  ◉ $timeText',
+                  followed: true,
                   onFollowTap: () {},
                   onMenuSelected: (value) => debugPrint(value),
                   itemHeight: narrowTile ? 80 : 92,
                   avatarSize: narrowTile ? 44 : 60,
-                  avatar: Image.asset(
-                    avatarAsset,
-                    width: narrowTile ? 44 : 60,
-                    height: narrowTile ? 44 : 60,
-                    fit: BoxFit.cover,
+                  avatar: _squareOwnerAvatar(
+                    avatarUrl,
+                    narrowTile ? 44 : 60,
                   ),
                 ),
               ],

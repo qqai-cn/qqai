@@ -29,7 +29,11 @@ class BlogImgItemView extends ConsumerStatefulWidget {
     this.category,
     this.blogItem, {
     this.listKind = BlogListKind.recommend,
+    this.feedActions,
   });
+
+  /// 指定时用于广场等独立列表，覆盖 [listKind] / [blogProvider] 解析。
+  final BlogFeedListActions? feedActions;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -56,9 +60,10 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
   @override
   Widget build(BuildContext context) {
     final follow = widget.listKind == BlogListKind.followFeed;
-    final BlogFeedListActions blogNotifier = follow
-        ? ref.read(homeFollowFeedProvider.notifier)
-        : ref.read(blogProvider(widget.category).notifier);
+    final BlogFeedListActions blogNotifier = widget.feedActions ??
+        (follow
+            ? ref.read(homeFollowFeedProvider.notifier)
+            : ref.read(blogProvider(widget.category).notifier));
     final auth = ref.watch(authProvider);
     final myShop = switch (ref.watch(myShopProfileProvider)) {
       AsyncData(:final value) => value,
@@ -75,12 +80,14 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
         ? blogAvatarHeroTag(widget.category, widget.blogItem)
         : null;
     final isWideScreen = 1.sw > 900;
-    final item = resolveFeedBlogItem(
-      ref,
-      widget.blogItem,
-      followFeed: follow,
-      feedCategory: widget.category,
-    );
+    final item = widget.feedActions != null
+        ? widget.blogItem
+        : resolveFeedBlogItem(
+            ref,
+            widget.blogItem,
+            followFeed: follow,
+            feedCategory: widget.category,
+          );
     final bodyStyle = context.typo.body;
     return Card(
       child: Padding(

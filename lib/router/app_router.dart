@@ -353,7 +353,10 @@ GoRouter appRouter(Ref ref) {
         path: Routes.squareBlogView,
         name: 'squareBlogView',
         builder: (c, s) {
-          return SquareBlogView();
+          final squareId = s.extra is int
+              ? s.extra as int
+              : int.tryParse(s.uri.queryParameters['id'] ?? '') ?? 0;
+          return SquareBlogView(squareId: squareId);
         },
       ),
 

@@ -1,77 +1,65 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:uuid/uuid.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import '../data/repos/square_repo.dart';
 import '../data/models/square_model.dart';
+import '../data/repos/square_repo.dart';
 
-part 'square_providers.freezed.dart';  
+part 'square_providers.freezed.dart';
 part 'square_providers.g.dart';
 
 @freezed
-sealed class SquareState with _$SquareState {
-  const factory SquareState({
-    // freezed 的 @Default 必须是 const
-    @Default(const AsyncLoading()) AsyncValue<List<SquareModel>> items,
+sealed class SquareListState with _$SquareListState {
+  const factory SquareListState({
+    @Default(AsyncLoading()) AsyncValue<SquarePageData> pageData,
+    @Default([]) List<SquareItem> allItems,
+    @Default(false) bool isLoadingMore,
     String? error,
-  }) = _SquareState;
+  }) = _SquareListState;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class SquareNotifier extends _$SquareNotifier {
   late final ISquareRepo _repo;
 
   @override
-  SquareState build() {
+  SquareListState build() {
     _repo = ref.read(squareRepoProvider);
-    return const SquareState();
+    Future.microtask(() => load());
+    return const SquareListState();
   }
 
   Future<void> load() async {
-    state = state.copyWith(items: const AsyncLoading(), error: null);
+    state = state.copyWith(pageData: const AsyncLoading(), error: null);
     try {
-      final items = await _repo.getAllSquares();
-      state = state.copyWith(items: AsyncData(items));
+      final list = await _repo.getSquareList();
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        pageData: AsyncData(SquarePageData(total: list.length, list: list)),
+        allItems: list,
+        isLoadingMore: false,
+      );
     } catch (e, st) {
-      state = state.copyWith(items: AsyncError(e, st), error: e.toString());
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        pageData: AsyncError(e, st),
+        error: e.toString(),
+      );
     }
   }
 
-  Future<void> add(String title) async {
-    if (title.trim().isEmpty) return;
-    final newItem = SquareModel(
-      id: const Uuid().v4(),
-      title: title,
-      isDone: false,
-    );
+  Future<void> refresh() async {
     try {
-      await _repo.addSquare(newItem);
-      await load();
+      final list = await _repo.getSquareList();
+      if (!ref.mounted) return;
+      state = state.copyWith(
+        pageData: AsyncData(SquarePageData(total: list.length, list: list)),
+        allItems: list,
+        isLoadingMore: false,
+        error: null,
+      );
     } catch (e) {
-      state = state.copyWith(error: '添加失败: $e');
-    }
-  }
-
-  Future<void> toggle(String id) async {
-    final item = await _repo.getSquareById(id);
-    if (item == null) return;
-    final updated = item.copyWith(isDone: !item.isDone);
-    try {
-      await _repo.updateSquare(updated);
-      await load();
-    } catch (e) {
-      state = state.copyWith(error: '更新失败: $e');
-    }
-  }
-
-  Future<void> delete(String id) async {
-    try {
-      await _repo.deleteSquare(id);
-      await load();
-    } catch (e) {
-      state = state.copyWith(error: '删除失败: $e');
+      if (!ref.mounted) return;
+      state = state.copyWith(error: e.toString());
     }
   }
 }
-

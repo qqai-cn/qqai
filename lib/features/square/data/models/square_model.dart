@@ -3,15 +3,45 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'square_model.freezed.dart';
 part 'square_model.g.dart';
 
+/// 广场条目（SkuuSquareRespVO）
 @freezed
-sealed class SquareModel with _$SquareModel {
-  const factory SquareModel({
-    required String id,
-    required String title,
-    @Default(false) bool isDone,
-    // 根据需求添加更多字段
-  }) = _SquareModel;
+sealed class SquareItem with _$SquareItem {
+  const factory SquareItem({
+    int? id,
+    String? squareName,
+    int? userId,
+    String? userAvatar,
+    String? squareImg,
+    String? squareDesc,
+    int? chatConversationId,
+    bool? hasChatConversation,
+    int? blogCount,
+    String? createTime,
+  }) = _SquareItem;
 
-  factory SquareModel.fromJson(Map<String, dynamic> json) =>
-      _$SquareModelFromJson(json);
+  factory SquareItem.fromJson(Map<String, dynamic> json) =>
+      _$SquareItemFromJson(json);
+}
+
+@freezed
+sealed class SquarePageData with _$SquarePageData {
+  const factory SquarePageData({
+    int? total,
+    List<SquareItem>? list,
+  }) = _SquarePageData;
+
+  factory SquarePageData.fromJson(Map<String, dynamic> json) =>
+      _$SquarePageDataFromJson(json);
+}
+
+/// 加入广场群聊响应（SkuuSquareConversationRespVO）
+@freezed
+sealed class SquareConversationJoinResult with _$SquareConversationJoinResult {
+  const factory SquareConversationJoinResult({
+    int? squareId,
+    int? chatConversationId,
+  }) = _SquareConversationJoinResult;
+
+  factory SquareConversationJoinResult.fromJson(Map<String, dynamic> json) =>
+      _$SquareConversationJoinResultFromJson(json);
 }

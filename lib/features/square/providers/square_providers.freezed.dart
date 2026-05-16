@@ -12,41 +12,40 @@ part of 'square_providers.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
-mixin _$SquareState {
+mixin _$SquareListState {
 
-// freezed 的 @Default 必须是 const
- AsyncValue<List<SquareModel>> get items; String? get error;
-/// Create a copy of SquareState
+ AsyncValue<SquarePageData> get pageData; List<SquareItem> get allItems; bool get isLoadingMore; String? get error;
+/// Create a copy of SquareListState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-$SquareStateCopyWith<SquareState> get copyWith => _$SquareStateCopyWithImpl<SquareState>(this as SquareState, _$identity);
+$SquareListStateCopyWith<SquareListState> get copyWith => _$SquareListStateCopyWithImpl<SquareListState>(this as SquareListState, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareState&&(identical(other.items, items) || other.items == items)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareListState&&(identical(other.pageData, pageData) || other.pageData == pageData)&&const DeepCollectionEquality().equals(other.allItems, allItems)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,items,error);
+int get hashCode => Object.hash(runtimeType,pageData,const DeepCollectionEquality().hash(allItems),isLoadingMore,error);
 
 @override
 String toString() {
-  return 'SquareState(items: $items, error: $error)';
+  return 'SquareListState(pageData: $pageData, allItems: $allItems, isLoadingMore: $isLoadingMore, error: $error)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class $SquareStateCopyWith<$Res>  {
-  factory $SquareStateCopyWith(SquareState value, $Res Function(SquareState) _then) = _$SquareStateCopyWithImpl;
+abstract mixin class $SquareListStateCopyWith<$Res>  {
+  factory $SquareListStateCopyWith(SquareListState value, $Res Function(SquareListState) _then) = _$SquareListStateCopyWithImpl;
 @useResult
 $Res call({
- AsyncValue<List<SquareModel>> items, String? error
+ AsyncValue<SquarePageData> pageData, List<SquareItem> allItems, bool isLoadingMore, String? error
 });
 
 
@@ -54,19 +53,21 @@ $Res call({
 
 }
 /// @nodoc
-class _$SquareStateCopyWithImpl<$Res>
-    implements $SquareStateCopyWith<$Res> {
-  _$SquareStateCopyWithImpl(this._self, this._then);
+class _$SquareListStateCopyWithImpl<$Res>
+    implements $SquareListStateCopyWith<$Res> {
+  _$SquareListStateCopyWithImpl(this._self, this._then);
 
-  final SquareState _self;
-  final $Res Function(SquareState) _then;
+  final SquareListState _self;
+  final $Res Function(SquareListState) _then;
 
-/// Create a copy of SquareState
+/// Create a copy of SquareListState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? pageData = null,Object? allItems = null,Object? isLoadingMore = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
-items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as AsyncValue<List<SquareModel>>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+pageData: null == pageData ? _self.pageData : pageData // ignore: cast_nullable_to_non_nullable
+as AsyncValue<SquarePageData>,allItems: null == allItems ? _self.allItems : allItems // ignore: cast_nullable_to_non_nullable
+as List<SquareItem>,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -74,8 +75,8 @@ as String?,
 }
 
 
-/// Adds pattern-matching-related methods to [SquareState].
-extension SquareStatePatterns on SquareState {
+/// Adds pattern-matching-related methods to [SquareListState].
+extension SquareListStatePatterns on SquareListState {
 /// A variant of `map` that fallback to returning `orElse`.
 ///
 /// It is equivalent to doing:
@@ -88,10 +89,10 @@ extension SquareStatePatterns on SquareState {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SquareState value)?  $default,{required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _SquareListState value)?  $default,{required TResult orElse(),}){
 final _that = this;
 switch (_that) {
-case _SquareState() when $default != null:
+case _SquareListState() when $default != null:
 return $default(_that);case _:
   return orElse();
 
@@ -110,10 +111,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SquareState value)  $default,){
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _SquareListState value)  $default,){
 final _that = this;
 switch (_that) {
-case _SquareState():
+case _SquareListState():
 return $default(_that);}
 }
 /// A variant of `map` that fallback to returning `null`.
@@ -128,10 +129,10 @@ return $default(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SquareState value)?  $default,){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _SquareListState value)?  $default,){
 final _that = this;
 switch (_that) {
-case _SquareState() when $default != null:
+case _SquareListState() when $default != null:
 return $default(_that);case _:
   return null;
 
@@ -149,10 +150,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<List<SquareModel>> items,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<SquarePageData> pageData,  List<SquareItem> allItems,  bool isLoadingMore,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
-case _SquareState() when $default != null:
-return $default(_that.items,_that.error);case _:
+case _SquareListState() when $default != null:
+return $default(_that.pageData,_that.allItems,_that.isLoadingMore,_that.error);case _:
   return orElse();
 
 }
@@ -170,10 +171,10 @@ return $default(_that.items,_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<List<SquareModel>> items,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<SquarePageData> pageData,  List<SquareItem> allItems,  bool isLoadingMore,  String? error)  $default,) {final _that = this;
 switch (_that) {
-case _SquareState():
-return $default(_that.items,_that.error);}
+case _SquareListState():
+return $default(_that.pageData,_that.allItems,_that.isLoadingMore,_that.error);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -187,10 +188,10 @@ return $default(_that.items,_that.error);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<List<SquareModel>> items,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<SquarePageData> pageData,  List<SquareItem> allItems,  bool isLoadingMore,  String? error)?  $default,) {final _that = this;
 switch (_that) {
-case _SquareState() when $default != null:
-return $default(_that.items,_that.error);case _:
+case _SquareListState() when $default != null:
+return $default(_that.pageData,_that.allItems,_that.isLoadingMore,_that.error);case _:
   return null;
 
 }
@@ -201,45 +202,52 @@ return $default(_that.items,_that.error);case _:
 /// @nodoc
 
 
-class _SquareState implements SquareState {
-  const _SquareState({this.items = const AsyncLoading(), this.error});
+class _SquareListState implements SquareListState {
+  const _SquareListState({this.pageData = const AsyncLoading(), final  List<SquareItem> allItems = const [], this.isLoadingMore = false, this.error}): _allItems = allItems;
   
 
-// freezed 的 @Default 必须是 const
-@override@JsonKey() final  AsyncValue<List<SquareModel>> items;
+@override@JsonKey() final  AsyncValue<SquarePageData> pageData;
+ final  List<SquareItem> _allItems;
+@override@JsonKey() List<SquareItem> get allItems {
+  if (_allItems is EqualUnmodifiableListView) return _allItems;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_allItems);
+}
+
+@override@JsonKey() final  bool isLoadingMore;
 @override final  String? error;
 
-/// Create a copy of SquareState
+/// Create a copy of SquareListState
 /// with the given fields replaced by the non-null parameter values.
 @override @JsonKey(includeFromJson: false, includeToJson: false)
 @pragma('vm:prefer-inline')
-_$SquareStateCopyWith<_SquareState> get copyWith => __$SquareStateCopyWithImpl<_SquareState>(this, _$identity);
+_$SquareListStateCopyWith<_SquareListState> get copyWith => __$SquareListStateCopyWithImpl<_SquareListState>(this, _$identity);
 
 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareState&&(identical(other.items, items) || other.items == items)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareListState&&(identical(other.pageData, pageData) || other.pageData == pageData)&&const DeepCollectionEquality().equals(other._allItems, _allItems)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,items,error);
+int get hashCode => Object.hash(runtimeType,pageData,const DeepCollectionEquality().hash(_allItems),isLoadingMore,error);
 
 @override
 String toString() {
-  return 'SquareState(items: $items, error: $error)';
+  return 'SquareListState(pageData: $pageData, allItems: $allItems, isLoadingMore: $isLoadingMore, error: $error)';
 }
 
 
 }
 
 /// @nodoc
-abstract mixin class _$SquareStateCopyWith<$Res> implements $SquareStateCopyWith<$Res> {
-  factory _$SquareStateCopyWith(_SquareState value, $Res Function(_SquareState) _then) = __$SquareStateCopyWithImpl;
+abstract mixin class _$SquareListStateCopyWith<$Res> implements $SquareListStateCopyWith<$Res> {
+  factory _$SquareListStateCopyWith(_SquareListState value, $Res Function(_SquareListState) _then) = __$SquareListStateCopyWithImpl;
 @override @useResult
 $Res call({
- AsyncValue<List<SquareModel>> items, String? error
+ AsyncValue<SquarePageData> pageData, List<SquareItem> allItems, bool isLoadingMore, String? error
 });
 
 
@@ -247,19 +255,21 @@ $Res call({
 
 }
 /// @nodoc
-class __$SquareStateCopyWithImpl<$Res>
-    implements _$SquareStateCopyWith<$Res> {
-  __$SquareStateCopyWithImpl(this._self, this._then);
+class __$SquareListStateCopyWithImpl<$Res>
+    implements _$SquareListStateCopyWith<$Res> {
+  __$SquareListStateCopyWithImpl(this._self, this._then);
 
-  final _SquareState _self;
-  final $Res Function(_SquareState) _then;
+  final _SquareListState _self;
+  final $Res Function(_SquareListState) _then;
 
-/// Create a copy of SquareState
+/// Create a copy of SquareListState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? error = freezed,}) {
-  return _then(_SquareState(
-items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
-as AsyncValue<List<SquareModel>>,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+@override @pragma('vm:prefer-inline') $Res call({Object? pageData = null,Object? allItems = null,Object? isLoadingMore = null,Object? error = freezed,}) {
+  return _then(_SquareListState(
+pageData: null == pageData ? _self.pageData : pageData // ignore: cast_nullable_to_non_nullable
+as AsyncValue<SquarePageData>,allItems: null == allItems ? _self._allItems : allItems // ignore: cast_nullable_to_non_nullable
+as List<SquareItem>,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

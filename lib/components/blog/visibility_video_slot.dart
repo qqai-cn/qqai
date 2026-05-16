@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
+import 'package:qqai/util/media_url.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 /// 仅当可见时挂载播放器，否则封面，减轻列表滑动压力。
@@ -31,7 +32,8 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
           setState(() => _visibleFraction = info.visibleFraction);
         }
       },
-      child: _visibleFraction >= _visibleThreshold
+      child: hasResolvableMediaUrl(widget.url) &&
+              _visibleFraction >= _visibleThreshold
           ? VideoItemPlayer(url: widget.url, imgUrl: widget.imgUrl)
           : _VideoThumbnail(imgUrl: widget.imgUrl),
     );

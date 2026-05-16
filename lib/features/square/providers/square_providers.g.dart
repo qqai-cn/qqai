@@ -13,14 +13,14 @@ part of 'square_providers.dart';
 const squareProvider = SquareNotifierProvider._();
 
 final class SquareNotifierProvider
-    extends $NotifierProvider<SquareNotifier, SquareState> {
+    extends $NotifierProvider<SquareNotifier, SquareListState> {
   const SquareNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'squareProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -33,28 +33,28 @@ final class SquareNotifierProvider
   SquareNotifier create() => SquareNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SquareState value) {
+  Override overrideWithValue(SquareListState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<SquareState>(value),
+      providerOverride: $SyncValueProvider<SquareListState>(value),
     );
   }
 }
 
-String _$squareNotifierHash() => r'2261d3f39f65ce2c8f93d3841bc6f5a0bc568038';
+String _$squareNotifierHash() => r'231a412efde0e6bfe7c7e70b69b94f0eafd710a8';
 
-abstract class _$SquareNotifier extends $Notifier<SquareState> {
-  SquareState build();
+abstract class _$SquareNotifier extends $Notifier<SquareListState> {
+  SquareListState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<SquareState, SquareState>;
+    final ref = this.ref as $Ref<SquareListState, SquareListState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<SquareState, SquareState>,
-              SquareState,
+              AnyNotifier<SquareListState, SquareListState>,
+              SquareListState,
               Object?,
               Object?
             >;

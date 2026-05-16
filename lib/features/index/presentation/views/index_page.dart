@@ -83,7 +83,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
       case 2:
         await ref.read(blogProvider(2).notifier).refresh();
       case 3:
-        await ref.read(squareProvider.notifier).load();
+        await ref.read(squareProvider.notifier).refresh();
       case 5:
         await ref.read(helpProvider.notifier).refresh();
       case 6:

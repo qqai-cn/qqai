@@ -100,4 +100,21 @@ class ApiConstant {
   /// 我的收藏分页
   static const String BLOG_MY_FAVORITES_PAGE =
       '/app-api/blog/qqai/my/favorites/page';
+
+  /// 广场分页
+  static const String SQUARE_PAGE = '/app-api/blog/qqai/square/page';
+
+  /// 广场列表（全部）
+  static const String SQUARE_LIST = '/app-api/blog/qqai/square/list';
+
+  /// 创建广场（自动创建专属群聊）
+  static const String SQUARE_CREATE = '/app-api/blog/qqai/square/create';
+
+  static String squareDetailPath(int id) => '/app-api/blog/qqai/square/$id';
+
+  static String squareBlogsPagePath(int id) =>
+      '/app-api/blog/qqai/square/$id/blogs/page';
+
+  static String squareJoinConversationPath(int id) =>
+      '/app-api/blog/qqai/square/$id/conversation/join';
 }
