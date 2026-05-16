@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/features/blog/views/blog_video_detail_player.dart';
 import 'package:qqai/components/blog/carousel_page_dots.dart';
-import 'package:qqai/components/blog/detail_side_action_rail.dart';
 import 'package:qqai/components/blog/media_detail_shell.dart';
+import 'package:qqai/features/blog/views/blog_detail_ui.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';
+import 'blog_detail_comment_side_panel.dart';
 
 class BlogImgDetailView extends ConsumerStatefulWidget {
   final BlogItem? blogItem;
@@ -23,42 +25,69 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
   final CarouselSliderController carouselSliderController =
       CarouselSliderController();
   int _current = 0;
+  late final BlogDetailCommentSidePanelLifecycle _commentSidePanel;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentSidePanel = BlogDetailCommentSidePanelLifecycle(
+      ref.read(commentProvider.notifier),
+    );
+    _commentSidePanel.bind();
+  }
+
+  @override
+  void dispose() {
+    _commentSidePanel.unbind();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final commentState = ref.watch(commentProvider);
     final commentNotifier = ref.read(commentProvider.notifier);
 
-    final imageUrls = parseCommaSeparatedUrls(widget.blogItem!.resources);
-    final imageWidgets = buildNetworkImageCarouselPages(imageUrls);
+    final blog = widget.blogItem!;
+    final hasVideo = blogItemHasVideoResources(blog.resources);
+
     return MediaDetailShell(
       showCommentPanel: commentState.showComment,
-      content: Stack(
-        children: [
-          CarouselSlider(
-            carouselController: carouselSliderController,
-            items: imageWidgets,
-            options: CarouselOptions(
-              height: 1.sh,
-              viewportFraction: 1.0,
-              enlargeCenterPage: true,
-              autoPlay: true,
-              onPageChanged: (index, reason) {
-                setState(() => _current = index);
-              },
-            ),
+      sidePanelBlog: blog,
+      onCommentClose: commentNotifier.changeShowComment,
+      content: hasVideo
+          ? BlogVideoDetailPlayer(blog: blog)
+          : _buildImageCarousel(blog, commentNotifier),
+    );
+  }
+
+  Widget _buildImageCarousel(BlogItem blog, CommentNotifier commentNotifier) {
+    final imageUrls = parseCommaSeparatedUrls(blog.resources);
+    final imageWidgets = buildNetworkImageCarouselPages(imageUrls);
+    return Stack(
+      children: [
+        CarouselSlider(
+          carouselController: carouselSliderController,
+          items: imageWidgets,
+          options: CarouselOptions(
+            height: 1.sh,
+            viewportFraction: 1.0,
+            enlargeCenterPage: true,
+            autoPlay: true,
+            onPageChanged: (index, reason) {
+              setState(() => _current = index);
+            },
           ),
-          DetailSideActionRail(
-            onCommentTap: () => commentNotifier.changeShowComment(),
-          ),
-          CarouselPageDots(
-            itemCount: imageUrls.length,
-            currentIndex: _current,
-            onDotTap: (index) =>
-                carouselSliderController.animateToPage(index),
-          ),
-        ],
-      ),
+        ),
+        BlogDetailMediaOverlay(
+          blog: blog,
+          onCommentTap: commentNotifier.changeShowComment,
+        ),
+        CarouselPageDots(
+          itemCount: imageUrls.length,
+          currentIndex: _current,
+          onDotTap: (index) => carouselSliderController.animateToPage(index),
+        ),
+      ],
     );
   }
 }

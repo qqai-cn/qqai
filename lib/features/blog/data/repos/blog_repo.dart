@@ -4,6 +4,7 @@ import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 
 import '../../../../constant/api_constant.dart';
 import '../../../../util/api_base_client.dart';
+import '../blog_page_parse.dart';
 import '../models/blog_model.dart';
 import '../models/blog_save_req_vo.dart';
 
@@ -26,12 +27,31 @@ abstract class IBlogRepo {
     int page, {
     int pageSize = 10,
     int? blogType,
+    int? categary,
+    int? squareId,
+    int? userId,
+    int? shareType,
   });
   
   Future<void> createBlog(BlogSaveReqVO req);
 
-  /// 切换点赞，返回更新后的 `zan`：0 未赞 / 1 已赞。
-  Future<int> toggleBlogZan(int blogId, {required int currentZan});
+  /// 切换点赞，返回切换后是否已赞。
+  Future<bool> toggleBlogLike(int blogId, {required bool currentlyLiked});
+
+  /// 记录分享，返回是否成功。
+  Future<bool> recordBlogShare(int blogId);
+
+  /// 收藏博客（POST）。
+  Future<bool> favoriteBlog(int blogId);
+
+  /// 取消收藏（DELETE）。
+  Future<bool> unfavoriteBlog(int blogId);
+
+  /// 切换收藏，返回切换后是否已收藏。
+  Future<bool> toggleBlogFavorite(int blogId, {required bool currentlyCollected});
+
+  /// 我的收藏分页。
+  Future<BlogPageModelData> getMyFavoritesPage(int page, {int pageSize = 10});
 }
 
 class BlogRepo implements IBlogRepo {
@@ -74,11 +94,7 @@ class BlogRepo implements IBlogRepo {
 
   @override
   Future<BlogPageModelData> getBlogPageModelData() async {
-    final response = await ApiBaseClient.safeApiCall(
-      ApiConstant.BLOG_PAGE,
-      RequestType.get,
-    );
-    return BlogPageModel.fromJson(response.data).data!;
+    return getBlogPageModelDataWithPage(1);
   }
 
   @override
@@ -86,20 +102,26 @@ class BlogRepo implements IBlogRepo {
     int page, {
     int pageSize = 10,
     int? blogType,
+    int? categary,
+    int? squareId,
+    int? userId,
+    int? shareType,
   }) async {
     final query = <String, dynamic>{
       'pageNo': page,
       'pageSize': pageSize,
     };
-    if (blogType != null) {
-      query['blogType'] = blogType;
-    }
+    if (blogType != null) query['blogType'] = blogType;
+    if (categary != null) query['categary'] = categary;
+    if (squareId != null) query['squareId'] = squareId;
+    if (userId != null) query['userId'] = userId;
+    if (shareType != null) query['shareType'] = shareType;
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.BLOG_PAGE,
       RequestType.get,
       queryParameters: query,
     );
-    return BlogPageModel.fromJson(response.data).data!;
+    return parseBlogPageEnvelope(response.data);
   }
   
   @override
@@ -112,12 +134,11 @@ class BlogRepo implements IBlogRepo {
   }
 
   @override
-  Future<int> toggleBlogZan(int blogId, {required int currentZan}) async {
-    final liked = currentZan == 1;
+  Future<bool> toggleBlogLike(int blogId, {required bool currentlyLiked}) async {
     final url = ApiConstant.profileBlogLikePath(blogId);
     final Response response = await ApiBaseClient.safeApiCall(
       url,
-      liked ? RequestType.delete : RequestType.post,
+      currentlyLiked ? RequestType.delete : RequestType.post,
     );
     final data = response.data;
     if (data is! Map<String, dynamic>) {
@@ -130,6 +151,79 @@ class BlogRepo implements IBlogRepo {
     if (data['data'] != true) {
       throw data['msg']?.toString() ?? '操作失败';
     }
-    return liked ? 0 : 1;
+    return !currentlyLiked;
+  }
+
+  static bool _parseBooleanData(dynamic raw, {String errorHint = '操作失败'}) {
+    if (raw is! Map<String, dynamic>) {
+      throw '$errorHint：返回格式错误';
+    }
+    final code = raw['code'];
+    if (code != null && code != 0 && code != '0') {
+      throw raw['msg']?.toString() ?? errorHint;
+    }
+    if (raw['data'] != true) {
+      throw raw['msg']?.toString() ?? errorHint;
+    }
+    return true;
+  }
+
+  @override
+  Future<bool> recordBlogShare(int blogId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogSharePath(blogId),
+      RequestType.post,
+    );
+    _parseBooleanData(response.data, errorHint: '分享失败');
+    return true;
+  }
+
+  @override
+  Future<bool> favoriteBlog(int blogId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogFavoritePath(blogId),
+      RequestType.post,
+    );
+    _parseBooleanData(response.data, errorHint: '收藏失败');
+    return true;
+  }
+
+  @override
+  Future<bool> unfavoriteBlog(int blogId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogFavoritePath(blogId),
+      RequestType.delete,
+    );
+    _parseBooleanData(response.data, errorHint: '取消收藏失败');
+    return true;
+  }
+
+  @override
+  Future<bool> toggleBlogFavorite(
+    int blogId, {
+    required bool currentlyCollected,
+  }) async {
+    if (currentlyCollected) {
+      await unfavoriteBlog(blogId);
+      return false;
+    }
+    await favoriteBlog(blogId);
+    return true;
+  }
+
+  @override
+  Future<BlogPageModelData> getMyFavoritesPage(
+    int page, {
+    int pageSize = 10,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_MY_FAVORITES_PAGE,
+      RequestType.get,
+      queryParameters: {
+        'pageNo': page,
+        'pageSize': pageSize,
+      },
+    );
+    return parseBlogPageEnvelope(response.data);
   }
 }

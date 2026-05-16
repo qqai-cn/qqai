@@ -80,6 +80,13 @@ class CommentNotifier extends _$CommentNotifier {
   void changeShowComment() {
     state = state.copyWith(showComment: !state.showComment);
   }
+
+  void openCommentPanel() {
+    if (!state.showComment) {
+      state = state.copyWith(showComment: true);
+    }
+  }
+
   void dontShowComment() {
     state = state.copyWith(showComment: false);
   }

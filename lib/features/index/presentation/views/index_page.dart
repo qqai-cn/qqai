@@ -9,6 +9,7 @@ import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 
+import '../../../blog/views/blog_list_kind.dart';
 import '../../../blog/views/blog_view.dart';
 import '../../../help/views/help_view.dart';
 import '../../../share/views/share_view.dart';
@@ -97,7 +98,9 @@ class _IndexPageState extends ConsumerState<IndexPage>
       case 0:
         return const KeepAliveTabWrapper(child: BlogView(0));
       case 1:
-        return const BlogView(1);
+        return const KeepAliveTabWrapper(
+          child: BlogView(1, listKind: BlogListKind.followFeed),
+        );
       case 2:
         return const BlogView(2);
       case 3:

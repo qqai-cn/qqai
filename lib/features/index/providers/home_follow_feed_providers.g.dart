@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'blog_providers.dart';
+part of 'home_follow_feed_providers.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -8,29 +8,32 @@ part of 'blog_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// 首页「关注」Tab：所关注会员的公开作品流。
 
-@ProviderFor(BlogNotifier)
-const blogProvider = BlogNotifierProvider._();
+@ProviderFor(HomeFollowFeedNotifier)
+const homeFollowFeedProvider = HomeFollowFeedNotifierProvider._();
 
-final class BlogNotifierProvider
-    extends $NotifierProvider<BlogNotifier, BlogState> {
-  const BlogNotifierProvider._()
+/// 首页「关注」Tab：所关注会员的公开作品流。
+final class HomeFollowFeedNotifierProvider
+    extends $NotifierProvider<HomeFollowFeedNotifier, BlogState> {
+  /// 首页「关注」Tab：所关注会员的公开作品流。
+  const HomeFollowFeedNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'blogProvider',
+        name: r'homeFollowFeedProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$blogNotifierHash();
+  String debugGetCreateSourceHash() => _$homeFollowFeedNotifierHash();
 
   @$internal
   @override
-  BlogNotifier create() => BlogNotifier();
+  HomeFollowFeedNotifier create() => HomeFollowFeedNotifier();
 
   /// {@macro riverpod.override_with_value}
   Override overrideWithValue(BlogState value) {
@@ -41,9 +44,12 @@ final class BlogNotifierProvider
   }
 }
 
-String _$blogNotifierHash() => r'641c030e65f09c293723cddb91cf6ee3a31ff32a';
+String _$homeFollowFeedNotifierHash() =>
+    r'0f76d292b1ad318b1034cb6dab7d97c94f7505c4';
 
-abstract class _$BlogNotifier extends $Notifier<BlogState> {
+/// 首页「关注」Tab：所关注会员的公开作品流。
+
+abstract class _$HomeFollowFeedNotifier extends $Notifier<BlogState> {
   BlogState build();
   @$mustCallSuper
   @override

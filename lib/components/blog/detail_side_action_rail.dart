@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/features/video/views/video_share_view.dart';
+import 'package:qqai/features/blog/data/models/blog_page_model.dart';
+import 'package:qqai/features/blog/views/blog_share_button.dart';
 
 /// 详情页右侧竖向操作条：头像/关注、点赞、评论、收藏、分享。
 class DetailSideActionRail extends StatelessWidget {
+  final String? avatarUrl;
+  final bool showFollowButton;
+  final bool isFollowing;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onFollowTap;
   final VoidCallback? onLikeTap;
@@ -12,21 +17,30 @@ class DetailSideActionRail extends StatelessWidget {
   final VoidCallback onCommentTap;
   final String commentCountLabel;
   final VoidCallback? onCollectTap;
+  final bool collected;
   final String collectCountLabel;
   final String shareCountLabel;
+  final VoidCallback? onShareTap;
+  final BlogItem? shareBlog;
 
   const DetailSideActionRail({
     super.key,
+    this.avatarUrl,
+    this.showFollowButton = true,
+    this.isFollowing = false,
     this.onAvatarTap,
     this.onFollowTap,
     this.onLikeTap,
-    this.liked = true,
-    this.likeCountLabel = '10kw',
+    this.liked = false,
+    this.likeCountLabel = '0',
     required this.onCommentTap,
-    this.commentCountLabel = '110kw',
+    this.commentCountLabel = '0',
     this.onCollectTap,
-    this.collectCountLabel = '20kw',
-    this.shareCountLabel = '2kw',
+    this.collected = false,
+    this.collectCountLabel = '0',
+    this.shareCountLabel = '0',
+    this.onShareTap,
+    this.shareBlog,
   });
 
   @override
@@ -56,32 +70,31 @@ class DetailSideActionRail extends StatelessWidget {
                       padding: const EdgeInsets.all(2),
                       child: InkWell(
                         onTap: onAvatarTap ?? () {},
-                        child: ClipOval(
-                          child: Image.asset('imgs/defbak.png'),
-                        ),
+                        child: buildDetailAvatar(avatarUrl: avatarUrl),
                       ),
                     ),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  child: SizedBox(
-                    width: 50,
-                    child: Center(
-                      child: Container(
-                        width: 25,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.red,
-                        ),
-                        child: InkWell(
-                          onTap: onFollowTap ?? () {},
-                          child: const Icon(Icons.add, color: Colors.white),
+                if (showFollowButton && !isFollowing)
+                  Positioned(
+                    bottom: 0,
+                    child: SizedBox(
+                      width: 50,
+                      child: Center(
+                        child: Container(
+                          width: 25,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                          ),
+                          child: InkWell(
+                            onTap: onFollowTap ?? () {},
+                            child: const Icon(Icons.add, color: Colors.white),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -107,12 +120,17 @@ class DetailSideActionRail extends StatelessWidget {
           IconButton(
             iconSize: 50,
             onPressed: onCollectTap ?? () {},
-            color: Colors.white,
-            icon: const Icon(Icons.star),
+            color: collected ? Colors.amber : Colors.white,
+            icon: Icon(collected ? Icons.star : Icons.star_border),
           ),
           Text(collectCountLabel, style: caption),
           const SizedBox(height: 10),
-          VideoShareView(),
+          BlogShareButton(
+            blog: shareBlog,
+            onShareChannelTap: onShareTap,
+            iconWidth: 50,
+            iconColor: Colors.white,
+          ),
           Text(shareCountLabel, style: caption),
         ],
       ),

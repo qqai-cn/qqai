@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../constant/api_constant.dart';
 import '../../../../util/api_base_client.dart';
+import '../../../blog/data/blog_page_parse.dart';
 import '../../../blog/data/models/blog_page_model.dart';
 import '../models/profile_models.dart';
 
@@ -45,6 +46,17 @@ abstract class IProfileRepo {
   Future<bool> removeCollectionItem({
     required int collectionId,
     required int blogId,
+  });
+
+  Future<bool> followUser(int userId);
+
+  Future<bool> unfollowUser(int userId);
+
+  Future<bool> isFollowedByMe(int userId);
+
+  Future<BlogPageModelData> getMyFollowsFeedPage(
+    int pageNo, {
+    int pageSize = 10,
   });
 }
 
@@ -242,15 +254,66 @@ class ProfileRepo implements IProfileRepo {
     return data['data'] == true;
   }
 
-  BlogPageModelData _parseBlogPage(dynamic raw) {
+  @override
+  Future<bool> followUser(int userId) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileFollowsPath(userId),
+      RequestType.post,
+    );
+    return _parseBoolEnvelope(response.data);
+  }
+
+  @override
+  Future<bool> unfollowUser(int userId) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileFollowsPath(userId),
+      RequestType.delete,
+    );
+    return _parseBoolEnvelope(response.data);
+  }
+
+  @override
+  Future<bool> isFollowedByMe(int userId) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileUserFollowedByMePath(userId),
+      RequestType.get,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '关注状态接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    return data['data'] == true;
+  }
+
+  @override
+  Future<BlogPageModelData> getMyFollowsFeedPage(
+    int pageNo, {
+    int pageSize = 10,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_FOLLOWS_FEED_PAGE,
+      RequestType.get,
+      queryParameters: {
+        'pageNo': pageNo,
+        'pageSize': pageSize,
+      },
+    );
+    return _parseBlogPage(response.data);
+  }
+
+  bool _parseBoolEnvelope(dynamic raw) {
     if (raw is! Map<String, dynamic>) {
-      throw '作品分页返回格式错误';
+      throw '接口返回格式错误';
     }
     _ensureEnvelope(raw);
-    final inner = raw['data'];
-    if (inner is! Map<String, dynamic>) {
-      return const BlogPageModelData(list: [], total: 0);
-    }
-    return BlogPageModelData.fromJson(inner);
+    return raw['data'] == true;
+  }
+
+  BlogPageModelData _parseBlogPage(dynamic raw) {
+    return parseBlogPageEnvelope(
+      raw,
+      errorMessage: '作品分页返回格式错误',
+    );
   }
 }

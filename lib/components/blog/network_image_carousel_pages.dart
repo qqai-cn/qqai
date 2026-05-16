@@ -10,6 +10,11 @@ List<String> parseCommaSeparatedUrls(String? raw) {
       [];
 }
 
+bool isPlayableVideoResourceUrl(String u) => _looksLikeVideoUrl(u);
+
+bool blogItemHasVideoResources(String? raw) =>
+    parseCommaSeparatedUrls(raw).any(isPlayableVideoResourceUrl);
+
 bool _looksLikeVideoUrl(String u) {
   final lower = u.toLowerCase();
   return lower.endsWith('.mp4') ||

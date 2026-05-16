@@ -36,6 +36,7 @@ class AuthNotifier extends _$AuthNotifier {
 
     return AuthState(
       isAuthenticated: isAuthenticated,
+      userId: MySharedPref.getUserId(),
       token: token,
       refreshToken: refreshToken,
     );
@@ -48,11 +49,15 @@ class AuthNotifier extends _$AuthNotifier {
       await MySharedPref.setRefreshToken(resp.refreshToken!);
     }
     if (!ref.mounted) return;
+    final userId = resp.userId?.trim();
+    if (userId != null && userId.isNotEmpty) {
+      await MySharedPref.setUserId(userId);
+    }
 
     ApiBaseClient.setAuthorization('Bearer ${resp.token}');
     state = state.copyWith(
       isAuthenticated: true,
-      userId: resp.userId,
+      userId: userId,
       username: usernameForState,
       token: resp.token,
       refreshToken: resp.refreshToken,

@@ -18,7 +18,7 @@ class Constant {
   static const double TAB_BOTTOM = 8.0;
   static const double CHAT_TWO_VIEW_WIDTH = 700;
   static const double SQUARE_SPLIT_WIDTH = 750;
-  static const double HEAD_IMG_SEZE = 50;
+  static const double HEAD_IMG_SEZE = 40;
   static const Color SELECT_COLOR = Color(0xFFE5E5E5);
   static const Color ICON_COLOR = Color(0xFF1AFA29);
   static const Color ICON_COLOR_DEF = Color(0xFF8A8A8A);

@@ -6,18 +6,42 @@ part 'blog_page_model.g.dart';
 @freezed
 sealed class BlogItem with _$BlogItem {
   const factory BlogItem({
-    int? blogType,
-    int? care,
-    int? categary,
-    String? content,
-    String? creatorName,
     int? id,
-    String? resources,
-    int? shareType,
+    int? userId,
     int? squareId,
     String? topicIds,
-    String? updateTime,
+    int? categary,
+    int? blogType,
+    String? content,
+    String? resources,
+    int? addressId,
+    String? address,
+    int? shareType,
+    /// 点赞数
     int? zan,
+    /// 评论数（含回复）
+    int? commentCount,
+    /// 收藏数
+    int? collectCount,
+    /// 转发/分享数
+    int? shareCount,
+    /// 当前登录用户是否已关注作者：1 是，0 否
+    int? care,
+    /// 作者粉丝数
+    int? followerCount,
+    String? creator,
+    String? creatorName,
+    String? creatorAvatar,
+    /// 作者等级（用于等级图标，一般 1–6）
+    int? creatorLevel,
+    String? creatorLevelName,
+    String? updater,
+    String? createTime,
+    String? updateTime,
+    /// 当前登录用户是否已点赞：1 是，0 否（若接口未返回则视为未赞）
+    int? liked,
+    /// 当前登录用户是否已收藏：1 是，0 否
+    int? collect,
   }) = _BlogItem;
 
   factory BlogItem.fromJson(Map<String, dynamic> json) => _$BlogItemFromJson(json);

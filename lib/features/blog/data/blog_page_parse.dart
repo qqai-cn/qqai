@@ -1,0 +1,124 @@
+import 'models/blog_page_model.dart';
+
+String? _firstNonEmptyString(dynamic value) {
+  if (value is! String) return null;
+  final s = value.trim();
+  return s.isEmpty ? null : s;
+}
+
+/// 从条目或嵌套用户信息中解析作者头像。
+String? _pickCreatorAvatar(Map<String, dynamic> m) {
+  final direct = _firstNonEmptyString(m['creatorAvatar']);
+  if (direct != null) return direct;
+
+  for (final key in [
+    'avatar',
+    'avatarUrl',
+    'userAvatar',
+    'creator_avatar',
+    'headImg',
+    'headImgUrl',
+  ]) {
+    final v = _firstNonEmptyString(m[key]);
+    if (v != null) return v;
+  }
+
+  for (final nestedKey in ['creatorUser', 'user', 'author', 'memberUser']) {
+    final nested = m[nestedKey];
+    if (nested is Map<String, dynamic>) {
+      final v = _pickCreatorAvatar(nested);
+      if (v != null) return v;
+    }
+  }
+  return null;
+}
+
+/// 兼容接口可能使用的字段名。
+Map<String, dynamic> normalizeBlogItemJson(Map<String, dynamic> json) {
+  final m = Map<String, dynamic>.from(json);
+  if (m['liked'] == null) {
+    for (final key in ['isZan', 'zanByMe', 'isLike']) {
+      if (m[key] != null) {
+        m['liked'] = m[key];
+        break;
+      }
+    }
+  }
+  if (m['collect'] == null) {
+    for (final key in ['collected', 'isCollect', 'isFavorite', 'favorited']) {
+      if (m[key] != null) {
+        m['collect'] = m[key];
+        break;
+      }
+    }
+  }
+  final avatar = _pickCreatorAvatar(m);
+  if (avatar != null) {
+    m['creatorAvatar'] = avatar;
+  }
+  if (m['creatorLevel'] == null) {
+    for (final key in ['userLevel', 'vipLevel', 'memberLevel', 'level']) {
+      final v = m[key];
+      if (v is num) {
+        m['creatorLevel'] = v.toInt();
+        break;
+      }
+    }
+  }
+  if (m['creatorLevelName'] == null) {
+    for (final key in ['levelName', 'userLevelName', 'vipLevelName']) {
+      final v = _firstNonEmptyString(m[key]);
+      if (v != null) {
+        m['creatorLevelName'] = v;
+        break;
+      }
+    }
+  }
+  if (m['collectCount'] == null) {
+    for (final key in ['collectionCount', 'favoriteCount', 'starCount']) {
+      final v = m[key];
+      if (v is num) {
+        m['collectCount'] = v.toInt();
+        break;
+      }
+    }
+  }
+  if (m['shareCount'] == null) {
+    for (final key in ['forwardCount', 'repostCount', 'shareNum']) {
+      final v = m[key];
+      if (v is num) {
+        m['shareCount'] = v.toInt();
+        break;
+      }
+    }
+  }
+  return m;
+}
+
+BlogPageModelData parseBlogPageEnvelope(
+  dynamic raw, {
+  String errorMessage = '博客分页返回格式错误',
+}) {
+  if (raw is! Map<String, dynamic>) {
+    throw errorMessage;
+  }
+  final code = raw['code'];
+  if (code != null && code != 0 && code != '0') {
+    throw raw['msg']?.toString() ?? '请求失败';
+  }
+  final inner = raw['data'];
+  if (inner is! Map<String, dynamic>) {
+    return const BlogPageModelData(list: [], total: 0);
+  }
+  final list = inner['list'];
+  if (list is List) {
+    final normalized = list.map((e) {
+      if (e is Map<String, dynamic>) {
+        return normalizeBlogItemJson(e);
+      }
+      return e;
+    }).toList();
+    return BlogPageModelData.fromJson({...inner, 'list': normalized});
+  }
+  return BlogPageModelData.fromJson(inner);
+}

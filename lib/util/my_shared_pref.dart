@@ -14,6 +14,7 @@ class MySharedPref {
   static const String _fcmTokenKey = 'fcm_token';
   static const String _authTokenKey = 'auth_token';
   static const String _refreshTokenKey = 'refresh_token';
+  static const String _userIdKey = 'user_id';
   static const String _watchHistoryKey = 'watch_history_v1';
   static const String _currentLocalKey = 'current_local';
   static const String _lightThemeKey = 'is_theme_light';
@@ -71,10 +72,18 @@ class MySharedPref {
   /// get refresh token
   static String? getRefreshToken() => _sharedPreferences.getString(_refreshTokenKey);
 
+  /// save logged-in user id
+  static Future<void> setUserId(String userId) =>
+      _sharedPreferences.setString(_userIdKey, userId);
+
+  /// get logged-in user id
+  static String? getUserId() => _sharedPreferences.getString(_userIdKey);
+
   /// clear auth tokens only
   static Future<void> clearAuthTokens() async {
     await _sharedPreferences.remove(_authTokenKey);
     await _sharedPreferences.remove(_refreshTokenKey);
+    await _sharedPreferences.remove(_userIdKey);
   }
 
   /// clear auth token only (keep for backward compatibility)

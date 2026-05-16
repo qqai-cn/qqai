@@ -61,4 +61,43 @@ class ApiConstant {
       '/app-api/blog/qqai/profile/my/collections/page';
   static const String PROFILE_COLLECTIONS_ITEMS =
       '/app-api/blog/qqai/profile/collections/items';
+
+  /// 关注会员 POST / 取消关注 DELETE：`/app-api/blog/qqai/profile/follows/{userId}`
+  static String profileFollowsPath(int userId) =>
+      '/app-api/blog/qqai/profile/follows/$userId';
+
+  /// 当前用户是否已关注该会员（未登录为 false）
+  static String profileUserFollowedByMePath(int userId) =>
+      '/app-api/blog/qqai/profile/user/$userId/followed-by-me';
+
+  /// 我的关注博客流（分页）
+  static const String PROFILE_MY_FOLLOWS_FEED_PAGE =
+      '/app-api/blog/qqai/profile/my/follows/feed/page';
+
+  /// 博客评论
+  static const String BLOG_COMMENTS = '/app-api/blog/qqai/comments';
+  static const String BLOG_COMMENTS_PAGE = '/app-api/blog/qqai/comments/page';
+  static const String BLOG_COMMENTS_REPLIES_PAGE =
+      '/app-api/blog/qqai/comments/replies/page';
+  static const String BLOG_COMMENTS_COUNT = '/app-api/blog/qqai/comments/count';
+
+  static String blogCommentPath(int id) => '/app-api/blog/qqai/comments/$id';
+
+  static String blogCommentPinPath(int id) =>
+      '/app-api/blog/qqai/comments/$id/pin';
+
+  /// 评论点赞 POST / 取消点赞 DELETE
+  static String blogCommentLikePath(int id) =>
+      '/app-api/blog/qqai/comments/$id/like';
+
+  /// 记录分享（分享次数 +1）
+  static String blogSharePath(int blogId) => '/app-api/blog/qqai/$blogId/share';
+
+  /// 收藏 POST、取消收藏 DELETE：`/app-api/blog/qqai/{blogId}/favorite`
+  static String blogFavoritePath(int blogId) =>
+      '/app-api/blog/qqai/$blogId/favorite';
+
+  /// 我的收藏分页
+  static const String BLOG_MY_FAVORITES_PAGE =
+      '/app-api/blog/qqai/my/favorites/page';
 }
