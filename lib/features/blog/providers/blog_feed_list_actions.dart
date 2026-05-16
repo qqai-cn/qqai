@@ -22,5 +22,12 @@ abstract interface class BlogFeedListActions {
     List<String> imageUrls,
   );
 
+  void onBlogAvatarTap(
+    BuildContext context,
+    BlogItem blogItem,
+    String heroTag,
+    String avatarUrl,
+  );
+
   double getVideoItemHeightWithWidth(int colCount, double screenWidth);
 }

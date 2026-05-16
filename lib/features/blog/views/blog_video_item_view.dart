@@ -15,6 +15,7 @@ import '../providers/blog_feed_list_actions.dart';
 import '../providers/blog_providers.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
 import '../../my/providers/my_shop_profile.dart';
+import 'blog_avatar_preview.dart';
 import 'blog_detail_ui.dart';
 import 'blog_list_kind.dart';
 
@@ -43,7 +44,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     final follow = widget.listKind == BlogListKind.followFeed;
     final BlogFeedListActions blogNotifier = follow
         ? ref.read(homeFollowFeedProvider.notifier)
-        : ref.read(blogProvider.notifier);
+        : ref.read(blogProvider(widget.category).notifier);
     final auth = ref.watch(authProvider);
     final myShop = switch (ref.watch(myShopProfileProvider)) {
       AsyncData(:final value) => value,
@@ -56,11 +57,15 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
       currentUserId: auth.userId,
       fallbackAvatarUrl: myShop?.coverUrl,
     );
+    final avatarHeroTag = avatarUrl != null
+        ? blogAvatarHeroTag(widget.category, widget.blogItem)
+        : null;
     final isWideScreen = 1.sw > 900;
     final item = resolveFeedBlogItem(
       ref,
       widget.blogItem,
       followFeed: follow,
+      feedCategory: widget.category,
     );
     final bodyStyle = context.typo.body;
     const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
@@ -83,6 +88,15 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 creatorLevel: blogCreatorLevel(widget.blogItem),
                 showCareButton: showCareButton,
                 onCareTap: () => blogNotifier.onCareTap(widget.blogItem),
+                avatarHeroTag: avatarHeroTag,
+                onAvatarTap: avatarUrl != null && avatarHeroTag != null
+                    ? () => blogNotifier.onBlogAvatarTap(
+                        context,
+                        widget.blogItem,
+                        avatarHeroTag,
+                        avatarUrl,
+                      )
+                    : null,
               ),
               Padding(
                 padding: EdgeInsets.only(left: 5, right: 5),

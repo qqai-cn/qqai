@@ -16,6 +16,10 @@ sealed class BlogItem with _$BlogItem {
     String? resources,
     int? addressId,
     String? address,
+    double? latitude,
+    double? longitude,
+    /// 与当前位置距离（千米，附近列表时有值）
+    double? distance,
     int? shareType,
     /// 点赞数
     int? zan,

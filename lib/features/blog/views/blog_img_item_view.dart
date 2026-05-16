@@ -16,6 +16,7 @@ import '../providers/blog_feed_list_actions.dart';
 import '../providers/blog_providers.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
 import '../../my/providers/my_shop_profile.dart';
+import 'blog_avatar_preview.dart';
 import 'blog_detail_ui.dart';
 import 'blog_list_kind.dart';
 
@@ -57,7 +58,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
     final follow = widget.listKind == BlogListKind.followFeed;
     final BlogFeedListActions blogNotifier = follow
         ? ref.read(homeFollowFeedProvider.notifier)
-        : ref.read(blogProvider.notifier);
+        : ref.read(blogProvider(widget.category).notifier);
     final auth = ref.watch(authProvider);
     final myShop = switch (ref.watch(myShopProfileProvider)) {
       AsyncData(:final value) => value,
@@ -70,11 +71,15 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
       currentUserId: auth.userId,
       fallbackAvatarUrl: myShop?.coverUrl,
     );
+    final avatarHeroTag = avatarUrl != null
+        ? blogAvatarHeroTag(widget.category, widget.blogItem)
+        : null;
     final isWideScreen = 1.sw > 900;
     final item = resolveFeedBlogItem(
       ref,
       widget.blogItem,
       followFeed: follow,
+      feedCategory: widget.category,
     );
     final bodyStyle = context.typo.body;
     return Card(
@@ -92,6 +97,15 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
               avatarSize: Constant.HEAD_IMG_SEZE,
               showCareButton: showCareButton,
               onCareTap: () => blogNotifier.onCareTap(widget.blogItem),
+              avatarHeroTag: avatarHeroTag,
+              onAvatarTap: avatarUrl != null && avatarHeroTag != null
+                  ? () => blogNotifier.onBlogAvatarTap(
+                      context,
+                      widget.blogItem,
+                      avatarHeroTag,
+                      avatarUrl,
+                    )
+                  : null,
             ),
             SelectableText(
               widget.blogItem.content ?? '',

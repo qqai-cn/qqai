@@ -10,6 +10,7 @@ class DetailSideActionRail extends StatelessWidget {
   final bool showFollowButton;
   final bool isFollowing;
   final VoidCallback? onAvatarTap;
+  final Object? avatarHeroTag;
   final VoidCallback? onFollowTap;
   final VoidCallback? onLikeTap;
   final bool liked;
@@ -22,13 +23,16 @@ class DetailSideActionRail extends StatelessWidget {
   final String shareCountLabel;
   final VoidCallback? onShareTap;
   final BlogItem? shareBlog;
+  final double bottomOffset;
 
   const DetailSideActionRail({
     super.key,
+    this.bottomOffset = 0,
     this.avatarUrl,
     this.showFollowButton = true,
     this.isFollowing = false,
     this.onAvatarTap,
+    this.avatarHeroTag,
     this.onFollowTap,
     this.onLikeTap,
     this.liked = false,
@@ -43,12 +47,28 @@ class DetailSideActionRail extends StatelessWidget {
     this.shareBlog,
   });
 
+  Widget _buildAvatarWithHero(BuildContext context) {
+    final url = avatarUrl;
+    var avatar = buildDetailAvatar(
+      avatarUrl: url,
+      size: 50,
+      context: context,
+    );
+    if (avatarHeroTag != null &&
+        onAvatarTap != null &&
+        url != null &&
+        url.isNotEmpty) {
+      avatar = Hero(tag: avatarHeroTag!, child: avatar);
+    }
+    return avatar;
+  }
+
   @override
   Widget build(BuildContext context) {
     final caption = context.typo.caption.copyWith(color: Colors.white);
     return Positioned(
       right: 10,
-      bottom: 50,
+      bottom: bottomOffset,
       child: Column(
         children: [
           SizedBox(
@@ -69,8 +89,8 @@ class DetailSideActionRail extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(2),
                       child: InkWell(
-                        onTap: onAvatarTap ?? () {},
-                        child: buildDetailAvatar(avatarUrl: avatarUrl),
+                        onTap: onAvatarTap,
+                        child: _buildAvatarWithHero(context),
                       ),
                     ),
                   ),
@@ -79,7 +99,7 @@ class DetailSideActionRail extends StatelessWidget {
                   Positioned(
                     bottom: 0,
                     child: SizedBox(
-                      width: 50,
+                      width: 40,
                       child: Center(
                         child: Container(
                           width: 25,
@@ -98,9 +118,9 @@ class DetailSideActionRail extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           IconButton(
-            iconSize: 50,
+            iconSize: 40,
             onPressed: onLikeTap ?? () {},
             icon: Icon(
               liked ? Icons.favorite : Icons.favorite_border,
@@ -108,27 +128,27 @@ class DetailSideActionRail extends StatelessWidget {
             ),
           ),
           Text(likeCountLabel, style: caption),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           IconButton(
-            iconSize: 50,
+            iconSize: 40,
             onPressed: onCommentTap,
             color: Colors.white,
             icon: const Icon(Icons.comment),
           ),
           Text(commentCountLabel, style: caption),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           IconButton(
-            iconSize: 50,
+            iconSize: 40,
             onPressed: onCollectTap ?? () {},
             color: collected ? Colors.amber : Colors.white,
             icon: Icon(collected ? Icons.star : Icons.star_border),
           ),
           Text(collectCountLabel, style: caption),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           BlogShareButton(
             blog: shareBlog,
             onShareChannelTap: onShareTap,
-            iconWidth: 50,
+            iconWidth: 40,
             iconColor: Colors.white,
           ),
           Text(shareCountLabel, style: caption),

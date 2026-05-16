@@ -12,6 +12,7 @@ import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/repos/blog_repo.dart';
 import '../../blog/providers/blog_feed_list_actions.dart';
 import '../../blog/providers/blog_providers.dart';
+import '../../blog/views/blog_avatar_preview.dart';
 import '../../my/data/repos/profile_repo.dart';
 
 part 'home_follow_feed_providers.g.dart';
@@ -109,6 +110,21 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
       allUris: imageUrls,
     );
     context.push(Routes.watchImgUrl, extra: previewImg);
+  }
+
+  @override
+  void onBlogAvatarTap(
+    BuildContext context,
+    BlogItem blogItem,
+    String heroTag,
+    String avatarUrl,
+  ) {
+    openBlogAvatarPreview(
+      context,
+      blog: blogItem,
+      heroTag: heroTag,
+      imageUrl: avatarUrl,
+    );
   }
 
   void onUserAvatarTap(BuildContext context, BlogItem blogItem) {

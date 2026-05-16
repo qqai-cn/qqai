@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../components/responsive_masonry_grid.dart';
 import '../../blog/data/models/blog_page_model.dart';
+import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
 import '../data/repos/profile_repo.dart';
 import 'my_blog_img_item_view.dart';
@@ -140,7 +141,8 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     }
 
     const double kPinnedHeaderHeight = kToolbarHeight;
-    final blogNotifier = ref.read(blogProvider.notifier);
+    final blogNotifier =
+        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
 
     if (_loading && _items.isEmpty) {
       return const Padding(

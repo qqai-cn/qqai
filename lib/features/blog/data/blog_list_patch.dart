@@ -63,7 +63,7 @@ bool blogLikedByMe(BlogItem b) => b.liked == 1;
 /// 当前用户是否已收藏该博客。
 bool blogCollectedByMe(BlogItem b) => b.collect == 1;
 
-/// 作者行 meta：粉丝数、创建时间（时间与聊天消息一致）。
+/// 作者行 meta：粉丝数、创建时间、距离（时间与聊天消息一致；距离在日期后）。
 String authorFollowerMetaText(BlogItem b) {
   final parts = <String>[];
   final fans = b.followerCount;
@@ -73,6 +73,10 @@ String authorFollowerMetaText(BlogItem b) {
   final time = formatConversationListTime(b.createTime);
   if (time.isNotEmpty) {
     parts.add(time);
+  }
+  final distance = formatBlogDistanceKm(b.distance);
+  if (distance.isNotEmpty) {
+    parts.add('距离$distance');
   }
   return parts.join(' · ');
 }

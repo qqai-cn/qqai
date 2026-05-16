@@ -6,6 +6,7 @@ import 'package:qqai/config/theme/my_fonts.dart';
 import '../../../components/level_icon.dart';
 import '../../../components/responsive_masonry_grid.dart';
 import '../../../constant/constant.dart';
+import '../blog/data/home_blog_tab.dart';
 import '../blog/providers/blog_providers.dart';
 import 'friend_blog_img_item_view.dart';
 import 'friend_blog_video_item_view.dart';
@@ -31,8 +32,8 @@ class _TabPageState extends ConsumerState<FriendBlogView>
 
   @override
   Widget build(BuildContext context) {
-    final blogState = ref.watch(blogProvider);
-    final blogNotifier = ref.read(blogProvider.notifier);
+    final blogState = ref.watch(blogProvider(HomeBlogTab.recommend));
+    final blogNotifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
 
     if (widget.tabIndex != widget.currentIndex) {
       return SizedBox.shrink();
@@ -76,7 +77,8 @@ class _TabPageState extends ConsumerState<FriendBlogView>
               style: context.typo.body.copyWith(color: Colors.white),
             ),
             ElevatedButton(
-              onPressed: () => ref.read(blogProvider.notifier).load(),
+              onPressed: () =>
+                  ref.read(blogProvider(HomeBlogTab.recommend).notifier).load(),
               child: Text(
                 '重试',
                 style: context.typo.button.copyWith(color: Colors.black),

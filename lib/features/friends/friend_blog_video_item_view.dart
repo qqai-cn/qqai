@@ -9,6 +9,7 @@ import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
 import '../blog/data/models/blog_page_model.dart';
+import '../blog/data/home_blog_tab.dart';
 import '../blog/providers/blog_providers.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -30,7 +31,8 @@ class _BlogVideoItemViewState extends ConsumerState<FriendBlogVideoItemView> {
 
   @override
   Widget build(BuildContext context) {
-    final blogNotifier = ref.read(blogProvider.notifier);
+    final blogNotifier =
+        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
     final isWideScreen = 1.sw > 900;
     final bodyStyle = context.typo.body;
     const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';

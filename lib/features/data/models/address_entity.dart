@@ -12,8 +12,14 @@ class AddressEntity {
 	late String name;
 	late String distance;
 	late String detail;
+	double? latitude;
+	double? longitude;
 
 	AddressEntity();
+
+	/// 是否已选具体位置（非「不显示位置」）且含经纬度。
+	bool get hasGeoCoordinates =>
+	    id != 0 && latitude != null && longitude != null;
 
 	factory AddressEntity.fromJson(Map<String, dynamic> json) => $AddressEntityFromJson(json);
 
@@ -25,20 +31,32 @@ class AddressEntity {
 	}
 
 	// Convert QqaiWeatherCityResVO to AddressEntity
-  factory AddressEntity.fromWeatherCity(QqaiWeatherCityResVO weatherCity) {
+  factory AddressEntity.fromWeatherCity(
+    QqaiWeatherCityResVO weatherCity, {
+    double? latitude,
+    double? longitude,
+  }) {
 		final address = AddressEntity();
 		address.id = weatherCity.adCode ?? 0;
 		address.name = '${weatherCity.city ?? ''}${weatherCity.county ?? ''}';
 		address.distance = '';
 		address.detail = '${weatherCity.province ?? ''} ${weatherCity.city ?? ''} ${weatherCity.county ?? ''}';
+		address.latitude = latitude ?? weatherCity.lat;
+		address.longitude = longitude ?? weatherCity.lon;
 		return address;
 	}
-  factory AddressEntity.fromWeatherCityOnly(QqaiWeatherCityResVO weatherCity) {
+  factory AddressEntity.fromWeatherCityOnly(
+    QqaiWeatherCityResVO weatherCity, {
+    double? latitude,
+    double? longitude,
+  }) {
 		final address = AddressEntity();
 		address.id = weatherCity.adCode ?? 0;
 		address.name = '${weatherCity.city}';
 		address.distance = '';
 		address.detail = '${weatherCity.province ?? ''} ${weatherCity.city ?? ''} ${weatherCity.county ?? ''}';
+		address.latitude = latitude ?? weatherCity.lat;
+		address.longitude = longitude ?? weatherCity.lon;
 		return address;
 	}
 }

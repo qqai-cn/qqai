@@ -5,6 +5,7 @@ import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import '../../../../constant/api_constant.dart';
 import '../../../../util/api_base_client.dart';
 import '../blog_page_parse.dart';
+import '../home_blog_tab.dart';
 import '../models/blog_model.dart';
 import '../models/blog_save_req_vo.dart';
 
@@ -31,6 +32,9 @@ abstract class IBlogRepo {
     int? squareId,
     int? userId,
     int? shareType,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
   });
   
   Future<void> createBlog(BlogSaveReqVO req);
@@ -106,6 +110,9 @@ class BlogRepo implements IBlogRepo {
     int? squareId,
     int? userId,
     int? shareType,
+    double? latitude,
+    double? longitude,
+    double? radiusKm,
   }) async {
     final query = <String, dynamic>{
       'pageNo': page,
@@ -116,6 +123,11 @@ class BlogRepo implements IBlogRepo {
     if (squareId != null) query['squareId'] = squareId;
     if (userId != null) query['userId'] = userId;
     if (shareType != null) query['shareType'] = shareType;
+    if (latitude != null && longitude != null) {
+      query['latitude'] = latitude;
+      query['longitude'] = longitude;
+      query['radiusKm'] = radiusKm ?? blogNearbyRadiusKmDefault;
+    }
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.BLOG_PAGE,
       RequestType.get,

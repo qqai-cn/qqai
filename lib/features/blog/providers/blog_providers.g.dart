@@ -10,23 +10,30 @@ part of 'blog_providers.dart';
 // ignore_for_file: type=lint, type=warning
 
 @ProviderFor(BlogNotifier)
-const blogProvider = BlogNotifierProvider._();
+const blogProvider = BlogNotifierFamily._();
 
 final class BlogNotifierProvider
     extends $NotifierProvider<BlogNotifier, BlogState> {
-  const BlogNotifierProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'blogProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  const BlogNotifierProvider._({
+    required BlogNotifierFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'blogProvider',
+         isAutoDispose: false,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$blogNotifierHash();
+
+  @override
+  String toString() {
+    return r'blogProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
@@ -39,16 +46,54 @@ final class BlogNotifierProvider
       providerOverride: $SyncValueProvider<BlogState>(value),
     );
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is BlogNotifierProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
 }
 
-String _$blogNotifierHash() => r'641c030e65f09c293723cddb91cf6ee3a31ff32a';
+String _$blogNotifierHash() => r'ea15210d8d482d07fa4d7d780ca5fe32e410c3ee';
+
+final class BlogNotifierFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          BlogNotifier,
+          BlogState,
+          BlogState,
+          BlogState,
+          int
+        > {
+  const BlogNotifierFamily._()
+    : super(
+        retry: null,
+        name: r'blogProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: false,
+      );
+
+  BlogNotifierProvider call(int category) =>
+      BlogNotifierProvider._(argument: category, from: this);
+
+  @override
+  String toString() => r'blogProvider';
+}
 
 abstract class _$BlogNotifier extends $Notifier<BlogState> {
-  BlogState build();
+  late final _$args = ref.$arg as int;
+  int get category => _$args;
+
+  BlogState build(int category);
   @$mustCallSuper
   @override
   void runBuild() {
-    final created = build();
+    final created = build(_$args);
     final ref = this.ref as $Ref<BlogState, BlogState>;
     final element =
         ref.element

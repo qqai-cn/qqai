@@ -17,6 +17,8 @@ _BlogSaveReqVO _$BlogSaveReqVOFromJson(Map<String, dynamic> json) =>
       resources: json['resources'] as String?,
       addressId: (json['addressId'] as num?)?.toInt(),
       address: json['address'] as String?,
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
       shareType: (json['shareType'] as num?)?.toInt(),
     );
 
@@ -31,5 +33,7 @@ Map<String, dynamic> _$BlogSaveReqVOToJson(_BlogSaveReqVO instance) =>
       'resources': instance.resources,
       'addressId': instance.addressId,
       'address': instance.address,
+      'latitude': instance.latitude,
+      'longitude': instance.longitude,
       'shareType': instance.shareType,
     };

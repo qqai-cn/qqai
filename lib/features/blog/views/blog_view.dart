@@ -29,7 +29,7 @@ class _BlogViewState extends ConsumerState<BlogView> {
     final follow = widget.listKind == BlogListKind.followFeed;
     final blogState = follow
         ? ref.watch(homeFollowFeedProvider)
-        : ref.watch(blogProvider);
+        : ref.watch(blogProvider(widget.category));
     final asyncItems = blogState.blogPageData.whenData(
       (data) => data.list ?? [],
     );
@@ -44,21 +44,21 @@ class _BlogViewState extends ConsumerState<BlogView> {
           if (follow) {
             ref.read(homeFollowFeedProvider.notifier).load();
           } else {
-            ref.read(blogProvider.notifier).load();
+            ref.read(blogProvider(widget.category).notifier).load();
           }
         },
         onRefresh: () async {
           if (follow) {
             await ref.read(homeFollowFeedProvider.notifier).refresh();
           } else {
-            await ref.read(blogProvider.notifier).refresh();
+            await ref.read(blogProvider(widget.category).notifier).refresh();
           }
         },
         onLoadMore: () async {
           if (follow) {
             await ref.read(homeFollowFeedProvider.notifier).loadMore();
           } else {
-            await ref.read(blogProvider.notifier).loadMore();
+            await ref.read(blogProvider(widget.category).notifier).loadMore();
           }
         },
         itemBuilder: (context, index, blogItem) {

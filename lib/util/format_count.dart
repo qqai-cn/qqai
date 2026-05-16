@@ -19,3 +19,22 @@ String formatCompactCount(int? count) {
   }
   return '$n';
 }
+
+/// 博客附近列表距离（千米）展示，如 `500m`、`3.2km`、`12km`。
+String formatBlogDistanceKm(double? km) {
+  if (km == null || km.isNaN || km < 0) return '';
+  if (km < 0.001) return '';
+  if (km < 1) {
+    final meters = (km * 1000).round();
+    if (meters < 100) return '${meters}m';
+    return '${km.toStringAsFixed(1)}km';
+  }
+  if (km < 10) {
+    final rounded = (km * 10).round() / 10;
+    if (rounded == rounded.roundToDouble()) {
+      return '${rounded.toInt()}km';
+    }
+    return '${rounded.toStringAsFixed(1)}km';
+  }
+  return '${km.round()}km';
+}

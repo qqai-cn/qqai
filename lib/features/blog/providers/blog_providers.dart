@@ -9,12 +9,15 @@ import 'package:uuid/uuid.dart';
 import '../../../components/imgpreview/preview_img.dart';
 import '../../../router/app_routes.dart';
 import '../../my/data/repos/profile_repo.dart';
+import '../data/blog_feed_location.dart';
 import '../data/blog_interaction_patch.dart';
 import '../data/blog_list_patch.dart';
+import '../data/home_blog_tab.dart';
 import '../data/models/blog_model.dart';
 import '../data/models/blog_page_model.dart';
 import '../data/repos/blog_repo.dart';
 import '../data/models/blog_save_req_vo.dart';
+import '../views/blog_avatar_preview.dart';
 import 'blog_feed_list_actions.dart';
 
 part 'blog_providers.freezed.dart';
@@ -33,22 +36,37 @@ sealed class BlogState with _$BlogState {
   }) = _BlogState;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   late final IBlogRepo _repo;
+  late final int _category;
 
   @override
-  BlogState build() {
+  BlogState build(int category) {
     _repo = ref.read(blogRepoProvider);
+    _category = category;
     Future.microtask(() => load());
     return const BlogState();
   }
 
+  Future<BlogPageModelData> _fetchPage(int page) async {
+    if (_category == HomeBlogTab.local) {
+      final geo = await readBlogFeedGeoPosition();
+      return _repo.getBlogPageModelDataWithPage(
+        page,
+        shareType: blogShareTypePublic,
+        latitude: geo?.latitude,
+        longitude: geo?.longitude,
+        radiusKm: geo != null ? blogNearbyRadiusKmDefault : null,
+      );
+    }
+    return _repo.getBlogPageModelDataWithPage(page);
+  }
 
   Future<void> load() async {
     state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
-      final items = await _repo.getBlogPageModelDataWithPage(1);
+      final items = await _fetchPage(1);
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -65,7 +83,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
 
   Future<void> refresh() async {
     try {
-      final items = await _repo.getBlogPageModelDataWithPage(1);
+      final items = await _fetchPage(1);
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -82,7 +100,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
-      final items = await _repo.getBlogPageModelDataWithPage(nextPage);
+      final items = await _fetchPage(nextPage);
       final newItems = items.list ?? [];
       state = state.copyWith(
         allItems: [...state.allItems, ...newItems],
@@ -163,7 +181,22 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
     context.push(Routes.watchImgUrl, extra: previewImg);
   }
 
-  // 点击头像事件
+  @override
+  void onBlogAvatarTap(
+    BuildContext context,
+    BlogItem blogItem,
+    String heroTag,
+    String avatarUrl,
+  ) {
+    openBlogAvatarPreview(
+      context,
+      blog: blogItem,
+      heroTag: heroTag,
+      imageUrl: avatarUrl,
+    );
+  }
+
+  // 点击头像事件（非 Hero 预览场景保留）
   void onUserAvatarTap(BuildContext context, BlogItem blogItem) {
     context.push(Routes.whatArticle, extra: blogItem);
   }

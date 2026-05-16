@@ -7,6 +7,8 @@ import 'package:qqai/components/blog/media_detail_shell.dart';
 
 import '../../comment/providers/comment_providers.dart';
 import 'blog_detail_comment_side_panel.dart';
+import 'blog_detail_ui.dart';
+import 'blog_detail_video_toolbar.dart';
 
 class BlogVideoDetailView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
@@ -44,7 +46,17 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
       showCommentPanel: commentState.showComment,
       sidePanelBlog: blog,
       onCommentClose: commentNotifier.changeShowComment,
-      content: BlogVideoDetailPlayer(blog: blog),
+      content: Stack(
+        fit: StackFit.expand,
+        children: [
+          BlogVideoDetailPlayer(blog: blog),
+          BlogDetailMediaOverlay(
+            blog: blog,
+            bottomInset: kBlogDetailVideoToolbarHeight,
+            onCommentTap: commentNotifier.changeShowComment,
+          ),
+        ],
+      ),
     );
   }
 }

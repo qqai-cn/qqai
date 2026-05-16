@@ -18,6 +18,8 @@ class CreatorHeaderRow extends StatelessWidget {
   final int creatorLevel;
   /// 自己的作品等场景不展示关注按钮。
   final bool showCareButton;
+  final VoidCallback? onAvatarTap;
+  final Object? avatarHeroTag;
 
   const CreatorHeaderRow({
     super.key,
@@ -29,6 +31,8 @@ class CreatorHeaderRow extends StatelessWidget {
     this.avatarUrl,
     this.creatorLevel = 0,
     this.showCareButton = true,
+    this.onAvatarTap,
+    this.avatarHeroTag,
   });
 
   @override
@@ -40,7 +44,7 @@ class CreatorHeaderRow extends StatelessWidget {
     return Row(
       children: <Widget>[
         InkWell(
-          onTap: () {},
+          onTap: onAvatarTap,
           child: _buildAvatar(context),
         ),
         SizedBox(width: 10,),
@@ -101,10 +105,11 @@ class CreatorHeaderRow extends StatelessWidget {
 
   Widget _buildAvatar(BuildContext context) {
     final url = resolveMediaUrl(avatarUrl);
+    Widget avatar;
     if (url != null) {
       final dpr = MediaQuery.devicePixelRatioOf(context);
       final memPx = (avatarSize * dpr).round().clamp(48, 256);
-      return ClipRRect(
+      avatar = ClipRRect(
         borderRadius: BorderRadius.circular(avatarSize / 2),
         child: CachedNetworkImage(
           key: ValueKey(url),
@@ -120,8 +125,13 @@ class CreatorHeaderRow extends StatelessWidget {
           errorWidget: (_, _, _) => _defaultAvatar(),
         ),
       );
+    } else {
+      avatar = _defaultAvatar();
     }
-    return _defaultAvatar();
+    if (avatarHeroTag != null && onAvatarTap != null && url != null) {
+      return Hero(tag: avatarHeroTag!, child: avatar);
+    }
+    return avatar;
   }
 
   Widget _defaultAvatar() {

@@ -7,6 +7,7 @@ import 'package:qqai/features/blog/views/blog_video_detail_player.dart';
 import 'package:qqai/components/blog/carousel_page_dots.dart';
 import 'package:qqai/components/blog/media_detail_shell.dart';
 import 'package:qqai/features/blog/views/blog_detail_ui.dart';
+import 'package:qqai/features/blog/views/blog_detail_video_toolbar.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';
@@ -55,7 +56,17 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
       sidePanelBlog: blog,
       onCommentClose: commentNotifier.changeShowComment,
       content: hasVideo
-          ? BlogVideoDetailPlayer(blog: blog)
+          ? Stack(
+              fit: StackFit.expand,
+              children: [
+                BlogVideoDetailPlayer(blog: blog),
+                BlogDetailMediaOverlay(
+                  blog: blog,
+                  bottomInset: kBlogDetailVideoToolbarHeight,
+                  onCommentTap: commentNotifier.changeShowComment,
+                ),
+              ],
+            )
           : _buildImageCarousel(blog, commentNotifier),
     );
   }

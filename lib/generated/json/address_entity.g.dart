@@ -19,6 +19,14 @@ AddressEntity $AddressEntityFromJson(Map<String, dynamic> json) {
   if (detail != null) {
     addressEntity.detail = detail;
   }
+  final double? latitude = jsonConvert.convert<double>(json['latitude']);
+  if (latitude != null) {
+    addressEntity.latitude = latitude;
+  }
+  final double? longitude = jsonConvert.convert<double>(json['longitude']);
+  if (longitude != null) {
+    addressEntity.longitude = longitude;
+  }
   return addressEntity;
 }
 
@@ -28,6 +36,8 @@ Map<String, dynamic> $AddressEntityToJson(AddressEntity entity) {
   data['name'] = entity.name;
   data['distance'] = entity.distance;
   data['detail'] = entity.detail;
+  data['latitude'] = entity.latitude;
+  data['longitude'] = entity.longitude;
   return data;
 }
 
@@ -37,11 +47,15 @@ extension AddressEntityExtension on AddressEntity {
     String? name,
     String? distance,
     String? detail,
+    double? latitude,
+    double? longitude,
   }) {
     return AddressEntity()
       ..id = id ?? this.id
       ..name = name ?? this.name
       ..distance = distance ?? this.distance
-      ..detail = detail ?? this.detail;
+      ..detail = detail ?? this.detail
+      ..latitude = latitude ?? this.latitude
+      ..longitude = longitude ?? this.longitude;
   }
 }

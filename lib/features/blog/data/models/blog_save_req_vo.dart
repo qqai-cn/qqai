@@ -15,6 +15,8 @@ sealed class BlogSaveReqVO with _$BlogSaveReqVO {
     String? resources,
     int? addressId,
     String? address,
+    double? latitude,
+    double? longitude,
     int? shareType,
   }) = _BlogSaveReqVO;
 

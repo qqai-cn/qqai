@@ -150,8 +150,16 @@ class FabuNotifier extends _$FabuNotifier {
       );
 
       if (weatherCity != null) {
-        final addressEntity = AddressEntity.fromWeatherCity(weatherCity);
-        final addressEntityOnly = AddressEntity.fromWeatherCityOnly(weatherCity);
+        final addressEntity = AddressEntity.fromWeatherCity(
+          weatherCity,
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+        final addressEntityOnly = AddressEntity.fromWeatherCityOnly(
+          weatherCity,
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
         
         // Add GPS address to the top of the list
         final addressList = List<AddressEntity>.from(state.addressList);
@@ -327,9 +335,12 @@ class FabuNotifier extends _$FabuNotifier {
           ? allUrls.join(',') 
           : resources;
       
-      // Get address from selected address if not provided
-      final selectedAddress = address ?? state.selAddressEntity?.name;
-      
+      final selected = state.selAddressEntity;
+      final selectedAddress = address ?? selected?.name;
+      final resolvedAddressId = addressId ?? selected?.id;
+      final withLocation =
+          selected != null && selected.id != 0 && selected.hasGeoCoordinates;
+
       final req = BlogSaveReqVO(
         squareId: squareId,
         topicIds: topicIds,
@@ -337,8 +348,14 @@ class FabuNotifier extends _$FabuNotifier {
         blogType: blogType,
         content: blogContent,
         resources: blogResources,
-        addressId: addressId,
-        address: selectedAddress,
+        addressId: resolvedAddressId != null && resolvedAddressId != 0
+            ? resolvedAddressId
+            : null,
+        address: selectedAddress != null && selectedAddress.isNotEmpty
+            ? selectedAddress
+            : null,
+        latitude: withLocation ? selected.latitude : null,
+        longitude: withLocation ? selected.longitude : null,
         shareType: shareType,
       );
       await blogRepo.createBlog(req);

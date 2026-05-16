@@ -102,7 +102,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
           child: BlogView(1, listKind: BlogListKind.followFeed),
         );
       case 2:
-        return const BlogView(2);
+        return const KeepAliveTabWrapper(child: BlogView(2));
       case 3:
         return const SquareView();
       case 4:

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/components/blog/detail_side_action_rail.dart';
 import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
@@ -10,7 +11,9 @@ import '../../my/providers/my_shop_profile.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
 import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
+import '../data/home_blog_tab.dart';
 import '../providers/blog_providers.dart';
+import 'blog_avatar_preview.dart';
 
 /// 详情侧栏操作数：只显示数字（无数量时显示 0）。
 String blogDetailCountLabel(int? count) {
@@ -37,9 +40,31 @@ BlogItem _resolveFromState(BlogState state, BlogItem initial) {
   return initial;
 }
 
-/// 从详情上下文 feed 状态中取最新条目。
+/// 从详情上下文 feed 状态中取最新条目（推荐 / 本地 / 关注）。
 BlogItem resolveBlogItem(WidgetRef ref, BlogItem initial) {
-  return _resolveFromState(ref.watch(blogProvider), initial);
+  final id = initial.id;
+  if (id == null) return initial;
+
+  final states = [
+    ref.watch(homeFollowFeedProvider),
+    ref.watch(blogProvider(HomeBlogTab.recommend)),
+    ref.watch(blogProvider(HomeBlogTab.local)),
+  ];
+  for (final state in states) {
+    for (final b in state.allItems) {
+      if (b.id == id) return b;
+    }
+    final pageList = switch (state.blogPageData) {
+      AsyncData(:final value) => value.list,
+      _ => null,
+    };
+    if (pageList != null) {
+      for (final b in pageList) {
+        if (b.id == id) return b;
+      }
+    }
+  }
+  return initial;
 }
 
 /// 从推荐/关注流列表取最新条目（点赞、分享后同步按钮文案）。
@@ -47,66 +72,116 @@ BlogItem resolveFeedBlogItem(
   WidgetRef ref,
   BlogItem initial, {
   required bool followFeed,
+  int feedCategory = HomeBlogTab.recommend,
 }) {
   final state = followFeed
       ? ref.watch(homeFollowFeedProvider)
-      : ref.watch(blogProvider);
+      : ref.watch(blogProvider(feedCategory));
   return _resolveFromState(state, initial);
 }
 
-/// 详情左下角：作者、粉丝、正文。
-class BlogDetailBottomInfo extends StatelessWidget {
+/// 详情左下角：作者头像、昵称、粉丝、正文。
+class BlogDetailBottomInfo extends ConsumerWidget {
   final BlogItem blog;
+  final double bottomInset;
 
-  const BlogDetailBottomInfo({super.key, required this.blog});
+  const BlogDetailBottomInfo({
+    super.key,
+    required this.blog,
+    this.bottomInset = 0,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    final name = blog.creatorName?.trim();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final item = resolveBlogItem(ref, blog);
+    final auth = ref.watch(authProvider);
+    final myShop = switch (ref.watch(myShopProfileProvider)) {
+      AsyncData(:final value) => value,
+      _ => null,
+    };
+    final avatarUrl = blogCreatorAvatarUrl(
+      item,
+      currentUserId: auth.userId,
+      fallbackAvatarUrl: myShop?.coverUrl,
+    );
+    final avatarHeroTag =
+        avatarUrl != null ? blogAvatarDetailHeroTag(item) : null;
+    final name = item.creatorName?.trim();
     final displayName =
         (name != null && name.isNotEmpty) ? name : '用户';
-    final metaText = authorFollowerMetaText(blog);
-    final content = blog.content?.trim() ?? '';
+    final content = item.content?.trim() ?? '';
 
     return Positioned(
       left: 12,
       right: 100,
-      bottom: 24,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      bottom: bottomInset,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Row(
-            children: [
-              Text(
-                '@$displayName',
-                style: context.typo.bodyStrong.copyWith(color: Colors.white),
-              ),
-              if (blogCreatorLevel(blog) > 0) ...[
-                const SizedBox(width: 6),
-                LevelIcon(lv: blogCreatorLevel(blog)),
+          if (avatarUrl != null) ...[
+            InkWell(
+              onTap: avatarHeroTag != null
+                  ? () => openBlogAvatarPreview(
+                        context,
+                        blog: item,
+                        heroTag: avatarHeroTag,
+                        imageUrl: avatarUrl,
+                      )
+                  : null,
+              child: avatarHeroTag != null
+                  ? Hero(
+                      tag: avatarHeroTag,
+                      child: buildDetailAvatar(
+                        avatarUrl: avatarUrl,
+                        size: 44,
+                        context: context,
+                      ),
+                    )
+                  : buildDetailAvatar(
+                      avatarUrl: avatarUrl,
+                      size: 44,
+                      context: context,
+                    ),
+            ),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        '@$displayName',
+                        style: context.typo.bodyStrong.copyWith(
+                          color: Colors.white,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (blogCreatorLevel(item) > 0) ...[
+                      const SizedBox(width: 6),
+                      LevelIcon(lv: blogCreatorLevel(item)),
+                    ],
+                  ],
+                ),
+                if (content.isNotEmpty) ...[
+                  const SizedBox(height: 5),
+                  GestureDetector(
+                    onTap: () => _showFullContent(context, content),
+                    child: Text(
+                      content,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.body.copyWith(color: Colors.white),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-          if (metaText.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              metaText,
-              style: context.typo.caption.copyWith(color: Colors.white70),
-            ),
-          ],
-          if (content.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            GestureDetector(
-              onTap: () => _showFullContent(context, content),
-              child: Text(
-                content,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: context.typo.body.copyWith(color: Colors.white),
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -129,11 +204,13 @@ class BlogDetailBottomInfo extends StatelessWidget {
 class BlogDetailMediaOverlay extends ConsumerWidget {
   final BlogItem blog;
   final VoidCallback onCommentTap;
+  final double bottomInset;
 
   const BlogDetailMediaOverlay({
     super.key,
     required this.blog,
     required this.onCommentTap,
+    this.bottomInset = 0,
   });
 
   @override
@@ -149,15 +226,28 @@ class BlogDetailMediaOverlay extends ConsumerWidget {
       currentUserId: auth.userId,
       fallbackAvatarUrl: myShop?.coverUrl,
     );
-    final notifier = ref.read(blogProvider.notifier);
+    final notifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
     final showFollow = shouldShowBlogFollowButton(item, auth.userId);
     final following = blogFollowCare(item) == 1;
+    final avatarHeroTag = avatarUrl != null
+        ? blogAvatarDetailHeroTag(item)
+        : null;
 
     return Stack(
       children: [
-        BlogDetailBottomInfo(blog: item),
+        BlogDetailBottomInfo(blog: item, bottomInset: bottomInset),
         DetailSideActionRail(
+          bottomOffset: bottomInset,
           avatarUrl: avatarUrl,
+          avatarHeroTag: avatarHeroTag,
+          onAvatarTap: avatarUrl != null && avatarHeroTag != null
+              ? () => openBlogAvatarPreview(
+                    context,
+                    blog: item,
+                    heroTag: avatarHeroTag,
+                    imageUrl: avatarUrl,
+                  )
+              : null,
           showFollowButton: showFollow,
           isFollowing: following,
           liked: blogLikedByMe(item),

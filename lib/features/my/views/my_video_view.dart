@@ -8,6 +8,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
+import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
 import '../data/repos/profile_repo.dart';
 
@@ -158,7 +159,8 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
       return const SizedBox.shrink();
     }
     final isWideScreen = 1.sw > 800;
-    final blogNotifier = ref.read(blogProvider.notifier);
+    final blogNotifier =
+        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
 
     if (_loading && _items.isEmpty) {
       return CustomScrollView(
