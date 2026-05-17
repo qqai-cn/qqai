@@ -21,9 +21,9 @@ Future<void> showCreateSquareDialog(
   if (created == null || !parentContext.mounted) return;
   await ref.read(squareProvider.notifier).refresh();
   if (!parentContext.mounted) return;
-  ScaffoldMessenger.of(parentContext).showSnackBar(
-    const SnackBar(content: Text('广场已创建')),
-  );
+  ScaffoldMessenger.of(
+    parentContext,
+  ).showSnackBar(const SnackBar(content: Text('广场已创建')));
   final id = created.id;
   if (id != null && id > 0) {
     parentContext.push(Routes.squareBlogView, extra: id);
@@ -66,9 +66,9 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
   Future<void> _submit() async {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请填写广场名称')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请填写广场名称')));
       return;
     }
     setState(() => _submitting = true);
@@ -80,16 +80,20 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
       final req = SquareCreateReqVO(
         squareName: name,
         squareImg: imgUrl,
-        squareDesc: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+        squareDesc: _descCtrl.text.trim().isEmpty
+            ? null
+            : _descCtrl.text.trim(),
       );
-      final item = await widget.parentRef.read(squareRepoProvider).createSquare(req);
+      final item = await widget.parentRef
+          .read(squareRepoProvider)
+          .createSquare(req);
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop(item);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('创建失败：$e')));
       }
     } finally {
       if (mounted) setState(() => _submitting = false);
@@ -97,124 +101,246 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
   }
 
   Widget _imagePickRow({
-    required String label,
     required XFile? file,
     required VoidCallback onPick,
     required VoidCallback onClear,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: _submitting ? null : onPick,
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8F9FB),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE1E5EB)),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: file == null
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.add_photo_alternate_outlined,
+                          color: Color(0xFF3578E5),
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      const Text(
+                        '上传广场封面',
+                        style: TextStyle(
+                          color: Color(0xFF202124),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        '建议使用横向图片',
+                        style: TextStyle(
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  )
+                : Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      FutureBuilder(
+                        future: file.readAsBytes(),
+                        builder: (context, snap) {
+                          if (!snap.hasData) {
+                            return const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            );
+                          }
+                          return Image.memory(snap.data!, fit: BoxFit.cover);
+                        },
+                      ),
+                      Positioned(
+                        right: 10,
+                        top: 10,
+                        child: IconButton.filled(
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.black.withValues(
+                              alpha: 0.56,
+                            ),
+                            minimumSize: const Size(34, 34),
+                            fixedSize: const Size(34, 34),
+                          ),
+                          onPressed: _submitting ? null : onClear,
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _fieldDecoration(String label, {String? hintText}) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hintText,
+      filled: true,
+      fillColor: const Color(0xFFF8F9FB),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF3578E5), width: 1.2),
+      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    );
+  }
+
+  Widget _dialogHeader() {
+    return Row(
       children: [
-        Text(label, style: Theme.of(context).textTheme.labelLarge),
-        const SizedBox(height: 6),
-        Row(
-          children: [
-            OutlinedButton.icon(
-              onPressed: _submitting ? null : onPick,
-              icon: const Icon(Icons.photo_outlined, size: 18),
-              label: const Text('选择图片'),
-            ),
-            if (file != null) ...[
-              const SizedBox(width: 8),
-              TextButton(
-                onPressed: _submitting ? null : onClear,
-                child: const Text('清除'),
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(Icons.grid_view_rounded, color: Color(0xFF3578E5)),
+        ),
+        const SizedBox(width: 12),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '创建广场',
+                style: TextStyle(
+                  color: Color(0xFF202124),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              SizedBox(height: 2),
+              Text(
+                '建立一个新的作品聚合空间',
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
               ),
             ],
-          ],
-        ),
-        if (file != null) ...[
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: FutureBuilder(
-              future: file.readAsBytes(),
-              builder: (context, snap) {
-                const previewHeight = 200.0;
-                if (!snap.hasData) {
-                  return const SizedBox(
-                    height: previewHeight,
-                    width: double.infinity,
-                    child: Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    ),
-                  );
-                }
-                return Image.memory(
-                  snap.data!,
-                  height: previewHeight,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                );
-              },
-            ),
           ),
-        ],
+        ),
+        IconButton(
+          tooltip: '关闭',
+          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.close),
+        ),
       ],
+    );
+  }
+
+  Widget _submitButton() {
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        minimumSize: const Size.fromHeight(46),
+        backgroundColor: const Color(0xFF3578E5),
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: const Color(0xFFE5E7EB),
+        disabledForegroundColor: const Color(0xFF9CA3AF),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(23)),
+      ),
+      onPressed: _submitting ? null : _submit,
+      child: _submitting
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+          : const Text('创建广场', style: TextStyle(fontWeight: FontWeight.w700)),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('创建广场'),
-      content: SizedBox(
-        width: 360,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: _nameCtrl,
-                enabled: !_submitting,
-                decoration: const InputDecoration(
-                  labelText: '广场名称 *',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _descCtrl,
-                enabled: !_submitting,
-                minLines: 2,
-                maxLines: 4,
-                decoration: const InputDecoration(
-                  labelText: '广场描述',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-              _imagePickRow(
-                label: '广场图标',
-                file: _imgFile,
-                onPick: _pickImage,
-                onClear: () => setState(() => _imgFile = null),
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 30,
+                offset: const Offset(0, 14),
               ),
             ],
           ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _dialogHeader(),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _nameCtrl,
+                    enabled: !_submitting,
+                    textInputAction: TextInputAction.next,
+                    decoration: _fieldDecoration('广场名称 *', hintText: '给广场取个名字'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _descCtrl,
+                    enabled: !_submitting,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: _fieldDecoration('广场描述', hintText: '简单介绍这个广场'),
+                  ),
+                  const SizedBox(height: 14),
+                  _imagePickRow(
+                    file: _imgFile,
+                    onPick: _pickImage,
+                    onClear: () => setState(() => _imgFile = null),
+                  ),
+                  const SizedBox(height: 20),
+                  _submitButton(),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('取消'),
-        ),
-        FilledButton(
-          onPressed: _submitting ? null : _submit,
-          child: _submitting
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('创建'),
-        ),
-      ],
     );
   }
 }
