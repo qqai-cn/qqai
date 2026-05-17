@@ -1,13 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 
+import '../../../../constant/api_constant.dart';
+import '../../../../util/api_base_client.dart';
 import '../models/goods_model.dart';
+import '../models/mall_product_model.dart';
 
 // Repo Provider（按 blog 的格式：Provider 放在 repo 文件里）
-final goodsRepoProvider = Provider<IGoodsRepo>(
-  (ref) => GoodsRepo(),
-);
+final goodsRepoProvider = Provider<IGoodsRepo>((ref) => GoodsRepo());
 
 abstract class IGoodsRepo {
+  Future<MallProductPageData> getMallProductsPage(
+    int pageNo, {
+    int pageSize = 20,
+    String? keyword,
+  });
+
+  Future<MallProduct?> getMallProduct(int id);
+
   Future<List<GoodsModel>> getAllGoodss();
   Future<GoodsModel?> getGoodsById(String id);
   Future<void> addGoods(GoodsModel item);
@@ -17,6 +27,58 @@ abstract class IGoodsRepo {
 
 class GoodsRepo implements IGoodsRepo {
   final List<GoodsModel> _items = [];
+
+  bool _isOkCode(dynamic code) => code == null || code == 0 || code == '0';
+
+  void _ensureEnvelope(Map<String, dynamic> root) {
+    if (!_isOkCode(root['code'])) {
+      throw root['msg']?.toString() ?? '请求失败';
+    }
+  }
+
+  @override
+  Future<MallProductPageData> getMallProductsPage(
+    int pageNo, {
+    int pageSize = 20,
+    String? keyword,
+  }) async {
+    final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
+    if (keyword != null && keyword.trim().isNotEmpty) {
+      query['keyword'] = keyword.trim();
+    }
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCTS_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '商场商品接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const MallProductPageData(list: [], total: 0);
+    }
+    return MallProductPageData.fromJson(inner);
+  }
+
+  @override
+  Future<MallProduct?> getMallProduct(int id) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCT_DETAIL,
+      RequestType.get,
+      queryParameters: {'id': id},
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '商场商品详情返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) return null;
+    return MallProduct.fromJson(inner);
+  }
 
   @override
   Future<List<GoodsModel>> getAllGoodss() async {

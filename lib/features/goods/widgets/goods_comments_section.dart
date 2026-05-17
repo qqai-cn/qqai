@@ -95,34 +95,31 @@ class _GoodsCommentsSectionState extends ConsumerState<GoodsCommentsSection> {
                 Text(
                   '评价',
                   style: context.typo.sectionTitle.copyWith(
-                    fontSize: 16.sp,
                     color: JdGoodsTheme.text,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
                 SizedBox(width: 8.w),
                 Text(
                   '${items.length}条',
                   style: context.typo.caption.copyWith(
-                    fontSize: 13.sp,
                     color: JdGoodsTheme.sub,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '好评度 ',
-                  style: context.typo.caption.copyWith(
-                    fontSize: 13.sp,
-                    color: JdGoodsTheme.sub,
-                  ),
+                  style: context.typo.caption.copyWith(color: JdGoodsTheme.sub),
                 ),
                 Text(
                   _goodRateLabel(items),
-                  style: context.typo.bodyStrong.copyWith(
-                    fontSize: 15.sp,
+                  style: context.typo.caption.copyWith(
                     color: JdGoodsTheme.red,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                Icon(Icons.chevron_right, size: 20.sp, color: JdGoodsTheme.sub),
+                const Icon(Icons.chevron_right, size: 16, color: JdGoodsTheme.sub),
               ],
             ),
           ),
@@ -139,10 +136,7 @@ class _GoodsCommentsSectionState extends ConsumerState<GoodsCommentsSection> {
                 child: Center(
                   child: Text(
                     '暂无评价，购买后发表第一条吧～',
-                    style: context.typo.body.copyWith(
-                      fontSize: 14.sp,
-                      color: JdGoodsTheme.sub,
-                    ),
+                    style: context.typo.body.copyWith(color: JdGoodsTheme.sub),
                   ),
                 ),
               ),
@@ -186,17 +180,14 @@ class _GoodsCommentsSectionState extends ConsumerState<GoodsCommentsSection> {
                   Text(
                     '发表评价',
                     style: context.typo.sectionTitle.copyWith(
-                      fontSize: 15.sp,
                       color: JdGoodsTheme.text,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 10.h),
                   Text(
                     '商品满意度',
-                    style: context.typo.caption.copyWith(
-                      fontSize: 13.sp,
-                      color: JdGoodsTheme.sub,
-                    ),
+                    style: context.typo.caption.copyWith(color: JdGoodsTheme.sub),
                   ),
                   SizedBox(height: 6.h),
                   _StarRatingInput(
@@ -206,17 +197,13 @@ class _GoodsCommentsSectionState extends ConsumerState<GoodsCommentsSection> {
                   SizedBox(height: 12.h),
                   TextField(
                     controller: _authorController,
-                    style: context.typo.inputText.copyWith(
-                      fontSize: 14.sp,
-                      color: JdGoodsTheme.text,
-                    ),
+                    style: context.typo.body.copyWith(color: JdGoodsTheme.text),
                     decoration: InputDecoration(
                       isDense: true,
                       filled: true,
                       fillColor: const Color(0xFFF7F7F7),
                       hintText: '昵称（展示为 j***x 样式也可）',
-                      hintStyle: context.typo.inputHint.copyWith(
-                        fontSize: 13.sp,
+                      hintStyle: context.typo.caption.copyWith(
                         color: JdGoodsTheme.sub,
                       ),
                       border: OutlineInputBorder(
@@ -233,17 +220,15 @@ class _GoodsCommentsSectionState extends ConsumerState<GoodsCommentsSection> {
                   TextField(
                     controller: _contentController,
                     maxLines: 4,
-                    style: context.typo.inputText.copyWith(
-                      fontSize: 14.sp,
+                    style: context.typo.body.copyWith(
                       color: JdGoodsTheme.text,
-                      height: 1.45,
+                      height: 1.4,
                     ),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: const Color(0xFFF7F7F7),
                       hintText: '宝贝满足你的期待吗？说说你的使用心得，给大家参考吧～',
-                      hintStyle: context.typo.inputHint.copyWith(
-                        fontSize: 13.sp,
+                      hintStyle: context.typo.caption.copyWith(
                         color: JdGoodsTheme.sub,
                       ),
                       alignLabelWithHint: true,
@@ -277,10 +262,7 @@ class _GoodsCommentsSectionState extends ConsumerState<GoodsCommentsSection> {
                         '发表评价',
                         maxLines: 1,
                         overflow: TextOverflow.visible,
-                        style: context.typo.button.copyWith(
-                          fontSize: 16.sp,
-                          height: 1.2,
-                        ),
+                        style: context.typo.button,
                       ),
                     ),
                   ),
@@ -330,13 +312,13 @@ class _JdCommentCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               CircleAvatar(
-                radius: 18.r,
+                radius: 20,
                 backgroundColor: const Color(0xFFE8E8E8),
                 child: Text(
                   item.author.isNotEmpty ? item.author[0] : '?',
-                  style: context.typo.bodyStrong.copyWith(
-                    fontSize: 14.sp,
+                  style: context.typo.caption.copyWith(
                     color: JdGoodsTheme.text,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -352,9 +334,9 @@ class _JdCommentCard extends StatelessWidget {
                             item.author,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: context.typo.bodyStrong.copyWith(
-                              fontSize: 14.sp,
-                              color: JdGoodsTheme.text,
+                            style: context.typo.caption.copyWith(
+                              color: JdGoodsTheme.sub,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -374,7 +356,7 @@ class _JdCommentCard extends StatelessWidget {
                             child: Text(
                               'PLUS',
                               style: context.typo.caption.copyWith(
-                                fontSize: 9.sp,
+                                fontSize: 10,
                                 color: const Color(0xFFFFD700),
                                 fontWeight: FontWeight.w700,
                               ),
@@ -385,20 +367,18 @@ class _JdCommentCard extends StatelessWidget {
                         Text(
                           timeLabel,
                           style: context.typo.caption.copyWith(
-                            fontSize: 12.sp,
                             color: JdGoodsTheme.sub,
                           ),
                         ),
                       ],
                     ),
-                    SizedBox(height: 4.h),
-                    _StarRow(stars: item.stars, size: 13),
+                    const SizedBox(height: 4),
+                    _StarRow(stars: item.stars, size: 14),
                     if (item.skuLabel != null && item.skuLabel!.isNotEmpty) ...[
-                      SizedBox(height: 6.h),
+                      const SizedBox(height: 6),
                       Text(
                         item.skuLabel!,
                         style: context.typo.caption.copyWith(
-                          fontSize: 12.sp,
                           color: JdGoodsTheme.sub,
                         ),
                       ),
@@ -411,11 +391,7 @@ class _JdCommentCard extends StatelessWidget {
           SizedBox(height: 10.h),
           Text(
             item.content,
-            style: context.typo.body.copyWith(
-              fontSize: 14.sp,
-              color: JdGoodsTheme.text,
-              height: 1.55,
-            ),
+            style: context.typo.body.copyWith(color: JdGoodsTheme.text),
           ),
           SizedBox(height: 10.h),
           Row(
@@ -453,7 +429,7 @@ class _StarRow extends StatelessWidget {
           padding: EdgeInsets.only(right: i < 4 ? 2.w : 0),
           child: Icon(
             filled ? Icons.star_rounded : Icons.star_border_rounded,
-            size: size.sp,
+            size: size,
             color: filled ? const Color(0xFFFF9A14) : const Color(0xFFE0E0E0),
           ),
         );
@@ -484,7 +460,7 @@ class _StarRatingInput extends StatelessWidget {
             padding: EdgeInsets.only(right: 8.w),
             child: Icon(
               selected ? Icons.star_rounded : Icons.star_border_rounded,
-              size: 28.sp,
+              size: 22,
               color: selected ? const Color(0xFFFF9A14) : const Color(0xFFE0E0E0),
             ),
           ),
@@ -510,14 +486,11 @@ class _GhostAction extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 15.sp, color: JdGoodsTheme.sub),
-            SizedBox(width: 4.w),
+            Icon(icon, size: 16, color: JdGoodsTheme.sub),
+            const SizedBox(width: 4),
             Text(
               label,
-              style: context.typo.caption.copyWith(
-                fontSize: 12.sp,
-                color: JdGoodsTheme.sub,
-              ),
+              style: context.typo.caption.copyWith(color: JdGoodsTheme.sub),
             ),
           ],
         ),

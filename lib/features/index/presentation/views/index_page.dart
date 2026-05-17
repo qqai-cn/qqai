@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/KeepAliveTabWrapper.dart';
-import 'package:qqai/features/goods/views/goods_view.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
 import 'package:qqai/features/blog/providers/blog_providers.dart';
@@ -17,6 +16,8 @@ import 'package:qqai/router/app_routes.dart';
 
 import '../../../blog/views/blog_list_kind.dart';
 import '../../../blog/views/blog_view.dart';
+import '../../../goods/goods_tab_navigator.dart';
+import '../../../goods/providers/goods_mall_tab_reselect_provider.dart';
 import '../../../help/views/help_view.dart';
 import '../../../share/views/share_view.dart';
 import '../../../square/views/square_view.dart';
@@ -84,6 +85,8 @@ class _IndexPageState extends ConsumerState<IndexPage>
         await ref.read(blogProvider(2).notifier).refresh();
       case 3:
         await ref.read(squareProvider.notifier).refresh();
+      case 4:
+        bumpGoodsMallTabReselect(ref);
       case 5:
         await ref.read(helpProvider.notifier).refresh();
       case 6:
@@ -134,10 +137,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   Widget _tabBody(int index) {
     if (!_mountedTabIndices.contains(index)) {
-      return const ColoredBox(
-        color: Colors.black12,
-        child: SizedBox.expand(),
-      );
+      return const ColoredBox(color: Colors.black12, child: SizedBox.expand());
     }
     switch (index) {
       case 0:
@@ -151,7 +151,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
       case 3:
         return const SquareView();
       case 4:
-        return const GoodsView();
+        return const KeepAliveTabWrapper(child: GoodsTabNavigator());
       case 5:
         return const HelpView(6);
       case 6:

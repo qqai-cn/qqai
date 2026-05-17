@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../router/app_routes.dart';
-import '../theme/jd_goods_theme.dart';
+import '../goods_tab_navigator.dart';
+import '../theme/goods_page_style.dart';
 
-/// 下单结果（京东风格）
+/// 下单结果（固定上下结构）
 class OrderResultView extends StatelessWidget {
   const OrderResultView({super.key, required this.orderId});
 
@@ -15,116 +15,167 @@ class OrderResultView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: JdGoodsTheme.pageBg,
+      backgroundColor: GoodsPageStyle.pageBg,
+      appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: GoodsPageStyle.cardBg,
+        foregroundColor: GoodsPageStyle.text,
+        automaticallyImplyLeading: false,
+        title: Text(
+          '下单结果',
+          style: context.typo.appBarTitle.copyWith(color: GoodsPageStyle.text),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: Column(
-            children: [
-              SizedBox(height: 48.h),
-              Container(
-                padding: EdgeInsets.all(28.w),
-                decoration: BoxDecoration(
-                  color: JdGoodsTheme.white,
-                  borderRadius: BorderRadius.circular(12.r),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.check_circle,
-                      size: 72.sp,
-                      color: const Color(0xFF07C160),
-                    ),
-                    SizedBox(height: 20.h),
-                    Text(
-                      '订单提交成功',
-                      style: context.typo.heroTitle.copyWith(
-                        fontSize: 20.sp,
-                        fontWeight: FontWeight.w700,
-                        color: JdGoodsTheme.text,
-                      ),
-                    ),
-                    SizedBox(height: 10.h),
-                    Text(
-                      '我们会尽快为您安排发货',
-                      style: context.typo.caption.copyWith(
-                        fontSize: 14.sp,
-                        color: JdGoodsTheme.sub,
-                        height: 1.4,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    SizedBox(height: 24.h),
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(14.w),
-                      decoration: BoxDecoration(
-                        color: JdGoodsTheme.pageBg,
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      child: SelectableText(
-                        '订单编号：$orderId',
-                        style: context.typo.body.copyWith(
-                          fontSize: 14.sp,
-                          color: JdGoodsTheme.text,
-                          height: 1.45,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(14, 24, 14, 32),
+              child: Column(
+                children: [
+                  _SuccessCard(orderId: orderId),
+                  const SizedBox(height: 24),
+                  const _ResultActions(),
+                ],
               ),
-              SizedBox(height: 32.h),
-              OutlinedButton(
-                onPressed: () => context.go(Routes.cartPageUrl),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: Size(double.infinity, 48.h),
-                  foregroundColor: JdGoodsTheme.text,
-                  side: const BorderSide(color: JdGoodsTheme.line),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24.r),
-                  ),
-                ),
-                child: Text(
-                  '查看购物车',
-                  style: context.typo.button.copyWith(
-                    fontSize: 15.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              SizedBox(height: 12.h),
-              FilledButton(
-                onPressed: () => context.go(Routes.HOME),
-                style: FilledButton.styleFrom(
-                  backgroundColor: JdGoodsTheme.red,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  minimumSize: Size(double.infinity, 48.h),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24.r),
-                  ),
-                ),
-                child: Text(
-                  '返回首页',
-                  style: context.typo.button.copyWith(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              SizedBox(height: 24.h),
-            ],
+            ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SuccessCard extends StatelessWidget {
+  const _SuccessCard({required this.orderId});
+
+  final String orderId;
+
+  @override
+  Widget build(BuildContext context) {
+    return _GoodsPanel(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: const Color(0xFFECFDF3),
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: const Icon(
+              Icons.check_circle_rounded,
+              size: 48,
+              color: Color(0xFF16A34A),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            '订单提交成功',
+            style: context.typo.sectionTitle.copyWith(
+              color: GoodsPageStyle.text,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '我们会尽快为您安排发货',
+            textAlign: TextAlign.center,
+            style: context.typo.body.copyWith(
+              color: GoodsPageStyle.sub,
+              height: 1.45,
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: GoodsPageStyle.pageBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: GoodsPageStyle.border),
+            ),
+            child: SelectableText(
+              '订单编号：$orderId',
+              style: context.typo.body.copyWith(
+                color: GoodsPageStyle.text,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ResultActions extends StatelessWidget {
+  const _ResultActions();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton(
+          onPressed: () => context.openGoodsCartFromRoot(),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 48),
+            foregroundColor: GoodsPageStyle.text,
+            side: const BorderSide(color: GoodsPageStyle.border),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+          ),
+          child: Text('查看购物车', style: context.typo.buttonSecondary),
+        ),
+        const SizedBox(height: 12),
+        FilledButton(
+          onPressed: () => context.go(Routes.HOME),
+          style: FilledButton.styleFrom(
+            backgroundColor: GoodsPageStyle.accent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            minimumSize: const Size(double.infinity, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+          ),
+          child: Text('返回首页', style: context.typo.button),
+        ),
+      ],
+    );
+  }
+}
+
+class _GoodsPanel extends StatelessWidget {
+  const _GoodsPanel({required this.child, this.padding});
+
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: padding,
+      decoration: BoxDecoration(
+        color: GoodsPageStyle.cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: GoodsPageStyle.border),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }

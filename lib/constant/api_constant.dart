@@ -53,6 +53,8 @@ class ApiConstant {
       '/app-api/blog/qqai/profile/my/shop/products';
   static const String PROFILE_MY_SHOP_PRODUCTS_PAGE =
       '/app-api/blog/qqai/profile/my/shop/products/page';
+  static const String MALL_PRODUCTS_PAGE = '/app-api/product/spu/page';
+  static const String MALL_PRODUCT_DETAIL = '/app-api/product/spu/get-detail';
   static const String PROFILE_MY_WORKS_PAGE =
       '/app-api/blog/qqai/profile/my/works/page';
   static const String PROFILE_MY_LIKES_PAGE =
