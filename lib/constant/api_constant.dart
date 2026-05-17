@@ -120,4 +120,8 @@ class ApiConstant {
 
   static String squareJoinConversationPath(int id) =>
       '/app-api/blog/qqai/square/$id/conversation/join';
+
+  /// 关注 POST / 取消关注 DELETE：`/app-api/blog/qqai/square/{id}/follow`
+  static String squareFollowPath(int id) =>
+      '/app-api/blog/qqai/square/$id/follow';
 }

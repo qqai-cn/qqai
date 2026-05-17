@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -293,9 +292,10 @@ class SquareBlogsNotifier extends _$SquareBlogsNotifier
 
   @override
   double getVideoItemHeightWithWidth(int colCount, double screenWidth) {
-    if (colCount <= 1) {
-      return screenWidth * 9 / 16;
+    double widthItem = screenWidth;
+    if (colCount > 1) {
+      widthItem = widthItem * 0.5;
     }
-    return 1.sw <= 800 ? 280 : 320;
+    return widthItem / (15 / 9) + 150;
   }
 }

@@ -1,10 +1,8 @@
 import 'dart:convert';
 
 import 'package:file_selector/file_selector.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -15,7 +13,6 @@ import '../../data/models/address_entity.dart';
 import '../data/repos/fabu_repo.dart';
 import '../data/models/fabu_model.dart';
 import '../data/models/topic_model.dart';
-import '../data/models/qqai_weather_city_model.dart';
 import '../../blog/data/models/blog_save_req_vo.dart';
 import '../../blog/data/repos/blog_repo.dart';
 
@@ -282,9 +279,13 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   Future<void> addVideoFiles(List<XFile> videoFiles) async {
-    final newVideoFiles = List<XFile>.from(state.videoFiles)
-      ..addAll(videoFiles);
-    state = state.copyWith(videoFiles: newVideoFiles);
+    final newVideoFiles = List<XFile>.from(videoFiles);
+    state = state.copyWith(
+      files: newVideoFiles,
+      uploadedFileUrls: [],
+      videoFiles: newVideoFiles,
+      uploadedVideoUrls: [],
+    );
     // Upload immediately
     await uploadFiles(videoFiles, true);
   }
@@ -325,10 +326,11 @@ class FabuNotifier extends _$FabuNotifier {
       final blogRepo = ref.read(blogRepoProvider);
       final blogContent = content ?? state.textContent;
       
-      // Collect already uploaded URLs
-      List<String> allUrls = [];
-      allUrls.addAll(state.uploadedFileUrls);
-      allUrls.addAll(state.uploadedVideoUrls);
+      // Collect already uploaded URLs and remove accidental duplicates.
+      final allUrls = <String>{
+        ...state.uploadedFileUrls,
+        ...state.uploadedVideoUrls,
+      }.toList();
       
       // Join urls with commas
       final blogResources = allUrls.isNotEmpty 

@@ -32,6 +32,7 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
   final ScrollController _scrollController = ScrollController();
   bool _loadingMoreGuard = false;
   static const double _masonryMinColumnWidth = 400;
+  static const int _masonryMaxColumn = 2;
 
   @override
   void initState() {
@@ -96,9 +97,16 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
     await ref.read(squareBlogsProvider(widget.squareId).notifier).refresh();
   }
 
+  Future<void> _openPublish(int squareId) async {
+    await context.push('${Routes.publishZuoPinPageUrl}?squareId=$squareId');
+    if (!mounted) return;
+    ref.invalidate(squareDetailProvider(squareId));
+    await ref.read(squareBlogsProvider(squareId).notifier).refresh();
+  }
+
   int _masonryColumns(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    return (width / _masonryMinColumnWidth).floor().clamp(1, 2);
+    return (width / _masonryMinColumnWidth).floor().clamp(1, _masonryMaxColumn);
   }
 
   List<Widget> _buildBlogSlivers({
@@ -237,6 +245,11 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
           orElse: () => const Text('广场'),
         ),
         actions: [
+          IconButton(
+            tooltip: '发布作品',
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: () => _openPublish(squareId),
+          ),
           detailAsync.maybeWhen(
             data: (square) {
               if (!isSquareOwner(square, authUserId)) {

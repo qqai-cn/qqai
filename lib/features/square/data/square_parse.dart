@@ -71,6 +71,20 @@ bool parseSquareBooleanEnvelope(
   return true;
 }
 
+bool parseSquareFollowEnvelope(
+  dynamic raw, {
+  String errorMessage = '关注广场失败',
+}) {
+  if (raw is! Map<String, dynamic>) {
+    throw errorMessage;
+  }
+  final code = raw['code'];
+  if (code != null && code != 0 && code != '0') {
+    throw raw['msg']?.toString() ?? errorMessage;
+  }
+  return raw['data'] == true;
+}
+
 List<SquareItem> parseSquareListEnvelope(
   dynamic raw, {
   String errorMessage = '广场列表返回格式错误',

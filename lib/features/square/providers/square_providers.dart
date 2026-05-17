@@ -117,4 +117,37 @@ class SquareNotifier extends _$SquareNotifier {
       );
     }
   }
+
+  Future<void> toggleFollow(SquareItem square) async {
+    final squareId = square.id;
+    if (squareId == null) return;
+
+    final wasFollowed = square.followedByMe == true;
+    _replaceSquare(squareId, square.copyWith(followedByMe: !wasFollowed));
+    try {
+      if (wasFollowed) {
+        await _repo.unfollowSquare(squareId);
+      } else {
+        await _repo.followSquare(squareId);
+      }
+    } catch (e) {
+      if (!ref.mounted) return;
+      _replaceSquare(squareId, square.copyWith(followedByMe: wasFollowed));
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  void _replaceSquare(int squareId, SquareItem next) {
+    final items = [
+      for (final item in state.allItems)
+        if (item.id == squareId) next else item,
+    ];
+    final pageData = state.pageData.value;
+    state = state.copyWith(
+      allItems: items,
+      pageData: pageData == null
+          ? state.pageData
+          : AsyncData(pageData.copyWith(list: items)),
+    );
+  }
 }

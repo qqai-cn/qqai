@@ -30,6 +30,10 @@ abstract class ISquareRepo {
 
   Future<SquareConversationJoinResult> joinSquareConversation(int squareId);
 
+  Future<bool> followSquare(int squareId);
+
+  Future<bool> unfollowSquare(int squareId);
+
   Future<SquareItem> createSquare(SquareCreateReqVO req);
 
   Future<bool> updateSquare(SquareSaveReqVO req);
@@ -106,6 +110,27 @@ class SquareRepo implements ISquareRepo {
       RequestType.post,
     );
     return parseSquareJoinConversationEnvelope(response.data);
+  }
+
+  @override
+  Future<bool> followSquare(int squareId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.squareFollowPath(squareId),
+      RequestType.post,
+    );
+    return parseSquareFollowEnvelope(response.data);
+  }
+
+  @override
+  Future<bool> unfollowSquare(int squareId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.squareFollowPath(squareId),
+      RequestType.delete,
+    );
+    return parseSquareFollowEnvelope(
+      response.data,
+      errorMessage: '取消关注广场失败',
+    );
   }
 
   @override

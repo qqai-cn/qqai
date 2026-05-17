@@ -16,6 +16,7 @@ sealed class SquareItem with _$SquareItem {
     int? chatConversationId,
     bool? hasChatConversation,
     int? blogCount,
+    bool? followedByMe,
     String? createTime,
   }) = _SquareItem;
 

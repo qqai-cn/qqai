@@ -480,7 +480,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.publishZuoPinPageUrl,
         name: 'publishZuopin',
-        builder: (c, s) => FabuView(),
+        builder: (c, s) {
+          final squareId = int.tryParse(s.uri.queryParameters['squareId'] ?? '');
+          return FabuView(squareId: squareId);
+        },
       ),
 
       /// ========== 搜索 ==========

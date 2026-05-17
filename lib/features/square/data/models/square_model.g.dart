@@ -16,6 +16,7 @@ _SquareItem _$SquareItemFromJson(Map<String, dynamic> json) => _SquareItem(
   chatConversationId: (json['chatConversationId'] as num?)?.toInt(),
   hasChatConversation: json['hasChatConversation'] as bool?,
   blogCount: (json['blogCount'] as num?)?.toInt(),
+  followedByMe: json['followedByMe'] as bool?,
   createTime: json['createTime'] as String?,
 );
 
@@ -30,6 +31,7 @@ Map<String, dynamic> _$SquareItemToJson(_SquareItem instance) =>
       'chatConversationId': instance.chatConversationId,
       'hasChatConversation': instance.hasChatConversation,
       'blogCount': instance.blogCount,
+      'followedByMe': instance.followedByMe,
       'createTime': instance.createTime,
     };
 

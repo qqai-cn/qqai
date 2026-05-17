@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:qqai/config/theme/my_fonts.dart';
 
-import '../../../config/theme/app_typography.dart';
-import '../../../constant/color_constant.dart';
 import '../providers/fabu_providers.dart';
-import 'fabu_aixin_page.dart';
-import 'fabu_dynamic_page.dart';
-import 'fabu_goods_page.dart';
-import 'fabu_video_page.dart';
+import 'fabu_publish_page.dart';
 
 class FabuView extends ConsumerStatefulWidget {
-  const FabuView({super.key});
+  const FabuView({super.key, this.squareId});
+
+  final int? squareId;
 
   @override
   ConsumerState<FabuView> createState() => _FabuViewState();
@@ -21,13 +16,16 @@ class FabuView extends ConsumerStatefulWidget {
 class _FabuViewState extends ConsumerState<FabuView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late final List<String> _tabTitle = ['发布动态', '发布视频', '发布商品', '发布爱心'];
-  late final List<Widget> _tabBoby = [
-    FabuDynamicPage(),
-    FabuVideoPage(),
-    FabuGoodsPage(),
-    FabuAiXinPage(),
+  late final List<FabuPublishType> _tabTypes = [
+    FabuPublishType.dynamic,
+    FabuPublishType.video,
+    FabuPublishType.goods,
+    FabuPublishType.aixin,
   ];
+  late final List<String> _tabTitle =
+      _tabTypes.map((type) => type.title).toList();
+  late final List<Widget> _tabBoby =
+      _tabTypes.map((type) => FabuPublishPage(type: type)).toList();
 
   @override
   void initState() {
@@ -49,12 +47,16 @@ class _FabuViewState extends ConsumerState<FabuView>
   Future<void> _publish() async {
     final fabuState = ref.read(fabuProvider);
     final fabuNotifier = ref.read(fabuProvider.notifier);
+    final publishType = _tabTypes[_tabController.index];
     
     try {
-      // For now, we'll just pass null for resources—you might want to process files/videos here
       await fabuNotifier.publishBlog(
+        squareId: widget.squareId,
         categary: 1,
-        blogType: fabuState.videoFiles.isNotEmpty ? 2 : 1,
+        blogType:
+            publishType == FabuPublishType.video || fabuState.videoFiles.isNotEmpty
+                ? 2
+                : 1,
         addressId: fabuState.selAddressEntity?.id,
         address: fabuState.selAddressEntity?.name,
         shareType: fabuState.whoCanSeeSel,
@@ -103,37 +105,118 @@ class _FabuViewState extends ConsumerState<FabuView>
   @override
   Widget build(BuildContext context) {
     final fabuState = ref.watch(fabuProvider);
-    final fabuNotifier = ref.read(fabuProvider.notifier);
     return Scaffold(
       appBar: AppBar(
-        title: TabBar(
-          controller: _tabController,
-          indicatorSize: TabBarIndicatorSize.label,
-          isScrollable: _tabTitle.length > 2,
-          tabs: _tabTitle.map((e) {
-            return Container(
-              height: 120.h,
-              width: 100.w,
-              alignment: Alignment.center,
-              child: Text(e),
-            );
-          }).toList(),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          '发布',
+          style: TextStyle(
+            color: Color(0xFF202124),
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: fabuState.isLoading ? null : _publish,
-            child: fabuState.isLoading
-                ? SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(
-                    '发布',
-                    style: TextStyle(color: Colors.blue),
-                  ),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FilledButton(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(72, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                backgroundColor: const Color(0xFF3578E5),
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: const Color(0xFFE5E7EB),
+                disabledForegroundColor: const Color(0xFF9CA3AF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              onPressed: fabuState.isLoading ? null : _publish,
+              child: fabuState.isLoading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      '发布',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+            ),
           ),
         ],
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(58),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F5F8),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE8EBF0)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      labelColor: const Color(0xFF202124),
+                      unselectedLabelColor: const Color(0xFF6B7280),
+                      labelStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      indicator: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      tabs: _tabTypes.map((type) {
+                        return Tab(
+                          height: 38,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(_iconFor(type), size: 16),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  type.title.replaceFirst('发布', ''),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
       body: TabBarView(
         controller: _tabController,
@@ -142,4 +225,12 @@ class _FabuViewState extends ConsumerState<FabuView>
     );
   }
 
+  IconData _iconFor(FabuPublishType type) {
+    return switch (type) {
+      FabuPublishType.dynamic => Icons.edit_note_outlined,
+      FabuPublishType.video => Icons.play_circle_outline,
+      FabuPublishType.goods => Icons.shopping_bag_outlined,
+      FabuPublishType.aixin => Icons.favorite_border,
+    };
+  }
 }
