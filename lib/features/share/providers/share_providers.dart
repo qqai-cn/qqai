@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -18,7 +17,7 @@ part 'share_providers.g.dart';
 sealed class ShareState with _$ShareState {
   const factory ShareState({
     // freezed 的 @Default 必须是 const
-    @Default(const AsyncLoading()) AsyncValue<SharePageModelData> sharePageModelData,
+    @Default(AsyncLoading()) AsyncValue<SharePageModelData> sharePageModelData,
     @Default([]) List<ShareItem> allItems,
     @Default(1) int currentPage,
     @Default(false) bool isLoadingMore,
@@ -30,61 +29,85 @@ sealed class ShareState with _$ShareState {
 @riverpod
 class ShareNotifier extends _$ShareNotifier {
   late final IShareRepo _repo;
+  var _isDisposed = false;
+
+  void _setStateIfAlive(ShareState newState) {
+    if (_isDisposed) return;
+    state = newState;
+  }
 
   @override
   ShareState build() {
+    _isDisposed = false;
     _repo = ref.read(shareRepoProvider);
-    Future.microtask(() => load());
+    ref.onDispose(() {
+      _isDisposed = true;
+    });
+    Future.microtask(() {
+      if (_isDisposed) return;
+      load();
+    });
     return const ShareState();
   }
 
   Future<void> load() async {
-    state = state.copyWith(sharePageModelData: const AsyncLoading(), error: null);
+    if (_isDisposed) return;
+    _setStateIfAlive(
+      state.copyWith(sharePageModelData: const AsyncLoading(), error: null),
+    );
     try {
       final items = await _repo.getSharePageModelWithPage(1);
-      state = state.copyWith(
+      if (_isDisposed) return;
+      _setStateIfAlive(state.copyWith(
         sharePageModelData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
         hasMore: (items.list?.length ?? 0) >= 10,
-      );
+      ));
     } catch (e, st) {
-      state = state.copyWith(sharePageModelData: AsyncError(e, st), error: e.toString());
+      if (_isDisposed) return;
+      _setStateIfAlive(
+        state.copyWith(
+          sharePageModelData: AsyncError(e, st),
+          error: e.toString(),
+        ),
+      );
     }
   }
 
   Future<void> refresh() async {
     try {
       final items = await _repo.getSharePageModelWithPage(1);
-      state = state.copyWith(
+      if (_isDisposed) return;
+      _setStateIfAlive(state.copyWith(
         sharePageModelData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
         hasMore: (items.list?.length ?? 0) >= 10,
-      );
-    } catch (e, st) {
-      state = state.copyWith(error: e.toString());
+      ));
+    } catch (e) {
+      if (_isDisposed) return;
+      _setStateIfAlive(state.copyWith(error: e.toString()));
     }
   }
 
   Future<void> loadMore() async {
     if (state.isLoadingMore || !state.hasMore) return;
-    state = state.copyWith(isLoadingMore: true);
+    _setStateIfAlive(state.copyWith(isLoadingMore: true));
     try {
       final nextPage = state.currentPage + 1;
       final items = await _repo.getSharePageModelWithPage(nextPage);
+      if (_isDisposed) return;
       final newItems = items.list ?? [];
-      state = state.copyWith(
+      _setStateIfAlive(state.copyWith(
         allItems: [...state.allItems, ...newItems],
         currentPage: nextPage,
         hasMore: newItems.length >= 10,
         isLoadingMore: false,
-      );
+      ));
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      if (_isDisposed) return;
+      _setStateIfAlive(state.copyWith(isLoadingMore: false, error: e.toString()));
     }
   }
 
@@ -99,7 +122,8 @@ class ShareNotifier extends _$ShareNotifier {
       await _repo.addShare(newItem);
       await load();
     } catch (e) {
-      state = state.copyWith(error: '添加失败: $e');
+      if (_isDisposed) return;
+      _setStateIfAlive(state.copyWith(error: '添加失败: $e'));
     }
   }
 
@@ -111,7 +135,8 @@ class ShareNotifier extends _$ShareNotifier {
       await _repo.updateShare(updated);
       await load();
     } catch (e) {
-      state = state.copyWith(error: '更新失败: $e');
+      if (_isDisposed) return;
+      _setStateIfAlive(state.copyWith(error: '更新失败: $e'));
     }
   }
 
@@ -120,7 +145,8 @@ class ShareNotifier extends _$ShareNotifier {
       await _repo.deleteShare(id);
       await load();
     } catch (e) {
-      state = state.copyWith(error: '删除失败: $e');
+      if (_isDisposed) return;
+      _setStateIfAlive(state.copyWith(error: '删除失败: $e'));
     }
   }
 
@@ -184,4 +210,3 @@ class ShareNotifier extends _$ShareNotifier {
     return widthItem / (15 / 9) + 150;
   }
 }
-
