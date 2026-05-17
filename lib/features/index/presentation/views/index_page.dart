@@ -6,11 +6,9 @@ import 'package:qqai/components/KeepAliveTabWrapper.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
 import 'package:qqai/features/blog/providers/blog_providers.dart';
-import 'package:qqai/features/help/providers/help_providers.dart';
 import 'package:qqai/features/index/providers/home_follow_feed_providers.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
-import 'package:qqai/features/share/providers/share_providers.dart';
 import 'package:qqai/features/square/providers/square_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 
@@ -18,8 +16,6 @@ import '../../../blog/views/blog_list_kind.dart';
 import '../../../blog/views/blog_view.dart';
 import '../../../goods/goods_tab_navigator.dart';
 import '../../../goods/providers/goods_mall_tab_reselect_provider.dart';
-import '../../../help/views/help_view.dart';
-import '../../../share/views/share_view.dart';
 import '../../../square/views/square_view.dart';
 import '../../../tool/tool_page.dart';
 import '../widgets/slide_transition_x.dart';
@@ -41,7 +37,10 @@ class _IndexPageState extends ConsumerState<IndexPage>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 8, vsync: this);
+    _tabController = TabController(
+      length: HomeNotifier.tabItems.length,
+      vsync: this,
+    );
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _expandTabsAround(_tabController.index);
@@ -52,7 +51,12 @@ class _IndexPageState extends ConsumerState<IndexPage>
   void _expandTabsAround(int i) {
     if (!mounted) return;
     setState(() {
-      _mountedTabIndices.addAll({i, if (i > 0) i - 1, if (i < 7) i + 1});
+      final lastIndex = HomeNotifier.tabItems.length - 1;
+      _mountedTabIndices.addAll({
+        i,
+        if (i > 0) i - 1,
+        if (i < lastIndex) i + 1,
+      });
     });
   }
 
@@ -87,10 +91,6 @@ class _IndexPageState extends ConsumerState<IndexPage>
         await ref.read(squareProvider.notifier).refresh();
       case 4:
         bumpGoodsMallTabReselect(ref);
-      case 5:
-        await ref.read(helpProvider.notifier).refresh();
-      case 6:
-        await ref.read(shareProvider.notifier).refresh();
       default:
         break;
     }
@@ -129,7 +129,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
         child: TabBarView(
           controller: _tabController,
           physics: const ClampingScrollPhysics(),
-          children: List.generate(8, _tabBody),
+          children: List.generate(HomeNotifier.tabItems.length, _tabBody),
         ),
       ),
     );
@@ -153,10 +153,6 @@ class _IndexPageState extends ConsumerState<IndexPage>
       case 4:
         return const KeepAliveTabWrapper(child: GoodsTabNavigator());
       case 5:
-        return const HelpView(6);
-      case 6:
-        return const ShareView(7);
-      case 7:
         return ToolPage();
       default:
         return const SizedBox.shrink();

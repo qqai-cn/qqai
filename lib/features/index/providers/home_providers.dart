@@ -44,8 +44,6 @@ class HomeNotifier extends _$HomeNotifier {
     '本地',
     '广场',
     '商场',
-    '聚力',
-    '共享',
     '工具',
   ];
   static List<String> videoTabItems = ['推荐', '影视'];

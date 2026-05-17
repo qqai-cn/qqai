@@ -49,17 +49,11 @@ import '../providers/auth_providers.dart';
 import '../util/api_base_client.dart';
 import '../features/friends/friend_requests_page.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
-import '../features/help/data/models/help_page_model.dart';
-import '../features/help/views/help_img_detail_view.dart';
-import '../features/help/views/help_video_detail_view.dart';
 import '../features/index/presentation/views/home_page.dart';
 import '../features/index/presentation/views/index_page.dart';
 import '../features/index/presentation/views/me_page.dart';
 import '../features/index/presentation/views/message_page.dart';
 import '../features/index/presentation/views/video_page.dart';
-import '../features/share/data/models/share_page_model.dart';
-import '../features/share/views/share_img_detail_view.dart';
-import '../features/share/views/share_video_detail_view.dart';
 import '../features/square/views/square_blog_view.dart';
 import '../features/tool/qr_code_tool_page.dart';
 import '../features/video/views/video_detail_view.dart';
@@ -361,43 +355,6 @@ GoRouter appRouter(Ref ref) {
       ),
 
       /// ========== 商品 ==========
-
-      /// ========== 互助 ==========
-      GoRoute(
-        path: Routes.helpImgDetailView,
-        name: 'helpImgDetailView',
-        builder: (c, s) {
-          final blogItem = s.extra as HelpItem;
-          return HelpImgDetailView(blogItem: blogItem);
-        },
-      ),
-      GoRoute(
-        path: Routes.helpVideoDetailView,
-        name: 'helpVideoDetailView',
-        builder: (c, s) {
-          final blogItem = s.extra as HelpItem;
-          return HelpVideoDetailView(blogItem: blogItem);
-        },
-      ),
-
-      /// ========== 共享 ==========
-      GoRoute(
-        path: Routes.shareImgDetailView,
-        name: 'shareImgDetailView',
-        builder: (c, s) {
-          final blogItem = s.extra as ShareItem;
-          return ShareImgDetailView(blogItem: blogItem);
-        },
-      ),
-      GoRoute(
-        path: Routes.shareVideoDetailView,
-        name: 'shareVideoDetailView',
-        builder: (c, s) {
-          final blogItem = s.extra as ShareItem;
-          return ShareVideoDetailView(blogItem: blogItem);
-        },
-      ),
-
       /// ========== 我的 ==========
       GoRoute(
         path: Routes.care,
