@@ -74,6 +74,8 @@ class MallProductSku {
     this.vipPrice,
     this.picUrl,
     this.stock,
+    this.weight,
+    this.volume,
   });
 
   final int? id;
@@ -83,6 +85,8 @@ class MallProductSku {
   final int? vipPrice;
   final String? picUrl;
   final int? stock;
+  final double? weight;
+  final double? volume;
 
   String get label {
     if (properties.isEmpty) return '默认规格';
@@ -107,6 +111,8 @@ class MallProductSku {
       vipPrice: (json['vipPrice'] as num?)?.toInt(),
       picUrl: json['picUrl'] as String?,
       stock: (json['stock'] as num?)?.toInt(),
+      weight: (json['weight'] as num?)?.toDouble(),
+      volume: (json['volume'] as num?)?.toDouble(),
     );
   }
 }
