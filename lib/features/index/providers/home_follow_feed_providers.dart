@@ -28,7 +28,9 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   BlogState build() {
     _blogRepo = ref.read(blogRepoProvider);
     _profileRepo = ref.read(profileRepoProvider);
-    Future.microtask(() => load());
+    Future.microtask(() {
+      if (ref.mounted) load();
+    });
     return const BlogState();
   }
 
@@ -36,6 +38,7 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
       final items = await _profileRepo.getMyFollowsFeedPage(1);
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -43,6 +46,7 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
         hasMore: (items.list?.length ?? 0) >= 10,
       );
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncError(e, st),
         error: e.toString(),
@@ -53,6 +57,7 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   Future<void> refresh() async {
     try {
       final items = await _profileRepo.getMyFollowsFeedPage(1);
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -60,6 +65,7 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
         hasMore: (items.list?.length ?? 0) >= 10,
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: e.toString());
     }
   }
@@ -70,6 +76,7 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     try {
       final nextPage = state.currentPage + 1;
       final items = await _profileRepo.getMyFollowsFeedPage(nextPage);
+      if (!ref.mounted) return;
       final newItems = items.list ?? [];
       state = state.copyWith(
         allItems: [...state.allItems, ...newItems],
@@ -78,10 +85,8 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
         isLoadingMore: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      if (!ref.mounted) return;
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
 
@@ -146,17 +151,12 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
         currentlyLiked: wasLiked,
       );
       final count = blogItem.zan ?? 0;
-      final newCount = nowLiked
-          ? count + 1
-          : (count > 0 ? count - 1 : 0);
+      final newCount = nowLiked ? count + 1 : (count > 0 ? count - 1 : 0);
       final patched = patchBlogFeedLists(
         state.allItems,
         state.blogPageData,
         shouldPatch: (b) => b.id == id,
-        patch: (b) => b.copyWith(
-          liked: nowLiked ? 1 : 0,
-          zan: newCount,
-        ),
+        patch: (b) => b.copyWith(liked: nowLiked ? 1 : 0, zan: newCount),
       );
       state = state.copyWith(
         allItems: patched.allItems,
@@ -261,7 +261,12 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     int colCount,
     double screenWidth,
   ) {
-    return BlogNotifier.getImgItemHeight(itemCount, length, colCount, screenWidth);
+    return BlogNotifier.getImgItemHeight(
+      itemCount,
+      length,
+      colCount,
+      screenWidth,
+    );
   }
 
   @override

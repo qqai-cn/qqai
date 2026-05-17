@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/components/qq_network_image.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:video_player/video_player.dart';
@@ -14,7 +15,8 @@ const double kFilmGridThumbTextGap = 8;
 
 double filmGridChildAspectRatio(double cellWidth) {
   final thumbH = cellWidth * 2 / 3;
-  return cellWidth / (thumbH + kFilmGridThumbTextGap + kFilmGridTextBlockHeight);
+  return cellWidth /
+      (thumbH + kFilmGridThumbTextGap + kFilmGridTextBlockHeight);
 }
 
 String _formatLikeCount(int? count) {
@@ -147,7 +149,8 @@ class _VideoItemViewState extends State<VideoItemView> {
 
   @override
   Widget build(BuildContext context) {
-    final cover = firstStillImageUrlFromResources(
+    final cover =
+        firstStillImageUrlFromResources(
           item.resources,
           fallback: widget.defaultCover,
         ) ??
@@ -160,51 +163,24 @@ class _VideoItemViewState extends State<VideoItemView> {
     final thumb = AspectRatio(
       aspectRatio: 3 / 2,
       child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(10),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
         child: Stack(
           fit: StackFit.expand,
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
                 final dpr = MediaQuery.devicePixelRatioOf(context);
-                final cw =
-                    (constraints.maxWidth * dpr).round().clamp(120, 900);
-                final ch =
-                    (constraints.maxHeight * dpr).round().clamp(80, 600);
-                return Image.network(
-                  cover,
+                final cw = (constraints.maxWidth * dpr).round().clamp(120, 900);
+                final ch = (constraints.maxHeight * dpr).round().clamp(80, 600);
+                return QqNetworkImage(
+                  url: cover,
                   fit: BoxFit.cover,
                   width: constraints.maxWidth,
                   height: constraints.maxHeight,
                   cacheWidth: cw,
                   cacheHeight: ch,
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return const ColoredBox(
-                      color: Color(0xFF2A2A36),
-                      child: Center(
-                        child: SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Color(0xFF6B6B78),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                  errorBuilder: (_, _, _) => const ColoredBox(
-                    color: Color(0xFF2A2A36),
-                    child: Center(
-                      child: Icon(
-                        Icons.videocam_off_outlined,
-                        color: Color(0xFF6B6B78),
-                      ),
-                    ),
-                  ),
+                  placeholderColor: const Color(0xFF2A2A36),
+                  errorIconColor: const Color(0xFF6B6B78),
                 );
               },
             ),
@@ -257,10 +233,7 @@ class _VideoItemViewState extends State<VideoItemView> {
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
                       shadows: const [
-                        Shadow(
-                          blurRadius: 6,
-                          color: Colors.black54,
-                        ),
+                        Shadow(blurRadius: 6, color: Colors.black54),
                       ],
                     ),
                   ),

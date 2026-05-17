@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -25,7 +26,9 @@ class ApiBaseClient {
     _onLogout = onLogout;
   }
 
-  static Future<Response<dynamic>> _handle401AndRetry(RequestOptions requestOptions) async {
+  static Future<Response<dynamic>> _handle401AndRetry(
+    RequestOptions requestOptions,
+  ) async {
     if (_isRefreshing) {
       // 已经在刷新中，等待刷新完成后重试
       final completer = Completer<void>();
@@ -63,68 +66,82 @@ class ApiBaseClient {
     }
   }
 
-  static final Dio _dio =
-      Dio(
-          BaseOptions(
-            baseUrl: ApiConstant.BASE_URL,
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-          ),
-        )
-        ..interceptors.add(
-          PrettyDioLogger(
-            requestHeader: false,
-            requestBody: false,
-            responseBody: false,
-            responseHeader: false,
-            error: true,
-            compact: true,
-            maxWidth: 90,
-          ),
-        )
-        ..interceptors.add(
-          InterceptorsWrapper(
-            onRequest: (options, handler) {
-              // 每次请求都添加最新的 Authorization 头
-              if (_authorization != null) {
-                options.headers['Authorization'] = _authorization;
-              }
-              return handler.next(options);
-            },
-            onResponse: (response, handler) async {
-              // 检查业务代码 401
-              final data = response.data;
-              if (data is Map && data['code'] == 401 && 
-                  response.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
-                try {
-                  // 处理业务代码 401
-                  final retryResponse = await _handle401AndRetry(response.requestOptions);
-                  return handler.resolve(retryResponse);
-                } catch (e) {
-                  // 如果刷新失败，直接返回原响应
-                  return handler.next(response);
-                }
-              }
+  static final Dio _dio = _createDio();
+
+  static Dio _createDio() {
+    final dio = Dio(
+      BaseOptions(
+        baseUrl: ApiConstant.BASE_URL,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+
+    if (kDebugMode) {
+      dio.interceptors.add(
+        PrettyDioLogger(
+          requestHeader: false,
+          requestBody: false,
+          responseBody: false,
+          responseHeader: false,
+          error: true,
+          compact: true,
+          maxWidth: 90,
+        ),
+      );
+    }
+
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          // 每次请求都添加最新的 Authorization 头
+          if (_authorization != null) {
+            options.headers['Authorization'] = _authorization;
+          }
+          return handler.next(options);
+        },
+        onResponse: (response, handler) async {
+          // 检查业务代码 401
+          final data = response.data;
+          if (data is Map &&
+              data['code'] == 401 &&
+              response.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
+            try {
+              // 处理业务代码 401
+              final retryResponse = await _handle401AndRetry(
+                response.requestOptions,
+              );
+              return handler.resolve(retryResponse);
+            } catch (e) {
+              // 如果刷新失败，直接返回原响应
               return handler.next(response);
-            },
-            onError: (error, handler) async {
-              // 检查 HTTP 状态码 401 且不是刷新令牌接口本身
-              if (error.response?.statusCode == 401 && 
-                  error.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
-                try {
-                  final retryResponse = await _handle401AndRetry(error.requestOptions);
-                  return handler.resolve(retryResponse);
-                } catch (e) {
-                  // 如果刷新失败，继续传播错误
-                  return handler.next(error);
-                }
-              }
+            }
+          }
+          return handler.next(response);
+        },
+        onError: (error, handler) async {
+          // 检查 HTTP 状态码 401 且不是刷新令牌接口本身
+          if (error.response?.statusCode == 401 &&
+              error.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
+            try {
+              final retryResponse = await _handle401AndRetry(
+                error.requestOptions,
+              );
+              return handler.resolve(retryResponse);
+            } catch (e) {
+              // 如果刷新失败，继续传播错误
               return handler.next(error);
-            },
-          ),
-        );
+            }
+          }
+          return handler.next(error);
+        },
+      ),
+    );
+
+    return dio;
+  }
 
   static Future<Response<dynamic>> _retry(RequestOptions requestOptions) async {
     // 复制请求头并确保使用最新的 Authorization
@@ -132,12 +149,9 @@ class ApiBaseClient {
     if (_authorization != null) {
       headers['Authorization'] = _authorization;
     }
-    
-    final options = Options(
-      method: requestOptions.method,
-      headers: headers,
-    );
-    
+
+    final options = Options(method: requestOptions.method, headers: headers);
+
     return _dio.request<dynamic>(
       requestOptions.path,
       data: requestOptions.data,
@@ -148,7 +162,7 @@ class ApiBaseClient {
 
   static String? _authorization;
 
-  /// Set global Authorization header (e.g. "Bearer <token>")
+  /// Set global Authorization header (for example, "Bearer token").
   static void setAuthorization(String? value) {
     _authorization = value;
   }
@@ -170,7 +184,7 @@ class ApiBaseClient {
     try {
       late Response response;
       final mergedHeaders = <String, dynamic>{
-        ...?_dio.options.headers,
+        ..._dio.options.headers,
         if (_authorization != null) 'Authorization': _authorization,
         ...?headers,
       };
@@ -193,7 +207,9 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: hasData ? const Duration(seconds: _timeoutInSeconds) : null,
+            sendTimeout: hasData
+                ? const Duration(seconds: _timeoutInSeconds)
+                : null,
           ),
         );
       } else if (requestType == RequestType.put) {
@@ -204,7 +220,9 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: hasData ? const Duration(seconds: _timeoutInSeconds) : null,
+            sendTimeout: hasData
+                ? const Duration(seconds: _timeoutInSeconds)
+                : null,
           ),
         );
       } else {
@@ -215,7 +233,9 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: hasData ? const Duration(seconds: _timeoutInSeconds) : null,
+            sendTimeout: hasData
+                ? const Duration(seconds: _timeoutInSeconds)
+                : null,
           ),
         );
       }
@@ -379,22 +399,19 @@ class ApiBaseClient {
   }) async {
     try {
       final bytes = await file.readAsBytes();
-      final multipartFile = MultipartFile.fromBytes(
-        bytes,
-        filename: file.name,
-      );
-      
+      final multipartFile = MultipartFile.fromBytes(bytes, filename: file.name);
+
       final formData = FormData.fromMap({
         'file': multipartFile,
-        if (directory != null) 'directory': directory,
+        'directory': ?directory,
       });
-      
+
       final response = await safeApiCall(
         ApiConstant.FILE_UPLOAD,
         RequestType.post,
         data: formData,
       );
-      
+
       return response.data['data'] as String;
     } catch (error) {
       Logger().e('File upload error: $error');

@@ -15,7 +15,7 @@ part 'my_providers.g.dart';
 sealed class MyState with _$MyState {
   const factory MyState({
     // freezed 的 @Default 必须是 const
-    @Default(const AsyncLoading()) AsyncValue<BlogPageModelData> blogPageData,
+    @Default(AsyncLoading()) AsyncValue<BlogPageModelData> blogPageData,
     String? error,
   }) = _MyState;
 }
@@ -29,7 +29,9 @@ class MyNotifier extends _$MyNotifier {
   MyState build() {
     _repo = ref.read(myRepoProvider);
     blogRepo = ref.read(blogRepoProvider);
-    Future.microtask(() => loadBlog());
+    Future.microtask(() {
+      if (ref.mounted) loadBlog();
+    });
     return const MyState();
   }
 
@@ -39,6 +41,7 @@ class MyNotifier extends _$MyNotifier {
     try {
       await _repo.addMy(newItem);
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: '添加失败: $e');
     }
   }
@@ -51,6 +54,7 @@ class MyNotifier extends _$MyNotifier {
       await _repo.updateMy(updated);
       // await load();
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: '更新失败: $e');
     }
   }
@@ -60,6 +64,7 @@ class MyNotifier extends _$MyNotifier {
       await _repo.deleteMy(id);
       // await load();
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: '删除失败: $e');
     }
   }
@@ -68,8 +73,10 @@ class MyNotifier extends _$MyNotifier {
     state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
       final items = await blogRepo.getBlogPageModelData();
+      if (!ref.mounted) return;
       state = state.copyWith(blogPageData: AsyncData(items));
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncError(e, st),
         error: e.toString(),

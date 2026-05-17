@@ -27,7 +27,7 @@ part 'blog_providers.g.dart';
 sealed class BlogState with _$BlogState {
   const factory BlogState({
     // freezed 的 @Default 必须是 const
-    @Default(const AsyncLoading()) AsyncValue<BlogPageModelData> blogPageData,
+    @Default(AsyncLoading()) AsyncValue<BlogPageModelData> blogPageData,
     @Default([]) List<BlogItem> allItems,
     @Default(1) int currentPage,
     @Default(false) bool isLoadingMore,
@@ -45,7 +45,9 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   BlogState build(int category) {
     _repo = ref.read(blogRepoProvider);
     _category = category;
-    Future.microtask(() => load());
+    Future.microtask(() {
+      if (ref.mounted) load();
+    });
     return const BlogState();
   }
 
@@ -67,6 +69,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
     state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
       final items = await _fetchPage(1);
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -74,6 +77,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
         hasMore: (items.list?.length ?? 0) >= 10,
       );
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncError(e, st),
         error: e.toString(),
@@ -84,6 +88,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   Future<void> refresh() async {
     try {
       final items = await _fetchPage(1);
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -91,6 +96,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
         hasMore: (items.list?.length ?? 0) >= 10,
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: e.toString());
     }
   }
@@ -101,6 +107,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
     try {
       final nextPage = state.currentPage + 1;
       final items = await _fetchPage(nextPage);
+      if (!ref.mounted) return;
       final newItems = items.list ?? [];
       state = state.copyWith(
         allItems: [...state.allItems, ...newItems],
@@ -109,10 +116,8 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
         isLoadingMore: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      if (!ref.mounted) return;
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
 
@@ -212,22 +217,14 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
     if (id == null) return;
     final wasLiked = blogItem.liked == 1;
     try {
-      final nowLiked = await _repo.toggleBlogLike(
-        id,
-        currentlyLiked: wasLiked,
-      );
+      final nowLiked = await _repo.toggleBlogLike(id, currentlyLiked: wasLiked);
       final count = blogItem.zan ?? 0;
-      final newCount = nowLiked
-          ? count + 1
-          : (count > 0 ? count - 1 : 0);
+      final newCount = nowLiked ? count + 1 : (count > 0 ? count - 1 : 0);
       final patched = patchBlogFeedLists(
         state.allItems,
         state.blogPageData,
         shouldPatch: (b) => b.id == id,
-        patch: (b) => b.copyWith(
-          liked: nowLiked ? 1 : 0,
-          zan: newCount,
-        ),
+        patch: (b) => b.copyWith(liked: nowLiked ? 1 : 0, zan: newCount),
       );
       state = state.copyWith(
         allItems: patched.allItems,

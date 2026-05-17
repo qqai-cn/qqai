@@ -2,22 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qqai/components/KeepAliveTabWrapper.dart';
+import 'package:qqai/features/index/data/home_tab_config.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
-import 'package:qqai/features/blog/providers/blog_providers.dart';
-import 'package:qqai/features/index/providers/home_follow_feed_providers.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
-import 'package:qqai/features/square/providers/square_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 
-import '../../../blog/views/blog_list_kind.dart';
-import '../../../blog/views/blog_view.dart';
-import '../../../goods/goods_tab_navigator.dart';
-import '../../../goods/providers/goods_mall_tab_reselect_provider.dart';
-import '../../../square/views/square_view.dart';
-import '../../../tool/tool_page.dart';
 import '../widgets/slide_transition_x.dart';
 
 class IndexPage extends ConsumerStatefulWidget {
@@ -76,24 +67,11 @@ class _IndexPageState extends ConsumerState<IndexPage>
     if (_tabController.index != 0) {
       _tabController.animateTo(0);
     }
-    await ref.read(blogProvider(0).notifier).refresh();
+    await homeTabConfigs.first.onReselect?.call(ref);
   }
 
   Future<void> _refreshHomeTabAt(int index) async {
-    switch (index) {
-      case 0:
-        await ref.read(blogProvider(0).notifier).refresh();
-      case 1:
-        await ref.read(homeFollowFeedProvider.notifier).refresh();
-      case 2:
-        await ref.read(blogProvider(2).notifier).refresh();
-      case 3:
-        await ref.read(squareProvider.notifier).refresh();
-      case 4:
-        bumpGoodsMallTabReselect(ref);
-      default:
-        break;
-    }
+    await homeTabConfigs[index].onReselect?.call(ref);
   }
 
   @override
@@ -139,24 +117,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
     if (!_mountedTabIndices.contains(index)) {
       return const ColoredBox(color: Colors.black12, child: SizedBox.expand());
     }
-    switch (index) {
-      case 0:
-        return const KeepAliveTabWrapper(child: BlogView(0));
-      case 1:
-        return const KeepAliveTabWrapper(
-          child: BlogView(1, listKind: BlogListKind.followFeed),
-        );
-      case 2:
-        return const KeepAliveTabWrapper(child: BlogView(2));
-      case 3:
-        return const SquareView();
-      case 4:
-        return const KeepAliveTabWrapper(child: GoodsTabNavigator());
-      case 5:
-        return ToolPage();
-      default:
-        return const SizedBox.shrink();
-    }
+    return homeTabConfigs[index].builder(context);
   }
 
   Widget animatedTitle() {

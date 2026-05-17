@@ -10,7 +10,7 @@ part 'my_favorites_providers.g.dart';
 @freezed
 sealed class MyFavoritesState with _$MyFavoritesState {
   const factory MyFavoritesState({
-    @Default(const AsyncLoading()) AsyncValue<BlogPageModelData> pageData,
+    @Default(AsyncLoading()) AsyncValue<BlogPageModelData> pageData,
     @Default([]) List<BlogItem> allItems,
     @Default(1) int currentPage,
     @Default(false) bool isLoadingMore,
@@ -26,7 +26,9 @@ class MyFavoritesNotifier extends _$MyFavoritesNotifier {
   @override
   MyFavoritesState build() {
     _repo = ref.read(blogRepoProvider);
-    Future.microtask(() => load());
+    Future.microtask(() {
+      if (ref.mounted) load();
+    });
     return const MyFavoritesState();
   }
 
@@ -34,6 +36,7 @@ class MyFavoritesNotifier extends _$MyFavoritesNotifier {
     state = state.copyWith(pageData: const AsyncLoading(), error: null);
     try {
       final page = await _repo.getMyFavoritesPage(1);
+      if (!ref.mounted) return;
       state = state.copyWith(
         pageData: AsyncData(page),
         allItems: page.list ?? [],
@@ -41,6 +44,7 @@ class MyFavoritesNotifier extends _$MyFavoritesNotifier {
         hasMore: (page.list?.length ?? 0) >= 10,
       );
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = state.copyWith(pageData: AsyncError(e, st), error: e.toString());
     }
   }
@@ -48,6 +52,7 @@ class MyFavoritesNotifier extends _$MyFavoritesNotifier {
   Future<void> refresh() async {
     try {
       final page = await _repo.getMyFavoritesPage(1);
+      if (!ref.mounted) return;
       state = state.copyWith(
         pageData: AsyncData(page),
         allItems: page.list ?? [],
@@ -55,6 +60,7 @@ class MyFavoritesNotifier extends _$MyFavoritesNotifier {
         hasMore: (page.list?.length ?? 0) >= 10,
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: e.toString());
     }
   }
@@ -65,6 +71,7 @@ class MyFavoritesNotifier extends _$MyFavoritesNotifier {
     try {
       final next = state.currentPage + 1;
       final page = await _repo.getMyFavoritesPage(next);
+      if (!ref.mounted) return;
       final list = page.list ?? [];
       state = state.copyWith(
         allItems: [...state.allItems, ...list],
@@ -73,6 +80,7 @@ class MyFavoritesNotifier extends _$MyFavoritesNotifier {
         isLoadingMore: false,
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }

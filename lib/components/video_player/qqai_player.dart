@@ -1,21 +1,23 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/qq_network_image.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class QqaiPlayer extends StatefulWidget {
-  QqaiPlayer({
-    Key? key,
+  const QqaiPlayer({
+    super.key,
     this.image,
     required this.controls,
     required this.url,
     required this.autoPlay,
+
     /// 默认 [BoxFit.contain]：父区域横竖与视频横竖不一致时仍完整显示（留边不裁切）。
     /// 竖滑全屏沉浸场景可设为 [BoxFit.cover]。
     this.videoFit = BoxFit.contain,
-  }) : super(key: key);
+  });
 
   final String? image;
   final String url;
@@ -24,7 +26,7 @@ class QqaiPlayer extends StatefulWidget {
   final BoxFit videoFit;
 
   @override
-  _QqaiPlayerState createState() => _QqaiPlayerState();
+  State<QqaiPlayer> createState() => _QqaiPlayerState();
 }
 
 class _QqaiPlayerState extends State<QqaiPlayer> {
@@ -76,19 +78,6 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     }
   }
 
-  ///If you have subtitle assets
-
-  Future<ClosedCaptionFile> _loadCaptions() async {
-    if (!_isDisposed && mounted) {
-      final String fileContents = await DefaultAssetBundle.of(
-        context,
-      ).loadString('imgs/defbak.png');
-      flickManager.flickControlManager!.toggleSubtitle();
-      return SubRipCaptionFile(fileContents);
-    }
-    return SubRipCaptionFile('');
-  }
-
   @override
   void dispose() {
     _isDisposed = true;
@@ -114,45 +103,46 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
           }
         }
       },
-      child: Container(
-        child: SafeFlickVideoPlayer(
-          flickManager: flickManager,
-          flickVideoWithControls: FlickVideoWithControls(
-            videoFit: widget.videoFit,
-            playerLoadingFallback: Positioned.fill(
-              child: Stack(
-                children: <Widget>[
-                  Positioned.fill(
-                    child: Image.network(widget.image!, fit: BoxFit.fitWidth),
+      child: SafeFlickVideoPlayer(
+        flickManager: flickManager,
+        flickVideoWithControls: FlickVideoWithControls(
+          videoFit: widget.videoFit,
+          playerLoadingFallback: Positioned.fill(
+            child: Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: QqNetworkImage(
+                    url: widget.image!,
+                    fit: BoxFit.fitWidth,
                   ),
-                  Positioned(
-                    right: 10,
-                    top: 10,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        backgroundColor: Colors.white,
-                        strokeWidth: 4,
-                      ),
+                ),
+                Positioned(
+                  right: 10,
+                  top: 10,
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: const CircularProgressIndicator(
+                      backgroundColor: Colors.white,
+                      strokeWidth: 4,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            controls: widget.controls,
           ),
-          flickVideoWithControlsFullscreen: FlickVideoWithControls(
-            videoFit: widget.videoFit,
-            playerLoadingFallback: Center(
-              child: Image.network(widget.image!, fit: BoxFit.fitWidth),
-            ),
-            controls: FlickLandscapeControls(),
-            iconThemeData: IconThemeData(size: 40, color: Colors.white),
-            textStyle: context.typo.body.copyWith(
-              fontSize: 16,
-              color: Colors.white,
-            ),
+          controls: widget.controls,
+        ),
+        flickVideoWithControlsFullscreen: FlickVideoWithControls(
+          videoFit: widget.videoFit,
+          playerLoadingFallback: Center(
+            child: QqNetworkImage(url: widget.image!, fit: BoxFit.fitWidth),
+          ),
+          controls: FlickLandscapeControls(),
+          iconThemeData: IconThemeData(size: 40, color: Colors.white),
+          textStyle: context.typo.body.copyWith(
+            fontSize: 16,
+            color: Colors.white,
           ),
         ),
       ),

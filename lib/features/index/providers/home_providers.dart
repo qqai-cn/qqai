@@ -3,6 +3,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../../components/AnimatedBottomBar.dart';
+import '../data/home_tab_config.dart';
 import '../presentation/views/index_page.dart';
 import '../presentation/views/me_page.dart';
 import '../presentation/views/message_page.dart';
@@ -38,14 +39,9 @@ class HomeNotifier extends _$HomeNotifier {
     () => MessagePage(),
     () => MePage(),
   ];
-  static List<String> tabItems = [
-    '推荐',
-    '关注',
-    '本地',
-    '广场',
-    '商场',
-    '工具',
-  ];
+  static List<String> tabItems = homeTabConfigs
+      .map((tab) => tab.title)
+      .toList();
   static List<String> videoTabItems = ['推荐', '影视'];
   static List<String> messageTabItems = ['消息', '好友'];
 
