@@ -88,10 +88,7 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: Center(
-                child: Text(
-                  '没有更多了',
-                  style: TextStyle(color: Colors.white54),
-                ),
+                child: Text('没有更多了', style: TextStyle(color: Colors.white54)),
               ),
             ),
           );
@@ -106,10 +103,7 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
           },
         );
         if (widget.onRefresh != null) {
-          return RefreshIndicator(
-            onRefresh: widget.onRefresh!,
-            child: child,
-          );
+          return RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
         }
         return child;
       },
@@ -125,7 +119,62 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
           ],
         ),
       ),
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => ResponsiveMasonryGrid(
+        itemCount: 4,
+        minColumnWidth: widget.minColumnWidth,
+        controller: _scrollController,
+        itemBuilder: (context, index) => const _FeedSkeletonCard(),
+      ),
+    );
+  }
+}
+
+class _FeedSkeletonCard extends StatelessWidget {
+  const _FeedSkeletonCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Card(
+      child: Padding(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                _SkeletonBox(width: 38, height: 38, radius: 19),
+                SizedBox(width: 10),
+                Expanded(child: _SkeletonBox(height: 14)),
+              ],
+            ),
+            SizedBox(height: 12),
+            _SkeletonBox(height: 14),
+            SizedBox(height: 8),
+            _SkeletonBox(width: 180, height: 14),
+            SizedBox(height: 12),
+            AspectRatio(aspectRatio: 4 / 3, child: _SkeletonBox()),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SkeletonBox extends StatelessWidget {
+  const _SkeletonBox({this.width, this.height, this.radius = 8});
+
+  final double? width;
+  final double? height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFE2E5EA),
+        borderRadius: BorderRadius.all(Radius.circular(radius)),
+      ),
+      child: SizedBox(width: width, height: height),
     );
   }
 }

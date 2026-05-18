@@ -38,6 +38,7 @@ sealed class BlogState with _$BlogState {
 
 @Riverpod(keepAlive: true)
 class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
+  static const int _pageSize = 6;
   late final IBlogRepo _repo;
   late final int _category;
 
@@ -56,13 +57,14 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
       final geo = await readBlogFeedGeoPosition();
       return _repo.getBlogPageModelDataWithPage(
         page,
+        pageSize: _pageSize,
         shareType: blogShareTypePublic,
         latitude: geo?.latitude,
         longitude: geo?.longitude,
         radiusKm: geo != null ? blogNearbyRadiusKmDefault : null,
       );
     }
-    return _repo.getBlogPageModelDataWithPage(page);
+    return _repo.getBlogPageModelDataWithPage(page, pageSize: _pageSize);
   }
 
   Future<void> load() async {
@@ -74,7 +76,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
-        hasMore: (items.list?.length ?? 0) >= 10,
+        hasMore: (items.list?.length ?? 0) >= _pageSize,
       );
     } catch (e, st) {
       if (!ref.mounted) return;
@@ -93,7 +95,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
-        hasMore: (items.list?.length ?? 0) >= 10,
+        hasMore: (items.list?.length ?? 0) >= _pageSize,
       );
     } catch (e) {
       if (!ref.mounted) return;
@@ -112,7 +114,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
       state = state.copyWith(
         allItems: [...state.allItems, ...newItems],
         currentPage: nextPage,
-        hasMore: newItems.length >= 10,
+        hasMore: newItems.length >= _pageSize,
         isLoadingMore: false,
       );
     } catch (e) {

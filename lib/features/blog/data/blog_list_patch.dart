@@ -7,10 +7,8 @@ import '../../my/data/repos/profile_repo.dart';
 import 'models/blog_page_model.dart';
 
 /// 更新瀑布流中的条目（不涉及 [BlogState] 类型，避免与 `blog_providers` 循环依赖）。
-({
-  List<BlogItem> allItems,
-  AsyncValue<BlogPageModelData> blogPageData,
-}) patchBlogFeedLists(
+({List<BlogItem> allItems, AsyncValue<BlogPageModelData> blogPageData})
+patchBlogFeedLists(
   List<BlogItem> allItems,
   AsyncValue<BlogPageModelData> blogPageData, {
   required bool Function(BlogItem b) shouldPatch,
@@ -20,10 +18,8 @@ import 'models/blog_page_model.dart';
   final newItems = allItems.map(mapOne).toList();
   final newPageData = switch (blogPageData) {
     AsyncData(:final value) => AsyncData(
-        value.copyWith(
-          list: (value.list ?? []).map(mapOne).toList(),
-        ),
-      ),
+      value.copyWith(list: (value.list ?? []).map(mapOne).toList()),
+    ),
     _ => blogPageData,
   };
   return (allItems: newItems, blogPageData: newPageData);
@@ -81,29 +77,22 @@ String authorFollowerMetaText(BlogItem b) {
   return parts.join(' · ');
 }
 
-/// 作者头像 URL（接口 [creatorAvatar] 为空时，自己的作品可用 [fallbackAvatarUrl]）。
-String? blogCreatorAvatarUrl(
-  BlogItem b, {
-  String? currentUserId,
-  String? fallbackAvatarUrl,
-}) {
+/// 作者头像 URL。为空时由头像组件显示默认头像。
+String? blogCreatorAvatarUrl(BlogItem b, {String? currentUserId}) {
   final resolved = resolveMediaUrl(b.creatorAvatar);
   if (resolved != null) return resolved;
-
-  if (fallbackAvatarUrl != null &&
-      isOwnBlogPost(b, currentUserId)) {
-    return resolveMediaUrl(fallbackAvatarUrl);
-  }
   return null;
 }
 
 /// 关注/取消关注后返回更新后的列表与分页数据；[errorMessage] 非空表示未调用接口。
 Future<
-    ({
-      List<BlogItem> allItems,
-      AsyncValue<BlogPageModelData> blogPageData,
-      String? errorMessage,
-    })> toggleCareForFeedLists(
+  ({
+    List<BlogItem> allItems,
+    AsyncValue<BlogPageModelData> blogPageData,
+    String? errorMessage,
+  })
+>
+toggleCareForFeedLists(
   List<BlogItem> allItems,
   AsyncValue<BlogPageModelData> blogPageData,
   IProfileRepo profile,

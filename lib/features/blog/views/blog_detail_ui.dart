@@ -7,7 +7,6 @@ import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/util/format_count.dart';
-import '../../my/providers/my_shop_profile.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
 import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
@@ -95,20 +94,12 @@ class BlogDetailBottomInfo extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final item = resolveBlogItem(ref, blog);
     final auth = ref.watch(authProvider);
-    final myShop = switch (ref.watch(myShopProfileProvider)) {
-      AsyncData(:final value) => value,
-      _ => null,
-    };
-    final avatarUrl = blogCreatorAvatarUrl(
-      item,
-      currentUserId: auth.userId,
-      fallbackAvatarUrl: myShop?.coverUrl,
-    );
-    final avatarHeroTag =
-        avatarUrl != null ? blogAvatarDetailHeroTag(item) : null;
+    final avatarUrl = blogCreatorAvatarUrl(item, currentUserId: auth.userId);
+    final avatarHeroTag = avatarUrl != null
+        ? blogAvatarDetailHeroTag(item)
+        : null;
     final name = item.creatorName?.trim();
-    final displayName =
-        (name != null && name.isNotEmpty) ? name : '用户';
+    final displayName = (name != null && name.isNotEmpty) ? name : '用户';
     final content = item.content?.trim() ?? '';
 
     return Positioned(
@@ -122,11 +113,11 @@ class BlogDetailBottomInfo extends ConsumerWidget {
             InkWell(
               onTap: avatarHeroTag != null
                   ? () => openBlogAvatarPreview(
-                        context,
-                        blog: item,
-                        heroTag: avatarHeroTag,
-                        imageUrl: avatarUrl,
-                      )
+                      context,
+                      blog: item,
+                      heroTag: avatarHeroTag,
+                      imageUrl: avatarUrl,
+                    )
                   : null,
               child: avatarHeroTag != null
                   ? Hero(
@@ -217,15 +208,7 @@ class BlogDetailMediaOverlay extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final item = resolveBlogItem(ref, blog);
     final auth = ref.watch(authProvider);
-    final myShop = switch (ref.watch(myShopProfileProvider)) {
-      AsyncData(:final value) => value,
-      _ => null,
-    };
-    final avatarUrl = blogCreatorAvatarUrl(
-      item,
-      currentUserId: auth.userId,
-      fallbackAvatarUrl: myShop?.coverUrl,
-    );
+    final avatarUrl = blogCreatorAvatarUrl(item, currentUserId: auth.userId);
     final notifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
     final showFollow = shouldShowBlogFollowButton(item, auth.userId);
     final following = blogFollowCare(item) == 1;
@@ -242,11 +225,11 @@ class BlogDetailMediaOverlay extends ConsumerWidget {
           avatarHeroTag: avatarHeroTag,
           onAvatarTap: avatarUrl != null && avatarHeroTag != null
               ? () => openBlogAvatarPreview(
-                    context,
-                    blog: item,
-                    heroTag: avatarHeroTag,
-                    imageUrl: avatarUrl,
-                  )
+                  context,
+                  blog: item,
+                  heroTag: avatarHeroTag,
+                  imageUrl: avatarUrl,
+                )
               : null,
           showFollowButton: showFollow,
           isFollowing: following,

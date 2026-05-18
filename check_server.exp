@@ -1,0 +1,29 @@
+#!/usr/bin/expect
+
+set timeout 30
+set host "47.94.236.184"
+set port "22"
+set user "root"
+set pswd "Qazse@123"
+
+spawn ssh -p $port $user@$host
+
+expect {
+    "(yes/no)?" {
+        send "yes\n"
+        exp_continue
+    }
+    -re "(p|P)ass(word|wd):" {
+        send "$pswd\n"
+    }
+}
+
+expect "#"
+send "ls -la /\n"
+expect "#"
+send "ls -la /work/\n"
+expect "#"
+send "ls -la /var/www/\n"
+expect "#"
+send "exit\n"
+expect eof

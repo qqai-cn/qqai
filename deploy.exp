@@ -1,0 +1,51 @@
+#!/usr/bin/expect
+
+set timeout 600
+set host "47.94.236.184"
+set port "22"
+set user "root"
+set pswd "Qazse@123"
+set local_file "/Users/dcx/work/flutter/qqai/build/web.zip"
+set remote_path "/qqai"
+
+# Upload the file
+spawn scp -P $port $local_file $user@$host:$remote_path/
+
+expect {
+    "(yes/no)?" {
+        send "yes\n"
+        exp_continue
+    }
+    -re "(p|P)ass(word|wd):" {
+        send "$pswd\n"
+    }
+}
+
+expect eof
+
+# Now extract it
+spawn ssh -p $port $user@$host
+
+expect {
+    "(yes/no)?" {
+        send "yes\n"
+        exp_continue
+    }
+    -re "(p|P)ass(word|wd):" {
+        send "$pswd\n"
+    }
+}
+
+expect "#"
+send "cd $remote_path\n"
+expect "#"
+send "rm -rf web.bak\n"
+expect "#"
+send "mv web web.bak 2>/dev/null || true\n"
+expect "#"
+send "unzip -o web.zip\n"
+expect "#"
+send "echo 'Deployment complete!'\n"
+expect "#"
+send "exit\n"
+expect eof

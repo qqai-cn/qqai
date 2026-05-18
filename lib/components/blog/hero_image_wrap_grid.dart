@@ -7,12 +7,14 @@ class HeroImageWrapGrid extends StatelessWidget {
   final List<String> imageUrls;
   final String Function(int index) heroTagBuilder;
   final void Function(int index, String heroTag) onImageTap;
+  final int? maxVisibleCount;
 
   const HeroImageWrapGrid({
     super.key,
     required this.imageUrls,
     required this.heroTagBuilder,
     required this.onImageTap,
+    this.maxVisibleCount,
   });
 
   @override
@@ -21,7 +23,9 @@ class HeroImageWrapGrid extends StatelessWidget {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
         final parentWidth = constraints.maxWidth;
-        final imageCount = imageUrls.length;
+        final imageCount = maxVisibleCount == null
+            ? imageUrls.length
+            : imageUrls.length.clamp(0, maxVisibleCount!);
         final itemSize = tileExtentForWrapImageGrid(imageCount, parentWidth);
         final dpr = MediaQuery.devicePixelRatioOf(context);
         final memPx = (itemSize * dpr).round().clamp(96, 900);

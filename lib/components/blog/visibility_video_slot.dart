@@ -1,5 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:qqai/components/qq_network_image.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -20,20 +22,45 @@ class VisibilityVideoSlot extends StatefulWidget {
 }
 
 class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
-  double _visibleFraction = 0;
-  static const double _visibleThreshold = 0.25;
+  static const double _visibleThreshold = 0.72;
+  static const Duration _mountDelay = Duration(milliseconds: 450);
+
+  Timer? _mountTimer;
+  bool _shouldMountPlayer = false;
+
+  @override
+  void dispose() {
+    _mountTimer?.cancel();
+    super.dispose();
+  }
+
+  void _handleVisibility(VisibilityInfo info) {
+    final active = info.visibleFraction >= _visibleThreshold;
+    if (active && !_shouldMountPlayer) {
+      _mountTimer ??= Timer(_mountDelay, () {
+        if (!mounted) return;
+        setState(() {
+          _shouldMountPlayer = true;
+          _mountTimer = null;
+        });
+      });
+      return;
+    }
+    if (!active) {
+      _mountTimer?.cancel();
+      _mountTimer = null;
+      if (_shouldMountPlayer && mounted) {
+        setState(() => _shouldMountPlayer = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
       key: Key('lazy_video_${widget.url.hashCode}'),
-      onVisibilityChanged: (info) {
-        if (mounted && info.visibleFraction != _visibleFraction) {
-          setState(() => _visibleFraction = info.visibleFraction);
-        }
-      },
-      child: hasResolvableMediaUrl(widget.url) &&
-              _visibleFraction >= _visibleThreshold
+      onVisibilityChanged: _handleVisibility,
+      child: hasResolvableMediaUrl(widget.url) && _shouldMountPlayer
           ? VideoItemPlayer(url: widget.url, imgUrl: widget.imgUrl)
           : _VideoThumbnail(imgUrl: widget.imgUrl),
     );
@@ -51,7 +78,12 @@ class _VideoThumbnail extends StatelessWidget {
       fit: StackFit.expand,
       alignment: Alignment.center,
       children: [
-        CachedNetworkImage(imageUrl: imgUrl, fit: BoxFit.cover),
+        QqNetworkImage(
+          url: imgUrl,
+          fit: BoxFit.cover,
+          placeholderColor: const Color(0xFF1F1F28),
+          errorIconColor: const Color(0xFF6B6B78),
+        ),
         const Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
       ],
     );

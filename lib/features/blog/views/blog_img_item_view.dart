@@ -15,7 +15,6 @@ import '../data/models/blog_page_model.dart';
 import '../providers/blog_feed_list_actions.dart';
 import '../providers/blog_providers.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
-import '../../my/providers/my_shop_profile.dart';
 import 'blog_avatar_preview.dart';
 import 'blog_detail_ui.dart';
 import 'blog_list_kind.dart';
@@ -25,9 +24,10 @@ class BlogImgItemView extends ConsumerStatefulWidget {
   final int category;
   final BlogListKind listKind;
 
-  BlogImgItemView(
+  const BlogImgItemView(
     this.category,
     this.blogItem, {
+    super.key,
     this.listKind = BlogListKind.recommend,
     this.feedActions,
   });
@@ -60,21 +60,19 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
   @override
   Widget build(BuildContext context) {
     final follow = widget.listKind == BlogListKind.followFeed;
-    final BlogFeedListActions blogNotifier = widget.feedActions ??
+    final BlogFeedListActions blogNotifier =
+        widget.feedActions ??
         (follow
             ? ref.read(homeFollowFeedProvider.notifier)
             : ref.read(blogProvider(widget.category).notifier));
     final auth = ref.watch(authProvider);
-    final myShop = switch (ref.watch(myShopProfileProvider)) {
-      AsyncData(:final value) => value,
-      _ => null,
-    };
-    final showCareButton =
-        shouldShowBlogFollowButton(widget.blogItem, auth.userId);
+    final showCareButton = shouldShowBlogFollowButton(
+      widget.blogItem,
+      auth.userId,
+    );
     final avatarUrl = blogCreatorAvatarUrl(
       widget.blogItem,
       currentUserId: auth.userId,
-      fallbackAvatarUrl: myShop?.coverUrl,
     );
     final avatarHeroTag = avatarUrl != null
         ? blogAvatarHeroTag(widget.category, widget.blogItem)
@@ -127,6 +125,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
             SizedBox(height: 10),
             HeroImageWrapGrid(
               imageUrls: _imageUrls,
+              maxVisibleCount: 3,
               heroTagBuilder: (i) =>
                   'lookBlogImg-${widget.category}-${widget.blogItem.id}-$i',
               onImageTap: (i, heroTag) {

@@ -21,6 +21,7 @@ part 'home_follow_feed_providers.g.dart';
 @riverpod
 class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     implements BlogFeedListActions {
+  static const int _pageSize = 6;
   late final IBlogRepo _blogRepo;
   late final IProfileRepo _profileRepo;
 
@@ -37,13 +38,16 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   Future<void> load() async {
     state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
-      final items = await _profileRepo.getMyFollowsFeedPage(1);
+      final items = await _profileRepo.getMyFollowsFeedPage(
+        1,
+        pageSize: _pageSize,
+      );
       if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
-        hasMore: (items.list?.length ?? 0) >= 10,
+        hasMore: (items.list?.length ?? 0) >= _pageSize,
       );
     } catch (e, st) {
       if (!ref.mounted) return;
@@ -56,13 +60,16 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
 
   Future<void> refresh() async {
     try {
-      final items = await _profileRepo.getMyFollowsFeedPage(1);
+      final items = await _profileRepo.getMyFollowsFeedPage(
+        1,
+        pageSize: _pageSize,
+      );
       if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
-        hasMore: (items.list?.length ?? 0) >= 10,
+        hasMore: (items.list?.length ?? 0) >= _pageSize,
       );
     } catch (e) {
       if (!ref.mounted) return;
@@ -75,13 +82,16 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
-      final items = await _profileRepo.getMyFollowsFeedPage(nextPage);
+      final items = await _profileRepo.getMyFollowsFeedPage(
+        nextPage,
+        pageSize: _pageSize,
+      );
       if (!ref.mounted) return;
       final newItems = items.list ?? [];
       state = state.copyWith(
         allItems: [...state.allItems, ...newItems],
         currentPage: nextPage,
-        hasMore: newItems.length >= 10,
+        hasMore: newItems.length >= _pageSize,
         isLoadingMore: false,
       );
     } catch (e) {

@@ -33,31 +33,23 @@ class _IndexPageState extends ConsumerState<IndexPage>
       vsync: this,
     );
     _tabController.addListener(_onTabChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _expandTabsAround(_tabController.index);
-    });
   }
 
-  /// 当前 Tab 与左右各一屏，便于横向滑动时下一页已就绪。
-  void _expandTabsAround(int i) {
+  void _mountTab(int i) {
     if (!mounted) return;
     setState(() {
-      final lastIndex = HomeNotifier.tabItems.length - 1;
-      _mountedTabIndices.addAll({
-        i,
-        if (i > 0) i - 1,
-        if (i < lastIndex) i + 1,
-      });
+      _mountedTabIndices.add(i);
     });
   }
 
   void _onTabChanged() {
     if (_tabController.indexIsChanging || !mounted) return;
-    _expandTabsAround(_tabController.index);
+    _mountTab(_tabController.index);
     setState(() {});
   }
 
   void _onHomeTabTap(int index) {
+    _mountTab(index);
     if (index == _tabController.index) {
       _refreshHomeTabAt(index);
     }
