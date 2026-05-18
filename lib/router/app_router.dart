@@ -33,6 +33,7 @@ import '../components/imgpreview/image_detail_page.dart';
 import '../components/imgpreview/preview_img.dart';
 import '../components/video_player_detail/FullScreenVideoPlayer.dart';
 import '../features/blog/data/models/blog_page_model.dart';
+import '../features/fabu/views/fabu_publish_page.dart';
 import '../features/fabu/views/fabu_view.dart';
 import '../features/goods/models/cart_line.dart';
 import '../features/goods/views/cart_view.dart';
@@ -86,7 +87,7 @@ GoRouter appRouter(Ref ref) {
       final isAuthenticated = authState.isAuthenticated;
       final path = state.uri.path;
       final requiresAuth = _requiresAuth(path);
-      
+
       // 未登录：只有需要认证的页面才跳转登录
       if (!isAuthenticated && requiresAuth && path != Routes.login) {
         return Routes.login;
@@ -438,9 +439,32 @@ GoRouter appRouter(Ref ref) {
         path: Routes.publishZuoPinPageUrl,
         name: 'publishZuopin',
         builder: (c, s) {
-          final squareId = int.tryParse(s.uri.queryParameters['squareId'] ?? '');
-          return FabuView(squareId: squareId);
+          final squareId = int.tryParse(
+            s.uri.queryParameters['squareId'] ?? '',
+          );
+          final type = _publishTypeFromRoute(s.uri.queryParameters['type']);
+          return FabuView(squareId: squareId, initialType: type);
         },
+      ),
+      GoRoute(
+        path: Routes.publishDynamicPageUrl,
+        name: 'publishDynamic',
+        builder: (c, s) => const FabuView(initialType: FabuPublishType.dynamic),
+      ),
+      GoRoute(
+        path: Routes.publishVideoPageUrl,
+        name: 'publishVideo',
+        builder: (c, s) => const FabuView(initialType: FabuPublishType.video),
+      ),
+      GoRoute(
+        path: Routes.publishShortVideoPageUrl,
+        name: 'publishShortVideo',
+        builder: (c, s) => const FabuView(initialType: FabuPublishType.video),
+      ),
+      GoRoute(
+        path: Routes.publishHelpPageUrl,
+        name: 'publishHelp',
+        builder: (c, s) => const FabuView(initialType: FabuPublishType.help),
       ),
 
       /// ========== 搜索 ==========
@@ -492,7 +516,19 @@ bool _requiresAuth(String path) {
   const protectedPaths = [
     Routes.mePage, // 我的页面
     Routes.messagePage, // 消息页面
-    Routes.publishZuoPinPageUrl, // 消息页面
+    Routes.publishZuoPinPageUrl, // 发布页面
+    Routes.publishDynamicPageUrl,
+    Routes.publishVideoPageUrl,
+    Routes.publishShortVideoPageUrl,
+    Routes.publishHelpPageUrl,
   ];
   return protectedPaths.any((protected) => path.startsWith(protected));
+}
+
+FabuPublishType _publishTypeFromRoute(String? type) {
+  return switch (type) {
+    'video' => FabuPublishType.video,
+    'help' => FabuPublishType.help,
+    _ => FabuPublishType.dynamic,
+  };
 }

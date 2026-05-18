@@ -10,6 +10,7 @@ class ApiConstant {
   static const String WEATHER_USER_CITY_LIST =
       '/app-api/blog/weather-user-city/detail-list';
   static const String BLOG_PAGE = '/app-api/blog/qqai/page';
+  static const String BLOG_HOT_PAGE = '/app-api/blog/qqai/hot/page';
   static const String BLOG_SAVE = '/app-api/blog/qqai/save';
 
   /// 博客点赞（POST）/ 取消点赞（DELETE）：`/app-api/blog/qqai/profile/blog/{blogId}/like`

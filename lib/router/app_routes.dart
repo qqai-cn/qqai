@@ -7,6 +7,7 @@ class Routes {
   static const String mePage = "/me_page";
   static const String chat = "/chat";
   static const String friendDetail = "/friend_detail";
+
   /// 新的朋友（待处理好友申请）
   static const String friendPendingIncoming = "/friend/pending-incoming";
   static const String userDetail = "/user_detail";
@@ -38,6 +39,7 @@ class Routes {
   static const String cartPageUrl = "/cart";
   static const String checkoutPageUrl = "/checkout";
   static const String orderResultPageUrl = "/order_result";
+
   /// 抖音风格「我的」子页（需登录）
   static const String douyinGroupBuy = "/douyin/group_buy";
   static const String douyinAnchorCenter = "/douyin/anchor_center";
@@ -48,7 +50,7 @@ class Routes {
   static const String publishDynamicPageUrl = "/publish_dynamic_page";
   static const String publishVideoPageUrl = "/publish_video_page";
   static const String publishZuoPinPageUrl = '/publish_zuopin_page';
-  static const String publishGoodsPageUrl = "/publish_goods_page";
+  static const String publishHelpPageUrl = "/publish_help_page";
   static const String publishShortVideoPageUrl = "/publish_short_video_page";
   static const String aiPageUrl = "/ai_page";
   static const String weatherPageUrl = "/weather";

@@ -23,7 +23,7 @@ abstract class IBlogRepo {
   Future<void> deleteBlog(String id);
 
   Future<BlogPageModelData> getBlogPageModelData();
-  
+
   Future<BlogPageModelData> getBlogPageModelDataWithPage(
     int page, {
     int pageSize = 10,
@@ -36,8 +36,18 @@ abstract class IBlogRepo {
     double? longitude,
     double? radiusKm,
   });
-  
-  Future<void> createBlog(BlogSaveReqVO req);
+
+  Future<BlogPageModelData> getHotBlogPageModelDataWithPage(
+    int page, {
+    int pageSize = 10,
+    int? blogType,
+    int? categary,
+    int? squareId,
+    int? userId,
+    int? shareType,
+  });
+
+  Future<void> createBlog(BlogSaveReqVO req, {int? rewardAmount});
 
   /// 切换点赞，返回切换后是否已赞。
   Future<bool> toggleBlogLike(int blogId, {required bool currentlyLiked});
@@ -52,7 +62,10 @@ abstract class IBlogRepo {
   Future<bool> unfavoriteBlog(int blogId);
 
   /// 切换收藏，返回切换后是否已收藏。
-  Future<bool> toggleBlogFavorite(int blogId, {required bool currentlyCollected});
+  Future<bool> toggleBlogFavorite(
+    int blogId, {
+    required bool currentlyCollected,
+  });
 
   /// 我的收藏分页。
   Future<BlogPageModelData> getMyFavoritesPage(int page, {int pageSize = 10});
@@ -114,10 +127,7 @@ class BlogRepo implements IBlogRepo {
     double? longitude,
     double? radiusKm,
   }) async {
-    final query = <String, dynamic>{
-      'pageNo': page,
-      'pageSize': pageSize,
-    };
+    final query = <String, dynamic>{'pageNo': page, 'pageSize': pageSize};
     if (blogType != null) query['blogType'] = blogType;
     if (categary != null) query['categary'] = categary;
     if (squareId != null) query['squareId'] = squareId;
@@ -135,18 +145,49 @@ class BlogRepo implements IBlogRepo {
     );
     return parseBlogPageEnvelope(response.data);
   }
-  
+
   @override
-  Future<void> createBlog(BlogSaveReqVO req) async {
+  Future<BlogPageModelData> getHotBlogPageModelDataWithPage(
+    int page, {
+    int pageSize = 10,
+    int? blogType,
+    int? categary,
+    int? squareId,
+    int? userId,
+    int? shareType,
+  }) async {
+    final query = <String, dynamic>{'pageNo': page, 'pageSize': pageSize};
+    if (blogType != null) query['blogType'] = blogType;
+    if (categary != null) query['categary'] = categary;
+    if (squareId != null) query['squareId'] = squareId;
+    if (userId != null) query['userId'] = userId;
+    if (shareType != null) query['shareType'] = shareType;
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_HOT_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    return parseBlogPageEnvelope(response.data);
+  }
+
+  @override
+  Future<void> createBlog(BlogSaveReqVO req, {int? rewardAmount}) async {
+    final data = req.toJson();
+    if (rewardAmount != null && rewardAmount > 0) {
+      data['rewardAmount'] = rewardAmount;
+    }
     await ApiBaseClient.safeApiCall(
       ApiConstant.BLOG_SAVE,
       RequestType.post,
-      data: req.toJson(),
+      data: data,
     );
   }
 
   @override
-  Future<bool> toggleBlogLike(int blogId, {required bool currentlyLiked}) async {
+  Future<bool> toggleBlogLike(
+    int blogId, {
+    required bool currentlyLiked,
+  }) async {
     final url = ApiConstant.profileBlogLikePath(blogId);
     final Response response = await ApiBaseClient.safeApiCall(
       url,
@@ -231,10 +272,7 @@ class BlogRepo implements IBlogRepo {
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.BLOG_MY_FAVORITES_PAGE,
       RequestType.get,
-      queryParameters: {
-        'pageNo': page,
-        'pageSize': pageSize,
-      },
+      queryParameters: {'pageNo': page, 'pageSize': pageSize},
     );
     return parseBlogPageEnvelope(response.data);
   }

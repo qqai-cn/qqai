@@ -10,6 +10,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../../providers/auth_providers.dart';
 import '../data/blog_list_patch.dart';
+import '../data/home_blog_tab.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_feed_list_actions.dart';
 import '../providers/blog_providers.dart';
@@ -72,6 +73,8 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
             followFeed: follow,
             feedCategory: widget.category,
           );
+    final content = _contentWithoutReward(item.content);
+    final rewardText = _rewardText(item.content);
     final bodyStyle = context.typo.body;
     const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
     return Card(
@@ -106,7 +109,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
               Padding(
                 padding: EdgeInsets.only(left: 5, right: 5),
                 child: Text(
-                  widget.blogItem.content ?? '',
+                  content,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: bodyStyle.copyWith(
@@ -114,6 +117,12 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   ),
                 ),
               ),
+              if (widget.category == HomeBlogTab.mutualAid &&
+                  rewardText != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
+                  child: _RewardAmountText(text: rewardText),
+                ),
               Container(height: 2, color: Colors.white),
               Expanded(
                 flex: 9,
@@ -168,4 +177,53 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
       ),
     );
   }
+}
+
+class _RewardAmountText extends StatelessWidget {
+  const _RewardAmountText({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(
+          Icons.workspace_premium_outlined,
+          size: 15,
+          color: Color(0xFFFF8A00),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: context.typo.caption.copyWith(
+            color: const Color(0xFFFF8A00),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+String _contentWithoutReward(String? content) {
+  return (content ?? '')
+      .split('\n')
+      .where((line) => !line.trim().startsWith('悬赏金额：'))
+      .join('\n')
+      .trim();
+}
+
+String? _rewardText(String? content) {
+  for (final line in (content ?? '').split('\n')) {
+    final text = line.trim();
+    if (text.startsWith('悬赏金额：')) {
+      final amount = text.substring('悬赏金额：'.length).trim();
+      return amount.startsWith('¥') ? '悬赏金额：$amount' : '悬赏金额：¥$amount';
+    }
+  }
+  return null;
 }

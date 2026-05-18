@@ -157,7 +157,7 @@ class FabuNotifier extends _$FabuNotifier {
           latitude: position.latitude,
           longitude: position.longitude,
         );
-        
+
         // Add GPS address to the top of the list
         final addressList = List<AddressEntity>.from(state.addressList);
         addressList.insert(1, addressEntityOnly);
@@ -182,21 +182,23 @@ class FabuNotifier extends _$FabuNotifier {
 
   Future<void> uploadFiles(List<XFile> files, bool isVideo) async {
     if (files.isEmpty) return;
-    
+
     state = state.copyWith(isUploading: true);
-    
+
     try {
       List<String> newUrls = [];
       for (var file in files) {
         final url = await ApiBaseClient.uploadFile(file: file);
         newUrls.add(url);
       }
-      
+
       if (isVideo) {
-        final updatedUrls = List<String>.from(state.uploadedVideoUrls)..addAll(newUrls);
+        final updatedUrls = List<String>.from(state.uploadedVideoUrls)
+          ..addAll(newUrls);
         state = state.copyWith(uploadedVideoUrls: updatedUrls);
       } else {
-        final updatedUrls = List<String>.from(state.uploadedFileUrls)..addAll(newUrls);
+        final updatedUrls = List<String>.from(state.uploadedFileUrls)
+          ..addAll(newUrls);
         state = state.copyWith(uploadedFileUrls: updatedUrls);
       }
     } catch (e) {
@@ -209,26 +211,23 @@ class FabuNotifier extends _$FabuNotifier {
   void clearList(XFile file) {
     final fileIndex = state.files.indexOf(file);
     final newFiles = List<XFile>.from(state.files)..remove(file);
-    
+
     // Also remove the corresponding uploaded URL
     final newUrls = List<String>.from(state.uploadedFileUrls);
     if (fileIndex >= 0 && fileIndex < newUrls.length) {
       newUrls.removeAt(fileIndex);
     }
-    
+
     state = state.copyWith(
-      files: newFiles, 
+      files: newFiles,
       uploadedFileUrls: newUrls,
       videoFiles: [],
-      uploadedVideoUrls: []
+      uploadedVideoUrls: [],
     );
   }
 
   void clearVideo() {
-    state = state.copyWith(
-      videoFiles: [],
-      uploadedVideoUrls: []
-    );
+    state = state.copyWith(videoFiles: [], uploadedVideoUrls: []);
   }
 
   Future<void> selectFile(List<XFile> value, BuildContext context) async {
@@ -310,6 +309,10 @@ class FabuNotifier extends _$FabuNotifier {
     state = state.copyWith(textContent: text);
   }
 
+  void updateRewardAmount(int? amount) {
+    state = state.copyWith(aixinType: amount ?? 0);
+  }
+
   Future<void> publishBlog({
     int? squareId,
     String? topicIds,
@@ -320,23 +323,22 @@ class FabuNotifier extends _$FabuNotifier {
     int? addressId,
     String? address,
     int? shareType,
+    int? rewardAmount,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final blogRepo = ref.read(blogRepoProvider);
       final blogContent = content ?? state.textContent;
-      
+
       // Collect already uploaded URLs and remove accidental duplicates.
       final allUrls = <String>{
         ...state.uploadedFileUrls,
         ...state.uploadedVideoUrls,
       }.toList();
-      
+
       // Join urls with commas
-      final blogResources = allUrls.isNotEmpty 
-          ? allUrls.join(',') 
-          : resources;
-      
+      final blogResources = allUrls.isNotEmpty ? allUrls.join(',') : resources;
+
       final selected = state.selAddressEntity;
       final selectedAddress = address ?? selected?.name;
       final resolvedAddressId = addressId ?? selected?.id;
@@ -360,7 +362,10 @@ class FabuNotifier extends _$FabuNotifier {
         longitude: withLocation ? selected.longitude : null,
         shareType: shareType,
       );
-      await blogRepo.createBlog(req);
+      await blogRepo.createBlog(
+        req,
+        rewardAmount: rewardAmount ?? (categary == 2 ? state.aixinType : null),
+      );
       state = state.copyWith(isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());

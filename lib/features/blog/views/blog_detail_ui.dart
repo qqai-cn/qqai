@@ -39,7 +39,7 @@ BlogItem _resolveFromState(BlogState state, BlogItem initial) {
   return initial;
 }
 
-/// 从详情上下文 feed 状态中取最新条目（推荐 / 本地 / 关注）。
+/// 从详情上下文 feed 状态中取最新条目（推荐 / 热点 / 本地 / 关注）。
 BlogItem resolveBlogItem(WidgetRef ref, BlogItem initial) {
   final id = initial.id;
   if (id == null) return initial;
@@ -47,6 +47,7 @@ BlogItem resolveBlogItem(WidgetRef ref, BlogItem initial) {
   final states = [
     ref.watch(homeFollowFeedProvider),
     ref.watch(blogProvider(HomeBlogTab.recommend)),
+    ref.watch(blogProvider(HomeBlogTab.hot)),
     ref.watch(blogProvider(HomeBlogTab.local)),
   ];
   for (final state in states) {

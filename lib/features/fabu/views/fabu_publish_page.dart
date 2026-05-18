@@ -12,8 +12,7 @@ import 'fabu_media_preview_tile.dart';
 enum FabuPublishType {
   dynamic('发布动态', true),
   video('发布视频', false),
-  goods('发布商品', true),
-  aixin('发布爱心', true);
+  help('发布求助', true);
 
   const FabuPublishType(this.title, this.allowImages);
 
@@ -22,10 +21,7 @@ enum FabuPublishType {
 }
 
 class FabuPublishPage extends ConsumerStatefulWidget {
-  const FabuPublishPage({
-    super.key,
-    required this.type,
-  });
+  const FabuPublishPage({super.key, required this.type});
 
   final FabuPublishType type;
 
@@ -34,17 +30,18 @@ class FabuPublishPage extends ConsumerStatefulWidget {
 }
 
 class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
+  static const List<int> _rewardOptions = [50, 100, 150];
+
   final _contentController = TextEditingController();
   final _titleController = TextEditingController();
-  final _priceController = TextEditingController();
   final _targetController = TextEditingController();
+  int? _rewardAmountCents;
 
   @override
   void initState() {
     super.initState();
     _contentController.addListener(_syncContent);
     _titleController.addListener(_syncContent);
-    _priceController.addListener(_syncContent);
     _targetController.addListener(_syncContent);
   }
 
@@ -52,30 +49,28 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   void dispose() {
     _contentController.dispose();
     _titleController.dispose();
-    _priceController.dispose();
     _targetController.dispose();
     super.dispose();
   }
 
   void _syncContent() {
     final notifier = ref.read(fabuProvider.notifier);
+    notifier.updateRewardAmount(
+      widget.type == FabuPublishType.help ? _rewardAmountCents : null,
+    );
     final content = switch (widget.type) {
       FabuPublishType.dynamic => _contentController.text,
       FabuPublishType.video => [
-          _titleController.text.trim(),
-          _contentController.text.trim(),
-        ].where((text) => text.isNotEmpty).join('\n'),
-      FabuPublishType.goods => [
-          _titleController.text.trim(),
-          if (_priceController.text.trim().isNotEmpty)
-            '¥${_priceController.text.trim()}',
-          _contentController.text.trim(),
-        ].where((text) => text.isNotEmpty).join('\n'),
-      FabuPublishType.aixin => [
-          _contentController.text.trim(),
-          if (_targetController.text.trim().isNotEmpty)
-            '目标：${_targetController.text.trim()}',
-        ].where((text) => text.isNotEmpty).join('\n'),
+        _titleController.text.trim(),
+        _contentController.text.trim(),
+      ].where((text) => text.isNotEmpty).join('\n'),
+      FabuPublishType.help => [
+        _contentController.text.trim(),
+        if (_targetController.text.trim().isNotEmpty)
+          '目标：${_targetController.text.trim()}',
+        if (_rewardAmountCents != null)
+          '悬赏金额：${_formatYuan(_rewardAmountCents!)}元',
+      ].where((text) => text.isNotEmpty).join('\n'),
     };
     notifier.updateTextContent(content);
   }
@@ -130,19 +125,25 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
                                   )
                                 : const Icon(Icons.chevron_right),
                             onTap: fabuState.isLoadingGPS
                                 ? null
-                                : () => _showAddressSheet(fabuState, fabuNotifier),
+                                : () => _showAddressSheet(
+                                    fabuState,
+                                    fabuNotifier,
+                                  ),
                           ),
                           _ActionRow(
                             icon: Icons.tag_outlined,
                             title: fabuState.huatiSel.isEmpty
                                 ? '话题'
                                 : fabuState.huatiSel.values.join('、'),
-                            onTap: () => _showTopicSheet(fabuState, fabuNotifier),
+                            onTap: () =>
+                                _showTopicSheet(fabuState, fabuNotifier),
                           ),
                           _ActionRow(
                             icon: Icons.person_outline,
@@ -150,7 +151,8 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                                 ? '公开'
                                 : fabuState.whoCanSee[fabuState.whoCanSeeSel!],
                             showDivider: false,
-                            onTap: () => _showVisibilitySheet(fabuState, fabuNotifier),
+                            onTap: () =>
+                                _showVisibilitySheet(fabuState, fabuNotifier),
                           ),
                         ],
                       ),
@@ -170,12 +172,14 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
     switch (widget.type) {
       case FabuPublishType.dynamic:
-        fields.add(_TextBox(
-          controller: _contentController,
-          hintText: '这一刻的想法...',
-          minLines: 5,
-          maxLines: 10,
-        ));
+        fields.add(
+          _TextBox(
+            controller: _contentController,
+            hintText: '这一刻的想法...',
+            minLines: 5,
+            maxLines: 10,
+          ),
+        );
       case FabuPublishType.video:
         fields.addAll([
           _TextBox(
@@ -193,61 +197,36 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
             maxLines: 8,
           ),
         ]);
-      case FabuPublishType.goods:
-        fields.addAll([
-          _TextBox(
-            controller: _titleController,
-            hintText: '商品标题',
-            minLines: 1,
-            maxLines: 1,
-            maxLength: 80,
-          ),
-          8.verticalSpace,
-          _TextBox(
-            controller: _priceController,
-            hintText: '价格',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            minLines: 1,
-            maxLines: 1,
-            maxLength: 20,
-          ),
-          8.verticalSpace,
-          _TextBox(
-            controller: _contentController,
-            hintText: '介绍一下商品...',
-            minLines: 4,
-            maxLines: 8,
-          ),
-        ]);
-      case FabuPublishType.aixin:
+      case FabuPublishType.help:
         fields.addAll([
           _TextBox(
             controller: _contentController,
-            hintText: '说说需要帮助或想帮助什么...',
+            hintText: '说说你需要什么帮助...',
             minLines: 4,
             maxLines: 8,
           ),
           8.verticalSpace,
           _TextBox(
             controller: _targetController,
-            hintText: '目标',
+            hintText: '求助目标',
             minLines: 1,
             maxLines: 1,
             maxLength: 80,
           ),
-          8.verticalSpace,
-          SizedBox(
-            width: double.infinity,
-            child: SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 0, label: Text('求助')),
-                ButtonSegment(value: 1, label: Text('帮助')),
-              ],
-              selected: {state.aixinType},
-              onSelectionChanged: (selected) {
-                notifier.changeAiXinType(selected.first);
-              },
-            ),
+          12.verticalSpace,
+          _RewardSelector(
+            options: _rewardOptions,
+            selectedAmountCents: _rewardAmountCents,
+            balanceCents: 1000,
+            onSelected: (amountCents) {
+              setState(() {
+                _rewardAmountCents = _rewardAmountCents == amountCents
+                    ? null
+                    : amountCents;
+              });
+              _syncContent();
+            },
+            onCustomSelected: _showCustomRewardDialog,
           ),
         ]);
     }
@@ -349,8 +328,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
       extensions: ['mp4', 'mov', 'avi', 'mkv'],
     );
     final files = await openFiles(
-      acceptedTypeGroups:
-          widget.type.allowImages ? [imageGroup, videoGroup] : [videoGroup],
+      acceptedTypeGroups: widget.type.allowImages
+          ? [imageGroup, videoGroup]
+          : [videoGroup],
     );
     if (!mounted || files.isEmpty) return;
 
@@ -383,10 +363,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
         value.endsWith('.mkv');
   }
 
-  Future<void> _showAddressSheet(
-    FabuState state,
-    FabuNotifier notifier,
-  ) async {
+  Future<void> _showAddressSheet(FabuState state, FabuNotifier notifier) async {
     await notifier.loadGPSAddress();
     if (!mounted) return;
     final currentState = ref.read(fabuProvider);
@@ -400,9 +377,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
             final address = currentState.addressList[index];
             return ListTile(
               title: Text(address.name),
-              subtitle: address.detail.isNotEmpty
-                  ? Text(address.detail)
-                  : null,
+              subtitle: address.detail.isNotEmpty ? Text(address.detail) : null,
               onTap: () => Navigator.pop(context, address),
             );
           },
@@ -450,6 +425,219 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
       notifier.setWhoCanSee(selected);
     }
   }
+
+  Future<void> _showCustomRewardDialog() async {
+    final controller = TextEditingController(
+      text: _rewardAmountCents != null && _rewardAmountCents! >= 20000
+          ? _formatYuan(_rewardAmountCents!)
+          : '200',
+    );
+    final amount = await showDialog<int>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('自定义悬赏金额'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              prefixText: '¥ ',
+              hintText: '请输入金额',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final cents = _parseYuanToCents(controller.text);
+                Navigator.pop(context, cents);
+              },
+              child: const Text('确定'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    if (amount == null || amount <= 0 || !mounted) return;
+    setState(() {
+      _rewardAmountCents = amount;
+    });
+    _syncContent();
+  }
+}
+
+int? _parseYuanToCents(String value) {
+  final text = value.trim();
+  if (text.isEmpty) return null;
+  final yuan = double.tryParse(text);
+  if (yuan == null || yuan <= 0) return null;
+  return (yuan * 100).round();
+}
+
+String _formatYuan(int cents) {
+  final yuan = cents / 100;
+  if (cents % 100 == 0) return yuan.toStringAsFixed(0);
+  return yuan.toStringAsFixed(2);
+}
+
+class _RewardSelector extends StatelessWidget {
+  const _RewardSelector({
+    required this.options,
+    required this.selectedAmountCents,
+    required this.balanceCents,
+    required this.onSelected,
+    required this.onCustomSelected,
+  });
+
+  final List<int> options;
+  final int? selectedAmountCents;
+  final int balanceCents;
+  final ValueChanged<int> onSelected;
+  final VoidCallback onCustomSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFECEEF2))),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const CircleAvatar(
+                  radius: 12,
+                  backgroundColor: Color(0xFFFFD31A),
+                  child: Icon(
+                    Icons.workspace_premium,
+                    size: 15,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  '悬赏金额',
+                  style: context.typo.sectionTitle.copyWith(
+                    color: const Color(0xFF202124),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                const Icon(
+                  Icons.help_outline,
+                  size: 18,
+                  color: Color(0xFFB5BAC3),
+                ),
+                const Spacer(),
+                Text(
+                  '账户余额',
+                  style: context.typo.body.copyWith(
+                    color: const Color(0xFF9CA3AF),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  _formatYuan(balanceCents),
+                  style: context.typo.body.copyWith(
+                    color: const Color(0xFFFF8A00),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
+              ],
+            ),
+            6.verticalSpace,
+            Text(
+              '悬赏越高，召唤的吧友越多哦',
+              style: context.typo.body.copyWith(color: const Color(0xFFA7ADB7)),
+            ),
+            14.verticalSpace,
+            Row(
+              children: [
+                ...options.map((amount) {
+                  final amountCents = amount * 100;
+                  final selected = selectedAmountCents == amountCents;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: _RewardOptionButton(
+                        label: '$amount',
+                        selected: selected,
+                        onTap: () => onSelected(amountCents),
+                      ),
+                    ),
+                  );
+                }),
+                Expanded(
+                  child: _RewardOptionButton(
+                    label:
+                        selectedAmountCents != null &&
+                            selectedAmountCents! >= 20000
+                        ? _formatYuan(selectedAmountCents!)
+                        : '自定义',
+                    selected:
+                        selectedAmountCents != null &&
+                        selectedAmountCents! >= 20000,
+                    onTap: onCustomSelected,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RewardOptionButton extends StatelessWidget {
+  const _RewardOptionButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedColor = const Color(0xFFFFF3D7);
+    final selectedBorder = const Color(0xFFFFC54D);
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        height: 36,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: selected ? selectedColor : const Color(0xFFF6F6FA),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: selected ? selectedBorder : Colors.transparent,
+          ),
+        ),
+        child: Text(
+          label,
+          style: context.typo.body.copyWith(
+            color: selected ? const Color(0xFFE58A00) : const Color(0xFFB8BBC3),
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _TextBox extends StatelessWidget {
@@ -459,7 +647,6 @@ class _TextBox extends StatelessWidget {
     required this.minLines,
     required this.maxLines,
     this.maxLength = 1000,
-    this.keyboardType,
   });
 
   final TextEditingController controller;
@@ -467,13 +654,11 @@ class _TextBox extends StatelessWidget {
   final int minLines;
   final int maxLines;
   final int maxLength;
-  final TextInputType? keyboardType;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
-      keyboardType: keyboardType,
       minLines: minLines,
       maxLines: maxLines,
       maxLength: maxLength,
@@ -483,7 +668,10 @@ class _TextBox extends StatelessWidget {
         fillColor: const Color(0xFFF8F9FB),
         hintText: hintText,
         hintStyle: context.typo.inputHint,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
@@ -492,9 +680,7 @@ class _TextBox extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xFF3578E5), width: 1.2),
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
@@ -526,9 +712,7 @@ class _ActionRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             border: showDivider
-                ? const Border(
-                    bottom: BorderSide(color: Color(0xFFECEEF2)),
-                  )
+                ? const Border(bottom: BorderSide(color: Color(0xFFECEEF2)))
                 : null,
           ),
           child: Row(

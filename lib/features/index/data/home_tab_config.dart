@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/KeepAliveTabWrapper.dart';
+import 'package:qqai/features/blog/data/home_blog_tab.dart';
 import 'package:qqai/features/blog/providers/blog_providers.dart';
 import 'package:qqai/features/blog/views/blog_list_kind.dart';
 import 'package:qqai/features/blog/views/blog_view.dart';
@@ -28,20 +29,30 @@ class HomeTabConfig {
 final List<HomeTabConfig> homeTabConfigs = [
   HomeTabConfig(
     title: '推荐',
-    builder: (_) => const KeepAliveTabWrapper(child: BlogView(0)),
-    onReselect: (ref) => ref.read(blogProvider(0).notifier).refresh(),
+    builder: (_) =>
+        const KeepAliveTabWrapper(child: BlogView(HomeBlogTab.recommend)),
+    onReselect: (ref) =>
+        ref.read(blogProvider(HomeBlogTab.recommend).notifier).refresh(),
+  ),
+  HomeTabConfig(
+    title: '热点',
+    builder: (_) => const KeepAliveTabWrapper(child: BlogView(HomeBlogTab.hot)),
+    onReselect: (ref) =>
+        ref.read(blogProvider(HomeBlogTab.hot).notifier).refresh(),
   ),
   HomeTabConfig(
     title: '关注',
     builder: (_) => const KeepAliveTabWrapper(
-      child: BlogView(1, listKind: BlogListKind.followFeed),
+      child: BlogView(HomeBlogTab.follow, listKind: BlogListKind.followFeed),
     ),
     onReselect: (ref) => ref.read(homeFollowFeedProvider.notifier).refresh(),
   ),
   HomeTabConfig(
     title: '本地',
-    builder: (_) => const KeepAliveTabWrapper(child: BlogView(2)),
-    onReselect: (ref) => ref.read(blogProvider(2).notifier).refresh(),
+    builder: (_) =>
+        const KeepAliveTabWrapper(child: BlogView(HomeBlogTab.local)),
+    onReselect: (ref) =>
+        ref.read(blogProvider(HomeBlogTab.local).notifier).refresh(),
   ),
   HomeTabConfig(
     title: '广场',
@@ -52,6 +63,13 @@ final List<HomeTabConfig> homeTabConfigs = [
     title: '商场',
     builder: (_) => const KeepAliveTabWrapper(child: GoodsTabNavigator()),
     onReselect: (ref) async => bumpGoodsMallTabReselect(ref),
+  ),
+  HomeTabConfig(
+    title: '互助',
+    builder: (_) =>
+        const KeepAliveTabWrapper(child: BlogView(HomeBlogTab.mutualAid)),
+    onReselect: (ref) =>
+        ref.read(blogProvider(HomeBlogTab.mutualAid).notifier).refresh(),
   ),
   HomeTabConfig(title: '工具', builder: (_) => ToolPage()),
 ];

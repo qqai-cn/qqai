@@ -5,9 +5,14 @@ import '../providers/fabu_providers.dart';
 import 'fabu_publish_page.dart';
 
 class FabuView extends ConsumerStatefulWidget {
-  const FabuView({super.key, this.squareId});
+  const FabuView({
+    super.key,
+    this.squareId,
+    this.initialType = FabuPublishType.dynamic,
+  });
 
   final int? squareId;
+  final FabuPublishType initialType;
 
   @override
   ConsumerState<FabuView> createState() => _FabuViewState();
@@ -19,18 +24,23 @@ class _FabuViewState extends ConsumerState<FabuView>
   late final List<FabuPublishType> _tabTypes = [
     FabuPublishType.dynamic,
     FabuPublishType.video,
-    FabuPublishType.goods,
-    FabuPublishType.aixin,
+    FabuPublishType.help,
   ];
-  late final List<String> _tabTitle =
-      _tabTypes.map((type) => type.title).toList();
-  late final List<Widget> _tabBoby =
-      _tabTypes.map((type) => FabuPublishPage(type: type)).toList();
+  late final List<String> _tabTitle = _tabTypes
+      .map((type) => type.title)
+      .toList();
+  late final List<Widget> _tabBoby = _tabTypes
+      .map((type) => FabuPublishPage(type: type))
+      .toList();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabTitle.length, vsync: this);
+    final initialIndex = _tabTypes.indexOf(widget.initialType);
+    if (initialIndex > 0) {
+      _tabController.index = initialIndex;
+    }
     // 加载地址数据和话题列表
     Future.microtask(() {
       ref.read(fabuProvider.notifier).loadAddressData();
@@ -48,19 +58,25 @@ class _FabuViewState extends ConsumerState<FabuView>
     final fabuState = ref.read(fabuProvider);
     final fabuNotifier = ref.read(fabuProvider.notifier);
     final publishType = _tabTypes[_tabController.index];
-    
+
     try {
       await fabuNotifier.publishBlog(
         squareId: widget.squareId,
-        categary: 1,
+        categary: publishType == FabuPublishType.help ? 2 : 1,
         blogType:
-            publishType == FabuPublishType.video || fabuState.videoFiles.isNotEmpty
-                ? 2
-                : 1,
+            publishType == FabuPublishType.video ||
+                fabuState.videoFiles.isNotEmpty
+            ? 2
+            : 1,
         addressId: fabuState.selAddressEntity?.id,
         address: fabuState.selAddressEntity?.name,
         shareType: fabuState.whoCanSeeSel,
-        topicIds: fabuState.huatiSel.isNotEmpty ? fabuState.huatiSel.keys.join(',') : null,
+        topicIds: fabuState.huatiSel.isNotEmpty
+            ? fabuState.huatiSel.keys.join(',')
+            : null,
+        rewardAmount: publishType == FabuPublishType.help
+            ? fabuState.aixinType
+            : null,
       );
 
       if (mounted) {
@@ -218,10 +234,7 @@ class _FabuViewState extends ConsumerState<FabuView>
           ),
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: _tabBoby,
-      ),
+      body: TabBarView(controller: _tabController, children: _tabBoby),
     );
   }
 
@@ -229,8 +242,7 @@ class _FabuViewState extends ConsumerState<FabuView>
     return switch (type) {
       FabuPublishType.dynamic => Icons.edit_note_outlined,
       FabuPublishType.video => Icons.play_circle_outline,
-      FabuPublishType.goods => Icons.shopping_bag_outlined,
-      FabuPublishType.aixin => Icons.favorite_border,
+      FabuPublishType.help => Icons.volunteer_activism_outlined,
     };
   }
 }

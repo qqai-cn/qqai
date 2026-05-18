@@ -53,6 +53,13 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   }
 
   Future<BlogPageModelData> _fetchPage(int page) async {
+    if (_category == HomeBlogTab.hot) {
+      return _repo.getHotBlogPageModelDataWithPage(
+        page,
+        pageSize: _pageSize,
+        shareType: blogShareTypePublic,
+      );
+    }
     if (_category == HomeBlogTab.local) {
       final geo = await readBlogFeedGeoPosition();
       return _repo.getBlogPageModelDataWithPage(
@@ -62,6 +69,14 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
         latitude: geo?.latitude,
         longitude: geo?.longitude,
         radiusKm: geo != null ? blogNearbyRadiusKmDefault : null,
+      );
+    }
+    if (_category == HomeBlogTab.mutualAid) {
+      return _repo.getBlogPageModelDataWithPage(
+        page,
+        pageSize: _pageSize,
+        categary: HomeBlogTab.mutualAid,
+        shareType: blogShareTypePublic,
       );
     }
     return _repo.getBlogPageModelDataWithPage(page, pageSize: _pageSize);

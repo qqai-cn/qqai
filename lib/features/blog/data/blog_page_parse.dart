@@ -6,6 +6,23 @@ String? _firstNonEmptyString(dynamic value) {
   return s.isEmpty ? null : s;
 }
 
+int? _firstPositiveInt(Map<String, dynamic> m, List<String> keys) {
+  for (final key in keys) {
+    final value = m[key];
+    if (value is num && value > 0) return value.toInt();
+    if (value is String) {
+      final parsed = int.tryParse(value);
+      if (parsed != null && parsed > 0) return parsed;
+    }
+  }
+  return null;
+}
+
+String _formatYuanFromCents(int cents) {
+  if (cents % 100 == 0) return (cents ~/ 100).toString();
+  return (cents / 100).toStringAsFixed(2);
+}
+
 /// 从条目或嵌套用户信息中解析作者头像。
 String? _pickCreatorAvatar(Map<String, dynamic> m) {
   final direct = _firstNonEmptyString(m['creatorAvatar']);
@@ -90,6 +107,19 @@ Map<String, dynamic> normalizeBlogItemJson(Map<String, dynamic> json) {
         m['shareCount'] = v.toInt();
         break;
       }
+    }
+  }
+  final rewardAmount = _firstPositiveInt(m, [
+    'rewardAmount',
+    'reward_amount',
+    'bountyAmount',
+    'helpRewardAmount',
+  ]);
+  if (rewardAmount != null) {
+    final content = _firstNonEmptyString(m['content']) ?? '';
+    if (!content.contains('悬赏金额：')) {
+      final rewardLine = '悬赏金额：${_formatYuanFromCents(rewardAmount)}元';
+      m['content'] = content.isEmpty ? rewardLine : '$content\n$rewardLine';
     }
   }
   return m;
