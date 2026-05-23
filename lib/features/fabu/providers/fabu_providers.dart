@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../../util/api_base_client.dart';
 import '../../data/models/address_entity.dart';
@@ -15,6 +16,7 @@ import '../data/models/fabu_model.dart';
 import '../data/models/topic_model.dart';
 import '../../blog/data/models/blog_save_req_vo.dart';
 import '../../blog/data/repos/blog_repo.dart';
+import '../../tool/video_cover_tool.dart';
 
 part 'fabu_providers.freezed.dart';
 
@@ -27,8 +29,11 @@ sealed class FabuState with _$FabuState {
     @Default(const AsyncLoading()) AsyncValue<List<FabuModel>> items,
     @Default([]) List<XFile> files,
     @Default([]) List<XFile> videoFiles,
+    XFile? coverFile,
     @Default([]) List<String> uploadedFileUrls,
     @Default([]) List<String> uploadedVideoUrls,
+    String? uploadedCoverUrl,
+    @Default(1) int selectedCoverStyleId,
     @Default([]) List<AddressEntity> addressList,
     @Default([]) List<SkuuTopicResVO> topicList,
     @Default(['公开', '仅自己可见', '部分好友可见', '部分好友不可见']) List<String> whoCanSee,
@@ -39,6 +44,7 @@ sealed class FabuState with _$FabuState {
     String? error,
     @Default(false) bool isLoading,
     @Default(false) bool isUploading,
+    @Default(false) bool isCoverUploading,
     @Default('') String textContent,
     @Default(false) bool isLoadingGPS,
   }) = _FabuState;
@@ -208,6 +214,75 @@ class FabuNotifier extends _$FabuNotifier {
     }
   }
 
+  Future<void> selectVideoCover(XFile file) async {
+    state = state.copyWith(
+      coverFile: file,
+      uploadedCoverUrl: null,
+      isCoverUploading: true,
+    );
+    try {
+      final url = await ApiBaseClient.uploadFile(file: file);
+      state = state.copyWith(uploadedCoverUrl: url);
+    } catch (e) {
+      debugPrint('Cover upload error: $e');
+      rethrow;
+    } finally {
+      state = state.copyWith(isCoverUploading: false);
+    }
+  }
+
+  Future<void> generateVideoCoverFromVideoTool() async {
+    if (state.videoFiles.isEmpty) return;
+    state = state.copyWith(isCoverUploading: true);
+    try {
+      final video = state.videoFiles.first;
+      final durationMs = await _readVideoDurationMs(video);
+      final bytes = await generateStyledVideoCoverBytes(
+        videoPath: video.path,
+        durationMs: durationMs,
+        styleId: state.selectedCoverStyleId,
+      );
+      final cover = XFile.fromData(
+        bytes,
+        name: 'video-cover.png',
+        mimeType: 'image/png',
+      );
+      final url = await ApiBaseClient.uploadFile(file: cover);
+      state = state.copyWith(coverFile: cover, uploadedCoverUrl: url);
+    } catch (e) {
+      debugPrint('Generate cover error: $e');
+      rethrow;
+    } finally {
+      state = state.copyWith(isCoverUploading: false);
+    }
+  }
+
+  void clearVideoCover() {
+    state = state.copyWith(coverFile: null, uploadedCoverUrl: null);
+  }
+
+  void setCoverStyle(int styleId) {
+    state = state.copyWith(selectedCoverStyleId: styleId);
+  }
+
+  Future<int> _readVideoDurationMs(XFile video) async {
+    VideoPlayerController? controller;
+    try {
+      final uri = Uri.tryParse(video.path);
+      final videoUri = (uri != null && uri.hasScheme)
+          ? uri
+          : Uri.file(video.path);
+      controller = VideoPlayerController.networkUrl(videoUri);
+      await controller.initialize();
+      return controller.value.duration.inMilliseconds;
+    } catch (e) {
+      debugPrint('Read video duration error: $e');
+      return 0;
+    } finally {
+      await controller?.dispose();
+    }
+  }
+
   void clearList(XFile file) {
     final fileIndex = state.files.indexOf(file);
     final newFiles = List<XFile>.from(state.files)..remove(file);
@@ -227,7 +302,12 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   void clearVideo() {
-    state = state.copyWith(videoFiles: [], uploadedVideoUrls: []);
+    state = state.copyWith(
+      videoFiles: [],
+      uploadedVideoUrls: [],
+      coverFile: null,
+      uploadedCoverUrl: null,
+    );
   }
 
   Future<void> selectFile(List<XFile> value, BuildContext context) async {
@@ -284,6 +364,8 @@ class FabuNotifier extends _$FabuNotifier {
       uploadedFileUrls: [],
       videoFiles: newVideoFiles,
       uploadedVideoUrls: [],
+      coverFile: null,
+      uploadedCoverUrl: null,
     );
     // Upload immediately
     await uploadFiles(videoFiles, true);
@@ -332,6 +414,8 @@ class FabuNotifier extends _$FabuNotifier {
 
       // Collect already uploaded URLs and remove accidental duplicates.
       final allUrls = <String>{
+        if (state.uploadedCoverUrl?.trim().isNotEmpty == true)
+          state.uploadedCoverUrl!.trim(),
         ...state.uploadedFileUrls,
         ...state.uploadedVideoUrls,
       }.toList();
