@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../data/models/address_entity.dart';
@@ -328,6 +331,11 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
   Widget _buildVideoCoverPicker(FabuState state, FabuNotifier notifier) {
     final coverFile = state.coverFile;
+    final previewBytes = state.coverPreviewBytes;
+    final hasDisplay = previewBytes != null || coverFile != null;
+    final isBusy = state.isCoverPreviewing;
+    final isSelected = coverFile != null;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFFF8F9FB),
@@ -336,118 +344,179 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: SizedBox(
-                width: 112,
-                height: 72,
-                child: coverFile == null
-                    ? Container(
-                        color: Colors.white,
-                        alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.image_outlined,
-                          color: Color(0xFF9CA3AF),
-                        ),
-                      )
-                    : _VideoCoverPreview(file: coverFile),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    coverFile == null ? '视频封面' : '已指定视频封面',
-                    style: context.typo.body.copyWith(
-                      color: const Color(0xFF202124),
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  4.verticalSpace,
-                  Text(
-                    state.isCoverUploading
-                        ? '封面处理中...'
-                        : '可手动选择图片，或使用视频工具样式生成封面',
-                    style: context.typo.caption.copyWith(
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
-                  10.verticalSpace,
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: qqaiVideoCoverStyles.map((style) {
-                      final selected = style.id == state.selectedCoverStyleId;
-                      return ChoiceChip(
-                        label: Text(style.label),
-                        selected: selected,
-                        onSelected: state.isCoverUploading
-                            ? null
-                            : (_) => notifier.setCoverStyle(style.id),
-                        selectedColor: const Color(0xFFEAF2FF),
-                        side: BorderSide(
-                          color: selected
-                              ? const Color(0xFF3578E5)
-                              : const Color(0xFFE1E5EB),
-                        ),
-                        labelStyle: context.typo.caption.copyWith(
-                          color: selected
-                              ? const Color(0xFF3578E5)
-                              : const Color(0xFF6B7280),
-                          fontWeight: selected
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                  10.verticalSpace,
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      OutlinedButton.icon(
-                        onPressed: state.isCoverUploading
-                            ? null
-                            : () => _pickVideoCover(notifier),
-                        icon: const Icon(Icons.upload_file_outlined, size: 18),
-                        label: const Text('选择封面'),
-                      ),
-                      OutlinedButton.icon(
-                        onPressed: state.isCoverUploading
-                            ? null
-                            : () => _generateCoverFromVideoTool(notifier),
-                        icon: const Icon(
-                          Icons.video_settings_outlined,
-                          size: 18,
+                      Text(
+                        hasDisplay
+                            ? (isSelected ? '视频封面（已选定）' : '视频封面预览')
+                            : '视频封面',
+                        style: context.typo.body.copyWith(
+                          color: const Color(0xFF202124),
+                          fontWeight: FontWeight.w700,
                         ),
-                        label: const Text('视频工具生成'),
                       ),
-                      if (coverFile != null)
-                        TextButton(
-                          onPressed: state.isCoverUploading
-                              ? null
-                              : notifier.clearVideoCover,
-                          child: const Text('移除'),
+                      4.verticalSpace,
+                      Text(
+                        _coverStatusText(state, isSelected: isSelected),
+                        style: context.typo.caption.copyWith(
+                          color: const Color(0xFF6B7280),
                         ),
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+                if (isBusy)
+                  const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+              ],
             ),
-            if (state.isCoverUploading)
-              const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+            12.verticalSpace,
+            _VideoCoverPreviewCard(
+              bytes: previewBytes,
+              file: previewBytes == null ? coverFile : null,
+              isLoading: state.isCoverPreviewing,
+              onTap: hasDisplay && !isBusy
+                  ? () => _showCoverFullPreview(
+                      bytes: previewBytes,
+                      file: previewBytes == null ? coverFile : null,
+                    )
+                  : null,
+            ),
+            12.verticalSpace,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: qqaiVideoCoverStyles.map((style) {
+                final selected = style.id == state.selectedCoverStyleId;
+                return ChoiceChip(
+                  label: Text(style.label),
+                  selected: selected,
+                  onSelected: isBusy
+                      ? null
+                      : (_) => notifier.setCoverStyle(style.id),
+                  selectedColor: const Color(0xFFEAF2FF),
+                  side: BorderSide(
+                    color: selected
+                        ? const Color(0xFF3578E5)
+                        : const Color(0xFFE1E5EB),
+                  ),
+                  labelStyle: context.typo.caption.copyWith(
+                    color: selected
+                        ? const Color(0xFF3578E5)
+                        : const Color(0xFF6B7280),
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                );
+              }).toList(),
+            ),
+            10.verticalSpace,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: isBusy ? null : () => _pickVideoCover(notifier),
+                  icon: const Icon(Icons.upload_file_outlined, size: 18),
+                  label: const Text('选择封面'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: isBusy || state.coverPreviewBytes == null
+                      ? null
+                      : () => _applyCoverPreview(notifier),
+                  icon: const Icon(Icons.check_circle_outline, size: 18),
+                  label: const Text('选定封面'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: isBusy
+                      ? null
+                      : () => _refreshCoverPreview(notifier),
+                  icon: const Icon(Icons.video_settings_outlined, size: 18),
+                  label: const Text('生成预览'),
+                ),
+                if (hasDisplay)
+                  TextButton(
+                    onPressed: isBusy ? null : notifier.clearVideoCover,
+                    child: const Text('移除'),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  String _coverStatusText(FabuState state, {required bool isSelected}) {
+    if (state.isCoverPreviewing) return '正在生成预览...';
+    if (isSelected) return '封面已选定，点击发布时将上传';
+    if (state.coverPreviewBytes != null) {
+      return '确认效果后点击「选定封面」，发布时再上传';
+    }
+    return '选择样式后点击「生成预览」，发布时再上传资源';
+  }
+
+  Future<void> _refreshCoverPreview(FabuNotifier notifier) async {
+    try {
+      await notifier.previewVideoCoverFromVideoTool();
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage('封面预览失败：$e');
+    }
+  }
+
+  void _applyCoverPreview(FabuNotifier notifier) {
+    notifier.applyVideoCoverPreview();
+    _showMessage('封面已选定');
+  }
+
+  Future<void> _showCoverFullPreview({
+    Uint8List? bytes,
+    XFile? file,
+  }) async {
+    if (bytes == null && file == null) return;
+    final resolvedBytes = bytes ?? await file!.readAsBytes();
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.92),
+      builder: (context) {
+        return Dialog.fullscreen(
+          backgroundColor: Colors.black,
+          child: Stack(
+            children: [
+              PhotoView(
+                imageProvider: MemoryImage(resolvedBytes),
+                initialScale: PhotoViewComputedScale.contained,
+                minScale: PhotoViewComputedScale.contained * 0.8,
+                maxScale: PhotoViewComputedScale.covered * 2.5,
+                backgroundDecoration: const BoxDecoration(color: Colors.black),
+              ),
+              Positioned(
+                top: MediaQuery.paddingOf(context).top + 8,
+                right: 8,
+                child: IconButton.filled(
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withValues(alpha: 0.45),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -458,21 +527,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     );
     final file = await openFile(acceptedTypeGroups: [coverGroup]);
     if (file == null) return;
-    try {
-      await notifier.selectVideoCover(file);
-    } catch (e) {
-      if (!mounted) return;
-      _showMessage('封面上传失败：$e');
-    }
-  }
-
-  Future<void> _generateCoverFromVideoTool(FabuNotifier notifier) async {
-    try {
-      await notifier.generateVideoCoverFromVideoTool();
-    } catch (e) {
-      if (!mounted) return;
-      _showMessage('视频工具生成封面失败：$e');
-    }
+    await notifier.selectVideoCover(file);
   }
 
   void _showMessage(String message) {
@@ -756,6 +811,162 @@ class _RewardSelector extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _VideoCoverPreviewCard extends StatelessWidget {
+  const _VideoCoverPreviewCard({
+    required this.bytes,
+    required this.file,
+    required this.isLoading,
+    this.onTap,
+  });
+
+  final Uint8List? bytes;
+  final XFile? file;
+  final bool isLoading;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth.clamp(180.0, 320.0);
+        return Align(
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: width,
+            child: AspectRatio(
+              aspectRatio: qqaiVideoCoverAspectRatio,
+              child: Material(
+                color: Colors.white,
+                clipBehavior: Clip.antiAlias,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: onTap,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (bytes != null)
+                        Image.memory(bytes!, fit: BoxFit.cover)
+                      else if (file != null)
+                        _VideoCoverPreview(file: file!)
+                      else if (isLoading)
+                        Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            const _VideoCoverPlaceholder(),
+                            Container(
+                              color: Colors.black.withValues(alpha: 0.18),
+                              alignment: Alignment.center,
+                              child: const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        const _VideoCoverPlaceholder(),
+                      if (onTap != null)
+                        Positioned(
+                          right: 8,
+                          bottom: 8,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.45),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.zoom_out_map,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '查看大图',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _VideoCoverPlaceholder extends StatelessWidget {
+  const _VideoCoverPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFECEFF3), Color(0xFFD7DCE3)],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.72),
+              shape: BoxShape.circle,
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(14),
+              child: Icon(
+                Icons.image_outlined,
+                color: Color(0xFF9CA3AF),
+                size: 32,
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '封面占位',
+            style: context.typo.caption.copyWith(
+              color: const Color(0xFF6B7280),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '点击「生成预览」查看效果',
+            style: context.typo.caption.copyWith(
+              color: const Color(0xFF9CA3AF),
+            ),
+          ),
+        ],
       ),
     );
   }

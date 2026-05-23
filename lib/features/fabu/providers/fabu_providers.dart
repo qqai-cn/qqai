@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -30,6 +33,7 @@ sealed class FabuState with _$FabuState {
     @Default([]) List<XFile> files,
     @Default([]) List<XFile> videoFiles,
     XFile? coverFile,
+    Uint8List? coverPreviewBytes,
     @Default([]) List<String> uploadedFileUrls,
     @Default([]) List<String> uploadedVideoUrls,
     String? uploadedCoverUrl,
@@ -45,6 +49,7 @@ sealed class FabuState with _$FabuState {
     @Default(false) bool isLoading,
     @Default(false) bool isUploading,
     @Default(false) bool isCoverUploading,
+    @Default(false) bool isCoverPreviewing,
     @Default('') String textContent,
     @Default(false) bool isLoadingGPS,
   }) = _FabuState;
@@ -53,6 +58,9 @@ sealed class FabuState with _$FabuState {
 @riverpod
 class FabuNotifier extends _$FabuNotifier {
   late final IFabuRepo _repo;
+  int? _cachedVideoDurationMs;
+  String? _cachedVideoPath;
+  int _coverPreviewGeneration = 0;
 
   @override
   FabuState build() {
@@ -186,93 +194,101 @@ class FabuNotifier extends _$FabuNotifier {
     }
   }
 
-  Future<void> uploadFiles(List<XFile> files, bool isVideo) async {
-    if (files.isEmpty) return;
-
-    state = state.copyWith(isUploading: true);
-
-    try {
-      List<String> newUrls = [];
-      for (var file in files) {
-        final url = await ApiBaseClient.uploadFile(file: file);
-        newUrls.add(url);
-      }
-
-      if (isVideo) {
-        final updatedUrls = List<String>.from(state.uploadedVideoUrls)
-          ..addAll(newUrls);
-        state = state.copyWith(uploadedVideoUrls: updatedUrls);
-      } else {
-        final updatedUrls = List<String>.from(state.uploadedFileUrls)
-          ..addAll(newUrls);
-        state = state.copyWith(uploadedFileUrls: updatedUrls);
-      }
-    } catch (e) {
-      print('Upload error: $e');
-    } finally {
-      state = state.copyWith(isUploading: false);
-    }
-  }
-
-  Future<void> selectVideoCover(XFile file) async {
+  Future<void> selectVideoCover(XFile file) {
+    _coverPreviewGeneration++;
     state = state.copyWith(
       coverFile: file,
+      coverPreviewBytes: null,
       uploadedCoverUrl: null,
-      isCoverUploading: true,
+      isCoverPreviewing: false,
     );
-    try {
-      final url = await ApiBaseClient.uploadFile(file: file);
-      state = state.copyWith(uploadedCoverUrl: url);
-    } catch (e) {
-      debugPrint('Cover upload error: $e');
-      rethrow;
-    } finally {
-      state = state.copyWith(isCoverUploading: false);
-    }
+    return Future.value();
   }
 
-  Future<void> generateVideoCoverFromVideoTool() async {
+  Future<void> previewVideoCoverFromVideoTool() async {
     if (state.videoFiles.isEmpty) return;
-    state = state.copyWith(isCoverUploading: true);
+    final generation = ++_coverPreviewGeneration;
+    state = state.copyWith(isCoverPreviewing: true);
     try {
       final video = state.videoFiles.first;
-      final durationMs = await _readVideoDurationMs(video);
+      final durationMs = await _videoDurationMs(video);
+      if (generation != _coverPreviewGeneration) return;
       final bytes = await generateStyledVideoCoverBytes(
         videoPath: video.path,
         durationMs: durationMs,
         styleId: state.selectedCoverStyleId,
       );
-      final cover = XFile.fromData(
-        bytes,
-        name: 'video-cover.png',
-        mimeType: 'image/png',
-      );
-      final url = await ApiBaseClient.uploadFile(file: cover);
-      state = state.copyWith(coverFile: cover, uploadedCoverUrl: url);
+      if (generation != _coverPreviewGeneration) return;
+      state = state.copyWith(coverPreviewBytes: bytes);
     } catch (e) {
-      debugPrint('Generate cover error: $e');
+      if (generation != _coverPreviewGeneration) return;
+      debugPrint('Preview cover error: $e');
       rethrow;
     } finally {
-      state = state.copyWith(isCoverUploading: false);
+      if (generation == _coverPreviewGeneration) {
+        state = state.copyWith(isCoverPreviewing: false);
+      }
     }
   }
 
+  void applyVideoCoverPreview() {
+    final previewBytes = state.coverPreviewBytes;
+    if (previewBytes == null) return;
+
+    state = state.copyWith(
+      coverFile: XFile.fromData(
+        previewBytes,
+        name: 'video-cover.png',
+        mimeType: 'image/png',
+      ),
+      uploadedCoverUrl: null,
+    );
+  }
+
   void clearVideoCover() {
-    state = state.copyWith(coverFile: null, uploadedCoverUrl: null);
+    _coverPreviewGeneration++;
+    state = state.copyWith(
+      coverFile: null,
+      coverPreviewBytes: null,
+      uploadedCoverUrl: null,
+      isCoverPreviewing: false,
+    );
   }
 
   void setCoverStyle(int styleId) {
-    state = state.copyWith(selectedCoverStyleId: styleId);
+    if (styleId == state.selectedCoverStyleId) return;
+    state = state.copyWith(
+      selectedCoverStyleId: styleId,
+      coverPreviewBytes: null,
+    );
+  }
+
+  Future<int> _videoDurationMs(XFile video) async {
+    if (_cachedVideoPath == video.path && _cachedVideoDurationMs != null) {
+      return _cachedVideoDurationMs!;
+    }
+    final durationMs = await _readVideoDurationMs(video);
+    _cachedVideoPath = video.path;
+    _cachedVideoDurationMs = durationMs;
+    return durationMs;
   }
 
   Future<int> _readVideoDurationMs(XFile video) async {
     VideoPlayerController? controller;
     try {
-      final uri = Uri.tryParse(video.path);
-      final videoUri = (uri != null && uri.hasScheme)
-          ? uri
-          : Uri.file(video.path);
-      controller = VideoPlayerController.networkUrl(videoUri);
+      final path = video.path;
+      final uri = Uri.tryParse(path);
+      if (uri != null && uri.hasScheme && uri.scheme != 'file') {
+        controller = VideoPlayerController.networkUrl(uri);
+      } else if (kIsWeb) {
+        controller = VideoPlayerController.networkUrl(
+          uri ?? Uri.parse(path),
+        );
+      } else {
+        controller = VideoPlayerController.file(
+          File(uri?.toFilePath() ?? path),
+        );
+      }
       await controller.initialize();
       return controller.value.duration.inMilliseconds;
     } catch (e) {
@@ -283,30 +299,31 @@ class FabuNotifier extends _$FabuNotifier {
     }
   }
 
+  void _resetVideoDurationCache() {
+    _cachedVideoPath = null;
+    _cachedVideoDurationMs = null;
+  }
+
   void clearList(XFile file) {
-    final fileIndex = state.files.indexOf(file);
     final newFiles = List<XFile>.from(state.files)..remove(file);
-
-    // Also remove the corresponding uploaded URL
-    final newUrls = List<String>.from(state.uploadedFileUrls);
-    if (fileIndex >= 0 && fileIndex < newUrls.length) {
-      newUrls.removeAt(fileIndex);
-    }
-
     state = state.copyWith(
       files: newFiles,
-      uploadedFileUrls: newUrls,
+      uploadedFileUrls: [],
       videoFiles: [],
       uploadedVideoUrls: [],
     );
   }
 
   void clearVideo() {
+    _resetVideoDurationCache();
+    _coverPreviewGeneration++;
     state = state.copyWith(
       videoFiles: [],
       uploadedVideoUrls: [],
       coverFile: null,
+      coverPreviewBytes: null,
       uploadedCoverUrl: null,
+      isCoverPreviewing: false,
     );
   }
 
@@ -351,13 +368,16 @@ class FabuNotifier extends _$FabuNotifier {
     }
     if (value.isNotEmpty) {
       final newFiles = List<XFile>.from(state.files)..addAll(value);
-      state = state.copyWith(files: newFiles);
-      // Upload immediately
-      await uploadFiles(value, false);
+      state = state.copyWith(
+        files: newFiles,
+        uploadedFileUrls: [],
+      );
     }
   }
 
   Future<void> addVideoFiles(List<XFile> videoFiles) async {
+    _resetVideoDurationCache();
+    _coverPreviewGeneration++;
     final newVideoFiles = List<XFile>.from(videoFiles);
     state = state.copyWith(
       files: newVideoFiles,
@@ -365,10 +385,13 @@ class FabuNotifier extends _$FabuNotifier {
       videoFiles: newVideoFiles,
       uploadedVideoUrls: [],
       coverFile: null,
+      coverPreviewBytes: null,
       uploadedCoverUrl: null,
+      isCoverPreviewing: false,
     );
-    // Upload immediately
-    await uploadFiles(videoFiles, true);
+    if (newVideoFiles.isNotEmpty) {
+      unawaited(_videoDurationMs(newVideoFiles.first));
+    }
   }
 
   void setWhoCanSee(int who) {
@@ -407,21 +430,13 @@ class FabuNotifier extends _$FabuNotifier {
     int? shareType,
     int? rewardAmount,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, isUploading: true, error: null);
     try {
+      final resourceUrls = await _uploadPublishResources();
       final blogRepo = ref.read(blogRepoProvider);
       final blogContent = content ?? state.textContent;
-
-      // Collect already uploaded URLs and remove accidental duplicates.
-      final allUrls = <String>{
-        if (state.uploadedCoverUrl?.trim().isNotEmpty == true)
-          state.uploadedCoverUrl!.trim(),
-        ...state.uploadedFileUrls,
-        ...state.uploadedVideoUrls,
-      }.toList();
-
-      // Join urls with commas
-      final blogResources = allUrls.isNotEmpty ? allUrls.join(',') : resources;
+      final blogResources =
+          resourceUrls.isNotEmpty ? resourceUrls.join(',') : resources;
 
       final selected = state.selAddressEntity;
       final selectedAddress = address ?? selected?.name;
@@ -450,10 +465,54 @@ class FabuNotifier extends _$FabuNotifier {
         req,
         rewardAmount: rewardAmount ?? (categary == 2 ? state.aixinType : null),
       );
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, isUploading: false);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(
+        isLoading: false,
+        isUploading: false,
+        error: e.toString(),
+      );
       rethrow;
     }
+  }
+
+  Future<List<String>> _uploadPublishResources() async {
+    final resourceUrls = <String>[];
+
+    final coverFile = _resolveCoverFileForPublish();
+    if (coverFile != null) {
+      final coverUrl = await ApiBaseClient.uploadFile(file: coverFile);
+      resourceUrls.add(coverUrl);
+      state = state.copyWith(uploadedCoverUrl: coverUrl);
+    }
+
+    if (state.videoFiles.isNotEmpty) {
+      final videoUrls = <String>[];
+      for (final file in state.videoFiles) {
+        videoUrls.add(await ApiBaseClient.uploadFile(file: file));
+      }
+      state = state.copyWith(uploadedVideoUrls: videoUrls);
+      resourceUrls.addAll(videoUrls);
+      return resourceUrls;
+    }
+
+    final imageUrls = <String>[];
+    for (final file in state.files) {
+      imageUrls.add(await ApiBaseClient.uploadFile(file: file));
+    }
+    state = state.copyWith(uploadedFileUrls: imageUrls);
+    resourceUrls.addAll(imageUrls);
+    return resourceUrls;
+  }
+
+  XFile? _resolveCoverFileForPublish() {
+    if (state.coverFile != null) return state.coverFile;
+    final previewBytes = state.coverPreviewBytes;
+    if (previewBytes == null) return null;
+    return XFile.fromData(
+      previewBytes,
+      name: 'video-cover.png',
+      mimeType: 'image/png',
+    );
   }
 }

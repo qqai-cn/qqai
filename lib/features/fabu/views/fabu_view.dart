@@ -149,7 +149,9 @@ class _FabuViewState extends ConsumerState<FabuView>
                   borderRadius: BorderRadius.circular(18),
                 ),
               ),
-              onPressed: fabuState.isLoading ? null : _publish,
+              onPressed: fabuState.isLoading || fabuState.isCoverPreviewing
+                  ? null
+                  : _publish,
               child: fabuState.isLoading
                   ? const SizedBox(
                       width: 18,

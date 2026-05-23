@@ -40,7 +40,7 @@ final class MyNotifierProvider extends $NotifierProvider<MyNotifier, MyState> {
   }
 }
 
-String _$myNotifierHash() => r'fce7906e7ea0d2ee1827c511b1eae1e6462afaf5';
+String _$myNotifierHash() => r'9b6ecaff1c4d9d1e9e2a67e47cca2449362e4925';
 
 abstract class _$MyNotifier extends $Notifier<MyState> {
   MyState build();
