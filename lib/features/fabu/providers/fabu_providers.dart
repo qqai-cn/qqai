@@ -53,6 +53,7 @@ sealed class FabuState with _$FabuState {
     @Default(false) bool isCoverUploading,
     @Default(false) bool isCoverPreviewing,
     @Default('') String textContent,
+    @Default('') String blogTitle,
     @Default(false) bool isLoadingGPS,
     @Default(0.0) double publishProgress,
     @Default('') String publishStage,
@@ -408,6 +409,10 @@ class FabuNotifier extends _$FabuNotifier {
     state = state.copyWith(textContent: text);
   }
 
+  void updateBlogTitle(String title) {
+    state = state.copyWith(blogTitle: title);
+  }
+
   void updateRewardAmount(int? amount) {
     state = state.copyWith(aixinType: amount ?? 0);
   }
@@ -417,6 +422,7 @@ class FabuNotifier extends _$FabuNotifier {
     String? topicIds,
     int? categary,
     int? blogType,
+    String? title,
     String? content,
     String? resources,
     int? addressId,
@@ -439,6 +445,7 @@ class FabuNotifier extends _$FabuNotifier {
       );
       final blogRepo = ref.read(blogRepoProvider);
       final blogContent = content ?? state.textContent;
+      final blogTitle = (title ?? state.blogTitle).trim();
       final blogResources = uploadResult.mediaUrls.isNotEmpty
           ? uploadResult.mediaUrls.join(',')
           : resources;
@@ -454,6 +461,7 @@ class FabuNotifier extends _$FabuNotifier {
         topicIds: topicIds,
         categary: categary,
         blogType: blogType,
+        title: blogTitle.isEmpty ? null : blogTitle,
         content: blogContent,
         resources: blogResources,
         coverUrl: uploadResult.coverUrl,

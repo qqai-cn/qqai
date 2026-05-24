@@ -46,8 +46,6 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   final _coverPreviewKey = GlobalKey<VideoCoverStylePreviewState>();
   bool _showWidgetCoverPreview = false;
   int _coverDurationSeconds = 60;
-  bool _isCapturingCover = false;
-  Uint8List? _lockedCoverBytes;
 
   @override
   void initState() {
@@ -67,7 +65,11 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
   Future<Uint8List?> _captureWidgetCoverForPublish() async {
     if (!_showWidgetCoverPreview) return null;
-    return _coverPreviewKey.currentState?.capture();
+    return captureVideoCoverStylePreviewWhenReady(_coverRepaintKey);
+  }
+
+  Future<Uint8List?> _captureVisibleCoverPreview() {
+    return captureVideoCoverStylePreviewWhenReady(_coverRepaintKey);
   }
 
   @override
@@ -88,10 +90,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     );
     final content = switch (widget.type) {
       FabuPublishType.dynamic => _contentController.text,
-      FabuPublishType.video => [
-        _titleController.text.trim(),
-        _contentController.text.trim(),
-      ].where((text) => text.isNotEmpty).join('\n'),
+      FabuPublishType.video => _contentController.text.trim(),
       FabuPublishType.help => [
         _contentController.text.trim(),
         if (_targetController.text.trim().isNotEmpty)
@@ -101,6 +100,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
       ].where((text) => text.isNotEmpty).join('\n'),
     };
     notifier.updateTextContent(content);
+    if (widget.type == FabuPublishType.video) {
+      notifier.updateBlogTitle(_titleController.text.trim());
+    }
   }
 
   @override
@@ -357,13 +359,10 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final coverFile = state.coverFile;
     final previewBytes = state.coverPreviewBytes;
     final styledPreviewActive =
-        (_showWidgetCoverPreview || _lockedCoverBytes != null) &&
-        state.videoFiles.isNotEmpty;
+        _showWidgetCoverPreview && state.videoFiles.isNotEmpty;
     final hasManualPreview =
         !styledPreviewActive && (previewBytes != null || coverFile != null);
     final hasDisplay = styledPreviewActive || hasManualPreview;
-    final isBusy = _isCapturingCover;
-    final isSelected = _lockedCoverBytes != null || coverFile != null;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -383,9 +382,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        hasDisplay
-                            ? (isSelected ? '视频封面（已选定）' : '视频封面预览')
-                            : '视频封面',
+                        hasDisplay ? '视频封面预览' : '视频封面',
                         style: context.typo.body.copyWith(
                           color: const Color(0xFF202124),
                           fontWeight: FontWeight.w700,
@@ -393,7 +390,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       ),
                       4.verticalSpace,
                       Text(
-                        _coverStatusText(state, isSelected: isSelected),
+                        _coverStatusText(state, hasDisplay: hasDisplay),
                         style: context.typo.caption.copyWith(
                           color: const Color(0xFF6B7280),
                         ),
@@ -401,12 +398,6 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     ],
                   ),
                 ),
-                if (isBusy)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
               ],
             ),
             12.verticalSpace,
@@ -417,21 +408,17 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                 durationSeconds: _coverDurationSeconds,
                 repaintKey: _coverRepaintKey,
                 previewKey: _coverPreviewKey,
-                lockedImageBytes: _lockedCoverBytes,
-                onTap: isBusy
-                    ? null
-                    : () => _showWidgetCoverFullPreview(),
+                onTap: () => _showWidgetCoverFullPreview(),
               )
             else
               _VideoCoverPreviewCard(
                 bytes: previewBytes,
                 file: coverFile,
                 isLoading: false,
-                onTap: hasDisplay && !isBusy
+                onTap: hasDisplay
                     ? () => _showCoverFullPreview(
                         bytes: previewBytes,
                         file: coverFile,
-                        useStyledFrame: _lockedCoverBytes != null,
                       )
                     : null,
               ),
@@ -444,17 +431,14 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                 return ChoiceChip(
                   label: Text(style.label),
                   selected: selected,
-                  onSelected: isBusy
-                      ? null
-                      : (_) {
-                          setState(() => _lockedCoverBytes = null);
-                          notifier.setCoverStyle(style.id);
-                          if (_showWidgetCoverPreview) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              _coverPreviewKey.currentState?.regenerate();
-                            });
-                          }
-                        },
+                  onSelected: (_) {
+                    notifier.setCoverStyle(style.id);
+                    if (_showWidgetCoverPreview) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        _coverPreviewKey.currentState?.regenerate();
+                      });
+                    }
+                  },
                   selectedColor: const Color(0xFFEAF2FF),
                   side: BorderSide(
                     color: selected
@@ -476,37 +460,21 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               runSpacing: 8,
               children: [
                 OutlinedButton.icon(
-                  onPressed: isBusy ? null : () => _pickVideoCover(notifier),
+                  onPressed: () => _pickVideoCover(notifier),
                   icon: const Icon(Icons.upload_file_outlined, size: 18),
                   label: const Text('选择封面'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: isBusy ||
-                          _lockedCoverBytes != null ||
-                          (!styledPreviewActive && previewBytes == null)
-                      ? null
-                      : () => _applyCoverPreview(notifier),
-                  icon: const Icon(Icons.check_circle_outline, size: 18),
-                  label: const Text('选定封面'),
-                ),
-                OutlinedButton.icon(
-                  onPressed: isBusy
-                      ? null
-                      : () => _refreshCoverPreview(notifier),
+                  onPressed: () => _refreshCoverPreview(notifier),
                   icon: const Icon(Icons.video_settings_outlined, size: 18),
                   label: const Text('生成预览'),
                 ),
                 if (hasDisplay)
                   TextButton(
-                    onPressed: isBusy
-                        ? null
-                        : () {
-                            setState(() {
-                              _showWidgetCoverPreview = false;
-                              _lockedCoverBytes = null;
-                            });
-                            notifier.clearVideoCover();
-                          },
+                    onPressed: () {
+                      setState(() => _showWidgetCoverPreview = false);
+                      notifier.clearVideoCover();
+                    },
                     child: const Text('移除'),
                   ),
               ],
@@ -517,21 +485,17 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     );
   }
 
-  String _coverStatusText(FabuState state, {required bool isSelected}) {
-    if (_isCapturingCover) {
-      return '正在保存封面...';
-    }
-    if (_lockedCoverBytes != null) {
-      return '封面已选定，发布时将上传';
-    }
+  String _coverStatusText(FabuState state, {required bool hasDisplay}) {
     if (_showWidgetCoverPreview) {
-      return '预览已生成，发布时将自动上传封面';
+      return '当前预览将作为封面，发布时自动上传';
     }
-    if (isSelected) return '封面已选定，点击发布时将上传';
-    if (state.coverPreviewBytes != null) {
-      return '确认效果后点击「选定封面」，发布时再上传';
+    if (state.coverFile != null) {
+      return '当前封面将在发布时上传';
     }
-    return '选择样式后点击「生成预览」，发布时再上传资源';
+    if (hasDisplay) {
+      return '当前预览将作为封面，发布时自动上传';
+    }
+    return '选择样式后点击「生成预览」，或直接上传封面';
   }
 
   Future<void> _refreshCoverPreview(FabuNotifier notifier) async {
@@ -541,9 +505,11 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     try {
       final seconds = await notifier.getVideoDurationSeconds(video);
       if (!mounted) return;
+      if (state.coverFile != null) {
+        notifier.clearVideoCover();
+      }
       setState(() {
         _showWidgetCoverPreview = true;
-        _lockedCoverBytes = null;
         _coverDurationSeconds = seconds ?? 60;
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -555,56 +521,39 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     }
   }
 
-  Future<void> _applyCoverPreview(FabuNotifier notifier) async {
-    if (_showWidgetCoverPreview) {
-      setState(() => _isCapturingCover = true);
-      try {
-        final bytes = await _coverPreviewKey.currentState?.capture();
-        if (bytes == null) {
-          throw StateError('封面截图失败');
-        }
-        notifier.applyVideoCoverFromBytes(bytes);
-        if (!mounted) return;
-        setState(() => _lockedCoverBytes = bytes);
-        _showMessage('封面已选定');
-      } catch (e) {
-        if (!mounted) return;
-        _showMessage('封面选定失败：$e');
-      } finally {
-        if (mounted) setState(() => _isCapturingCover = false);
-      }
-      return;
-    }
-    notifier.applyVideoCoverPreview();
-    _showMessage('封面已选定');
-  }
-
   Future<void> _showWidgetCoverFullPreview() async {
-    final state = ref.read(fabuProvider);
-    if (!mounted || state.videoFiles.isEmpty) return;
+    if (!mounted) return;
 
-    if (_lockedCoverBytes != null) {
-      await _showCoverFullPreview(
-        bytes: _lockedCoverBytes,
-        useStyledFrame: true,
-      );
-      return;
-    }
-
-    final repaintKey = GlobalKey();
-    await showDialog<void>(
+    showDialog<void>(
       context: context,
-      barrierColor: Colors.black.withValues(alpha: 0.92),
+      barrierDismissible: false,
+      barrierColor: Colors.black26,
       builder: (context) {
-        return _VideoCoverStyledFullscreenDialog(
-          child: VideoCoverStylePreview(
-            repaintKey: repaintKey,
-            videoPath: state.videoFiles.first.path,
-            styleId: state.selectedCoverStyleId,
-            durationSeconds: _coverDurationSeconds,
-          ),
+        return const Center(
+          child: CircularProgressIndicator(color: Colors.white),
         );
       },
+    );
+
+    Uint8List? bytes;
+    try {
+      bytes = await _captureVisibleCoverPreview();
+    } finally {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
+
+    if (!mounted) return;
+    if (bytes == null) {
+      _showMessage('封面预览尚未就绪，请稍后再试');
+      return;
+    }
+
+    await _showCoverFullPreview(
+      bytes: bytes,
+      useStyledFrame: true,
+      alreadyFramed: true,
     );
   }
 
@@ -612,6 +561,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     Uint8List? bytes,
     XFile? file,
     bool useStyledFrame = false,
+    bool alreadyFramed = false,
   }) async {
     if (bytes == null && file == null) return;
     final resolvedBytes = bytes ?? await file!.readAsBytes();
@@ -623,10 +573,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
         barrierColor: Colors.black.withValues(alpha: 0.92),
         builder: (context) {
           return _VideoCoverStyledFullscreenDialog(
+            alreadyFramed: alreadyFramed,
             child: Image.memory(
               resolvedBytes,
-              width: qqaiVideoCoverCanvasWidth,
-              height: qqaiVideoCoverCanvasHeight,
               fit: BoxFit.fill,
               gaplessPlayback: true,
             ),
@@ -676,10 +625,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     );
     final file = await openFile(acceptedTypeGroups: [coverGroup]);
     if (file == null) return;
-    setState(() {
-      _showWidgetCoverPreview = false;
-      _lockedCoverBytes = null;
-    });
+    setState(() => _showWidgetCoverPreview = false);
     await notifier.selectVideoCover(file);
   }
 
@@ -976,7 +922,6 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
     required this.durationSeconds,
     required this.repaintKey,
     required this.previewKey,
-    this.lockedImageBytes,
     this.onTap,
   });
 
@@ -985,7 +930,6 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
   final int durationSeconds;
   final GlobalKey repaintKey;
   final GlobalKey<VideoCoverStylePreviewState> previewKey;
-  final Uint8List? lockedImageBytes;
   final VoidCallback? onTap;
 
   @override
@@ -1008,22 +952,16 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      VideoCoverFramedContent(
-                        child: lockedImageBytes != null
-                            ? Image.memory(
-                                lockedImageBytes!,
-                                width: qqaiVideoCoverCanvasWidth,
-                                height: qqaiVideoCoverCanvasHeight,
-                                fit: BoxFit.fill,
-                                gaplessPlayback: true,
-                              )
-                            : VideoCoverStylePreview(
-                                key: previewKey,
-                                videoPath: videoPath,
-                                styleId: styleId,
-                                durationSeconds: durationSeconds,
-                                repaintKey: repaintKey,
-                              ),
+                      RepaintBoundary(
+                        key: repaintKey,
+                        child: VideoCoverFramedContent(
+                          child: VideoCoverStylePreview(
+                            key: previewKey,
+                            videoPath: videoPath,
+                            styleId: styleId,
+                            durationSeconds: durationSeconds,
+                          ),
+                        ),
                       ),
                       if (onTap != null)
                         Positioned(
@@ -1073,9 +1011,13 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
 }
 
 class _VideoCoverStyledFullscreenDialog extends StatelessWidget {
-  const _VideoCoverStyledFullscreenDialog({required this.child});
+  const _VideoCoverStyledFullscreenDialog({
+    required this.child,
+    this.alreadyFramed = false,
+  });
 
   final Widget child;
+  final bool alreadyFramed;
 
   @override
   Widget build(BuildContext context) {
@@ -1103,7 +1045,9 @@ class _VideoCoverStyledFullscreenDialog extends StatelessWidget {
                   child: Material(
                     color: Colors.white,
                     clipBehavior: Clip.antiAlias,
-                    child: VideoCoverFramedContent(child: child),
+                    child: alreadyFramed
+                        ? child
+                        : VideoCoverFramedContent(child: child),
                   ),
                 ),
               ),

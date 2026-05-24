@@ -51,6 +51,7 @@ class SkuuBlogPageDataRecords {
 	late int topicId;
 	late int categary;
 	late int blogType;
+	String title = '';
 	late String content;
 	late String resources;
 	late int shareType;

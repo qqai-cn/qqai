@@ -5,6 +5,7 @@ import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:video_player/video_player.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../data/models/blog_page_model.dart';
@@ -98,11 +99,12 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
       key: ObjectKey(flickManager),
       onVisibilityChanged: (visibility) {
         if (!_isDisposed && mounted) {
-          if (visibility.visibleFraction > 0.9) {
+          final fraction = safeVisibleFraction(visibility);
+          if (fraction > 0.9) {
             flickManager.flickControlManager?.autoResume();
             _setVolumeIfNeeded();
           }
-          if (visibility.visibleFraction == 0) {
+          if (fraction == 0) {
             flickManager.flickControlManager?.autoPause();
           }
         }

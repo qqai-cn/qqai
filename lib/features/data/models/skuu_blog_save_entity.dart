@@ -8,6 +8,7 @@ class SkuuBlogSaveEntity {
 	late int addressId;
 	late int blogType;
 	late int categary;
+	String title = '';
 	late String content;
 	late String resources;
 	late int shareType;

@@ -142,6 +142,10 @@ SkuuBlogPageDataRecords $SkuuBlogPageDataRecordsFromJson(
   if (blogType != null) {
     skuuBlogPageDataRecords.blogType = blogType;
   }
+  final String? title = jsonConvert.convert<String>(json['title']);
+  if (title != null) {
+    skuuBlogPageDataRecords.title = title;
+  }
   final String? content = jsonConvert.convert<String>(json['content']);
   if (content != null) {
     skuuBlogPageDataRecords.content = content;
@@ -193,6 +197,7 @@ Map<String, dynamic> $SkuuBlogPageDataRecordsToJson(
   data['topicId'] = entity.topicId;
   data['categary'] = entity.categary;
   data['blogType'] = entity.blogType;
+  data['title'] = entity.title;
   data['content'] = entity.content;
   data['resources'] = entity.resources;
   data['shareType'] = entity.shareType;

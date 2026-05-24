@@ -15,6 +15,10 @@ SkuuBlogSaveEntity $SkuuBlogSaveEntityFromJson(Map<String, dynamic> json) {
   if (categary != null) {
     skuuBlogSaveEntity.categary = categary;
   }
+  final String? title = jsonConvert.convert<String>(json['title']);
+  if (title != null) {
+    skuuBlogSaveEntity.title = title;
+  }
   final String? content = jsonConvert.convert<String>(json['content']);
   if (content != null) {
     skuuBlogSaveEntity.content = content;
@@ -43,6 +47,7 @@ Map<String, dynamic> $SkuuBlogSaveEntityToJson(SkuuBlogSaveEntity entity) {
   data['addressId'] = entity.addressId;
   data['blogType'] = entity.blogType;
   data['categary'] = entity.categary;
+  data['title'] = entity.title;
   data['content'] = entity.content;
   data['resources'] = entity.resources;
   data['shareType'] = entity.shareType;
@@ -56,6 +61,7 @@ extension SkuuBlogSaveEntityExtension on SkuuBlogSaveEntity {
     int? addressId,
     int? blogType,
     int? categary,
+    String? title,
     String? content,
     String? resources,
     int? shareType,
@@ -66,6 +72,7 @@ extension SkuuBlogSaveEntityExtension on SkuuBlogSaveEntity {
       ..addressId = addressId ?? this.addressId
       ..blogType = blogType ?? this.blogType
       ..categary = categary ?? this.categary
+      ..title = title ?? this.title
       ..content = content ?? this.content
       ..resources = resources ?? this.resources
       ..shareType = shareType ?? this.shareType

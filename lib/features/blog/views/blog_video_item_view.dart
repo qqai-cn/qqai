@@ -10,6 +10,7 @@ import 'package:qqai/components/blog/visibility_video_slot.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../../providers/auth_providers.dart';
+import '../data/blog_display_text.dart';
 import '../data/blog_list_patch.dart';
 import '../data/home_blog_tab.dart';
 import '../data/models/blog_page_model.dart';
@@ -74,7 +75,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
             followFeed: follow,
             feedCategory: widget.category,
           );
-    final content = _contentWithoutReward(item.content);
+    final preview = blogVideoListPreview(item);
     final rewardText = _rewardText(item.content);
     final bodyStyle = context.typo.body;
     final coverUrl = resolveBlogCoverUrl(item);
@@ -108,17 +109,18 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                       )
                     : null,
               ),
-              Padding(
-                padding: EdgeInsets.only(left: 5, right: 5),
-                child: Text(
-                  content,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: bodyStyle.copyWith(
-                    fontSize: (bodyStyle.fontSize ?? 16),
+              if (preview.isNotEmpty)
+                Padding(
+                  padding: EdgeInsets.only(left: 5, right: 5),
+                  child: Text(
+                    preview,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: bodyStyle.copyWith(
+                      fontSize: (bodyStyle.fontSize ?? 16),
+                    ),
                   ),
                 ),
-              ),
               if (widget.category == HomeBlogTab.mutualAid &&
                   rewardText != null)
                 Padding(
@@ -209,14 +211,6 @@ class _RewardAmountText extends StatelessWidget {
       ],
     );
   }
-}
-
-String _contentWithoutReward(String? content) {
-  return (content ?? '')
-      .split('\n')
-      .where((line) => !line.trim().startsWith('悬赏金额：'))
-      .join('\n')
-      .trim();
 }
 
 String? _rewardText(String? content) {

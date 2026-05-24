@@ -32,7 +32,7 @@ import '../components/chat/chat_widget.dart';
 import '../components/imgpreview/image_detail_page.dart';
 import '../components/imgpreview/preview_img.dart';
 import '../components/video_player_detail/FullScreenVideoPlayer.dart';
-import '../features/blog/data/models/blog_page_model.dart';
+import '../features/blog/data/blog_route_extra.dart';
 import '../features/fabu/views/fabu_publish_page.dart';
 import '../features/fabu/views/fabu_view.dart';
 import '../features/goods/models/cart_line.dart';
@@ -324,7 +324,12 @@ GoRouter appRouter(Ref ref) {
         path: Routes.blogImgDetailView,
         name: 'blogImgDetailView',
         builder: (c, s) {
-          final blogItem = s.extra as BlogItem;
+          final blogItem = parseBlogItemRouteExtra(s.extra);
+          if (blogItem == null) {
+            return const Scaffold(
+              body: Center(child: Text('博客数据无效，请返回重试')),
+            );
+          }
           return BlogImgDetailView(blogItem: blogItem);
         },
       ),
@@ -332,7 +337,12 @@ GoRouter appRouter(Ref ref) {
         path: Routes.blogVideoDetailView,
         name: 'blogVideoDetailView',
         builder: (c, s) {
-          final blogItem = s.extra as BlogItem;
+          final blogItem = parseBlogItemRouteExtra(s.extra);
+          if (blogItem == null) {
+            return const Scaffold(
+              body: Center(child: Text('博客数据无效，请返回重试')),
+            );
+          }
           return BlogVideoDetailView(blogItem: blogItem);
         },
       ),
@@ -340,7 +350,12 @@ GoRouter appRouter(Ref ref) {
         path: Routes.videoDetailView,
         name: 'videoDetailView',
         builder: (c, s) {
-          final blogItem = s.extra as BlogItem;
+          final blogItem = parseBlogItemRouteExtra(s.extra);
+          if (blogItem == null) {
+            return const Scaffold(
+              body: Center(child: Text('博客数据无效，请返回重试')),
+            );
+          }
           return VideoDetailView(blogItem: blogItem);
         },
       ),

@@ -11,6 +11,7 @@ sealed class BlogSaveReqVO with _$BlogSaveReqVO {
     String? topicIds,
     int? categary,
     int? blogType,
+    String? title,
     String? content,
     String? resources,
     String? coverUrl,

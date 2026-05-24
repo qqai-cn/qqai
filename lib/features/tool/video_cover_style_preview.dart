@@ -44,12 +44,28 @@ Size resolveVideoCoverPreviewSize({
 }
 
 Future<Uint8List?> captureVideoCoverStylePreview(GlobalKey repaintKey) async {
+  await WidgetsBinding.instance.endOfFrame;
   final boundary = repaintKey.currentContext?.findRenderObject();
   if (boundary is! RenderRepaintBoundary) return null;
   final image = await boundary.toImage(pixelRatio: 2.0);
   final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
   if (byteData == null) return null;
   return byteData.buffer.asUint8List();
+}
+
+Future<Uint8List?> captureVideoCoverStylePreviewWhenReady(
+  GlobalKey repaintKey, {
+  int maxAttempts = 10,
+}) async {
+  for (var attempt = 0; attempt < maxAttempts; attempt++) {
+    await WidgetsBinding.instance.endOfFrame;
+    final bytes = await captureVideoCoverStylePreview(repaintKey);
+    if (bytes != null && bytes.isNotEmpty) {
+      return bytes;
+    }
+    await Future<void>.delayed(Duration(milliseconds: 50 + attempt * 40));
+  }
+  return null;
 }
 
 void populateCoverThumbnailImages({
@@ -765,13 +781,13 @@ class VideoCoverStylePreview extends StatefulWidget {
     required this.videoPath,
     required this.styleId,
     required this.durationSeconds,
-    required this.repaintKey,
+    this.repaintKey,
   });
 
   final String videoPath;
   final int styleId;
   final int durationSeconds;
-  final GlobalKey repaintKey;
+  final GlobalKey? repaintKey;
 
   @override
   State<VideoCoverStylePreview> createState() => VideoCoverStylePreviewState();
@@ -800,7 +816,11 @@ class VideoCoverStylePreviewState extends State<VideoCoverStylePreview> {
     setState(() {});
   }
 
-  Future<Uint8List?> capture() => captureVideoCoverStylePreview(widget.repaintKey);
+  Future<Uint8List?> capture() {
+    final key = widget.repaintKey;
+    if (key == null) return Future.value(null);
+    return captureVideoCoverStylePreview(key);
+  }
 
   @override
   void didUpdateWidget(VideoCoverStylePreview oldWidget) {
@@ -814,9 +834,9 @@ class VideoCoverStylePreviewState extends State<VideoCoverStylePreview> {
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      key: widget.repaintKey,
-      child: buildVideoCoverStyleView(widget.styleId, _imgMap, context),
-    );
+    final view = buildVideoCoverStyleView(widget.styleId, _imgMap, context);
+    final key = widget.repaintKey;
+    if (key == null) return view;
+    return RepaintBoundary(key: key, child: view);
   }
 }

@@ -9,6 +9,7 @@ import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/util/format_count.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
 import '../data/blog_list_patch.dart';
+import '../data/blog_display_text.dart';
 import '../data/models/blog_page_model.dart';
 import '../data/home_blog_tab.dart';
 import '../providers/blog_providers.dart';
@@ -96,12 +97,9 @@ class BlogDetailBottomInfo extends ConsumerWidget {
     final item = resolveBlogItem(ref, blog);
     final auth = ref.watch(authProvider);
     final avatarUrl = blogCreatorAvatarUrl(item, currentUserId: auth.userId);
-    final avatarHeroTag = avatarUrl != null
-        ? blogAvatarDetailHeroTag(item)
-        : null;
     final name = item.creatorName?.trim();
     final displayName = (name != null && name.isNotEmpty) ? name : '用户';
-    final content = item.content?.trim() ?? '';
+    final fullText = blogVideoDetailFullText(item);
 
     return Positioned(
       left: 12,
@@ -112,28 +110,17 @@ class BlogDetailBottomInfo extends ConsumerWidget {
         children: [
           if (avatarUrl != null) ...[
             InkWell(
-              onTap: avatarHeroTag != null
-                  ? () => openBlogAvatarPreview(
-                      context,
-                      blog: item,
-                      heroTag: avatarHeroTag,
-                      imageUrl: avatarUrl,
-                    )
-                  : null,
-              child: avatarHeroTag != null
-                  ? Hero(
-                      tag: avatarHeroTag,
-                      child: buildDetailAvatar(
-                        avatarUrl: avatarUrl,
-                        size: 44,
-                        context: context,
-                      ),
-                    )
-                  : buildDetailAvatar(
-                      avatarUrl: avatarUrl,
-                      size: 44,
-                      context: context,
-                    ),
+              onTap: () => openBlogAvatarPreview(
+                context,
+                blog: item,
+                heroTag: blogAvatarDetailHeroTag(item),
+                imageUrl: avatarUrl,
+              ),
+              child: buildDetailAvatar(
+                avatarUrl: avatarUrl,
+                size: 44,
+                context: context,
+              ),
             ),
             const SizedBox(width: 10),
           ],
@@ -159,15 +146,19 @@ class BlogDetailBottomInfo extends ConsumerWidget {
                     ],
                   ],
                 ),
-                if (content.isNotEmpty) ...[
+                if (fullText.isNotEmpty) ...[
                   const SizedBox(height: 5),
                   GestureDetector(
-                    onTap: () => _showFullContent(context, content),
-                    child: Text(
-                      content,
+                    onTap: () => _showFullContent(context, fullText),
+                    child: buildBlogVideoDetailText(
+                      item: item,
+                      titleStyle: context.typo.bodyStrong.copyWith(
+                        color: Colors.white,
+                      ),
+                      bodyStyle: context.typo.body.copyWith(
+                        color: Colors.white,
+                      ),
                       maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.typo.body.copyWith(color: Colors.white),
                     ),
                   ),
                 ],

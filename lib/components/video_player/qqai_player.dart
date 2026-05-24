@@ -4,6 +4,7 @@ import 'package:qqai/components/qq_network_image.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:video_player/video_player.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 class QqaiPlayer extends StatefulWidget {
@@ -93,12 +94,13 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
       key: ObjectKey(flickManager),
       onVisibilityChanged: (visibility) {
         if (!_isDisposed && mounted) {
-          if (visibility.visibleFraction > 0.9 && widget.autoPlay) {
+          final fraction = safeVisibleFraction(visibility);
+          if (fraction > 0.9 && widget.autoPlay) {
             flickManager.flickControlManager?.autoResume();
             // 每次恢复播放时确保音量正确
             _setVolumeIfNeeded();
           }
-          if (visibility.visibleFraction == 0) {
+          if (fraction == 0) {
             flickManager.flickControlManager?.autoPause();
           }
         }
