@@ -66,6 +66,8 @@ class ApiConstant {
       '/app-api/blog/qqai/profile/my/likes/page';
   static const String PROFILE_MY_COLLECTIONS_PAGE =
       '/app-api/blog/qqai/profile/my/collections/page';
+  static const String PROFILE_COLLECTIONS =
+      '/app-api/blog/qqai/profile/collections';
   static const String PROFILE_COLLECTIONS_ITEMS =
       '/app-api/blog/qqai/profile/collections/items';
 

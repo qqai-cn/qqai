@@ -246,6 +246,30 @@ class BlogCollectionPageData {
   }
 }
 
+class BlogCollectionSaveReq {
+  const BlogCollectionSaveReq({
+    required this.name,
+    required this.visible,
+    this.coverUrl,
+    this.intro,
+    this.sort,
+  });
+
+  final String name;
+  final int visible;
+  final String? coverUrl;
+  final String? intro;
+  final int? sort;
+
+  Map<String, dynamic> toJson() => {
+        'name': name,
+        'visible': visible,
+        if (coverUrl != null) 'coverUrl': coverUrl,
+        if (intro != null) 'intro': intro,
+        if (sort != null) 'sort': sort,
+      };
+}
+
 class BlogShopProductSaveReq {
   const BlogShopProductSaveReq({
     required this.name,

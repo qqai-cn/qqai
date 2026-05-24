@@ -47,6 +47,7 @@ sealed class FabuState with _$FabuState {
     @Default(0) int? whoCanSeeSel,
     @Default(0) int aixinType,
     @Default({}) Map<int, String> huatiSel,
+    @Default({}) Map<int, String> collectionSel,
     String? error,
     @Default(false) bool isLoading,
     @Default(false) bool isUploading,
@@ -397,6 +398,10 @@ class FabuNotifier extends _$FabuNotifier {
     state = state.copyWith(huatiSel: huati);
   }
 
+  void setCollectionSel(Map<int, String> collections) {
+    state = state.copyWith(collectionSel: collections);
+  }
+
   void setAddress(AddressEntity addressEntity) {
     state = state.copyWith(selAddressEntity: addressEntity);
   }
@@ -456,6 +461,10 @@ class FabuNotifier extends _$FabuNotifier {
       final withLocation =
           selected != null && selected.id != 0 && selected.hasGeoCoordinates;
 
+      final collectionIds = blogType == 2 && state.collectionSel.isNotEmpty
+          ? state.collectionSel.keys.toList()
+          : null;
+
       final req = BlogSaveReqVO(
         squareId: squareId,
         topicIds: topicIds,
@@ -474,6 +483,7 @@ class FabuNotifier extends _$FabuNotifier {
         latitude: withLocation ? selected.latitude : null,
         longitude: withLocation ? selected.longitude : null,
         shareType: shareType,
+        collectionIds: collectionIds,
       );
       await blogRepo.createBlog(
         req,

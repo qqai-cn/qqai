@@ -12,6 +12,7 @@ import '../../index/presentation/views/filter_page.dart';
 import '../../tool/video_cover_style_preview.dart';
 import '../../tool/video_cover_tool.dart';
 import '../providers/fabu_providers.dart';
+import '../widgets/collection_picker_sheet.dart';
 import 'fabu_media_preview_tile.dart';
 
 enum FabuPublishType {
@@ -175,6 +176,14 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                             onTap: () =>
                                 _showTopicSheet(fabuState, fabuNotifier),
                           ),
+                          if (widget.type == FabuPublishType.video)
+                            _ActionRow(
+                              icon: Icons.collections_bookmark_outlined,
+                              title: fabuState.collectionSel.isEmpty
+                                  ? '合集'
+                                  : fabuState.collectionSel.values.join('、'),
+                              onTap: () => _showCollectionSheet(fabuNotifier),
+                            ),
                           _ActionRow(
                             icon: Icons.person_outline,
                             title: fabuState.whoCanSeeSel == null
@@ -714,6 +723,17 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     );
     if (result != null) {
       notifier.setHuati(result);
+    }
+  }
+
+  Future<void> _showCollectionSheet(FabuNotifier notifier) async {
+    final state = ref.read(fabuProvider);
+    final result = await showCollectionPickerSheet(
+      context,
+      initialSelection: state.collectionSel,
+    );
+    if (result != null) {
+      notifier.setCollectionSel(result);
     }
   }
 

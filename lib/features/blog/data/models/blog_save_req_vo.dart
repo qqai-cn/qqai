@@ -20,6 +20,7 @@ sealed class BlogSaveReqVO with _$BlogSaveReqVO {
     double? latitude,
     double? longitude,
     int? shareType,
+    List<int>? collectionIds,
   }) = _BlogSaveReqVO;
 
   factory BlogSaveReqVO.fromJson(Map<String, dynamic> json) =>

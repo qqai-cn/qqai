@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../data/models/profile_models.dart';
 import '../data/repos/profile_repo.dart';
+import 'create_collection_dialog.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 /// 「合集」Tab：我的合集分页。
@@ -121,79 +122,14 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
     }
   }
 
-  @override
-  bool get wantKeepAlive => true;
-
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    if (widget.tabIndex != widget.currentIndex) {
-      return const SizedBox.shrink();
+  Future<void> _openCreateDialog() async {
+    final created = await showCreateCollectionDialog(context, ref);
+    if (created && mounted) {
+      await _loadFirstPage();
     }
-    final isWideScreen = 1.sw > 800;
+  }
 
-    if (_loading && _items.isEmpty) {
-      return CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverOverlapInjector(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-          ),
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        ],
-      );
-    }
-
-    if (_error != null && _items.isEmpty) {
-      return CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverOverlapInjector(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-          ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(
-                      '加载失败: $_error',
-                      textAlign: TextAlign.center,
-                      style: context.typo.body,
-                    ),
-                  ),
-                  TextButton(onPressed: _loadFirstPage, child: const Text('重试')),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
-    }
-
-    if (_items.isEmpty) {
-      return CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          SliverOverlapInjector(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-          ),
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Center(
-              child: Text('暂无合集', style: context.typo.body),
-            ),
-          ),
-        ],
-      );
-    }
-
+  Widget _buildCollectionGrid(bool isWideScreen) {
     return RefreshIndicator(
       onRefresh: _loadFirstPage,
       child: CustomScrollView(
@@ -295,6 +231,93 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
             ),
         ],
       ),
+    );
+  }
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    if (widget.tabIndex != widget.currentIndex) {
+      return const SizedBox.shrink();
+    }
+    final isWideScreen = 1.sw > 800;
+
+    Widget body;
+    if (_loading && _items.isEmpty) {
+      body = CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverOverlapInjector(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+          ),
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        ],
+      );
+    } else if (_error != null && _items.isEmpty) {
+      body = CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverOverlapInjector(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+          ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      '加载失败: $_error',
+                      textAlign: TextAlign.center,
+                      style: context.typo.body,
+                    ),
+                  ),
+                  TextButton(onPressed: _loadFirstPage, child: const Text('重试')),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (_items.isEmpty) {
+      body = CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverOverlapInjector(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+          ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Text('暂无合集，点击右下角创建', style: context.typo.body),
+            ),
+          ),
+        ],
+      );
+    } else {
+      body = _buildCollectionGrid(isWideScreen);
+    }
+
+    return Stack(
+      children: [
+        body,
+        Positioned(
+          right: 16,
+          bottom: 24,
+          child: FloatingActionButton(
+            onPressed: _openCreateDialog,
+            child: const Icon(Icons.add),
+          ),
+        ),
+      ],
     );
   }
 }
