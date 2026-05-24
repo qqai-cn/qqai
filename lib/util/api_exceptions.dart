@@ -1,5 +1,16 @@
 import 'package:dio/dio.dart';
 
+/// 接口业务错误（HTTP 200 但 body.code != 0）。
+class ApiBusinessException implements Exception {
+  final int code;
+  final String message;
+
+  const ApiBusinessException({required this.code, required this.message});
+
+  @override
+  String toString() => message;
+}
+
 class ApiException implements Exception {
   final String url;
   final String message;

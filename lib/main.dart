@@ -11,6 +11,7 @@ import 'config/theme/my_theme.dart';
 import 'config/translations/localization_service.dart';
 import 'util/my_shared_pref.dart';
 import 'util/api_base_client.dart';
+import 'util/api_messenger.dart';
 import 'providers/auth_providers.dart';
 import 'providers/app_config_providers.dart';
 
@@ -69,6 +70,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       rebuildFactor: (old, data) => true,
       builder: (context, child) {
         return MaterialApp.router(
+          scaffoldMessengerKey: ApiMessenger.scaffoldMessengerKey,
           title: '千千Ai',
           debugShowCheckedModeBanner: false,
           locale: locale,

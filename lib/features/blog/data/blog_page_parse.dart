@@ -1,3 +1,4 @@
+import '../../../util/api_exceptions.dart';
 import 'models/blog_page_model.dart';
 
 String? _firstNonEmptyString(dynamic value) {
@@ -134,7 +135,12 @@ BlogPageModelData parseBlogPageEnvelope(
   }
   final code = raw['code'];
   if (code != null && code != 0 && code != '0') {
-    throw raw['msg']?.toString() ?? '请求失败';
+    final message = raw['msg']?.toString() ?? '请求失败';
+    final codeInt = code is int ? code : int.tryParse(code.toString());
+    if (codeInt == 401) {
+      throw ApiBusinessException(code: 401, message: message);
+    }
+    throw message;
   }
   final inner = raw['data'];
   if (inner is! Map<String, dynamic>) {

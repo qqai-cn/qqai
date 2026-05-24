@@ -9,6 +9,8 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../config/translations/strings_enum.dart';
 import '../constant/api_constant.dart';
 import 'api_exceptions.dart';
+import 'api_messenger.dart';
+import 'my_shared_pref.dart';
 
 enum RequestType { get, post, put, delete }
 
@@ -24,6 +26,51 @@ class ApiBaseClient {
   }) {
     _onRefreshToken = onRefreshToken;
     _onLogout = onLogout;
+  }
+
+  static bool _hasRefreshToken() {
+    final token = MySharedPref.getRefreshToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  static Future<void> _rejectUnauthorized(
+    Response<dynamic> response,
+    ResponseInterceptorHandler handler,
+    String message, {
+    bool logout = true,
+  }) async {
+    ApiMessenger.showUnauthorized(message);
+    if (logout && _onLogout != null) {
+      await _onLogout!();
+    }
+    handler.reject(
+      DioException(
+        requestOptions: response.requestOptions,
+        response: response,
+        type: DioExceptionType.badResponse,
+        message: message,
+      ),
+    );
+  }
+
+  static Future<void> _rejectUnauthorizedError(
+    DioException error,
+    ErrorInterceptorHandler handler,
+    String message, {
+    bool logout = true,
+  }) async {
+    ApiMessenger.showUnauthorized(message);
+    if (logout && _onLogout != null) {
+      await _onLogout!();
+    }
+    handler.reject(
+      DioException(
+        requestOptions: error.requestOptions,
+        response: error.response,
+        type: DioExceptionType.badResponse,
+        message: message,
+      ),
+    );
   }
 
   static Future<Response<dynamic>> _handle401AndRetry(
@@ -103,36 +150,52 @@ class ApiBaseClient {
           return handler.next(options);
         },
         onResponse: (response, handler) async {
-          // 检查业务代码 401
           final data = response.data;
-          if (data is Map &&
-              data['code'] == 401 &&
+          if (ApiMessenger.businessCode(data) == 401 &&
               response.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
-            try {
-              // 处理业务代码 401
-              final retryResponse = await _handle401AndRetry(
-                response.requestOptions,
-              );
-              return handler.resolve(retryResponse);
-            } catch (e) {
-              // 如果刷新失败，直接返回原响应
-              return handler.next(response);
+            final message = ApiMessenger.messageFromBusinessBody(data);
+            if (_hasRefreshToken()) {
+              try {
+                final retryResponse = await _handle401AndRetry(
+                  response.requestOptions,
+                );
+                final retryData = retryResponse.data;
+                if (ApiMessenger.businessCode(retryData) == 401) {
+                  await _rejectUnauthorized(response, handler, message);
+                  return;
+                }
+                return handler.resolve(retryResponse);
+              } catch (e) {
+                await _rejectUnauthorized(response, handler, message);
+                return;
+              }
+            } else {
+              await _rejectUnauthorized(response, handler, message, logout: false);
+              return;
             }
           }
           return handler.next(response);
         },
         onError: (error, handler) async {
-          // 检查 HTTP 状态码 401 且不是刷新令牌接口本身
-          if (error.response?.statusCode == 401 &&
+          final isHttp401 = error.response?.statusCode == 401;
+          final data = error.response?.data;
+          final isBiz401 = ApiMessenger.businessCode(data) == 401;
+          if ((isHttp401 || isBiz401) &&
               error.requestOptions.path != ApiConstant.REFRESH_TOKEN) {
-            try {
-              final retryResponse = await _handle401AndRetry(
-                error.requestOptions,
-              );
-              return handler.resolve(retryResponse);
-            } catch (e) {
-              // 如果刷新失败，继续传播错误
-              return handler.next(error);
+            final message = ApiMessenger.messageFromBusinessBody(data);
+            if (_hasRefreshToken()) {
+              try {
+                final retryResponse = await _handle401AndRetry(
+                  error.requestOptions,
+                );
+                return handler.resolve(retryResponse);
+              } catch (e) {
+                await _rejectUnauthorizedError(error, handler, message);
+                return;
+              }
+            } else {
+              await _rejectUnauthorizedError(error, handler, message, logout: false);
+              return;
             }
           }
           return handler.next(error);
