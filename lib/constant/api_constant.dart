@@ -48,7 +48,11 @@ class ApiConstant {
   static const String CHAT_CONVERSATION_GROUP =
       '/app-api/infra/chat/conversation/group';
 
+  static const String MEMBER_USER_UPDATE = '/app-api/member/user/update';
+  static const String SYSTEM_AREA_TREE = '/app-api/system/area/tree';
+
   /// 个人中心 / 我的（QQAI blog profile）
+  static const String PROFILE_MY_PAGE = '/app-api/blog/qqai/profile/my/page';
   static const String PROFILE_MY_SHOP = '/app-api/blog/qqai/profile/my/shop';
   static const String PROFILE_MY_SHOP_PRODUCTS =
       '/app-api/blog/qqai/profile/my/shop/products';

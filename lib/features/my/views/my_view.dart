@@ -3,11 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/label.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/format_count.dart';
 
 import '../../douyin/widgets/douyin_service_strip.dart';
-import '../../../providers/auth_providers.dart';
-import '../providers/my_shop_profile.dart';
+import '../data/models/area_models.dart';
+import '../providers/my_page_profile.dart';
 import 'my_blog_view.dart';
 import 'my_goods_view.dart';
 import 'my_video_list_view.dart';
@@ -26,6 +29,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
+  static const String _defaultAvatar = 'imgs/user_default.png';
 
   @override
   void initState() {
@@ -47,32 +51,39 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     if (mounted) setState(() {});
   }
 
+  Widget _statColumn(String count, String label) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          count,
+          style: context.typo.pageTitle.copyWith(fontWeight: FontWeight.bold),
+        ),
+        Text(label, style: context.typo.cardSubtitle),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final auth = ref.watch(authProvider);
-    final shopAsync = ref.watch(myShopProfileProvider);
-    final shop = switch (shopAsync) {
+    final pageAsync = ref.watch(myPageProfileProvider);
+    final page = switch (pageAsync) {
       AsyncData(:final value) => value,
       _ => null,
     };
-    final nameTrim = shop?.name?.trim();
-    final displayName = (nameTrim != null && nameTrim.isNotEmpty)
-        ? nameTrim
-        : (auth.username?.trim().isNotEmpty == true
-            ? auth.username!.trim()
-            : '我的主页');
-    final subtitle = auth.userId != null && auth.userId!.isNotEmpty
-        ? 'ID ${auth.userId}'
-        : '';
-    final coverTrim = shop?.coverUrl?.trim();
-    final bannerUrl =
-        (coverTrim != null && coverTrim.isNotEmpty) ? coverTrim : _defaultCover;
-    final avatarUrl = bannerUrl;
-    final introTrim = shop?.intro?.trim();
-    final intro = (introTrim != null && introTrim.isNotEmpty)
-        ? introTrim
+
+    final displayName = page?.nickname?.trim().isNotEmpty == true
+        ? page!.nickname!.trim()
+        : '我的主页';
+    final qqId = page?.id;
+    final subtitle = qqId != null ? '千千号：$qqId' : '';
+    final bannerUrl = page?.backgroundUrl?.trim().isNotEmpty == true
+        ? page!.backgroundUrl!.trim()
+        : _defaultCover;
+    final avatarUrl = page?.avatar?.trim();
+    final intro = page?.intro?.trim().isNotEmpty == true
+        ? page!.intro!.trim()
         : '这个人很懒，还没有写签名。';
-    final productCount = shop?.productCount;
 
     return NestedScrollView(
       controller: _scrollviewController,
@@ -111,9 +122,10 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                 onTap: () {},
                                 child: CircleAvatar(
                                   radius: 50,
-                                  backgroundImage: CachedNetworkImageProvider(
-                                    avatarUrl,
-                                  ),
+                                  backgroundImage: avatarUrl != null &&
+                                          avatarUrl.isNotEmpty
+                                      ? CachedNetworkImageProvider(avatarUrl)
+                                      : const AssetImage(_defaultAvatar),
                                 ),
                               ),
                               const SizedBox(width: 10),
@@ -134,7 +146,8 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                     if (subtitle.isNotEmpty)
                                       SelectableText(
                                         subtitle,
-                                        style: context.typo.cardSubtitle.copyWith(
+                                        style: context.typo.cardSubtitle
+                                            .copyWith(
                                           color: Colors.white,
                                           overflow: TextOverflow.ellipsis,
                                         ),
@@ -160,29 +173,34 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                           children: [
                             Row(
                               children: [
-                                if (productCount != null)
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '$productCount',
-                                        style: context.typo.pageTitle.copyWith(
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        '在售商品',
-                                        style: context.typo.cardSubtitle,
-                                      ),
-                                    ],
-                                  ),
-                                if (productCount != null) const SizedBox(width: 20),
+                                _statColumn(
+                                  formatCompactCount(page?.likeReceivedCount),
+                                  '获赞',
+                                ),
+                                const SizedBox(width: 20),
+                                _statColumn(
+                                  formatCompactCount(page?.mutualFollowCount),
+                                  '互关',
+                                ),
+                                const SizedBox(width: 20),
+                                _statColumn(
+                                  formatCompactCount(page?.followingCount),
+                                  '关注',
+                                ),
+                                const SizedBox(width: 20),
+                                _statColumn(
+                                  formatCompactCount(page?.followerCount),
+                                  '粉丝',
+                                ),
                                 const Spacer(),
                                 ElevatedButton(
-                                  onPressed: () {
-                                    ref.invalidate(myShopProfileProvider);
+                                  onPressed: () async {
+                                    await context.push(Routes.myProfileEdit);
+                                    if (mounted) {
+                                      ref.invalidate(myPageProfileProvider);
+                                    }
                                   },
-                                  child: const Text('刷新店铺'),
+                                  child: const Text('编辑主页'),
                                 ),
                               ],
                             ),
@@ -195,17 +213,19 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                             Row(
                               spacing: 10,
                               children: [
-                                if (shop != null && shop.status != null)
+                                if (page?.address?.trim().isNotEmpty == true)
                                   Label(
-                                    content: '店铺状态: ${shop.status}',
+                                    content: formatAddressForDisplay(
+                                      page!.address,
+                                      empty: '',
+                                    ),
                                     backgroundColor: Colors.black12,
                                   ),
-                                Label(
-                                  content: shopAsync.isLoading
-                                      ? '店铺加载中…'
-                                      : (shopAsync.hasError ? '店铺加载失败' : '已登录'),
-                                  backgroundColor: Colors.black12,
-                                ),
+                                if (page?.age != null)
+                                  Label(
+                                    content: '${page!.age}岁',
+                                    backgroundColor: Colors.black12,
+                                  ),
                               ],
                             ),
                             const Spacer(),

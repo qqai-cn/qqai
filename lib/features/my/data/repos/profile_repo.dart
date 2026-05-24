@@ -10,6 +10,12 @@ import '../models/profile_models.dart';
 final profileRepoProvider = Provider<IProfileRepo>((ref) => ProfileRepo());
 
 abstract class IProfileRepo {
+  Future<BlogMyPageResp> getMyPage();
+
+  Future<bool> updateMyShop(BlogShopSaveReq req);
+
+  Future<bool> updateMemberUser(MemberUserUpdateReq req);
+
   Future<BlogShopResp?> getMyShop();
 
   Future<BlogPageModelData> getMyWorksPage(
@@ -70,6 +76,54 @@ void _ensureEnvelope(Map<String, dynamic> root) {
 }
 
 class ProfileRepo implements IProfileRepo {
+  @override
+  Future<BlogMyPageResp> getMyPage() async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_PAGE,
+      RequestType.get,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '我的主页接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      throw '我的主页数据为空';
+    }
+    return BlogMyPageResp.fromJson(inner);
+  }
+
+  @override
+  Future<bool> updateMyShop(BlogShopSaveReq req) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_SHOP,
+      RequestType.put,
+      data: req.toJson(),
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '更新店铺返回格式错误';
+    }
+    _ensureEnvelope(data);
+    return data['data'] == true;
+  }
+
+  @override
+  Future<bool> updateMemberUser(MemberUserUpdateReq req) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MEMBER_USER_UPDATE,
+      RequestType.put,
+      data: req.toJson(),
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '更新用户信息返回格式错误';
+    }
+    _ensureEnvelope(data);
+    return data['data'] == true;
+  }
+
   @override
   Future<BlogShopResp?> getMyShop() async {
     final Response response = await ApiBaseClient.safeApiCall(

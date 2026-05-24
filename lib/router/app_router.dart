@@ -53,6 +53,7 @@ import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
 import '../features/index/presentation/views/home_page.dart';
 import '../features/index/presentation/views/index_page.dart';
 import '../features/index/presentation/views/me_page.dart';
+import '../features/my/views/my_profile_edit_page.dart';
 import '../features/index/presentation/views/message_page.dart';
 import '../features/index/presentation/views/video_page.dart';
 import '../features/square/views/square_blog_view.dart';
@@ -162,6 +163,11 @@ GoRouter appRouter(Ref ref) {
         path: Routes.douyinAllFeatures,
         name: 'douyinAllFeatures',
         builder: (context, state) => const DouyinAllFeaturesPage(),
+      ),
+      GoRoute(
+        path: Routes.myProfileEdit,
+        name: 'myProfileEdit',
+        builder: (context, state) => const MyProfileEditPage(),
       ),
 
       /// ========== 首页（四 Tab 各自路径，便于 GoRouter redirect 统一鉴权）==========
@@ -536,6 +542,7 @@ bool _requiresAuth(String path) {
     Routes.publishVideoPageUrl,
     Routes.publishShortVideoPageUrl,
     Routes.publishHelpPageUrl,
+    Routes.myProfileEdit,
   ];
   return protectedPaths.any((protected) => path.startsWith(protected));
 }

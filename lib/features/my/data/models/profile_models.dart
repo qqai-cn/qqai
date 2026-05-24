@@ -1,4 +1,103 @@
 // 个人中心接口 VO（与 OpenAPI 字段对齐）
+
+class BlogMyPageResp {
+  const BlogMyPageResp({
+    this.id,
+    this.nickname,
+    this.avatar,
+    this.backgroundUrl,
+    this.intro,
+    this.address,
+    this.areaId,
+    this.age,
+    this.likeReceivedCount,
+    this.mutualFollowCount,
+    this.followingCount,
+    this.followerCount,
+    this.sex,
+    this.birthday,
+  });
+
+  final int? id;
+  final String? nickname;
+  final String? avatar;
+  final String? backgroundUrl;
+  final String? intro;
+  final String? address;
+  final int? areaId;
+  final int? age;
+  final int? likeReceivedCount;
+  final int? mutualFollowCount;
+  final int? followingCount;
+  final int? followerCount;
+  final int? sex;
+  final String? birthday;
+
+  factory BlogMyPageResp.fromJson(Map<String, dynamic> json) {
+    return BlogMyPageResp(
+      id: (json['id'] as num?)?.toInt(),
+      nickname: json['nickname'] as String?,
+      avatar: json['avatar'] as String?,
+      backgroundUrl: json['backgroundUrl'] as String?,
+      intro: json['intro'] as String?,
+      address: json['address'] as String?,
+      areaId: (json['areaId'] as num?)?.toInt(),
+      age: (json['age'] as num?)?.toInt(),
+      likeReceivedCount: (json['likeReceivedCount'] as num?)?.toInt(),
+      mutualFollowCount: (json['mutualFollowCount'] as num?)?.toInt(),
+      followingCount: (json['followingCount'] as num?)?.toInt(),
+      followerCount: (json['followerCount'] as num?)?.toInt(),
+      sex: (json['sex'] as num?)?.toInt(),
+      birthday: json['birthday'] as String?,
+    );
+  }
+}
+
+class BlogShopSaveReq {
+  const BlogShopSaveReq({
+    this.name,
+    this.intro,
+    this.coverUrl,
+    required this.status,
+  });
+
+  final String? name;
+  final String? intro;
+  final String? coverUrl;
+  final int status;
+
+  Map<String, dynamic> toJson() => {
+        if (name != null) 'name': name,
+        if (intro != null) 'intro': intro,
+        if (coverUrl != null) 'coverUrl': coverUrl,
+        'status': status,
+      };
+}
+
+class MemberUserUpdateReq {
+  const MemberUserUpdateReq({
+    this.nickname,
+    this.avatar,
+    this.sex,
+    this.birthday,
+    this.areaId,
+  });
+
+  final String? nickname;
+  final String? avatar;
+  final int? sex;
+  final String? birthday;
+  final int? areaId;
+
+  Map<String, dynamic> toJson() => {
+        if (nickname != null) 'nickname': nickname,
+        if (avatar != null) 'avatar': avatar,
+        if (sex != null) 'sex': sex,
+        if (birthday != null) 'birthday': birthday,
+        if (areaId != null) 'areaId': areaId,
+      };
+}
+
 class BlogShopResp {
   const BlogShopResp({
     this.id,

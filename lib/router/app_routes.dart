@@ -46,6 +46,7 @@ class Routes {
   static const String douyinMyOrders = "/douyin/my_orders";
   static const String douyinWatchHistory = "/douyin/watch_history";
   static const String douyinAllFeatures = "/douyin/all_features";
+  static const String myProfileEdit = "/my/profile/edit";
   static const String calendarToolPageUrl = "/calendar_tool_page";
   static const String publishDynamicPageUrl = "/publish_dynamic_page";
   static const String publishVideoPageUrl = "/publish_video_page";
