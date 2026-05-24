@@ -2,11 +2,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
 import 'package:qqai/util/media_url.dart';
 
+import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
 import '../data/repos/blog_repo.dart';
 
@@ -117,9 +119,10 @@ class _RecommendTile extends StatelessWidget {
 
   const _RecommendTile({required this.item, required this.onTap});
 
+  static const _thumbSize = 72.0;
+
   @override
   Widget build(BuildContext context) {
-    final cover = _coverUrl(item);
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -127,18 +130,7 @@ class _RecommendTile extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: cover != null
-                  ? CachedNetworkImage(
-                      imageUrl: cover,
-                      width: 72,
-                      height: 72,
-                      fit: BoxFit.cover,
-                      errorWidget: (_, _, _) => _coverPlaceholder(),
-                    )
-                  : _coverPlaceholder(),
-            ),
+            _RecommendThumb(item: item),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
@@ -171,21 +163,74 @@ class _RecommendTile extends StatelessWidget {
     );
   }
 
-  String? _coverUrl(BlogItem item) {
-    final first = item.resources
-        ?.split(',')
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .firstOrNull;
-    if (first == null || first.isEmpty) return null;
-    return resolveMediaUrl(first);
+}
+
+/// 相关推荐缩略图：图文取首图，视频取封面；无则头像，再无则默认图。
+class _RecommendThumb extends StatelessWidget {
+  final BlogItem item;
+
+  const _RecommendThumb({required this.item});
+
+  static const _size = _RecommendTile._thumbSize;
+
+  @override
+  Widget build(BuildContext context) {
+    final thumbUrl = _primaryThumbUrl(item);
+    final avatarUrl = blogCreatorAvatarUrl(item);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(6),
+      child: SizedBox(
+        width: _size,
+        height: _size,
+        child: thumbUrl != null
+            ? _networkImage(
+                thumbUrl,
+                error: avatarUrl != null
+                    ? _networkImage(avatarUrl, error: _defaultThumb())
+                    : _defaultThumb(),
+              )
+            : avatarUrl != null
+            ? _networkImage(avatarUrl, error: _defaultThumb())
+            : _defaultThumb(),
+      ),
+    );
   }
 
-  Widget _coverPlaceholder() {
+  /// 图文：resources 首图；视频：coverUrl，其次 resources 内静图。
+  static String? _primaryThumbUrl(BlogItem item) {
+    if (item.blogType == 1) {
+      final image = firstStillImageUrlFromResources(item.resources);
+      if (image != null) return resolveMediaUrl(image);
+      final urls = parseCommaSeparatedUrls(item.resources);
+      if (urls.isNotEmpty) return resolveMediaUrl(urls.first);
+      return null;
+    }
+
+    final cover = item.coverUrl?.trim();
+    if (cover != null && cover.isNotEmpty) {
+      return resolveMediaUrl(cover);
+    }
+    final still = firstStillImageUrlFromResources(item.resources);
+    return resolveMediaUrl(still);
+  }
+
+  static Widget _networkImage(String url, {required Widget error}) {
+    return CachedNetworkImage(
+      imageUrl: url,
+      width: _size,
+      height: _size,
+      fit: BoxFit.cover,
+      placeholder: (_, _) => _defaultThumb(),
+      errorWidget: (_, _, _) => error,
+    );
+  }
+
+  static Widget _defaultThumb() {
     return Image.asset(
       'imgs/img_default.png',
-      width: 72,
-      height: 72,
+      width: _size,
+      height: _size,
       fit: BoxFit.cover,
     );
   }
