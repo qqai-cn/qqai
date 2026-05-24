@@ -9,11 +9,15 @@ import 'package:spring/spring.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../router/app_routes.dart';
+import '../../../util/format_count.dart';
+import '../../blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';
 import 'video_share_view.dart';
 
 class ShortVideoControls extends ConsumerStatefulWidget {
-  ShortVideoControls();
+  const ShortVideoControls({super.key, required this.blogItem});
+
+  final BlogItem blogItem;
 
   @override
   _ShortVideoControls createState() => _ShortVideoControls();
@@ -34,10 +38,23 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
     initialAnim: Motion.mirror,
   );
 
+  String get _creatorLabel {
+    final name = widget.blogItem.creatorName?.trim();
+    if (name != null && name.isNotEmpty) return '@$name';
+    return '@用户';
+  }
+
+  String get _description {
+    final content = widget.blogItem.content?.trim();
+    if (content != null && content.isNotEmpty) return content;
+    return text;
+  }
+
   @override
   Widget build(BuildContext context) {
     final commentNotifier = ref.read(commentProvider.notifier);
     final commentState = ref.watch(commentProvider);
+    final item = widget.blogItem;
 
     bool widScreen = 1.sw > 800;
     var wid = (180.w > 80 ? 80 : 180.w) / 2;
@@ -63,7 +80,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                       context.push('${Routes.userDetail}/88/true');
                     },
                     child: Text(
-                      '@3000万粉丝',
+                      _creatorLabel,
                       style: context.typo.cardTitle.copyWith(color: Colors.white),
                     ),
                   ),
@@ -74,7 +91,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                         context: context,
                         isScrollControlled: true,
                         builder: (BuildContext build) {
-                          return Center(child: Text(text));
+                          return Center(child: Text(_description));
                         },
                       );
                     },
@@ -83,8 +100,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                       overflow: TextOverflow.ellipsis,
                       text: TextSpan(
                         style: context.typo.cardTitle2.copyWith(color: Colors.white),
-                        text:
-                            '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。我真的很喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是喜欢你这个让我看一眼就会笑的女孩子，只靠爱情是不',
+                        text: _description,
                       ),
                     ),
                   ),
@@ -193,7 +209,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                       ? Icon(Icons.favorite, color: Colors.red)
                       : Icon(Icons.favorite_border),
                 ),
-                Text('10kw'),
+                Text(formatCompactCount(item.zan)),
                 IconButton(
                   iconSize: wid,
                   onPressed: () {
@@ -202,7 +218,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                   color: Colors.white,
                   icon: Icon(Icons.comment),
                 ),
-                Text('110kw'),
+                Text(formatCompactCount(item.commentCount)),
                 IconButton(
                   iconSize: wid,
                   onPressed: () {},

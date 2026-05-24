@@ -175,10 +175,21 @@ class _VideoView extends ConsumerState<VideoView>
             ),
           );
         }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ref
+              .read(videoRecommendCurrentBlogProvider.notifier)
+              .select(playable.first);
+        });
         return PageView.builder(
           scrollDirection: Axis.vertical,
           itemCount: playable.length,
           onPageChanged: (index) {
+            if (index < playable.length) {
+              ref
+                  .read(videoRecommendCurrentBlogProvider.notifier)
+                  .select(playable[index]);
+            }
             if (index >= playable.length - 2) {
               recommendNotifier.loadMore();
             }
@@ -193,7 +204,7 @@ class _VideoView extends ConsumerState<VideoView>
               child: QqaiPlayer(
                 url: url,
                 image: cover,
-                controls: ShortVideoControls(),
+                controls: ShortVideoControls(blogItem: item),
                 autoPlay: true,
                 videoFit: BoxFit.contain,
               ),

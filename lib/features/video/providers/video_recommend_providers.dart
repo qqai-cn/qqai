@@ -99,3 +99,14 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier {
     }
   }
 }
+
+/// 影视 Tab「推荐」竖滑流当前播放条目（评论 / 相关推荐侧栏用）。
+@riverpod
+class VideoRecommendCurrentBlog extends _$VideoRecommendCurrentBlog {
+  @override
+  BlogItem? build() => null;
+
+  void select(BlogItem? blog) {
+    state = blog;
+  }
+}
