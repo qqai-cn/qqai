@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../components/imgpreview/preview_img.dart';
+import '../../../providers/auth_providers.dart';
 import '../../../router/app_routes.dart';
 import '../../blog/data/blog_interaction_patch.dart';
 import '../../blog/data/blog_list_patch.dart';
@@ -29,8 +30,15 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   BlogState build() {
     _blogRepo = ref.read(blogRepoProvider);
     _profileRepo = ref.read(profileRepoProvider);
+    ref.listen(authProvider, (previous, next) {
+      if (next.isAuthenticated && previous?.isAuthenticated != true) {
+        unawaited(load());
+      }
+    });
     Future.microtask(() {
-      if (ref.mounted) load();
+      if (ref.mounted && ref.read(authProvider).isAuthenticated) {
+        load();
+      }
     });
     return const BlogState();
   }

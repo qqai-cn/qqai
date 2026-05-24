@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/async_masonry_feed.dart';
+import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/providers/auth_providers.dart';
+import 'package:qqai/router/app_routes.dart';
 
 import '../../index/providers/home_follow_feed_providers.dart';
 import '../data/models/blog_page_model.dart';
@@ -27,6 +31,27 @@ class _BlogViewState extends ConsumerState<BlogView> {
   @override
   Widget build(BuildContext context) {
     final follow = widget.listKind == BlogListKind.followFeed;
+    if (follow && !ref.watch(authProvider).isAuthenticated) {
+      return Scaffold(
+        backgroundColor: Colors.black12,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '登录后查看关注的作品',
+                style: context.typo.body.copyWith(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => context.push(Routes.login),
+                child: const Text('登录'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final blogState = follow
         ? ref.watch(homeFollowFeedProvider)
         : ref.watch(blogProvider(widget.category));
