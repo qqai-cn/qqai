@@ -87,8 +87,9 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
       );
     }
 
-    final posterRaw = firstStillImageUrlFromResources(
-      widget.blog.resources,
+    final posterRaw = resolveBlogCoverUrlFromFields(
+      coverUrl: widget.blog.coverUrl,
+      resources: widget.blog.resources,
       fallback: _defaultPoster,
     );
     final poster = resolveMediaUrl(posterRaw) ?? _defaultPoster;

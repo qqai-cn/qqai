@@ -126,9 +126,11 @@ class _FavoriteCard extends StatelessWidget {
   }
 
   String? _coverUrl(BlogItem item) {
-    final first = firstStillImageUrlFromResources(item.resources) ??
-        firstPlayableVideoUrlFromResources(item.resources);
-    return resolveMediaUrl(first);
+    final cover = resolveBlogCoverUrlFromFields(
+      coverUrl: item.coverUrl,
+      resources: item.resources,
+    );
+    return resolveMediaUrl(cover);
   }
 
   void _openDetail(BuildContext context, BlogItem item) {

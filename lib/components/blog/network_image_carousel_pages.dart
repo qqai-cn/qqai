@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../features/blog/data/models/blog_page_model.dart';
 import '../qq_network_image.dart';
 
 /// 逗号分隔资源字段 → URL 列表。
@@ -53,6 +54,34 @@ String? firstStillImageUrlFromResources(String? raw, {String? fallback}) {
     if (_looksLikeImageUrl(u)) return u;
   }
   return fallback;
+}
+
+/// 默认视频封面（无封面字段且无 resources 内图片时使用）。
+const String kDefaultBlogVideoCoverUrl =
+    'https://file.qqai.cn/qqai/2025/09/1.webp';
+
+/// 解析博客封面：优先 [coverUrl]，其次 resources 内图片，最后默认图。
+String resolveBlogCoverUrlFromFields({
+  String? coverUrl,
+  String? resources,
+  String fallback = kDefaultBlogVideoCoverUrl,
+}) {
+  final direct = coverUrl?.trim();
+  if (direct != null && direct.isNotEmpty) return direct;
+  return firstStillImageUrlFromResources(resources, fallback: fallback) ??
+      fallback;
+}
+
+/// [BlogItem] 封面解析。
+String resolveBlogCoverUrl(
+  BlogItem item, {
+  String fallback = kDefaultBlogVideoCoverUrl,
+}) {
+  return resolveBlogCoverUrlFromFields(
+    coverUrl: item.coverUrl,
+    resources: item.resources,
+    fallback: fallback,
+  );
 }
 
 /// 全屏轮播子页：圆角网络图 + 加载/错误占位。

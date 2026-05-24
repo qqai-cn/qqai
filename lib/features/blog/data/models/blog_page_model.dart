@@ -14,6 +14,7 @@ sealed class BlogItem with _$BlogItem {
     int? blogType,
     String? content,
     String? resources,
+    String? coverUrl,
     int? addressId,
     String? address,
     double? latitude,

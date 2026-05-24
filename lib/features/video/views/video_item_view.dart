@@ -149,12 +149,7 @@ class _VideoItemViewState extends State<VideoItemView> {
 
   @override
   Widget build(BuildContext context) {
-    final cover =
-        firstStillImageUrlFromResources(
-          item.resources,
-          fallback: widget.defaultCover,
-        ) ??
-        widget.defaultCover;
+    final cover = resolveBlogCoverUrl(item, fallback: widget.defaultCover);
     final name = item.creatorName?.trim().isNotEmpty == true
         ? item.creatorName!.trim()
         : '用户';

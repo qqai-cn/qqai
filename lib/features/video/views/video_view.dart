@@ -187,11 +187,7 @@ class _VideoView extends ConsumerState<VideoView>
             final item = playable[index];
             final url =
                 firstPlayableVideoUrlFromResources(item.resources) ?? '';
-            final cover = firstStillImageUrlFromResources(
-                  item.resources,
-                  fallback: _defaultVideoCover,
-                ) ??
-                _defaultVideoCover;
+            final cover = resolveBlogCoverUrl(item, fallback: _defaultVideoCover);
             return ClipRRect(
               borderRadius: BorderRadius.circular(5),
               child: QqaiPlayer(

@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../thumbnail_page.dart';
+import '../../video_cover_thumbnail.dart';
 
 part 'tool_providers.freezed.dart';
 part 'tool_providers.g.dart';

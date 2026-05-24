@@ -6,9 +6,53 @@ import 'package:flutter/rendering.dart';
 import 'package:get_thumbnail_video/index.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
+import 'video_cover_sampling.dart';
 import 'video_cover_thumbnail.dart';
+import 'video_cover_tool.dart';
 
-  void populateCoverThumbnailImages({
+/// 将 400×800 画布按 topCenter 裁入 400/500 外框，与发布页缩略图一致。
+class VideoCoverFramedContent extends StatelessWidget {
+  const VideoCoverFramedContent({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return FittedBox(
+      fit: BoxFit.cover,
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: qqaiVideoCoverCanvasWidth,
+        height: qqaiVideoCoverCanvasHeight,
+        child: child,
+      ),
+    );
+  }
+}
+
+Size resolveVideoCoverPreviewSize({
+  required double maxWidth,
+  required double maxHeight,
+}) {
+  var width = maxWidth;
+  var height = width / qqaiVideoCoverAspectRatio;
+  if (height > maxHeight) {
+    height = maxHeight;
+    width = height * qqaiVideoCoverAspectRatio;
+  }
+  return Size(width, height);
+}
+
+Future<Uint8List?> captureVideoCoverStylePreview(GlobalKey repaintKey) async {
+  final boundary = repaintKey.currentContext?.findRenderObject();
+  if (boundary is! RenderRepaintBoundary) return null;
+  final image = await boundary.toImage(pixelRatio: 2.0);
+  final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+  if (byteData == null) return null;
+  return byteData.buffer.asUint8List();
+}
+
+void populateCoverThumbnailImages({
   required int styleId,
   required int durationSeconds,
   required String videoPath,
@@ -16,101 +60,28 @@ import 'video_cover_thumbnail.dart';
   ImageFormat imageFormat = ImageFormat.WEBP,
   bool attachHeaders = false,
 }) {
-  final index = styleId;
-    int seconds = durationSeconds;
-    debugPrint("authCreate:$index,seconds:$seconds");
-    imgMap.clear();
-    if (index == 1) {
-      int per = (seconds / 6).toInt();
-      for (int i = 1; i <= 5; i++) {
-        print(per * i);
-        if (i == 1) {
-          GenThumbnailImage tmp = GenThumbnailImage(
-            thumbnailRequest: LocalThumbnailRequest(
-              video: videoPath,
-              thumbnailPath: null,
-              imageFormat: imageFormat,
-              maxHeight: 0,
-              maxWidth: 0,
-              timeMs: per * i,
-              quality: 100,
-              attachHeaders: attachHeaders,
-              fit: BoxFit.cover,
-            ),
-          );
-          imgMap[i] = tmp;
-        } else {
-          GenThumbnailImage tmp = GenThumbnailImage(
-            thumbnailRequest: LocalThumbnailRequest(
-              video: videoPath,
-              thumbnailPath: null,
-              imageFormat: imageFormat,
-              maxHeight: 0,
-              maxWidth: 0,
-              timeMs: per * i,
-              quality: 100,
-              attachHeaders: attachHeaders,
-              fit: BoxFit.fitWidth,
-            ),
-          );
-          imgMap[i] = tmp;
-        }
-      }
-    } else if (index == 2) {
-      int per = (seconds / 11).toInt();
-      for (int i = 1; i <= 10; i++) {
-        print(per * i);
-        GenThumbnailImage tmp = GenThumbnailImage(
-          thumbnailRequest: LocalThumbnailRequest(
-            video: videoPath,
-            thumbnailPath: null,
-            imageFormat: imageFormat,
-            maxHeight: 0,
-            maxWidth: 0,
-            timeMs: per * i,
-            quality: 100,
-            attachHeaders: attachHeaders,
-            fit: BoxFit.cover,
-          ),
-        );
-        imgMap[i] = tmp;
-      }
-    } else if (index == 3) {
-      print((seconds / 2).toInt());
-      GenThumbnailImage tmp = GenThumbnailImage(
-        thumbnailRequest: LocalThumbnailRequest(
-          video: videoPath,
-          thumbnailPath: null,
-          imageFormat: imageFormat,
-          maxHeight: 0,
-          maxWidth: 0,
-          timeMs: (seconds / 2).toInt(),
-          quality: 100,
-          attachHeaders: attachHeaders,
-          fit: BoxFit.cover,
-        ),
-      );
-      imgMap[1] = tmp;
-    } else if (index == 4) {
-      int per = (seconds / 8).toInt();
-      for (int i = 1; i <= 7; i++) {
-        print(per * i);
-        GenThumbnailImage tmp = GenThumbnailImage(
-          thumbnailRequest: LocalThumbnailRequest(
-            video: videoPath,
-            thumbnailPath: null,
-            imageFormat: imageFormat,
-            maxHeight: 0,
-            maxWidth: 0,
-            timeMs: per * i,
-            quality: 100,
-            attachHeaders: attachHeaders,
-            fit: BoxFit.cover,
-          ),
-        );
-        imgMap[i] = tmp;
-      }
-    }
+  imgMap.clear();
+  final durationMs = durationSeconds * 1000;
+  final timePoints = computeCoverStyleTimePoints(durationMs, styleId);
+  debugPrint('populateCoverThumbnailImages:$styleId,seconds:$durationSeconds');
+
+  for (var i = 0; i < timePoints.length; i++) {
+    final slot = i + 1;
+    final fit = styleId == 1 && slot > 1 ? BoxFit.fitWidth : BoxFit.cover;
+    imgMap[slot] = GenThumbnailImage(
+      thumbnailRequest: LocalThumbnailRequest(
+        video: videoPath,
+        thumbnailPath: null,
+        imageFormat: imageFormat,
+        maxHeight: 0,
+        maxWidth: 0,
+        timeMs: timePoints[i],
+        quality: 100,
+        attachHeaders: attachHeaders,
+        fit: fit,
+      ),
+    );
+  }
 }
 
 Widget buildVideoCoverStyleView(
@@ -786,15 +757,6 @@ Widget buildVideoCoverStyleView(
         ),
       );
     }
-}
-
-Future<Uint8List?> captureVideoCoverStylePreview(GlobalKey repaintKey) async {
-  final boundary = repaintKey.currentContext?.findRenderObject();
-  if (boundary is! RenderRepaintBoundary) return null;
-  final image = await boundary.toImage(pixelRatio: 2.0);
-  final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-  if (byteData == null) return null;
-  return byteData.buffer.asUint8List();
 }
 
 class VideoCoverStylePreview extends StatefulWidget {

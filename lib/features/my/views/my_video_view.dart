@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:qqai/config/theme/app_typography.dart';
 
+import '../../../../components/blog/network_image_carousel_pages.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
@@ -16,14 +17,6 @@ import '../data/repos/profile_repo.dart';
 enum MyProfileWorkGridKind {
   works,
   likes,
-}
-
-String? _firstMediaUrl(BlogItem item) {
-  final raw = item.resources?.trim();
-  if (raw == null || raw.isEmpty) return null;
-  final parts = raw.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty);
-  if (parts.isEmpty) return null;
-  return parts.first;
 }
 
 class MyVideoView extends ConsumerStatefulWidget {
@@ -251,7 +244,7 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final item = _items[index];
-                final cover = _firstMediaUrl(item) ?? _placeholderCover;
+                final cover = resolveBlogCoverUrl(item, fallback: _placeholderCover);
                 final isVideo = item.blogType == 2;
                 return GestureDetector(
                   onTap: () => blogNotifier.onBlogItemTap(context, item),

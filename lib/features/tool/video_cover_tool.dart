@@ -38,7 +38,10 @@ const List<QqaiVideoCoverStyle> qqaiVideoCoverStyles = [
   QqaiVideoCoverStyle(id: 4, label: '竖版封面2'),
 ];
 
-const double qqaiVideoCoverAspectRatio = 400 / 500;
+const double qqaiVideoCoverCanvasWidth = 400;
+const double qqaiVideoCoverCanvasHeight = 800;
+
+const double qqaiVideoCoverAspectRatio = qqaiVideoCoverCanvasWidth / 500;
 
 Future<Uint8List> generateVideoCoverBytes({
   required String videoPath,

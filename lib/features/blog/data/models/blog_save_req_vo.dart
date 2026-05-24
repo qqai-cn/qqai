@@ -13,6 +13,7 @@ sealed class BlogSaveReqVO with _$BlogSaveReqVO {
     int? blogType,
     String? content,
     String? resources,
+    String? coverUrl,
     int? addressId,
     String? address,
     double? latitude,

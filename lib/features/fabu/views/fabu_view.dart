@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../providers/fabu_providers.dart';
+import '../widgets/fabu_ai_publish_overlay.dart';
 import 'fabu_publish_page.dart';
 
 class FabuView extends ConsumerStatefulWidget {
@@ -236,7 +237,16 @@ class _FabuViewState extends ConsumerState<FabuView>
           ),
         ),
       ),
-      body: TabBarView(controller: _tabController, children: _tabBoby),
+      body: Stack(
+        children: [
+          TabBarView(controller: _tabController, children: _tabBoby),
+          if (fabuState.isUploading)
+            FabuAiPublishOverlay(
+              progress: fabuState.publishProgress,
+              stage: fabuState.publishStage,
+            ),
+        ],
+      ),
     );
   }
 

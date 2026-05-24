@@ -8,6 +8,7 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
+import '../../../../components/blog/network_image_carousel_pages.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
@@ -35,7 +36,9 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
         ref.read(blogProvider(HomeBlogTab.recommend).notifier);
     final isWideScreen = 1.sw > 900;
     final bodyStyle = context.typo.body;
-    const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
+    final coverUrl = resolveBlogCoverUrl(widget.blogItem);
+    final videoUrl =
+        firstPlayableVideoUrlFromResources(widget.blogItem.resources) ?? '';
     return Padding(
       padding: EdgeInsets.all(2),
       child: Column(
@@ -57,7 +60,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
               aspectRatio: 15 / 9,
               child: _LazyVideoPlaceholder(
                 key: Key('blog_video_${widget.blogItem.id}'),
-                url: widget.blogItem.resources!,
+                url: videoUrl,
                 imgUrl: coverUrl,
               ),
             ),

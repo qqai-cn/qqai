@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'dart:typed_data';
 
@@ -53,6 +54,8 @@ sealed class FabuState with _$FabuState {
     @Default(false) bool isCoverPreviewing,
     @Default('') String textContent,
     @Default(false) bool isLoadingGPS,
+    @Default(0.0) double publishProgress,
+    @Default('') String publishStage,
   }) = _FabuState;
 }
 
@@ -62,10 +65,17 @@ class FabuNotifier extends _$FabuNotifier {
   int? _cachedVideoDurationMs;
   String? _cachedVideoPath;
   int _coverPreviewGeneration = 0;
+  Future<Uint8List?> Function()? _widgetCoverCapture;
+
+  /// 由发布页视频 Tab 注册：发布前从组件预览截图封面。
+  void setWidgetCoverCapture(Future<Uint8List?> Function()? capture) {
+    _widgetCoverCapture = capture;
+  }
 
   @override
   FabuState build() {
     _repo = ref.read(fabuRepoProvider);
+    ref.onDispose(() => _widgetCoverCapture = null);
     return const FabuState();
   }
 
@@ -414,13 +424,24 @@ class FabuNotifier extends _$FabuNotifier {
     int? shareType,
     int? rewardAmount,
   }) async {
-    state = state.copyWith(isLoading: true, isUploading: true, error: null);
+    state = state.copyWith(
+      isLoading: true,
+      isUploading: true,
+      error: null,
+      publishProgress: 0.04,
+      publishStage: 'AI 正在启动发布引擎...',
+    );
     try {
-      final resourceUrls = await _uploadPublishResources();
+      final uploadResult = await _uploadPublishResources();
+      state = state.copyWith(
+        publishProgress: 0.92,
+        publishStage: 'AI 正在提交并发布内容...',
+      );
       final blogRepo = ref.read(blogRepoProvider);
       final blogContent = content ?? state.textContent;
-      final blogResources =
-          resourceUrls.isNotEmpty ? resourceUrls.join(',') : resources;
+      final blogResources = uploadResult.mediaUrls.isNotEmpty
+          ? uploadResult.mediaUrls.join(',')
+          : resources;
 
       final selected = state.selAddressEntity;
       final selectedAddress = address ?? selected?.name;
@@ -435,6 +456,7 @@ class FabuNotifier extends _$FabuNotifier {
         blogType: blogType,
         content: blogContent,
         resources: blogResources,
+        coverUrl: uploadResult.coverUrl,
         addressId: resolvedAddressId != null && resolvedAddressId != 0
             ? resolvedAddressId
             : null,
@@ -449,54 +471,118 @@ class FabuNotifier extends _$FabuNotifier {
         req,
         rewardAmount: rewardAmount ?? (categary == 2 ? state.aixinType : null),
       );
-      state = state.copyWith(isLoading: false, isUploading: false);
+      state = state.copyWith(
+        isLoading: false,
+        isUploading: false,
+        publishProgress: 1,
+        publishStage: '发布完成',
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         isUploading: false,
+        publishProgress: 0,
+        publishStage: '',
         error: e.toString(),
       );
       rethrow;
     }
   }
 
-  Future<List<String>> _uploadPublishResources() async {
-    final resourceUrls = <String>[];
+  void _updatePublishProgress(double progress, String stage) {
+    state = state.copyWith(
+      publishProgress: progress.clamp(0.0, 0.99),
+      publishStage: stage,
+    );
+  }
 
-    final coverFile = _resolveCoverFileForPublish();
+  Future<({List<String> mediaUrls, String? coverUrl})>
+  _uploadPublishResources() async {
+    final mediaUrls = <String>[];
+
+    final coverFile = await _resolveCoverFileForPublishAsync();
+    final mediaFiles = state.videoFiles.isNotEmpty
+        ? state.videoFiles
+        : state.files;
+    final uploadCount = (coverFile != null ? 1 : 0) + mediaFiles.length;
+    var uploaded = 0;
+    String? coverUrl;
+
+    void reportUpload(String label) {
+      uploaded++;
+      final ratio = uploadCount == 0
+          ? 0.85
+          : 0.08 + (uploaded / uploadCount) * 0.78;
+      _updatePublishProgress(ratio, label);
+    }
+
+    _updatePublishProgress(0.08, 'AI 正在分析发布内容...');
+
     if (coverFile != null) {
-      final coverUrl = await ApiBaseClient.uploadFile(file: coverFile);
-      resourceUrls.add(coverUrl);
+      _updatePublishProgress(0.12, 'AI 正在上传视频封面...');
+      coverUrl = await ApiBaseClient.uploadFile(file: coverFile);
       state = state.copyWith(uploadedCoverUrl: coverUrl);
+      reportUpload('AI 正在上传视频封面...');
     }
 
     if (state.videoFiles.isNotEmpty) {
       final videoUrls = <String>[];
       for (final file in state.videoFiles) {
+        _updatePublishProgress(
+          0.12 + (uploaded / math.max(uploadCount, 1)) * 0.78,
+          'AI 正在上传视频资源...',
+        );
         videoUrls.add(await ApiBaseClient.uploadFile(file: file));
+        reportUpload('AI 正在上传视频资源...');
       }
       state = state.copyWith(uploadedVideoUrls: videoUrls);
-      resourceUrls.addAll(videoUrls);
-      return resourceUrls;
+      mediaUrls.addAll(videoUrls);
+      return (mediaUrls: mediaUrls, coverUrl: coverUrl);
     }
 
     final imageUrls = <String>[];
     for (final file in state.files) {
+      _updatePublishProgress(
+        0.12 + (uploaded / math.max(uploadCount, 1)) * 0.78,
+        'AI 正在上传图片资源...',
+      );
       imageUrls.add(await ApiBaseClient.uploadFile(file: file));
+      reportUpload('AI 正在上传图片资源...');
     }
     state = state.copyWith(uploadedFileUrls: imageUrls);
-    resourceUrls.addAll(imageUrls);
-    return resourceUrls;
+    mediaUrls.addAll(imageUrls);
+    return (mediaUrls: mediaUrls, coverUrl: coverUrl);
   }
 
-  XFile? _resolveCoverFileForPublish() {
+  Future<XFile?> _resolveCoverFileForPublishAsync() async {
     if (state.coverFile != null) return state.coverFile;
     final previewBytes = state.coverPreviewBytes;
-    if (previewBytes == null) return null;
-    return XFile.fromData(
-      previewBytes,
-      name: 'video-cover.png',
-      mimeType: 'image/png',
-    );
+    if (previewBytes != null && previewBytes.isNotEmpty) {
+      return XFile.fromData(
+        previewBytes,
+        name: 'video-cover.png',
+        mimeType: 'image/png',
+      );
+    }
+    if (state.videoFiles.isEmpty || _widgetCoverCapture == null) {
+      return null;
+    }
+    try {
+      final bytes = await _widgetCoverCapture!();
+      if (bytes == null || bytes.isEmpty) return null;
+      final file = XFile.fromData(
+        bytes,
+        name: 'video-cover.png',
+        mimeType: 'image/png',
+      );
+      state = state.copyWith(
+        coverFile: file,
+        coverPreviewBytes: bytes,
+      );
+      return file;
+    } catch (e, st) {
+      debugPrint('Capture widget cover before publish failed: $e\n$st');
+      return null;
+    }
   }
 }

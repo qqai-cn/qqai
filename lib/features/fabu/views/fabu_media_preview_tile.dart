@@ -4,8 +4,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../../../components/video_player_public/public_video_player.dart';
+import 'package:video_player/video_player.dart';
 
 class FabuMediaPreviewTile extends StatelessWidget {
   const FabuMediaPreviewTile({
@@ -22,7 +21,7 @@ class FabuMediaPreviewTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final media = isVideo
-        ? PublicVideoPlayer()
+        ? _FabuLocalVideoPreview(key: ValueKey(file.path), file: file)
         : kIsWeb
             ? Image.network(
                 file.path,
@@ -104,6 +103,149 @@ class FabuMediaPreviewTile extends StatelessWidget {
         Icons.broken_image_outlined,
         color: Color(0xFF9CA3AF),
         size: 30,
+      ),
+    );
+  }
+}
+
+class _FabuLocalVideoPreview extends StatefulWidget {
+  const _FabuLocalVideoPreview({super.key, required this.file});
+
+  final XFile file;
+
+  @override
+  State<_FabuLocalVideoPreview> createState() => _FabuLocalVideoPreviewState();
+}
+
+class _FabuLocalVideoPreviewState extends State<_FabuLocalVideoPreview> {
+  VideoPlayerController? _controller;
+  Object? _initError;
+
+  @override
+  void initState() {
+    super.initState();
+    _initController();
+  }
+
+  @override
+  void didUpdateWidget(_FabuLocalVideoPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.file.path != widget.file.path) {
+      _disposeController();
+      _initError = null;
+      _initController();
+    }
+  }
+
+  Future<void> _initController() async {
+    final controller = _createController(widget.file);
+    try {
+      await controller.initialize();
+      if (!mounted) {
+        await controller.dispose();
+        return;
+      }
+      setState(() {
+        _controller = controller;
+        _initError = null;
+      });
+    } catch (e) {
+      await controller.dispose();
+      if (mounted) {
+        setState(() => _initError = e);
+      }
+    }
+  }
+
+  VideoPlayerController _createController(XFile file) {
+    final path = file.path;
+    final uri = Uri.tryParse(path);
+    if (uri != null && uri.hasScheme && uri.scheme != 'file') {
+      return VideoPlayerController.networkUrl(uri);
+    }
+    if (kIsWeb) {
+      return VideoPlayerController.networkUrl(uri ?? Uri.parse(path));
+    }
+    return VideoPlayerController.file(File(uri?.toFilePath() ?? path));
+  }
+
+  void _disposeController() {
+    _controller?.dispose();
+    _controller = null;
+  }
+
+  @override
+  void dispose() {
+    _disposeController();
+    super.dispose();
+  }
+
+  void _togglePlayback() {
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) return;
+    if (controller.value.isPlaying) {
+      controller.pause();
+    } else {
+      controller.play();
+    }
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_initError != null) {
+      return Container(
+        color: const Color(0xFF1F2937),
+        alignment: Alignment.center,
+        child: const Icon(
+          Icons.videocam_off_outlined,
+          color: Colors.white54,
+          size: 36,
+        ),
+      );
+    }
+
+    final controller = _controller;
+    if (controller == null || !controller.value.isInitialized) {
+      return Container(
+        color: const Color(0xFF1F2937),
+        alignment: Alignment.center,
+        child: const CircularProgressIndicator(
+          strokeWidth: 2,
+          color: Colors.white70,
+        ),
+      );
+    }
+
+    return GestureDetector(
+      onTap: _togglePlayback,
+      child: ColoredBox(
+        color: Colors.black,
+        child: Stack(
+          fit: StackFit.expand,
+          alignment: Alignment.center,
+          children: [
+            FittedBox(
+              fit: BoxFit.contain,
+              child: SizedBox(
+                width: controller.value.size.width,
+                height: controller.value.size.height,
+                child: VideoPlayer(controller),
+              ),
+            ),
+            if (!controller.value.isPlaying)
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  shape: BoxShape.circle,
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(10),
+                  child: Icon(Icons.play_arrow, color: Colors.white, size: 36),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

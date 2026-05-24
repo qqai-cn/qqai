@@ -167,8 +167,10 @@ class ApiBaseClient {
     _authorization = value;
   }
 
-  // request timeout (default 10 seconds)
+  // request timeout (default 100 seconds)
   static const int _timeoutInSeconds = 100;
+  // file upload timeout (1 hour, supports large files up to 1GB)
+  static const int _uploadTimeoutInSeconds = 3600;
 
   /// dio getter (used for testing)
   static Dio get dio => _dio;
@@ -180,6 +182,7 @@ class ApiBaseClient {
     Map<String, dynamic>? headers,
     Map<String, dynamic>? queryParameters,
     dynamic data,
+    int? timeoutInSeconds,
   }) async {
     try {
       late Response response;
@@ -188,6 +191,7 @@ class ApiBaseClient {
         if (_authorization != null) 'Authorization': _authorization,
         ...?headers,
       };
+      final timeout = Duration(seconds: timeoutInSeconds ?? _timeoutInSeconds);
       // Only set sendTimeout when there's data to send (avoids Web warning)
       final bool hasData = data != null;
       if (requestType == RequestType.get) {
@@ -196,7 +200,7 @@ class ApiBaseClient {
           queryParameters: queryParameters,
           options: Options(
             headers: mergedHeaders,
-            receiveTimeout: const Duration(seconds: _timeoutInSeconds),
+            receiveTimeout: timeout,
           ),
         );
       } else if (requestType == RequestType.post) {
@@ -206,10 +210,8 @@ class ApiBaseClient {
           queryParameters: queryParameters,
           options: Options(
             headers: mergedHeaders,
-            receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: hasData
-                ? const Duration(seconds: _timeoutInSeconds)
-                : null,
+            receiveTimeout: timeout,
+            sendTimeout: hasData ? timeout : null,
           ),
         );
       } else if (requestType == RequestType.put) {
@@ -219,10 +221,8 @@ class ApiBaseClient {
           queryParameters: queryParameters,
           options: Options(
             headers: mergedHeaders,
-            receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: hasData
-                ? const Duration(seconds: _timeoutInSeconds)
-                : null,
+            receiveTimeout: timeout,
+            sendTimeout: hasData ? timeout : null,
           ),
         );
       } else {
@@ -232,10 +232,8 @@ class ApiBaseClient {
           queryParameters: queryParameters,
           options: Options(
             headers: mergedHeaders,
-            receiveTimeout: const Duration(seconds: _timeoutInSeconds),
-            sendTimeout: hasData
-                ? const Duration(seconds: _timeoutInSeconds)
-                : null,
+            receiveTimeout: timeout,
+            sendTimeout: hasData ? timeout : null,
           ),
         );
       }
@@ -410,6 +408,7 @@ class ApiBaseClient {
         ApiConstant.FILE_UPLOAD,
         RequestType.post,
         data: formData,
+        timeoutInSeconds: _uploadTimeoutInSeconds,
       );
 
       return response.data['data'] as String;

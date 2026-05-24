@@ -1,8 +1,8 @@
 /// 超过此时长的视频，采样范围限制在前 [qqaiCoverMaxSampleDurationMs]。
-const int qqaiCoverLongVideoThresholdMs = 120000;
+const int qqaiCoverLongVideoThresholdMs = 600000;
 
-/// 长视频封面采样的最大时间窗口（2 分钟）。
-const int qqaiCoverMaxSampleDurationMs = 120000;
+/// 长视频封面采样的最大时间窗口（10 分钟）。
+const int qqaiCoverMaxSampleDurationMs = 600000;
 
 /// 无时长信息时的 fallback 时间点（毫秒）。
 const int qqaiCoverFallbackTimeMs = 1000;
@@ -12,6 +12,7 @@ int frameCountForCoverStyle(int styleId) {
     1 => 5,
     2 => 10,
     3 => 1,
+    4 => 7,
     _ => 6,
   };
 }

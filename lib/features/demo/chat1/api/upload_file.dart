@@ -43,9 +43,9 @@ Future<Map<String, dynamic>> uploadFile(
   try {
     // Send the request with progress tracking
     final streamedResponse = await request.send().timeout(
-      const Duration(seconds: 30),
+      const Duration(hours: 1),
       onTimeout: () {
-        throw TimeoutException('Upload timed out after 30 seconds');
+        throw TimeoutException('Upload timed out after 1 hour');
       },
     );
 

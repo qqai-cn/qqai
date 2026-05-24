@@ -5,6 +5,7 @@ import 'blog_comment_panel.dart';
 import 'package:qqai/components/blog/creator_header_row.dart';
 import 'package:qqai/components/blog/feed_action_bar.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
+import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/blog/visibility_video_slot.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -76,7 +77,8 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     final content = _contentWithoutReward(item.content);
     final rewardText = _rewardText(item.content);
     final bodyStyle = context.typo.body;
-    const String coverUrl = 'https://file.qqai.cn/qqai/2025/09/1.webp';
+    final coverUrl = resolveBlogCoverUrl(item);
+    final videoUrl = firstPlayableVideoUrlFromResources(item.resources) ?? '';
     return Card(
       child: SizedBox(
         height: blogNotifier.getVideoItemHeightWithWidth(
@@ -130,7 +132,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   aspectRatio: 15 / 9,
                   child: VisibilityVideoSlot(
                     key: Key('blog_video_${widget.blogItem.id}'),
-                    url: widget.blogItem.resources ?? '',
+                    url: videoUrl,
                     imgUrl: coverUrl,
                   ),
                 ),
