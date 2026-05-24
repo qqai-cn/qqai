@@ -9,6 +9,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../data/models/address_entity.dart';
 import '../../index/presentation/views/filter_page.dart';
+import '../../tool/video_cover_style_preview.dart';
 import '../../tool/video_cover_tool.dart';
 import '../providers/fabu_providers.dart';
 import 'fabu_media_preview_tile.dart';
@@ -40,6 +41,12 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   final _titleController = TextEditingController();
   final _targetController = TextEditingController();
   int? _rewardAmountCents;
+
+  final _coverRepaintKey = GlobalKey();
+  final _coverPreviewKey = GlobalKey<VideoCoverStylePreviewState>();
+  bool _showWidgetCoverPreview = false;
+  int _coverDurationSeconds = 60;
+  bool _isCapturingCover = false;
 
   @override
   void initState() {
@@ -332,9 +339,11 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   Widget _buildVideoCoverPicker(FabuState state, FabuNotifier notifier) {
     final coverFile = state.coverFile;
     final previewBytes = state.coverPreviewBytes;
-    final hasDisplay = previewBytes != null || coverFile != null;
-    final isBusy = state.isCoverPreviewing;
-    final isSelected = coverFile != null;
+    final hasManualPreview = previewBytes != null && !_showWidgetCoverPreview;
+    final hasDisplay =
+        coverFile != null || _showWidgetCoverPreview || hasManualPreview;
+    final isBusy = _isCapturingCover;
+    final isSelected = coverFile != null && !_showWidgetCoverPreview;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -381,17 +390,29 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               ],
             ),
             12.verticalSpace,
-            _VideoCoverPreviewCard(
-              bytes: previewBytes,
-              file: previewBytes == null ? coverFile : null,
-              isLoading: state.isCoverPreviewing,
-              onTap: hasDisplay && !isBusy
-                  ? () => _showCoverFullPreview(
-                      bytes: previewBytes,
-                      file: previewBytes == null ? coverFile : null,
-                    )
-                  : null,
-            ),
+            if (_showWidgetCoverPreview && state.videoFiles.isNotEmpty)
+              _WidgetVideoCoverPreviewCard(
+                videoPath: state.videoFiles.first.path,
+                styleId: state.selectedCoverStyleId,
+                durationSeconds: _coverDurationSeconds,
+                repaintKey: _coverRepaintKey,
+                previewKey: _coverPreviewKey,
+                onTap: isBusy
+                    ? null
+                    : () => _showWidgetCoverFullPreview(),
+              )
+            else
+              _VideoCoverPreviewCard(
+                bytes: hasManualPreview ? previewBytes : null,
+                file: hasManualPreview ? null : coverFile,
+                isLoading: false,
+                onTap: hasDisplay && !isBusy
+                    ? () => _showCoverFullPreview(
+                        bytes: hasManualPreview ? previewBytes : null,
+                        file: hasManualPreview ? null : coverFile,
+                      )
+                    : null,
+              ),
             12.verticalSpace,
             Wrap(
               spacing: 8,
@@ -430,7 +451,8 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                   label: const Text('选择封面'),
                 ),
                 OutlinedButton.icon(
-                  onPressed: isBusy || state.coverPreviewBytes == null
+                  onPressed: isBusy ||
+                          (!_showWidgetCoverPreview && previewBytes == null)
                       ? null
                       : () => _applyCoverPreview(notifier),
                   icon: const Icon(Icons.check_circle_outline, size: 18),
@@ -445,7 +467,12 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                 ),
                 if (hasDisplay)
                   TextButton(
-                    onPressed: isBusy ? null : notifier.clearVideoCover,
+                    onPressed: isBusy
+                        ? null
+                        : () {
+                            setState(() => _showWidgetCoverPreview = false);
+                            notifier.clearVideoCover();
+                          },
                     child: const Text('移除'),
                   ),
               ],
@@ -457,7 +484,12 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   }
 
   String _coverStatusText(FabuState state, {required bool isSelected}) {
-    if (state.isCoverPreviewing) return '正在生成预览...';
+    if (_isCapturingCover) {
+      return '正在保存封面...';
+    }
+    if (_showWidgetCoverPreview) {
+      return '帧加载完成后点击「选定封面」，发布时再上传';
+    }
     if (isSelected) return '封面已选定，点击发布时将上传';
     if (state.coverPreviewBytes != null) {
       return '确认效果后点击「选定封面」，发布时再上传';
@@ -466,17 +498,53 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   }
 
   Future<void> _refreshCoverPreview(FabuNotifier notifier) async {
+    final state = ref.read(fabuProvider);
+    if (state.videoFiles.isEmpty) return;
+    final video = state.videoFiles.first;
     try {
-      await notifier.previewVideoCoverFromVideoTool();
+      final seconds = await notifier.getVideoDurationSeconds(video);
+      if (!mounted) return;
+      setState(() {
+        _showWidgetCoverPreview = true;
+        _coverDurationSeconds = seconds ?? 60;
+      });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _coverPreviewKey.currentState?.regenerate();
+      });
     } catch (e) {
       if (!mounted) return;
       _showMessage('封面预览失败：$e');
     }
   }
 
-  void _applyCoverPreview(FabuNotifier notifier) {
+  Future<void> _applyCoverPreview(FabuNotifier notifier) async {
+    if (_showWidgetCoverPreview) {
+      setState(() => _isCapturingCover = true);
+      try {
+        final bytes = await _coverPreviewKey.currentState?.capture();
+        if (bytes == null) {
+          throw StateError('封面截图失败');
+        }
+        notifier.applyVideoCoverFromBytes(bytes);
+        if (!mounted) return;
+        setState(() => _showWidgetCoverPreview = false);
+        _showMessage('封面已选定');
+      } catch (e) {
+        if (!mounted) return;
+        _showMessage('封面选定失败：$e');
+      } finally {
+        if (mounted) setState(() => _isCapturingCover = false);
+      }
+      return;
+    }
     notifier.applyVideoCoverPreview();
     _showMessage('封面已选定');
+  }
+
+  Future<void> _showWidgetCoverFullPreview() async {
+    final bytes = await _coverPreviewKey.currentState?.capture();
+    if (bytes == null || !mounted) return;
+    await _showCoverFullPreview(bytes: bytes);
   }
 
   Future<void> _showCoverFullPreview({
@@ -527,6 +595,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     );
     final file = await openFile(acceptedTypeGroups: [coverGroup]);
     if (file == null) return;
+    setState(() => _showWidgetCoverPreview = false);
     await notifier.selectVideoCover(file);
   }
 
@@ -816,6 +885,105 @@ class _RewardSelector extends StatelessWidget {
   }
 }
 
+class _WidgetVideoCoverPreviewCard extends StatelessWidget {
+  const _WidgetVideoCoverPreviewCard({
+    required this.videoPath,
+    required this.styleId,
+    required this.durationSeconds,
+    required this.repaintKey,
+    required this.previewKey,
+    this.onTap,
+  });
+
+  final String videoPath;
+  final int styleId;
+  final int durationSeconds;
+  final GlobalKey repaintKey;
+  final GlobalKey<VideoCoverStylePreviewState> previewKey;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth.clamp(180.0, 320.0);
+        return Align(
+          alignment: Alignment.center,
+          child: SizedBox(
+            width: width,
+            child: AspectRatio(
+              aspectRatio: qqaiVideoCoverAspectRatio,
+              child: Material(
+                color: Colors.white,
+                clipBehavior: Clip.antiAlias,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: onTap,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                        child: SizedBox(
+                          width: 400,
+                          height: 800,
+                          child: VideoCoverStylePreview(
+                            key: previewKey,
+                            videoPath: videoPath,
+                            styleId: styleId,
+                            durationSeconds: durationSeconds,
+                            repaintKey: repaintKey,
+                          ),
+                        ),
+                      ),
+                      if (onTap != null)
+                        Positioned(
+                          right: 8,
+                          bottom: 8,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.45),
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.zoom_out_map,
+                                    color: Colors.white,
+                                    size: 14,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    '查看大图',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _VideoCoverPreviewCard extends StatelessWidget {
   const _VideoCoverPreviewCard({
     required this.bytes,
@@ -850,31 +1018,27 @@ class _VideoCoverPreviewCard extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       if (bytes != null)
-                        Image.memory(bytes!, fit: BoxFit.cover)
+                        Image.memory(bytes!, fit: BoxFit.cover, gaplessPlayback: true)
                       else if (file != null)
                         _VideoCoverPreview(file: file!)
                       else if (isLoading)
-                        Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            const _VideoCoverPlaceholder(),
-                            Container(
-                              color: Colors.black.withValues(alpha: 0.18),
-                              alignment: Alignment.center,
-                              child: const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
+                        const _VideoCoverPlaceholder()
                       else
                         const _VideoCoverPlaceholder(),
-                      if (onTap != null)
+                      if (isLoading)
+                        Container(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          alignment: Alignment.center,
+                          child: const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      if (onTap != null && !isLoading)
                         Positioned(
                           right: 8,
                           bottom: 8,

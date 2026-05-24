@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:get_thumbnail_video/index.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:image/image.dart' as img;
 
+import 'video_cover_frame_result.dart';
 import 'video_cover_frames.dart';
+import 'video_cover_sampling.dart';
 
 const List<String> qqaiVideoCoverImageExtensions = [
   'jpg',
@@ -12,7 +16,7 @@ const List<String> qqaiVideoCoverImageExtensions = [
   'webp',
 ];
 
-const int qqaiVideoCoverTimeMs = 1000;
+const int qqaiVideoCoverTimeMs = qqaiCoverFallbackTimeMs;
 
 /// 封面画布宽 400px，缩略图略大于 2x 即可，避免按原视频分辨率抽帧。
 const int qqaiCoverThumbMaxWidth = 800;
@@ -58,15 +62,91 @@ Future<Uint8List> generateStyledVideoCoverBytes({
   int styleId = 1,
   int quality = 90,
 }) async {
-  final frames = await _generateStyleFrames(
+  final result = await generateStyledVideoCoverBytesProgressive(
     videoPath: videoPath,
     durationMs: durationMs,
     styleId: styleId,
+    quality: quality,
   );
-  return compute(
+  return result.bytes;
+}
+
+Future<StyledCoverGenerateResult> generateStyledVideoCoverBytesProgressive({
+  required String videoPath,
+  int? durationMs,
+  int styleId = 1,
+  int quality = 90,
+  CoverPreviewProgressCallback? onProgress,
+}) async {
+  final count = frameCountForCoverStyle(styleId);
+  final resolvedDurationMs = durationMs ?? 0;
+  final timePoints = resolvedDurationMs > 0
+      ? computeCoverStyleTimePoints(resolvedDurationMs, styleId)
+      : null;
+  final frameSlots = List<img.Image?>.filled(count, null);
+
+  void handleFrame(int index, img.Image frame) {
+    if (index < 0 || index >= count) return;
+    frameSlots[index] = frame;
+
+    var ready = 0;
+    for (final slot in frameSlots) {
+      if (slot == null) break;
+      ready++;
+    }
+    if (ready != 1) return;
+
+    // 首帧快速 JPEG 预览，避免主线程反复拼完整封面。
+    onProgress?.call(
+      Uint8List.fromList(img.encodeJpg(frame, quality: 85)),
+      1,
+      count,
+    );
+  }
+
+  final extraction = await extractCoverStyleFrames(
+    videoPath: videoPath,
+    timePointsMs: timePoints,
+    styleId: styleId,
+    durationHintMs: resolvedDurationMs,
+    maxWidth: qqaiCoverThumbMaxWidth,
+    batchSize: qqaiCoverThumbBatchSize,
+    onFrameExtracted: handleFrame,
+  );
+
+  final detectedDurationMs = extraction.durationMs;
+  final effectiveDurationMs = detectedDurationMs ?? resolvedDurationMs;
+  final extractedFrames = extraction.frames.whereType<img.Image>().toList();
+  if (extractedFrames.isEmpty) {
+    throw StateError('视频封面生成失败');
+  }
+
+  final paddedFrames = _padFrames(extractedFrames, count);
+  final bytes = await compute(
     _composeStyledCover,
-    _StyledCoverComposeArgs(frames: frames, styleId: styleId, quality: quality),
+    _StyledCoverComposeArgs(
+      frames: paddedFrames,
+      styleId: styleId,
+      quality: quality,
+    ),
   );
+
+  return StyledCoverGenerateResult(
+    bytes: bytes,
+    durationMs: effectiveDurationMs > 0 ? effectiveDurationMs : detectedDurationMs,
+  );
+}
+
+List<int> computeStyleTimePoints(int durationMs, int styleId) {
+  return computeCoverStyleTimePoints(durationMs, styleId);
+}
+
+List<img.Image> _padFrames(List<img.Image> frames, int count) {
+  final padded = List<img.Image>.from(frames);
+  while (padded.length < count) {
+    padded.add(img.Image.from(padded.last));
+  }
+  return padded;
 }
 
 class _StyledCoverComposeArgs {
@@ -85,75 +165,33 @@ Uint8List _composeStyledCover(_StyledCoverComposeArgs args) {
   final frames = args.frames;
   final styleId = args.styleId;
   final canvas = _createCoverCanvas();
-  switch (styleId) {
-    case 1:
-      _drawImageSlot(canvas, frames[0], 17, 16, 367, 205);
-      _drawSeparator(canvas, 17, 221, 367, 4);
-      _drawReflection(canvas, frames[0], 17, 225, 367, 40);
-      _drawImageSlot(canvas, frames[1], 17, 265, 179, 99);
-      _drawImageSlot(canvas, frames[2], 204, 265, 179, 99);
-      _drawImageSlot(canvas, frames[3], 17, 372, 179, 99);
-      _drawImageSlot(canvas, frames[4], 204, 372, 179, 99);
-    case 2:
-      _drawImageSlot(canvas, frames[0], 17, 16, 367, 205);
-      _drawSeparator(canvas, 17, 221, 367, 4);
-      _drawReflection(canvas, frames[0], 17, 225, 367, 40);
-      for (var i = 0; i < 9; i++) {
-        final x = 17 + (i % 3) * 124;
-        final y = 265 + (i ~/ 3) * 72;
-        _drawImageSlot(canvas, frames[i + 1], x, y, 119, 67);
-      }
-    case 3:
-      _drawImageSlot(canvas, frames[0], 94, 30, 211, 441);
-    default:
-      for (var i = 0; i < 6; i++) {
-        final x = 17 + (i % 3) * 124;
-        final y = i < 3 ? 40 : 255;
-        _drawImageSlot(canvas, frames[i], x, y, 119, 210);
-      }
+  if (styleId == 1) {
+    _drawImageSlot(canvas, frames[0], 17, 16, 367, 205);
+    _drawSeparator(canvas, 17, 221, 367, 4);
+    _drawReflection(canvas, frames[0], 17, 225, 367, 40);
+    _drawImageSlot(canvas, frames[1], 17, 265, 179, 99);
+    _drawImageSlot(canvas, frames[2], 204, 265, 179, 99);
+    _drawImageSlot(canvas, frames[3], 17, 372, 179, 99);
+    _drawImageSlot(canvas, frames[4], 204, 372, 179, 99);
+  } else if (styleId == 2) {
+    _drawImageSlot(canvas, frames[0], 17, 16, 367, 205);
+    _drawSeparator(canvas, 17, 221, 367, 4);
+    _drawReflection(canvas, frames[0], 17, 225, 367, 40);
+    for (var i = 0; i < 9; i++) {
+      final x = 17 + (i % 3) * 124;
+      final y = 265 + (i ~/ 3) * 72;
+      _drawImageSlot(canvas, frames[i + 1], x, y, 119, 67);
+    }
+  } else if (styleId == 3) {
+    _drawImageSlot(canvas, frames[0], 94, 30, 211, 441);
+  } else {
+    for (var i = 0; i < 6; i++) {
+      final x = 17 + (i % 3) * 124;
+      final y = i < 3 ? 40 : 255;
+      _drawImageSlot(canvas, frames[i], x, y, 119, 210);
+    }
   }
   return Uint8List.fromList(img.encodePng(canvas));
-}
-
-Future<List<img.Image>> _generateStyleFrames({
-  required String videoPath,
-  required int durationMs,
-  required int styleId,
-}) async {
-  final count = _frameCountForStyle(styleId);
-  final step = durationMs > 0
-      ? durationMs ~/ (count + 1)
-      : qqaiVideoCoverTimeMs;
-  final timePoints = List<int>.generate(count, (i) {
-    if (durationMs <= 0) return qqaiVideoCoverTimeMs;
-    return (step * (i + 1)).clamp(0, durationMs);
-  });
-
-  final frames = <img.Image>[];
-  final extracted = await extractCoverStyleFrames(
-    videoPath: videoPath,
-    timePointsMs: timePoints,
-    maxWidth: qqaiCoverThumbMaxWidth,
-    batchSize: qqaiCoverThumbBatchSize,
-  );
-  frames.addAll(extracted.whereType<img.Image>());
-
-  if (frames.isEmpty) {
-    throw StateError('视频封面生成失败');
-  }
-  while (frames.length < count) {
-    frames.add(img.Image.from(frames.last));
-  }
-  return frames;
-}
-
-int _frameCountForStyle(int styleId) {
-  return switch (styleId) {
-    1 => 5,
-    2 => 10,
-    3 => 1,
-    _ => 6,
-  };
 }
 
 img.Image _createCoverCanvas() {

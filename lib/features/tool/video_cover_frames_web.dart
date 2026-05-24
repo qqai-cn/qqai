@@ -7,33 +7,55 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:web/web.dart';
 
-/// Web 端复用同一个 `<video>` 顺序 seek，避免每帧重新加载 blob 视频。
-Future<List<img.Image?>> extractCoverStyleFrames({
+import 'video_cover_frame_result.dart';
+import 'video_cover_sampling.dart';
+
+/// Web 端复用同一个 `<video>` 顺序 seek，同时读取时长，避免重复加载 blob。
+Future<CoverStyleFramesResult> extractCoverStyleFrames({
   required String videoPath,
-  required List<int> timePointsMs,
+  List<int>? timePointsMs,
+  required int styleId,
+  required int durationHintMs,
   required int maxWidth,
   required int batchSize,
+  void Function(int index, img.Image frame)? onFrameExtracted,
 }) async {
-  if (timePointsMs.isEmpty) return const [];
-
   final videoEl = HTMLVideoElement()
-    ..crossOrigin = 'anonymous'
-    ..preload = 'auto'
-    ..src = videoPath;
+    ..preload = 'auto';
+
+  // blob 本地视频不要设 crossOrigin，否则 canvas 可能截到空白帧。
+  if (!videoPath.startsWith('blob:')) {
+    videoEl.crossOrigin = 'anonymous';
+  }
+  videoEl.src = videoPath;
 
   try {
     await _waitVideoReady(videoEl);
-    final results = <img.Image?>[];
-    for (final timeMs in timePointsMs) {
-      results.add(
-        await _captureFrame(
-          videoEl: videoEl,
-          timeMs: timeMs,
-          maxWidth: maxWidth,
-        ),
-      );
+    final durationMs = _readDurationMs(videoEl) ?? durationHintMs;
+    final points =
+        timePointsMs ?? computeCoverStyleTimePoints(durationMs, styleId);
+    if (points.isEmpty) {
+      return CoverStyleFramesResult(frames: const [], durationMs: durationMs);
     }
-    return results;
+
+    final results = <img.Image?>[];
+
+    for (var index = 0; index < points.length; index++) {
+      final frame = await _captureFrame(
+        videoEl: videoEl,
+        timeMs: points[index],
+        maxWidth: maxWidth,
+      );
+      results.add(frame);
+      if (frame != null) {
+        onFrameExtracted?.call(index, frame);
+      }
+    }
+
+    return CoverStyleFramesResult(
+      frames: results,
+      durationMs: durationMs,
+    );
   } on Object catch (e, s) {
     Error.throwWithStackTrace(
       PlatformException(
@@ -50,8 +72,14 @@ Future<List<img.Image?>> extractCoverStyleFrames({
   }
 }
 
+int? _readDurationMs(HTMLVideoElement videoEl) {
+  final durationSec = videoEl.duration;
+  if (!durationSec.isFinite || durationSec <= 0) return null;
+  return (durationSec * 1000).round();
+}
+
 Future<void> _waitVideoReady(HTMLVideoElement videoEl) async {
-  if (videoEl.readyState >= 1) return;
+  if (videoEl.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) return;
 
   final completer = Completer<void>();
   void onReady(Event _) {
@@ -72,7 +100,7 @@ Future<void> _waitVideoReady(HTMLVideoElement videoEl) async {
   final readyHandler = onReady.toJS;
   final errorHandler = onError.toJS;
   videoEl
-    ..addEventListener('loadedmetadata', readyHandler)
+    ..addEventListener('loadeddata', readyHandler)
     ..addEventListener('error', errorHandler);
 
   try {
@@ -85,7 +113,7 @@ Future<void> _waitVideoReady(HTMLVideoElement videoEl) async {
     );
   } finally {
     videoEl
-      ..removeEventListener('loadedmetadata', readyHandler)
+      ..removeEventListener('loadeddata', readyHandler)
       ..removeEventListener('error', errorHandler);
   }
 }
@@ -95,6 +123,10 @@ Future<img.Image?> _captureFrame({
   required int timeMs,
   required int maxWidth,
 }) async {
+  if (videoEl.videoWidth <= 0 || videoEl.videoHeight <= 0) {
+    return null;
+  }
+
   final durationSec = videoEl.duration;
   final maxSec = durationSec.isFinite && durationSec > 0 ? durationSec : null;
   final targetSec = maxSec == null
@@ -106,6 +138,8 @@ Future<img.Image?> _captureFrame({
     await _waitVideoEvent(videoEl, 'seeked');
   }
 
+  await _waitForPaintedFrame(videoEl);
+
   final canvas = HTMLCanvasElement();
   final ctx = canvas.getContext('2d');
   if (ctx == null) {
@@ -116,13 +150,12 @@ Future<img.Image?> _captureFrame({
   }
   final c2d = ctx as CanvasRenderingContext2D;
 
-  var mw = maxWidth;
-  var mh = 0;
+  final mw = maxWidth;
   final aspectRatio = videoEl.videoWidth / videoEl.videoHeight;
   if (aspectRatio.isNaN || aspectRatio.isInfinite || aspectRatio <= 0) {
     return null;
   }
-  mh = (mw / aspectRatio).round();
+  final mh = (mw / aspectRatio).round();
 
   canvas
     ..width = mw
@@ -134,6 +167,14 @@ Future<img.Image?> _captureFrame({
   if (parts.length < 2) return null;
   final bytes = base64Decode(parts[1]);
   return img.decodeImage(bytes);
+}
+
+/// seeked 后等待浏览器真正把帧画到 video 上，避免 canvas 截到白屏。
+Future<void> _waitForPaintedFrame(HTMLVideoElement videoEl) async {
+  if (videoEl.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+    await _waitVideoEvent(videoEl, 'loadeddata');
+  }
+  await Future<void>.delayed(const Duration(milliseconds: 16));
 }
 
 Future<void> _waitVideoEvent(HTMLVideoElement videoEl, String eventName) {

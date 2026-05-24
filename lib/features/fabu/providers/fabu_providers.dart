@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'dart:typed_data';
+
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +21,6 @@ import '../data/models/fabu_model.dart';
 import '../data/models/topic_model.dart';
 import '../../blog/data/models/blog_save_req_vo.dart';
 import '../../blog/data/repos/blog_repo.dart';
-import '../../tool/video_cover_tool.dart';
 
 part 'fabu_providers.freezed.dart';
 
@@ -205,44 +206,27 @@ class FabuNotifier extends _$FabuNotifier {
     return Future.value();
   }
 
-  Future<void> previewVideoCoverFromVideoTool() async {
-    if (state.videoFiles.isEmpty) return;
-    final generation = ++_coverPreviewGeneration;
-    state = state.copyWith(isCoverPreviewing: true);
-    try {
-      final video = state.videoFiles.first;
-      final durationMs = await _videoDurationMs(video);
-      if (generation != _coverPreviewGeneration) return;
-      final bytes = await generateStyledVideoCoverBytes(
-        videoPath: video.path,
-        durationMs: durationMs,
-        styleId: state.selectedCoverStyleId,
-      );
-      if (generation != _coverPreviewGeneration) return;
-      state = state.copyWith(coverPreviewBytes: bytes);
-    } catch (e) {
-      if (generation != _coverPreviewGeneration) return;
-      debugPrint('Preview cover error: $e');
-      rethrow;
-    } finally {
-      if (generation == _coverPreviewGeneration) {
-        state = state.copyWith(isCoverPreviewing: false);
-      }
-    }
+  Future<int?> getVideoDurationSeconds(XFile video) async {
+    final durationMs = await _videoDurationMs(video);
+    return (durationMs / 1000).round();
+  }
+
+  void applyVideoCoverFromBytes(Uint8List bytes) {
+    state = state.copyWith(
+      coverFile: XFile.fromData(
+        bytes,
+        name: 'video-cover.png',
+        mimeType: 'image/png',
+      ),
+      coverPreviewBytes: bytes,
+      uploadedCoverUrl: null,
+    );
   }
 
   void applyVideoCoverPreview() {
     final previewBytes = state.coverPreviewBytes;
     if (previewBytes == null) return;
-
-    state = state.copyWith(
-      coverFile: XFile.fromData(
-        previewBytes,
-        name: 'video-cover.png',
-        mimeType: 'image/png',
-      ),
-      uploadedCoverUrl: null,
-    );
+    applyVideoCoverFromBytes(previewBytes);
   }
 
   void clearVideoCover() {
@@ -389,7 +373,7 @@ class FabuNotifier extends _$FabuNotifier {
       uploadedCoverUrl: null,
       isCoverPreviewing: false,
     );
-    if (newVideoFiles.isNotEmpty) {
+    if (newVideoFiles.isNotEmpty && !kIsWeb) {
       unawaited(_videoDurationMs(newVideoFiles.first));
     }
   }
