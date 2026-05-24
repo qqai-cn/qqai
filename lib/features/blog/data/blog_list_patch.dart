@@ -59,8 +59,8 @@ bool blogLikedByMe(BlogItem b) => b.liked == 1;
 /// 当前用户是否已收藏该博客。
 bool blogCollectedByMe(BlogItem b) => b.collect == 1;
 
-/// 作者行 meta：粉丝数、创建时间、距离（时间与聊天消息一致；距离在日期后）。
-String authorFollowerMetaText(BlogItem b) {
+/// 作者行 meta：粉丝数、创建时间；[includeDistance] 为 true 时附带距离（本地 Tab 改在媒体下方按钮展示）。
+String authorFollowerMetaText(BlogItem b, {bool includeDistance = true}) {
   final parts = <String>[];
   final fans = b.followerCount;
   if (fans != null && fans > 0) {
@@ -70,12 +70,31 @@ String authorFollowerMetaText(BlogItem b) {
   if (time.isNotEmpty) {
     parts.add(time);
   }
+  if (includeDistance) {
+    final distance = formatBlogDistanceKm(b.distance);
+    if (distance.isNotEmpty) {
+      parts.add('距离$distance');
+    }
+  }
+  return parts.join(' · ');
+}
+
+/// 本地 Tab 媒体下方位置按钮文案：距离 + 地址描述。
+String blogLocalLocationButtonText(BlogItem b) {
+  final parts = <String>[];
   final distance = formatBlogDistanceKm(b.distance);
   if (distance.isNotEmpty) {
     parts.add('距离$distance');
   }
+  final address = b.address?.trim();
+  if (address != null && address.isNotEmpty) {
+    parts.add(address);
+  }
   return parts.join(' · ');
 }
+
+bool blogLocalLocationButtonVisible(BlogItem b) =>
+    blogLocalLocationButtonText(b).isNotEmpty;
 
 /// 作者头像 URL。为空时由头像组件显示默认头像。
 String? blogCreatorAvatarUrl(BlogItem b, {String? currentUserId}) {

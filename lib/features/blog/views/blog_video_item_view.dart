@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'blog_comment_panel.dart';
+import 'package:qqai/components/blog/blog_local_location_button.dart';
 import 'package:qqai/components/blog/creator_header_row.dart';
 import 'package:qqai/components/blog/feed_action_bar.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
@@ -94,7 +95,10 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
               CreatorHeaderRow(
                 creatorName: widget.blogItem.creatorName ?? '未知用户',
                 care: blogFollowCare(widget.blogItem),
-                metaText: authorFollowerMetaText(widget.blogItem),
+                metaText: authorFollowerMetaText(
+                  widget.blogItem,
+                  includeDistance: widget.category != HomeBlogTab.local,
+                ),
                 avatarUrl: avatarUrl,
                 creatorLevel: blogCreatorLevel(widget.blogItem),
                 showCareButton: showCareButton,
@@ -139,6 +143,12 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   ),
                 ),
               ),
+              if (widget.category == HomeBlogTab.local &&
+                  blogLocalLocationButtonVisible(item))
+                Padding(
+                  padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
+                  child: BlogLocalLocationButton(item: item),
+                ),
               FeedActionBar(
                 liked: blogLikedByMe(item),
                 likeCount: item.zan,

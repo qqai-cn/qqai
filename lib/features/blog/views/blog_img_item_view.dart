@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import 'blog_comment_panel.dart';
+import 'package:qqai/components/blog/blog_local_location_button.dart';
 import 'package:qqai/components/blog/creator_header_row.dart';
 import 'package:qqai/components/blog/feed_action_bar.dart';
 import 'package:qqai/components/blog/hero_image_wrap_grid.dart';
@@ -99,7 +100,10 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
             CreatorHeaderRow(
               creatorName: widget.blogItem.creatorName ?? '未知用户',
               care: blogFollowCare(widget.blogItem),
-              metaText: authorFollowerMetaText(widget.blogItem),
+              metaText: authorFollowerMetaText(
+                widget.blogItem,
+                includeDistance: widget.category != HomeBlogTab.local,
+              ),
               avatarUrl: avatarUrl,
               creatorLevel: blogCreatorLevel(widget.blogItem),
               avatarSize: Constant.HEAD_IMG_SEZE,
@@ -146,6 +150,11 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                 );
               },
             ),
+            if (widget.category == HomeBlogTab.local &&
+                blogLocalLocationButtonVisible(item)) ...[
+              const SizedBox(height: 6),
+              BlogLocalLocationButton(item: item),
+            ],
             FeedActionBar(
               liked: blogLikedByMe(item),
               likeCount: item.zan,
