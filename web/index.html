@@ -36,7 +36,10 @@
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
     <meta name="theme-color" content="#0175C2">
-    <link rel="preload" href="main.dart.js" as="script">
+    <!-- Wasm 首屏关键路径：与 skwasm 并行预载（须 crossorigin） -->
+    <link rel="modulepreload" href="main.dart.mjs">
+    <link rel="preload" href="main.dart.wasm" as="fetch" type="application/wasm" crossorigin>
+    <link rel="preload" href="canvaskit/skwasm.wasm" as="fetch" type="application/wasm" crossorigin>
 
     <title>千千Ai</title>
     <link rel="manifest" href="manifest.json">

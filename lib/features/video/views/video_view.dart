@@ -3,10 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
-import 'package:qqai/components/video_player/qqai_player.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
-import 'package:qqai/features/video/views/short_video_controls.dart';
+import 'package:qqai/features/blog/views/blog_detail_ui.dart';
+import 'package:qqai/features/blog/views/blog_detail_video_toolbar.dart';
+import 'package:qqai/features/blog/views/blog_video_detail_player.dart';
 import 'package:qqai/features/video/views/video_list_view.dart';
 
 import '../../../router/app_routes.dart';
@@ -16,9 +17,6 @@ import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/presentation/widgets/lazy_tab_slot.dart';
 import '../../index/providers/home_providers.dart';
 import '../providers/video_recommend_providers.dart';
-
-const String _defaultVideoCover =
-    'https://file.qqai.cn/qqai/2025/09/1.webp';
 
 class VideoView extends ConsumerStatefulWidget {
   const VideoView({super.key});
@@ -215,17 +213,20 @@ class _VideoRecommendTab extends ConsumerWidget {
           },
           itemBuilder: (context, index) {
             final item = playable[index];
-            final url =
-                firstPlayableVideoUrlFromResources(item.resources) ?? '';
-            final cover = resolveBlogCoverUrl(item, fallback: _defaultVideoCover);
             return ClipRRect(
               borderRadius: BorderRadius.circular(5),
-              child: QqaiPlayer(
-                url: url,
-                image: cover,
-                controls: ShortVideoControls(blogItem: item),
-                autoPlay: true,
-                videoFit: BoxFit.contain,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  BlogVideoDetailPlayer(blog: item),
+                  BlogDetailMediaOverlay(
+                    blog: item,
+                    bottomInset: kBlogDetailVideoToolbarHeight,
+                    onCommentTap: () => ref
+                        .read(commentProvider.notifier)
+                        .changeShowComment(),
+                  ),
+                ],
               ),
             );
           },

@@ -27,8 +27,11 @@ if [[ -f "$WEB_DIR/main.dart.wasm" ]]; then
     echo "FAIL: main.dart.wasm 存在但 main.dart.wasm.gz 未生成" >&2
     exit 1
   fi
-  raw=$(wc -c < "$WEB_DIR/main.dart.wasm" | tr -d ' ')
-  gz=$(wc -c < "$WEB_DIR/main.dart.wasm.gz" | tr -d ' ')
-  pct=$(awk "BEGIN {printf \"%.0f\", (1-${gz}/${raw})*100}")
-  echo "main.dart.wasm: ${raw} bytes -> gzip ${gz} bytes (${pct}% 减小)"
+  for f in "$WEB_DIR/main.dart.wasm" "$WEB_DIR/canvaskit/skwasm.wasm"; do
+    [[ -f "$f" ]] || continue
+    raw=$(wc -c < "$f" | tr -d ' ')
+    gz=$(wc -c < "${f}.gz" | tr -d ' ')
+    pct=$(awk "BEGIN {printf \"%.0f\", (1-${gz}/${raw})*100}")
+    echo "$(basename "$f"): ${raw} bytes -> gzip ${gz} bytes (${pct}% 减小)"
+  done
 fi

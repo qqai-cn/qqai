@@ -11,6 +11,7 @@ import '../../../../components/level_icon.dart';
 import '../../../../router/app_routes.dart';
 import '../../../util/format_count.dart';
 import '../../blog/data/models/blog_page_model.dart';
+import '../../blog/views/blog_detail_video_surface_controls.dart';
 import '../../comment/providers/comment_providers.dart';
 import 'video_share_view.dart';
 
@@ -58,200 +59,215 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
 
     bool widScreen = 1.sw > 800;
     var wid = (180.w > 80 ? 80 : 180.w) / 2;
-    return Container(
-      color: Colors.transparent,
-      padding: EdgeInsets.only(left: 10, top: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: <Widget>[
-          if (showDesc(widScreen, commentState))
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: FlickTogglePlayAction(
-                      child: FlickSeekVideoAction(child: FlickVideoBuffer()),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      context.push('${Routes.userDetail}/88/true');
-                    },
-                    child: Text(
-                      _creatorLabel,
-                      style: context.typo.cardTitle.copyWith(color: Colors.white),
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      showModalBottomSheet(
-                        constraints: BoxConstraints(maxHeight: 0.5.sh),
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext build) {
-                          return Center(child: Text(_description));
-                        },
-                      );
-                    },
-                    child: RichText(
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      text: TextSpan(
-                        style: context.typo.cardTitle2.copyWith(color: Colors.white),
-                        text: _description,
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: BlogDetailVideoSurfaceControls(),
+        ),
+        Container(
+          color: Colors.transparent,
+          padding: const EdgeInsets.only(left: 10, top: 10),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: <Widget>[
+              if (showDesc(widScreen, commentState))
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Expanded(
+                        child: IgnorePointer(
+                          child: SizedBox.expand(),
+                        ),
                       ),
-                    ),
-                  ),
-                  FlickVideoProgressBar(
-                    flickProgressBarSettings: FlickProgressBarSettings(
-                      height: 5,
-                      handleRadius: 5.5,
-                    ),
-                  ),
-                  FlickAutoHideChild(
-                    autoHide: true,
-                    showIfVideoNotInitialized: false,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        FlickPlayToggle(size: iconSize),
-                        SizedBox(width: iconSize / 2),
-                        FlickSoundToggle(size: iconSize),
-                        SizedBox(width: iconSize / 2),
-                        Row(
+                      InkWell(
+                        onTap: () {
+                          context.push('${Routes.userDetail}/88/true');
+                        },
+                        child: Text(
+                          _creatorLabel,
+                          style: context.typo.cardTitle
+                              .copyWith(color: Colors.white),
+                        ),
+                      ),
+                      InkWell(
+                        onTap: () {
+                          showModalBottomSheet(
+                            constraints: BoxConstraints(maxHeight: 0.5.sh),
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext build) {
+                              return Center(child: Text(_description));
+                            },
+                          );
+                        },
+                        child: RichText(
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          text: TextSpan(
+                            style: context.typo.cardTitle2
+                                .copyWith(color: Colors.white),
+                            text: _description,
+                          ),
+                        ),
+                      ),
+                      FlickVideoProgressBar(
+                        flickProgressBarSettings: FlickProgressBarSettings(
+                          height: 5,
+                          handleRadius: 5.5,
+                        ),
+                      ),
+                      FlickAutoHideChild(
+                        autoHide: true,
+                        showIfVideoNotInitialized: false,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
-                            FlickCurrentPosition(fontSize: fontSize),
-                            FlickAutoHideChild(
-                              child: Text(
-                                ' / ',
-                                style: context.typo.caption.copyWith(
-                                  color: Colors.white,
-                                  fontSize: fontSize,
+                            FlickPlayToggle(size: iconSize),
+                            SizedBox(width: iconSize / 2),
+                            FlickSoundToggle(size: iconSize),
+                            SizedBox(width: iconSize / 2),
+                            Row(
+                              children: <Widget>[
+                                FlickCurrentPosition(fontSize: fontSize),
+                                FlickAutoHideChild(
+                                  child: Text(
+                                    ' / ',
+                                    style: context.typo.caption.copyWith(
+                                      color: Colors.white,
+                                      fontSize: fontSize,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                FlickTotalDuration(fontSize: fontSize),
+                              ],
                             ),
-                            FlickTotalDuration(fontSize: fontSize),
+                            const Spacer(),
+                            FlickFullScreenToggle(
+                              size: iconSize,
+                              color: Colors.white,
+                            ),
                           ],
                         ),
-                        Expanded(child: Container()),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (!showDesc(widScreen, commentState)) Spacer(),
-          Container(
-            width: 180.w > 100 ? 80 : 180.w,
-            child: Column(
-              children: [
-                Spacer(),
-                Container(
-                  width: 50,
-                  height: 60,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: 0,
-                        top: 0,
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(1000),
-                          ),
-                          child: Padding(
-                            child: InkWell(
-                              onTap: () {},
-                              child: ClipOval(
-                                child: Image.asset('imgs/defbak.png'),
-                              ),
-                            ),
-                            padding: EdgeInsets.all(2),
-                          ),
-                        ),
                       ),
-                      if (true)
-                        Positioned(
-                          bottom: 0,
-                          child: Container(
-                            width: 50,
-                            child: Center(
-                              child: Container(
-                                width: 25,
-                                // height: 25,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.red,
-                                ),
-                                child: InkWell(
-                                  child: Icon(Icons.add, color: Colors.white),
-                                  onTap: () {},
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
-                IconButton(
-                  iconSize: wid,
-                  onPressed: () {
-                    setState(() {
-                      _zan = !_zan;
-                    });
-                  },
-                  icon: _zan
-                      ? Icon(Icons.favorite, color: Colors.red)
-                      : Icon(Icons.favorite_border),
+              if (!showDesc(widScreen, commentState)) const Spacer(),
+              SizedBox(
+                width: 180.w > 100 ? 80 : 180.w,
+                child: Column(
+                  children: [
+                    const Expanded(
+                      child: IgnorePointer(
+                        child: SizedBox.expand(),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 50,
+                      height: 60,
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            child: Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(1000),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(2),
+                                child: InkWell(
+                                  onTap: () {},
+                                  child: ClipOval(
+                                    child: Image.asset('imgs/defbak.png'),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          if (true)
+                            Positioned(
+                              bottom: 0,
+                              child: SizedBox(
+                                width: 50,
+                                child: Center(
+                                  child: Container(
+                                    width: 25,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.red,
+                                    ),
+                                    child: InkWell(
+                                      onTap: () {},
+                                      child: const Icon(
+                                        Icons.add,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      iconSize: wid,
+                      onPressed: () {
+                        setState(() {
+                          _zan = !_zan;
+                        });
+                      },
+                      icon: _zan
+                          ? const Icon(Icons.favorite, color: Colors.red)
+                          : const Icon(Icons.favorite_border),
+                    ),
+                    Text(formatCompactCount(item.zan)),
+                    IconButton(
+                      iconSize: wid,
+                      onPressed: () {
+                        commentNotifier.changeShowComment();
+                      },
+                      color: Colors.white,
+                      icon: const Icon(Icons.comment),
+                    ),
+                    Text(formatCompactCount(item.commentCount)),
+                    IconButton(
+                      iconSize: wid,
+                      onPressed: () {},
+                      color: Colors.white,
+                      icon: const Icon(Icons.star),
+                    ),
+                    const Text('20kw'),
+                    VideoShareView(),
+                    const Text('2'),
+                    Spring.rotate(
+                      springController: springController,
+                      alignment: Alignment.center,
+                      startAngle: 0,
+                      endAngle: 360,
+                      animDuration: const Duration(seconds: 2),
+                      animStatus: (AnimStatus status) {},
+                      curve: Curves.easeInBack,
+                      child: IconButton(
+                        iconSize: wid,
+                        onPressed: () {},
+                        color: Colors.white,
+                        icon: const Icon(Icons.ac_unit),
+                      ),
+                    ),
+                  ],
                 ),
-                Text(formatCompactCount(item.zan)),
-                IconButton(
-                  iconSize: wid,
-                  onPressed: () {
-                    commentNotifier.changeShowComment();
-                  },
-                  color: Colors.white,
-                  icon: Icon(Icons.comment),
-                ),
-                Text(formatCompactCount(item.commentCount)),
-                IconButton(
-                  iconSize: wid,
-                  onPressed: () {},
-                  color: Colors.white,
-                  icon: Icon(Icons.star),
-                ),
-                Text('20kw'),
-                VideoShareView(),
-                Text('2'),
-                Spring.rotate(
-                  springController: springController,
-                  alignment: Alignment.center,
-                  //def=center
-                  startAngle: 0,
-                  //def=0
-                  endAngle: 360,
-                  //def=360
-                  animDuration: Duration(seconds: 2),
-                  //def=1s
-                  animStatus: (AnimStatus status) {},
-                  curve: Curves.easeInBack,
-                  child: IconButton(
-                    iconSize: wid,
-                    onPressed: () {},
-                    color: Colors.white,
-                    icon: Icon(Icons.ac_unit),
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
