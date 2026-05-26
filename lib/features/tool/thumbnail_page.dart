@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:js_interop';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -13,9 +12,9 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/web_blob_helpers.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
-import 'package:web/web.dart' as web;
 import 'widgets/custom_video_progress_bar.dart';
 import 'video_cover_style_preview.dart';
 import 'video_cover_thumbnail.dart';
@@ -665,118 +664,32 @@ class _ThumbnailPage extends State<ThumbnailPage> {
   }
 
   Future<void> downloadAsJpg(Uint8List watermarkedImage) async {
-    img.Image? rawImage = img.decodeImage(watermarkedImage);
-    // 质量90%
-    Uint8List jpgBytes = img.encodeJpg(rawImage!, quality: 70);
-
-    // 2️⃣ 触发 Web 下载
-    final blob = web.Blob([jpgBytes.toJS].toJS);
-    final url = web.URL.createObjectURL(blob);
-    final anchor =
-        web.HTMLAnchorElement()
-          ..href = url
-          ..download = '素材封面.jpg'
-          ..click();
-    web.URL.revokeObjectURL(url);
+    final rawImage = img.decodeImage(watermarkedImage);
+    if (rawImage == null) return;
+    final jpgBytes = img.encodeJpg(rawImage, quality: 70);
+    downloadUint8ListAsFile(
+      jpgBytes,
+      '素材封面.jpg',
+      mimeType: 'image/jpeg',
+    );
   }
 
   Future<void> downloadAsWebp(Uint8List pngBytes) async {
-    // 创建一个 Blob 对象
-    final blob = web.Blob(
-      [pngBytes.toJS].toJS,
-      web.BlobPropertyBag(type: 'image/png'),
+    final rawImage = img.decodeImage(pngBytes);
+    if (rawImage == null) return;
+
+    Uint8List? webpBytes;
+    if (kIsWeb) {
+      webpBytes = await encodeWebpViaBrowserCanvas(rawImage);
+    } else {
+      webpBytes = Uint8List.fromList(img.encodePng(rawImage));
+    }
+    if (webpBytes == null || webpBytes.isEmpty) return;
+
+    downloadUint8ListAsFile(
+      webpBytes,
+      kIsWeb ? '素材封面.webp' : '素材封面.png',
+      mimeType: kIsWeb ? 'image/webp' : 'image/png',
     );
-
-    // 创建一个 URL 来表示这个 Blob 对象
-    final url = web.URL.createObjectURL(blob);
-
-    // 创建一个 Image 元素，并设置它的 src 属性
-    final img = web.HTMLImageElement()..src = url;
-
-    // 等待图片加载完毕
-    await img.decode().toDart;
-
-    // 使用 Canvas 元素进行绘制和格式转换
-    final canvas =
-        web.HTMLCanvasElement()
-          ..width = img.width
-          ..height = img.height;
-    final ctx = canvas.getContext('2d') as web.CanvasRenderingContext2D;
-    ctx.drawImage(img, 0, 0);
-
-    // 将 Canvas 内容以 WebP 格式导出
-    final webpDataUrl = canvas.toDataUrl('image/webp', 0.8); // 第二个参数是质量选项
-
-    // 分离 DataURL 并创建一个新的 Blob 对象
-    final parts = webpDataUrl.split(',');
-    final mime = parts[0].split(':')[1].split(';')[0];
-    final byteString = parts[1];
-    final buffer = Uint8List.fromList(base64Decode(byteString));
-    final webpBlob = web.Blob(
-      [buffer.toJS].toJS,
-      web.BlobPropertyBag(type: mime),
-    );
-
-    // 创建一个下载链接并触发下载
-    final webpUrl = web.URL.createObjectURL(webpBlob);
-    final a =
-        web.HTMLAnchorElement()
-          ..href = webpUrl
-          ..download = '素材封面.webp'
-          ..click();
-
-    // 清理
-    web.URL.revokeObjectURL(url);
-    web.URL.revokeObjectURL(webpUrl);
-  }
-
-  Future<void> downloadAsWebp1(Uint8List jpgBytes) async {
-    // 1. 解码 JPG
-    img.Image? decodedImage = img.decodeImage(jpgBytes);
-    if (decodedImage == null) return;
-
-    // 2. 创建 HTML ImageElement
-    final image = web.HTMLImageElement();
-    final tempJpgBlob = web.Blob(
-      [jpgBytes.toJS].toJS,
-      web.BlobPropertyBag(type: 'image/jpeg'),
-    );
-    final tempUrl = web.URL.createObjectURL(tempJpgBlob);
-    image.src = tempUrl;
-
-    // 3. 等待加载
-    await image.decode().toDart;
-
-    // 4. 绘制到 Canvas
-    final canvas =
-        web.HTMLCanvasElement()
-          ..width = image.width
-          ..height = image.height;
-    final ctx = canvas.getContext('2d') as web.CanvasRenderingContext2D;
-    ctx.drawImage(image, 0, 0);
-
-    // 5. 导出为 WebP Data URL
-    final webpDataUrl = canvas.toDataUrl('image/webp', 0.8);
-
-    // 6. 转为 Blob 并下载
-    final parts = webpDataUrl.split(',');
-    final mimeType = parts[0].split(':')[1].split(';')[0];
-    final base64 = parts[1];
-    final buffer = base64Decode(base64);
-    final webpBlob = web.Blob(
-      [buffer.toJS].toJS,
-      web.BlobPropertyBag(type: mimeType),
-    );
-    final webpUrl = web.URL.createObjectURL(webpBlob);
-
-    final anchor =
-        web.HTMLAnchorElement()
-          ..href = webpUrl
-          ..download = '素材封面.webp'
-          ..click();
-
-    // 7. 清理
-    web.URL.revokeObjectURL(tempUrl);
-    web.URL.revokeObjectURL(webpUrl);
   }
 }

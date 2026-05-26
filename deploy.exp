@@ -5,7 +5,7 @@ set host "47.94.236.184"
 set port "22"
 set user "root"
 set pswd "Qazse@123"
-set local_file "/Users/dcx/work/flutter/qqai/build/web.zip"
+set local_file "/Users/dcx/work/qqai/qqai/build/web.zip"
 set remote_path "/qqai"
 
 # Upload the file

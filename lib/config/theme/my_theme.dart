@@ -8,11 +8,8 @@ import 'my_styles.dart';
 
 class MyTheme {
   static ThemeData getThemeData({required bool isLight}) {
-    // 不使用 useSystemChineseFont()，避免 Web 从 fonts.gstatic.com 拉取 Noto Sans SC；
-    // 中文通过 localization_service 使用本地 Alibaba PuHuiTi。
+    // 使用 Material 默认 Roboto；Web 由引擎从 fonts.gstatic.com 拉取（含中文回退 Noto）。
     return ThemeData(
-      fontFamily: 'Alibaba PuHuiTi',
-      fontFamilyFallback: ['Alibaba PuHuiTi','Roboto'],
       primaryColor: isLight
           ? LightThemeColors.primaryColor
           : DarkThemeColors.primaryColor,

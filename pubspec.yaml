@@ -44,9 +44,7 @@ dependencies:
   extended_nested_scroll_view: ^6.2.1
   easy_refresh: ^3.3.4
   flick_video_player:
-    git:
-      url: https://github.com/daicx/flick-video-player.git
-      ref: main
+    path: packages/flick_video_player
   video_player: ^2.10.0
   # 基础的点击
   tapped: ^2.0.0
@@ -70,9 +68,7 @@ dependencies:
   flyer_chat_image_message: ^2.3.0
   flyer_chat_location_message: 0.0.13
   flutter_link_previewer: ^4.1.2
-  flyer_chat_text_message: ^2.5.1
   flyer_chat_system_message: ^2.1.13
-  flyer_chat_text_stream_message: ^2.2.6
   flyer_chat_video_message: ^0.0.12+2
   pull_down_button: ^0.10.2
   web_socket_channel: ^3.0.3
@@ -101,7 +97,6 @@ dependencies:
   js: ^0.7.2
   qiniu_flutter_sdk: ^0.7.2
   file_picker: ^10.3.7
-  flutter_widget_from_html: ^0.17.0
   carousel_slider: ^5.1.1
   cached_network_image: ^3.4.1
   photo_view: ^0.15.0
@@ -125,17 +120,3 @@ flutter:
     - mock/
     - imgs/
     - imgs/weather/
-    - assets/fonts/
-  # Web 打包时避免从 fonts.gstatic.com 拉取 Roboto，使用本地字体（见 assets/fonts/README）
-  fonts:
-    - family: Roboto
-      fonts:
-        - asset: assets/fonts/Roboto-Regular.ttf
-        - asset: assets/fonts/Roboto-Bold.ttf
-          weight: 700
-    # 阿里巴巴普惠体，中文使用
-    - family: Alibaba PuHuiTi
-      fonts:
-        - asset: assets/fonts/AlibabaPuHuiTi-3-55-Regular.ttf
-        - asset: assets/fonts/AlibabaPuHuiTi-3-85-Bold.ttf
-          weight: 700

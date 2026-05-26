@@ -7,6 +7,7 @@ import '../../../../components/AnimatedBottomBar.dart';
 import '../../../../components/AnimatedLeftBar.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/main_shell_tab_reselect_provider.dart';
+import '../widgets/lazy_shell_tab.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key, required this.navigationShell});
@@ -33,21 +34,24 @@ class _HomePageState extends ConsumerState<HomePage> {
     final bool isWideScreen = 1.sw > 800;
     final shell = widget.navigationShell;
 
-    return Scaffold(
-      body: isWideScreen
-          ? getWideScreen(homeState, shell)
-          : shell,
-      bottomNavigationBar: !isWideScreen
-          ? SafeArea(
-              child: AnimatedBottomBar(
-                selectedBarIndex: shell.currentIndex,
-                barItems: HomeNotifier.barItems,
-                onBarTap: _onMainTabTap,
-                animationDuration: const Duration(milliseconds: 150),
-                barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
-              ),
-            )
-          : null,
+    return MainShellIndexScope(
+      currentIndex: shell.currentIndex,
+      child: Scaffold(
+        body: isWideScreen
+            ? getWideScreen(homeState, shell)
+            : shell,
+        bottomNavigationBar: !isWideScreen
+            ? SafeArea(
+                child: AnimatedBottomBar(
+                  selectedBarIndex: shell.currentIndex,
+                  barItems: HomeNotifier.barItems,
+                  onBarTap: _onMainTabTap,
+                  animationDuration: const Duration(milliseconds: 150),
+                  barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
+                ),
+              )
+            : null,
+      ),
     );
   }
 

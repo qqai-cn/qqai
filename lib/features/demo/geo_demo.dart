@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator_web/geolocator_web.dart';
+import 'package:geolocator/geolocator.dart';
 
 void main() => runApp(MyApp());
 

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
-import 'package:flyer_chat_text_stream_message/flyer_chat_text_stream_message.dart';
+import 'stream_state.dart';
 
 class GeminiStreamManager extends ChangeNotifier {
   final ChatController _chatController;

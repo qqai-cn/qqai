@@ -29,18 +29,11 @@ class LocalizationService {
     'zh': const Locale('zh', 'CN'),
   };
 
-  // Supported languages font style.
-  // 中文使用阿里巴巴普惠体（见 pubspec fonts + assets/fonts/）
+  // 与 ThemeData 一致，使用 Roboto（Web 走 gstatic）
   static Map<String, TextStyle> supportedLanguagesFontsFamilies = {
-    'en': const TextStyle(
-      fontFamily: 'Alibaba PuHuiTi',
-      fontFamilyFallback: ['Alibaba PuHuiTi', 'Roboto'],
-    ),
+    'en': const TextStyle(fontFamily: 'Roboto'),
     // 'ar': const TextStyle(fontFamily: 'Cairo'),
-    'zh': const TextStyle(
-      fontFamily: 'Alibaba PuHuiTi',
-      fontFamilyFallback: ['Alibaba PuHuiTi', 'Roboto'],
-    ),
+    'zh': const TextStyle(fontFamily: 'Roboto'),
   };
 
   // Translation keys for supported languages

@@ -11,7 +11,7 @@ import 'package:flutter_link_previewer/flutter_link_previewer.dart';
 import 'package:flyer_chat_file_message/flyer_chat_file_message.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
 import 'package:flyer_chat_system_message/flyer_chat_system_message.dart';
-import 'package:flyer_chat_text_message/flyer_chat_text_message.dart';
+import 'package:qqai/components/chat/qqai_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:uuid/uuid.dart';
@@ -154,7 +154,7 @@ class LocalState extends State<Local> {
                 index, {
                 required bool isSentByMe,
                 MessageGroupStatus? groupStatus,
-              }) => FlyerChatTextMessage(message: message, index: index),
+              }) => QqaiChatTextMessage(message: message, index: index),
           fileMessageBuilder:
               (
                 context,

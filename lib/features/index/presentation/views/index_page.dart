@@ -9,6 +9,7 @@ import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
 import 'package:qqai/router/app_routes.dart';
 
+import '../widgets/lazy_tab_slot.dart';
 import '../widgets/slide_transition_x.dart';
 
 class IndexPage extends ConsumerStatefulWidget {
@@ -19,11 +20,8 @@ class IndexPage extends ConsumerStatefulWidget {
 }
 
 class _IndexPageState extends ConsumerState<IndexPage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, LazyTabMountMixin {
   late TabController _tabController;
-
-  /// 已挂载内容的 Tab 索引；首屏只建 0 与相邻页，其余懒建以降低首帧与首包成本。
-  final Set<int> _mountedTabIndices = {0};
 
   @override
   void initState() {
@@ -35,21 +33,12 @@ class _IndexPageState extends ConsumerState<IndexPage>
     _tabController.addListener(_onTabChanged);
   }
 
-  void _mountTab(int i) {
-    if (!mounted) return;
-    setState(() {
-      _mountedTabIndices.add(i);
-    });
-  }
-
   void _onTabChanged() {
-    if (_tabController.indexIsChanging || !mounted) return;
-    _mountTab(_tabController.index);
-    setState(() {});
+    onLazyTabChanged(_tabController);
   }
 
   void _onHomeTabTap(int index) {
-    _mountTab(index);
+    lazyTabMount(index);
     if (index == _tabController.index) {
       _refreshHomeTabAt(index);
     }
@@ -106,10 +95,10 @@ class _IndexPageState extends ConsumerState<IndexPage>
   }
 
   Widget _tabBody(int index) {
-    if (!_mountedTabIndices.contains(index)) {
-      return const ColoredBox(color: Colors.black12, child: SizedBox.expand());
-    }
-    return homeTabConfigs[index].builder(context);
+    return LazyTabSlot(
+      isMounted: lazyTabMountedIndices.contains(index),
+      builder: (_) => homeTabConfigs[index].builder(context),
+    );
   }
 
   Widget animatedTitle() {

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
-import 'package:flyer_chat_text_message/flyer_chat_text_message.dart';
+import 'package:qqai/components/chat/qqai_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
@@ -93,7 +93,7 @@ class ApiState extends State<Api> {
                     index, {
                     required bool isSentByMe,
                     MessageGroupStatus? groupStatus,
-                  }) => FlyerChatTextMessage(message: message, index: index),
+                  }) => QqaiChatTextMessage(message: message, index: index),
               imageMessageBuilder:
                   (
                     context,

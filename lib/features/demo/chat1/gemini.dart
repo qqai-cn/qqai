@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
-import 'package:flyer_chat_text_message/flyer_chat_text_message.dart';
-import 'package:flyer_chat_text_stream_message/flyer_chat_text_stream_message.dart';
+import 'package:qqai/components/chat/qqai_chat_text_message.dart';
+import 'package:qqai/features/demo/chat1/qqai_chat_text_stream_message.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -186,7 +186,7 @@ class GeminiState extends State<Gemini> {
                   index, {
                   required bool isSentByMe,
                   MessageGroupStatus? groupStatus,
-                }) => FlyerChatTextMessage(
+                }) => QqaiChatTextMessage(
                   message: message,
                   index: index,
                   showTime: false,
@@ -212,11 +212,10 @@ class GeminiState extends State<Gemini> {
                       .watch<GeminiStreamManager>()
                       .getState(message.streamId);
                   // Return the stream message widget, passing the state
-                  return FlyerChatTextStreamMessage(
+                  return QqaiChatTextStreamMessage(
                     message: message,
                     index: index,
                     streamState: streamState,
-                    chunkAnimationDuration: _kChunkAnimationDuration,
                     showTime: false,
                     showStatus: false,
                     receivedBackgroundColor: Colors.transparent,

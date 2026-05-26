@@ -13,6 +13,7 @@ import '../../../router/app_routes.dart';
 import '../../comment/providers/comment_providers.dart';
 import '../../index/presentation/widgets/brand_drawer_leading.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
+import '../../index/presentation/widgets/lazy_tab_slot.dart';
 import '../../index/providers/home_providers.dart';
 import '../providers/video_recommend_providers.dart';
 
@@ -20,15 +21,20 @@ const String _defaultVideoCover =
     'https://file.qqai.cn/qqai/2025/09/1.webp';
 
 class VideoView extends ConsumerStatefulWidget {
-  const VideoView({Key? key}) : super(key: key);
+  const VideoView({super.key});
 
   @override
-  _VideoView createState() => _VideoView();
+  ConsumerState<VideoView> createState() => _VideoViewState();
 }
 
-class _VideoView extends ConsumerState<VideoView>
-    with TickerProviderStateMixin {
+class _VideoViewState extends ConsumerState<VideoView>
+    with TickerProviderStateMixin, LazyTabMountMixin {
   late TabController _tabController;
+
+  static const _tabPlaceholder = ColoredBox(
+    color: Colors.black,
+    child: SizedBox.expand(),
+  );
 
   @override
   void initState() {
@@ -38,34 +44,26 @@ class _VideoView extends ConsumerState<VideoView>
   }
 
   void _onTabChanged() {
-    if (!_tabController.indexIsChanging && mounted) {
-      setState(() {
+    onLazyTabChanged(
+      _tabController,
+      onSettled: () {
         if (_tabController.index != 0) {
           ref.read(commentProvider.notifier).dontShowComment();
         }
-      });
-    }
+      },
+    );
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
-  }
-
-  List<BlogItem> _playableItems(List<BlogItem> raw) {
-    return raw
-        .where(
-          (e) => firstPlayableVideoUrlFromResources(e.resources) != null,
-        )
-        .toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final isWideScreen = 1.sw > 800;
-    final recommendState = ref.watch(videoRecommendProvider);
-    final recommendNotifier = ref.read(videoRecommendProvider.notifier);
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -84,6 +82,7 @@ class _VideoView extends ConsumerState<VideoView>
             ),
           ),
           isScrollable: true,
+          onTap: lazyTabMount,
           tabs: HomeNotifier.videoTabItems.map((e) {
             return Tab(
               child: Container(
@@ -115,18 +114,39 @@ class _VideoView extends ConsumerState<VideoView>
       body: TabBarView(
         controller: _tabController,
         physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          _buildRecommendTab(recommendState, recommendNotifier),
-          const VideoListView(),
-        ],
+        children: List.generate(2, _tabBody),
       ),
     );
   }
 
-  Widget _buildRecommendTab(
-    VideoRecommendState recommendState,
-    VideoRecommendNotifier recommendNotifier,
-  ) {
+  Widget _tabBody(int index) {
+    return LazyTabSlot(
+      isMounted: lazyTabMountedIndices.contains(index),
+      placeholder: _tabPlaceholder,
+      builder: (context) => switch (index) {
+        0 => const _VideoRecommendTab(),
+        _ => const VideoListView(),
+      },
+    );
+  }
+}
+
+class _VideoRecommendTab extends ConsumerWidget {
+  const _VideoRecommendTab();
+
+  List<BlogItem> _playableItems(List<BlogItem> raw) {
+    return raw
+        .where(
+          (e) => firstPlayableVideoUrlFromResources(e.resources) != null,
+        )
+        .toList();
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recommendState = ref.watch(videoRecommendProvider);
+    final recommendNotifier = ref.read(videoRecommendProvider.notifier);
+
     return recommendState.blogPageData.when(
       loading: () => const ColoredBox(
         color: Colors.black,
@@ -176,7 +196,6 @@ class _VideoView extends ConsumerState<VideoView>
           );
         }
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
           ref
               .read(videoRecommendCurrentBlogProvider.notifier)
               .select(playable.first);

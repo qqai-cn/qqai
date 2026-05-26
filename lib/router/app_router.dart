@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qqai/features/blog/views/blog_img_detail_view.dart';
-import 'package:qqai/features/blog/views/blog_video_detail_view.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../features/auth/login_page.dart';
@@ -11,55 +9,22 @@ import '../../features/lookart/presentation/views/look_art_view.dart'
     deferred as look_art;
 import '../../features/meleft/mycare_page.dart' deferred as my_care;
 import '../../features/meleft/mycollect_page.dart' deferred as my_collect;
-import '../../features/search/search_page.dart';
-import '../../features/tool/ai_page.dart' hide ChatWidget;
-import '../../features/tool/calendar_tool_page.dart';
-import '../../features/tool/date_tool_page.dart';
-import '../../features/tool/image_compress_intro_page.dart';
-import '../../features/tool/image_format_convert_page.dart';
-import '../../features/tool/id_tool_page.dart';
-import '../../features/tool/ip_tool_page.dart';
-import '../../features/tool/json_formatter_page.dart';
-import '../../features/tool/thumbnail_page.dart';
-import '../../features/tool/url_tool_page.dart';
 import '../../features/watchvideo/play_video_page.dart' deferred as play_video;
-import '../../features/weather/presentation/views/perday_weather_view.dart';
-import '../../features/weather/presentation/views/weather_detail_view.dart';
-import '../../features/weather/presentation/views/weather_home_page.dart';
-import '../../features/weather/presentation/views/weather_left_page.dart';
 import '../cache/deferred_widget.dart';
-import '../components/chat/chat_widget.dart';
-import '../components/imgpreview/image_detail_page.dart';
 import '../components/imgpreview/preview_img.dart';
-import '../components/video_player_detail/FullScreenVideoPlayer.dart';
 import '../features/blog/data/blog_route_extra.dart';
-import '../features/fabu/views/fabu_publish_page.dart';
-import '../features/fabu/views/fabu_view.dart';
-import '../features/goods/models/cart_line.dart';
-import '../features/goods/views/cart_view.dart';
-import '../features/goods/views/checkout_view.dart';
-import '../features/goods/views/goods_detail_view.dart';
-import '../features/goods/views/order_result_view.dart';
-import '../features/douyin/views/douyin_all_features_page.dart';
-import '../features/douyin/views/douyin_anchor_center_page.dart';
-import '../features/douyin/views/douyin_group_buy_page.dart';
-import '../features/douyin/views/douyin_my_orders_page.dart';
-import '../features/douyin/views/douyin_watch_history_page.dart';
-import '../features/goods/views/goods_view.dart';
-import '../providers/auth_providers.dart';
-import '../util/api_base_client.dart';
-import '../features/friends/friend_requests_page.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
+import '../features/goods/models/cart_line.dart';
 import '../features/index/presentation/views/home_page.dart';
 import '../features/index/presentation/views/index_page.dart';
 import '../features/index/presentation/views/me_page.dart';
-import '../features/my/views/my_profile_edit_page.dart';
 import '../features/index/presentation/views/message_page.dart';
 import '../features/index/presentation/views/video_page.dart';
-import '../features/square/views/square_blog_view.dart';
-import '../features/tool/qr_code_tool_page.dart';
-import '../features/video/views/video_detail_view.dart';
+import '../features/index/presentation/widgets/lazy_shell_tab.dart';
+import '../providers/auth_providers.dart';
+import '../util/api_base_client.dart';
 import 'app_routes.dart';
+import 'deferred_route_pages.dart' deferred as route_pages;
 
 part 'app_router.g.dart';
 
@@ -111,7 +76,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.cartPageUrl,
         name: 'cart',
-        builder: (context, state) => const CartView(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.CartView(),
+        ),
       ),
       GoRoute(
         path: Routes.checkoutPageUrl,
@@ -125,7 +93,10 @@ GoRouter appRouter(Ref ref) {
               body: const Center(child: Text('没有待结算商品')),
             );
           }
-          return CheckoutView(lines: lines);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.CheckoutView(lines: lines),
+          );
         },
       ),
       GoRoute(
@@ -134,7 +105,10 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) {
           final extra = state.extra;
           final orderId = extra is String ? extra : '';
-          return OrderResultView(orderId: orderId);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.OrderResultView(orderId: orderId),
+          );
         },
       ),
 
@@ -142,32 +116,50 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.douyinGroupBuy,
         name: 'douyinGroupBuy',
-        builder: (context, state) => const DouyinGroupBuyPage(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.DouyinGroupBuyPage(),
+        ),
       ),
       GoRoute(
         path: Routes.douyinAnchorCenter,
         name: 'douyinAnchorCenter',
-        builder: (context, state) => const DouyinAnchorCenterPage(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.DouyinAnchorCenterPage(),
+        ),
       ),
       GoRoute(
         path: Routes.douyinMyOrders,
         name: 'douyinMyOrders',
-        builder: (context, state) => const DouyinMyOrdersPage(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.DouyinMyOrdersPage(),
+        ),
       ),
       GoRoute(
         path: Routes.douyinWatchHistory,
         name: 'douyinWatchHistory',
-        builder: (context, state) => const DouyinWatchHistoryPage(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.DouyinWatchHistoryPage(),
+        ),
       ),
       GoRoute(
         path: Routes.douyinAllFeatures,
         name: 'douyinAllFeatures',
-        builder: (context, state) => const DouyinAllFeaturesPage(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.DouyinAllFeaturesPage(),
+        ),
       ),
       GoRoute(
         path: Routes.myProfileEdit,
         name: 'myProfileEdit',
-        builder: (context, state) => const MyProfileEditPage(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.MyProfileEditPage(),
+        ),
       ),
 
       /// ========== 首页（四 Tab 各自路径，便于 GoRouter redirect 统一鉴权）==========
@@ -181,7 +173,10 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.HOME,
                 name: 'homeIndex',
-                builder: (context, state) => const IndexPage(),
+                builder: (context, state) => const LazyShellTab(
+                  tabIndex: 0,
+                  child: IndexPage(),
+                ),
               ),
             ],
           ),
@@ -190,7 +185,10 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.videoPage,
                 name: 'homeVideo',
-                builder: (context, state) => const VideoPage(),
+                builder: (context, state) => const LazyShellTab(
+                  tabIndex: 1,
+                  child: VideoPage(),
+                ),
               ),
             ],
           ),
@@ -199,7 +197,10 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.messagePage,
                 name: 'homeMessage',
-                builder: (context, state) => const MessagePage(),
+                builder: (context, state) => const LazyShellTab(
+                  tabIndex: 2,
+                  child: MessagePage(),
+                ),
               ),
             ],
           ),
@@ -208,7 +209,10 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.mePage,
                 name: 'homeMe',
-                builder: (context, state) => const MePage(),
+                builder: (context, state) => const LazyShellTab(
+                  tabIndex: 3,
+                  child: MePage(),
+                ),
               ),
             ],
           ),
@@ -219,9 +223,12 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.goodsPageUrl,
         name: 'goodsList',
-        builder: (context, state) => Scaffold(
-          appBar: AppBar(title: const Text('商品')),
-          body: const GoodsView(),
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => Scaffold(
+            appBar: AppBar(title: const Text('商品')),
+            body: route_pages.GoodsView(),
+          ),
         ),
       ),
       GoRoute(
@@ -229,61 +236,101 @@ GoRouter appRouter(Ref ref) {
         name: 'goodsDetail',
         builder: (context, state) {
           final id = state.pathParameters['goodsId'] ?? '';
-          return GoodsDetailView(goodsId: id);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.GoodsDetailView(goodsId: id),
+          );
         },
       ),
 
       /// ========== 工具类页面 ==========
-      GoRoute(path: Routes.aiPageUrl, name: 'ai', builder: (c, s) => AiPage()),
+      GoRoute(
+        path: Routes.aiPageUrl,
+        name: 'ai',
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.AiPage(),
+        ),
+      ),
       GoRoute(
         path: Routes.qrCodePageUrl,
         name: 'qrCode',
-        builder: (c, s) => QrCodeToolPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.QrCodeToolPage(),
+        ),
       ),
       GoRoute(
         path: Routes.calendarToolPageUrl,
         name: 'calendarTool',
-        builder: (c, s) => CalendarToolPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.CalendarToolPage(),
+        ),
       ),
       GoRoute(
         path: Routes.dateToolPageUrl,
         name: 'dateTool',
-        builder: (c, s) => DateToolPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.DateToolPage(),
+        ),
       ),
       GoRoute(
         path: Routes.idToolPageUrl,
         name: 'idTool',
-        builder: (c, s) => IdToolPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.IdToolPage(),
+        ),
       ),
       GoRoute(
         path: Routes.urlToolPageUrl,
         name: 'urlTool',
-        builder: (c, s) => const UrlToolPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.UrlToolPage(),
+        ),
       ),
       GoRoute(
         path: Routes.ipToolPageUrl,
         name: 'ipTool',
-        builder: (c, s) => const IpToolPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.IpToolPage(),
+        ),
       ),
       GoRoute(
         path: Routes.thumbnailPageUrl,
         name: 'thumbnail',
-        builder: (c, s) => ThumbnailPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.ThumbnailPage(),
+        ),
       ),
       GoRoute(
         path: Routes.imageFormatConvertPageUrl,
         name: 'imageFormatConvert',
-        builder: (c, s) => const ImageFormatConvertPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.ImageFormatConvertPage(),
+        ),
       ),
       GoRoute(
         path: Routes.imageCompressIntroPageUrl,
         name: 'imageCompressIntro',
-        builder: (c, s) => const ImageCompressIntroPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.ImageCompressIntroPage(),
+        ),
       ),
       GoRoute(
         path: Routes.jsonFormatterPageUrl,
         name: 'jsonFormatter',
-        builder: (c, s) => const JsonFormatterPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.JsonFormatterPage(),
+        ),
       ),
 
       /// ========== 内容详情 ==========
@@ -291,9 +338,11 @@ GoRouter appRouter(Ref ref) {
         path: Routes.watchImgUrl,
         name: 'imageDetail',
         builder: (c, s) {
-          // 从 extra 获取参数
           final preview = s.extra as PreviewImg;
-          return ImageDetailPage(preview: preview);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.ImageDetailPage(preview: preview),
+          );
         },
       ),
       GoRoute(
@@ -301,7 +350,10 @@ GoRouter appRouter(Ref ref) {
         name: 'fullScreenVideo',
         builder: (c, s) {
           final videoItem = s.extra;
-          return FullScreenVideoPlayer(videoItem: videoItem);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.FullScreenVideoPlayer(videoItem: videoItem),
+          );
         },
       ),
       GoRoute(
@@ -336,7 +388,10 @@ GoRouter appRouter(Ref ref) {
               body: Center(child: Text('博客数据无效，请返回重试')),
             );
           }
-          return BlogImgDetailView(blogItem: blogItem);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.BlogImgDetailView(blogItem: blogItem),
+          );
         },
       ),
       GoRoute(
@@ -349,7 +404,10 @@ GoRouter appRouter(Ref ref) {
               body: Center(child: Text('博客数据无效，请返回重试')),
             );
           }
-          return BlogVideoDetailView(blogItem: blogItem);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.BlogVideoDetailView(blogItem: blogItem),
+          );
         },
       ),
       GoRoute(
@@ -362,7 +420,10 @@ GoRouter appRouter(Ref ref) {
               body: Center(child: Text('博客数据无效，请返回重试')),
             );
           }
-          return VideoDetailView(blogItem: blogItem);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.VideoDetailView(blogItem: blogItem),
+          );
         },
       ),
       GoRoute(
@@ -372,7 +433,10 @@ GoRouter appRouter(Ref ref) {
           final squareId = s.extra is int
               ? s.extra as int
               : int.tryParse(s.uri.queryParameters['id'] ?? '') ?? 0;
-          return SquareBlogView(squareId: squareId);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.SquareBlogView(squareId: squareId),
+          );
         },
       ),
 
@@ -407,7 +471,10 @@ GoRouter appRouter(Ref ref) {
       GoRoute(
         path: Routes.friendPendingIncoming,
         name: 'friendPendingIncoming',
-        builder: (c, s) => const FriendRequestsPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.FriendRequestsPage(),
+        ),
       ),
       GoRoute(
         path: '${Routes.userDetail}/:userId/:showAppBar',
@@ -436,21 +503,24 @@ GoRouter appRouter(Ref ref) {
               body: const Center(child: Text('无效会话')),
             );
           }
-          return Consumer(
-            builder: (context, ref, _) {
-              final auth = ref.watch(authProvider);
-              return Scaffold(
-                appBar: AppBar(title: const Text('聊天')),
-                body: ChatWidget(
-                  key: ValueKey<int>(id),
-                  currentUserId: auth.userId ?? '0',
-                  conversationId: id,
-                  initialMessages: const [],
-                  dio: ApiBaseClient.dio,
-                  token: auth.token,
-                ),
-              );
-            },
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => Consumer(
+              builder: (context, ref, _) {
+                final auth = ref.watch(authProvider);
+                return Scaffold(
+                  appBar: AppBar(title: const Text('聊天')),
+                  body: route_pages.ChatWidget(
+                    key: ValueKey<int>(id),
+                    currentUserId: auth.userId ?? '0',
+                    conversationId: id,
+                    initialMessages: const [],
+                    dio: ApiBaseClient.dio,
+                    token: auth.token,
+                  ),
+                );
+              },
+            ),
           );
         },
       ),
@@ -463,61 +533,105 @@ GoRouter appRouter(Ref ref) {
           final squareId = int.tryParse(
             s.uri.queryParameters['squareId'] ?? '',
           );
-          final type = _publishTypeFromRoute(s.uri.queryParameters['type']);
-          return FabuView(squareId: squareId, initialType: type);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () {
+              final type = switch (s.uri.queryParameters['type']) {
+                'video' => route_pages.FabuPublishType.video,
+                'help' => route_pages.FabuPublishType.help,
+                _ => route_pages.FabuPublishType.dynamic,
+              };
+              return route_pages.FabuView(squareId: squareId, initialType: type);
+            },
+          );
         },
       ),
       GoRoute(
         path: Routes.publishDynamicPageUrl,
         name: 'publishDynamic',
-        builder: (c, s) => const FabuView(initialType: FabuPublishType.dynamic),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.FabuView(
+            initialType: route_pages.FabuPublishType.dynamic,
+          ),
+        ),
       ),
       GoRoute(
         path: Routes.publishVideoPageUrl,
         name: 'publishVideo',
-        builder: (c, s) => const FabuView(initialType: FabuPublishType.video),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.FabuView(
+            initialType: route_pages.FabuPublishType.video,
+          ),
+        ),
       ),
       GoRoute(
         path: Routes.publishShortVideoPageUrl,
         name: 'publishShortVideo',
-        builder: (c, s) => const FabuView(initialType: FabuPublishType.video),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.FabuView(
+            initialType: route_pages.FabuPublishType.video,
+          ),
+        ),
       ),
       GoRoute(
         path: Routes.publishHelpPageUrl,
         name: 'publishHelp',
-        builder: (c, s) => const FabuView(initialType: FabuPublishType.help),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.FabuView(
+            initialType: route_pages.FabuPublishType.help,
+          ),
+        ),
       ),
 
       /// ========== 搜索 ==========
       GoRoute(
         path: Routes.searchPage,
         name: 'search',
-        builder: (c, s) => const SearchPage(),
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.SearchPage(),
+        ),
       ),
 
       /// ========== 天气模块（嵌套路由）==========
       ShellRoute(
-        builder: (context, state, child) => WeatherHomePage(),
+        builder: (context, state, child) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.WeatherHomePage(),
+        ),
         routes: [
           GoRoute(
             path: Routes.weatherPageUrl,
             name: 'weatherHome',
-            builder: (context, state) => Container(), // 空占位，实际内容在 Shell 中
+            builder: (context, state) => Container(),
           ),
           GoRoute(
             path: 'left',
             name: 'weatherLeft',
-            builder: (context, state) => WeatherLeftPage(),
+            builder: (context, state) => AppDeferredWidget(
+              libraryLoader: route_pages.loadLibrary,
+              builder: () => route_pages.WeatherLeftPage(),
+            ),
           ),
           GoRoute(
             path: 'detail',
             name: 'weatherDetail',
-            builder: (context, state) => WeatherDetailView(),
+            builder: (context, state) => AppDeferredWidget(
+              libraryLoader: route_pages.loadLibrary,
+              builder: () => route_pages.WeatherDetailView(),
+            ),
           ),
           GoRoute(
             path: 'per-day',
             name: 'perDayWeather',
-            builder: (context, state) => PerDayWeatherView(),
+            builder: (context, state) => AppDeferredWidget(
+              libraryLoader: route_pages.loadLibrary,
+              builder: () => route_pages.PerDayWeatherView(),
+            ),
           ),
         ],
       ),
@@ -545,12 +659,4 @@ bool _requiresAuth(String path) {
     Routes.myProfileEdit,
   ];
   return protectedPaths.any((protected) => path.startsWith(protected));
-}
-
-FabuPublishType _publishTypeFromRoute(String? type) {
-  return switch (type) {
-    'video' => FabuPublishType.video,
-    'help' => FabuPublishType.help,
-    _ => FabuPublishType.dynamic,
-  };
 }

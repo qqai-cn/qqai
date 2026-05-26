@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../providers/home_providers.dart';
 import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
+import '../widgets/lazy_tab_slot.dart';
 import '../../../../router/app_routes.dart';
 import '../../../friends/chat_page_list.dart';
 import '../../../friends/create_group_chat_dialog.dart';
@@ -19,17 +20,23 @@ class MessagePage extends ConsumerStatefulWidget {
 }
 
 class _MessagePageState extends ConsumerState<MessagePage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, LazyTabMountMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    onLazyTabChanged(_tabController);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
@@ -46,6 +53,7 @@ class _MessagePageState extends ConsumerState<MessagePage>
           controller: _tabController,
           indicatorSize: TabBarIndicatorSize.label,
           isScrollable: false,
+          onTap: lazyTabMount,
           tabs: HomeNotifier.messageTabItems.map((e) {
             return Tab(
               child: Container(
@@ -76,8 +84,18 @@ class _MessagePageState extends ConsumerState<MessagePage>
       body: TabBarView(
         controller: _tabController,
         physics: const NeverScrollableScrollPhysics(),
-        children: [const ChatPageList(), const FriendsPage()],
+        children: List.generate(2, _tabBody),
       ),
+    );
+  }
+
+  Widget _tabBody(int index) {
+    return LazyTabSlot(
+      isMounted: lazyTabMountedIndices.contains(index),
+      builder: (_) => switch (index) {
+        0 => const ChatPageList(),
+        _ => const FriendsPage(),
+      },
     );
   }
 }

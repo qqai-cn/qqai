@@ -6,16 +6,15 @@
 // ignore_for_file: implementation_imports, depend_on_referenced_packages
 
 import 'package:flick_video_player/flick_video_player.dart';
-import 'package:flick_video_player/src/utils/web_key_bindings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/components/video_player/flick_web_support.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
-import 'package:web/web.dart' as web;
 
 /// API-compatible with [FlickVideoPlayer]; safe when disposed before first frame.
 class SafeFlickVideoPlayer extends StatefulWidget {
-  const SafeFlickVideoPlayer({
+  SafeFlickVideoPlayer({
     Key? key,
     required this.flickManager,
     this.flickVideoWithControls = const FlickVideoWithControls(
@@ -34,8 +33,9 @@ class SafeFlickVideoPlayer extends StatefulWidget {
     ],
     this.wakelockEnabled = true,
     this.wakelockEnabledFullscreen = true,
-    this.webKeyDownHandler = flickDefaultWebKeyDownHandler,
-  }) : super(key: key);
+    FlickWebKeyHandler? webKeyDownHandler,
+  })  : webKeyDownHandler = webKeyDownHandler ?? defaultFlickWebKeyHandler,
+        super(key: key);
 
   final FlickManager flickManager;
   final Widget flickVideoWithControls;
@@ -46,7 +46,7 @@ class SafeFlickVideoPlayer extends StatefulWidget {
   final List<DeviceOrientation> preferredDeviceOrientationFullscreen;
   final bool wakelockEnabled;
   final bool wakelockEnabledFullscreen;
-  final void Function(web.KeyboardEvent, FlickManager) webKeyDownHandler;
+  final FlickWebKeyHandler webKeyDownHandler;
 
   @override
   State<SafeFlickVideoPlayer> createState() => _SafeFlickVideoPlayerState();
@@ -87,9 +87,10 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     }
 
     if (kIsWeb) {
-      web.document.documentElement?.onFullscreenChange
-          .listen(_webFullscreenListener);
-      web.document.documentElement?.onKeyDown.listen(_webKeyListener);
+      setupFlickWebDocumentListeners(
+        onFullscreenChange: _webFullscreenListener,
+        onKeyDown: _webKeyListener,
+      );
     }
   }
 
@@ -135,7 +136,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     _setPreferredOrientation();
     _setSystemUIOverlays();
     if (kIsWeb) {
-      web.document.documentElement?.requestFullscreen();
+      requestFlickWebFullscreen();
       Future.delayed(const Duration(milliseconds: 100), () {
         if (!mounted) return;
         _videoHeight = MediaQuery.of(context).size.height;
@@ -169,7 +170,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     _isFullscreen = false;
 
     if (kIsWeb) {
-      web.document.exitFullscreen();
+      exitFlickWebFullscreen();
       _videoHeight = null;
       _videoWidth = null;
       setState(() {});
@@ -209,10 +210,9 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     }
   }
 
-  void _webFullscreenListener(web.Event event) {
+  void _webFullscreenListener() {
     if (!mounted) return;
-    final w = web.document.defaultView;
-    final isFullscreen = (w != null && w.screenTop == 0 && w.screenY == 0);
+    final isFullscreen = flickWebScreenIsFullscreen();
     if (isFullscreen && !flickManager.flickControlManager!.isFullscreen) {
       flickManager.flickControlManager!.enterFullscreen();
     } else if (!isFullscreen &&
@@ -221,7 +221,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     }
   }
 
-  void _webKeyListener(web.KeyboardEvent event) {
+  void _webKeyListener(Object event) {
     if (!mounted) return;
     widget.webKeyDownHandler(event, flickManager);
   }

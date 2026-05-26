@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:qiniu_flutter_sdk/qiniu_flutter_sdk.dart';
 import 'package:qiniu_sdk_base/src/util/user_agent/user_agent.dart';
 
@@ -245,7 +244,10 @@ class BaseState extends State<Base> with DisposableState {
   @override
   Widget build(BuildContext context) {
     return ListView(children: [
-      HtmlWidget('<div style="position: relative; padding: 30% 45%;"><iframe style="position: absolute; width: 100%; height: 100%; left: 0; top: 0;" src="https://player.bilibili.com/player.html?cid=145147963&aid=84267566&page=1&as_wide=1&high_quality=1&danmaku=0" frameborder="no" scrolling="no" sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts"></iframe></div>'),
+      const Padding(
+        padding: EdgeInsets.all(16),
+        child: Text('HTML 嵌入示例已移除（避免 flutter_widget_from_html 引入大量 KaTeX 字体）。'),
+      ),
       Padding(
         padding: const EdgeInsets.all(20),
         child: Progress(value: progressValue),
