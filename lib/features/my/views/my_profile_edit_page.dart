@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/constant/constant.dart';
 import 'package:qqai/util/api_base_client.dart';
 
 import '../data/models/area_models.dart';
@@ -23,7 +24,7 @@ class MyProfileEditPage extends ConsumerStatefulWidget {
 class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
-  static const String _defaultAvatar = 'imgs/user_default.png';
+  static const String _defaultAvatar = Constant.DEFAULT_USER_AVATAR;
   static const double _contentMaxWidth = 600;
 
   bool _loading = true;

@@ -19,6 +19,8 @@ class Constant {
   static const double CHAT_TWO_VIEW_WIDTH = 700;
   static const double SQUARE_SPLIT_WIDTH = 750;
   static const double HEAD_IMG_SEZE = 40;
+  /// C 端用户无头像时的本地占位图
+  static const String DEFAULT_USER_AVATAR = 'imgs/defbak.png';
   static const Color SELECT_COLOR = Color(0xFFE5E5E5);
   static const Color ICON_COLOR = Color(0xFF1AFA29);
   static const Color ICON_COLOR_DEF = Color(0xFF8A8A8A);

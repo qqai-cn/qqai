@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qqai/features/index/data/home_tab_config.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
+import 'package:qqai/features/index/presentation/widgets/app_bar_user_avatar.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -71,11 +72,15 @@ class _IndexPageState extends ConsumerState<IndexPage>
     });
 
     final isWideScreen = 1.sw > 800;
+    const feedBackdrop = Colors.black12;
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      extendBodyBehindAppBar: false,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: feedBackdrop,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         leadingWidth: isWideScreen ? 148 : 48,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
@@ -119,6 +124,8 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   Widget getTitleWidget() {
     if (_tabController.index == 0) {
+      final theme = Theme.of(context);
+      final isDark = theme.brightness == Brightness.dark;
       return InkWell(
         key: const ValueKey('home_search_title'),
         onTap: () => context.push(Routes.searchPage),
@@ -129,12 +136,22 @@ class _IndexPageState extends ConsumerState<IndexPage>
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Colors.white,
+            color: isDark ? theme.cardColor : Colors.white,
           ),
           child: TextButton.icon(
             onPressed: null,
-            icon: const Icon(Icons.search),
-            label: const Text('网站flutter源码出售，有意联系QQ：807404400'),
+            icon: Icon(
+              Icons.search,
+              color: isDark ? Colors.white70 : null,
+            ),
+            label: Text(
+              '网站flutter源码出售，有意联系QQ：807404400',
+              style: TextStyle(
+                color: isDark ? Colors.white70 : null,
+                fontSize: 13,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
       );
@@ -207,13 +224,8 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   Widget _avatarEndDrawerAction() {
     return Builder(
-      builder: (ctx) => IconButton(
-        tooltip: '个人中心',
+      builder: (ctx) => AppBarUserAvatarButton(
         onPressed: () => Scaffold.of(ctx).openEndDrawer(),
-        icon: const CircleAvatar(
-          radius: 14,
-          backgroundImage: AssetImage('imgs/user_default.png'),
-        ),
       ),
     );
   }

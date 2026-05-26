@@ -61,6 +61,9 @@ class MyStyles {
   static AppBarTheme getAppBarTheme({required bool isLightTheme}) =>
       AppBarTheme(
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.transparent,
         titleTextStyle:
             getTextTheme(isLightTheme: isLightTheme).bodyMedium!.copyWith(
                   color: Colors.green,

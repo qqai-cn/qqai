@@ -39,6 +39,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     return MainShellIndexScope(
       currentIndex: shell.currentIndex,
       child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: isWideScreen
             ? getWideScreen(homeState, shell)
             : shell,

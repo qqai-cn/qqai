@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/color_constant.dart';
+import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/util/media_url.dart';
 
 /// 头像、昵称、等级、关注按钮与一行 meta 文案。
@@ -135,10 +136,6 @@ class CreatorHeaderRow extends StatelessWidget {
   }
 
   Widget _defaultAvatar() {
-    return Image.asset(
-      'imgs/img_default.png',
-      width: avatarSize,
-      height: avatarSize,
-    );
+    return buildDefaultUserAvatar(avatarSize);
   }
 }

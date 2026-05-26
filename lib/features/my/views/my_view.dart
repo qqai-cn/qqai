@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/label.dart';
+import 'package:qqai/constant/constant.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -29,7 +30,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
-  static const String _defaultAvatar = 'imgs/user_default.png';
+  static const String _defaultAvatar = Constant.DEFAULT_USER_AVATAR;
 
   @override
   void initState() {

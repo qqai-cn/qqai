@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/constant/constant.dart';
 import 'package:qqai/util/media_url.dart';
 
 /// 详情页头像（网络图 + 默认图），与列表 [CreatorHeaderRow] 一致解析 URL。
@@ -10,7 +11,7 @@ Widget buildDetailAvatar({
 }) {
   final url = resolveMediaUrl(avatarUrl);
   if (url == null) {
-    return _defaultAvatar(size);
+    return buildDefaultUserAvatar(size);
   }
 
   final dpr = context != null
@@ -29,17 +30,20 @@ Widget buildDetailAvatar({
       memCacheWidth: memPx,
       memCacheHeight: memPx,
       fadeInDuration: const Duration(milliseconds: 150),
-      placeholder: (_, _) => _defaultAvatar(size),
-      errorWidget: (_, _, _) => _defaultAvatar(size),
+      placeholder: (_, _) => buildDefaultUserAvatar(size),
+      errorWidget: (_, _, _) => buildDefaultUserAvatar(size),
     ),
   );
 }
 
-Widget _defaultAvatar(double size) {
-  return Image.asset(
-    'imgs/img_default.png',
-    width: size,
-    height: size,
-    fit: BoxFit.cover,
+/// 本地默认用户头像（圆形，与列表 item 一致）。
+Widget buildDefaultUserAvatar(double size) {
+  return ClipOval(
+    child: Image.asset(
+      Constant.DEFAULT_USER_AVATAR,
+      width: size,
+      height: size,
+      fit: BoxFit.cover,
+    ),
   );
 }

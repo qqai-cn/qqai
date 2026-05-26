@@ -131,7 +131,12 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
                   child: _RewardAmountText(text: rewardText),
                 ),
-              Container(height: 2, color: Colors.white),
+              Container(
+                height: 2,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.15)
+                    : Colors.white,
+              ),
               Expanded(
                 flex: 9,
                 child: AspectRatio(
