@@ -6,4 +6,4 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-exec flutter build web --release --wasm --no-web-resources-cdn -O4 "$@"
+exec flutter build web --release --wasm  -O4 "$@"
