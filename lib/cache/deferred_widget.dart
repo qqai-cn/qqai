@@ -50,17 +50,18 @@ class _AppDeferredWidgetState extends State<AppDeferredWidget> {
   @override
   void initState() {
     super.initState();
-    if (AppDeferredWidget._moduleLoaders.containsKey(widget.libraryLoader)) {
-      _onLibraryLoaded();
-    } else {
-      AppDeferredWidget.preload(widget.libraryLoader)
-          .then((_) => _onLibraryLoaded());
-    }
-  }
-
-  void _onLibraryLoaded() {
+    if (AppDeferredWidget._loadedModules.contains(widget.libraryLoader)) {
       _loadedBuilder = widget.builder;
       _loadedChild = _loadedBuilder?.call();
+      return;
+    }
+    AppDeferredWidget.preload(widget.libraryLoader).then((_) {
+      if (!mounted) return;
+      setState(() {
+        _loadedBuilder = widget.builder;
+        _loadedChild = _loadedBuilder?.call();
+      });
+    });
   }
 
   @override
@@ -79,12 +80,10 @@ class AppDeferredLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      alignment: Alignment.center,
-      // child: const AppLogo(),
-      child: Container(
-        color: Colors.black12,
+    return const ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: CircularProgressIndicator(color: Colors.white54),
       ),
     );
   }

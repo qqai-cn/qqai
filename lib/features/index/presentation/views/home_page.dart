@@ -23,9 +23,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     final shell = widget.navigationShell;
     if (shell.currentIndex == index) {
       ref.read(mainShellTabReselectProvider(index).notifier).bump();
-    } else {
-      shell.goBranch(index);
+      return;
     }
+    shell.goBranch(index);
+    // goBranch 不会触发 HomePage rebuild，需同步 MainShellIndexScope 供 LazyShellTab 挂载。
+    setState(() {});
   }
 
   @override

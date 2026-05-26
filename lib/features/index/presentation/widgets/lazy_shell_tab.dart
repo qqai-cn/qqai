@@ -44,8 +44,9 @@ class _LazyShellTabState extends State<LazyShellTab> {
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = MainShellIndexScope.of(context).currentIndex;
-    if (currentIndex == widget.tabIndex) {
+    final shellIndex = MainShellIndexScope.of(context).currentIndex;
+    final routeIsCurrent = ModalRoute.of(context)?.isCurrent ?? false;
+    if (shellIndex == widget.tabIndex || routeIsCurrent) {
       _everMounted = true;
     }
     if (!_everMounted) {
