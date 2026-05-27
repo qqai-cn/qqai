@@ -90,7 +90,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     );
     if (widget.enableSocket) {
       _webSocketService = SocketioService(
-        host: ApiConstant.BASE_URL,
+        host: ApiConstant.SOCKET_IO_URL,
         chatId: widget.conversationId.toString(),
         authorId: widget.currentUserId,
         token: widget.token,

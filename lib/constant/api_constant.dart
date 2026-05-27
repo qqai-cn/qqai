@@ -1,7 +1,11 @@
 class ApiConstant {
   static const String BASE_URL = 'https://qqai.cn';
 
+  /// Socket.IO（与 BASE_URL 同域，Nginx 反代 /socket.io/ 到 59092）
+  static const String SOCKET_IO_URL = BASE_URL;
+
   // static const String BASE_URL = 'http://localhost:58080';
+  // static const String SOCKET_IO_URL = 'http://localhost:59092';
   static const String DAY_HISTORY_NEWS_URL =
       '/app-api/blog/news/dayHistory/news';
   static const String DAYHOT_NEWS_URL = '/app-api/blog/news/dayHot/news';

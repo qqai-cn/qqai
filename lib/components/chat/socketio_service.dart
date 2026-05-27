@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 enum WebSocketEventType { newMessage, deleteMessage, flush, error, unknown }
 
@@ -58,11 +57,6 @@ class SocketioService {
       });
       socket.on('infra:new-msg', (data) => _parseWebSocketMessage(data));
       socket.onDisconnect((_) => print('disconnect'));
-    } on WebSocketChannelException catch (e) {
-      yield WebSocketEvent(
-        type: WebSocketEventType.error,
-        error: 'WebSocket error: ${e.message}',
-      );
     } catch (e) {
       yield WebSocketEvent(
         type: WebSocketEventType.error,
