@@ -81,14 +81,17 @@ flutter build web --release
 
 ## Web：Failed to fetch canvaskit.js (gstatic.com)
 
-若在 Chrome 运行/热重启时报错：`Failed to fetch dynamically imported module: https://www.gstatic.com/flutter-canvaskit/.../canvaskit.js`，是因为默认从 **gstatic CDN** 拉取 CanvasKit；网络不可达时会失败。
+若在 Chrome 运行/热重启时报错：`Failed to fetch dynamically imported module: https://www.gstatic.com/flutter-canvaskit/.../canvaskit.js`，是因为从 **gstatic CDN** 拉取 CanvasKit/skwasm；网络不可达时会失败。
 
-**做法：使用本地资源，不依赖 CDN**
+**双模式（推荐用项目脚本，勿手改 build 产物）**
 
-- **运行**：`flutter run -d chrome --no-web-resources-cdn`  
-  或执行项目根目录脚本：`./run_web.sh`
-- **打包**：`flutter build web --no-web-resources-cdn`
+| 模式 | 构建 | 运行 | skwasm 来源 |
+|------|------|------|-------------|
+| **local**（默认） | `./build_web_wasm.sh` 或 `./build_web_wasm_local.sh` | `./run_web.sh` | 本站 `/canvaskit/` |
+| **cdn** | `./build_web_wasm.sh cdn` 或 `./build_web_wasm_cdn.sh` | `./run_web.sh cdn` | `gstatic.com/flutter-canvaskit/<revision>/` |
 
-`--no-web-resources-cdn` 会把 CanvasKit 等资源打包进应用，由同一域名提供，不再请求 gstatic。
+模板：`web/bootstrap/flutter_bootstrap.{local,cdn}.js`，由 `web/scripts/apply_web_renderer_mode.sh` 在构建/运行前注入。
 
-（新版 Flutter 已移除 `--web-renderer` 和 HTML 渲染器，只能通过关闭 CDN 避免外网拉取。）
+`local` 使用 `--no-web-resources-cdn`；`cdn` 不传该参数且 bootstrap 不设置 `canvasKitBaseUrl`。
+
+（新版 Flutter 已移除 `--web-renderer` 和 HTML 渲染器。）

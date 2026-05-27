@@ -3,6 +3,11 @@
 set -euo pipefail
 
 WEB_DIR="${1:-build/web}"
+MODE="${WEB_RENDERER_MODE:-}"
+if [[ -z "$MODE" && -f "$WEB_DIR/.web-renderer-mode" ]]; then
+  MODE="$(tr -d '[:space:]' < "$WEB_DIR/.web-renderer-mode")"
+fi
+MODE="${MODE:-local}"
 
 if [[ ! -d "$WEB_DIR" ]]; then
   echo "目录不存在: $WEB_DIR" >&2
@@ -27,7 +32,12 @@ if [[ -f "$WEB_DIR/main.dart.wasm" ]]; then
     echo "FAIL: main.dart.wasm 存在但 main.dart.wasm.gz 未生成" >&2
     exit 1
   fi
-  for f in "$WEB_DIR/main.dart.wasm" "$WEB_DIR/canvaskit/skwasm.wasm"; do
+  echo "renderer mode: $MODE"
+  SKWASM_FILES=("$WEB_DIR/main.dart.wasm")
+  if [[ "$MODE" == "local" ]]; then
+    SKWASM_FILES+=("$WEB_DIR/canvaskit/skwasm.wasm")
+  fi
+  for f in "${SKWASM_FILES[@]}"; do
     [[ -f "$f" ]] || continue
     raw=$(wc -c < "$f" | tr -d ' ')
     gz=$(wc -c < "${f}.gz" | tr -d ' ')

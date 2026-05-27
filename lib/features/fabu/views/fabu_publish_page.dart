@@ -65,7 +65,6 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   }
 
   Future<Uint8List?> _captureWidgetCoverForPublish() async {
-    if (!_showWidgetCoverPreview) return null;
     return captureVideoCoverStylePreviewWhenReady(_coverRepaintKey);
   }
 

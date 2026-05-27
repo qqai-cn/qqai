@@ -8,24 +8,33 @@
 # 用法：
 #   export WEB_DEPLOY_TARGET='root@your-server:/var/www/qqai/web/'
 #   ./web/deploy/deploy_web.sh
+# 构建模式见 build/web/.web-renderer-mode（local 需 canvaskit/，cdn 不需要）
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 TARGET="${WEB_DEPLOY_TARGET:-}"
 BASE_URL="${WEB_DEPLOY_URL:-https://qqai.cn}"
+MODE="${WEB_RENDERER_MODE:-}"
+if [[ -z "$MODE" && -f build/web/.web-renderer-mode ]]; then
+  MODE="$(tr -d '[:space:]' < build/web/.web-renderer-mode)"
+fi
+MODE="${MODE:-local}"
 
 if [[ ! -f build/web/main.dart.wasm.gz ]]; then
-  echo "缺少 build/web/main.dart.wasm.gz，先执行: ./build_web_wasm.sh" >&2
+  echo "缺少 build/web/main.dart.wasm.gz，先执行: ./build_web_wasm.sh [local|cdn]" >&2
   exit 1
 fi
-if [[ ! -f build/web/canvaskit/skwasm.wasm.gz ]]; then
-  echo "缺少 build/web/canvaskit/skwasm.wasm.gz，先执行: ./build_web_wasm.sh" >&2
+if [[ "$MODE" == "local" && ! -f build/web/canvaskit/skwasm.wasm.gz ]]; then
+  echo "缺少 build/web/canvaskit/skwasm.wasm.gz，先执行: ./build_web_wasm.sh local" >&2
   exit 1
 fi
 
+echo "部署模式: $MODE"
 echo "本地校验："
 ls -lh build/web/main.dart.wasm build/web/main.dart.wasm.gz
-ls -lh build/web/canvaskit/skwasm.wasm build/web/canvaskit/skwasm.wasm.gz
+if [[ "$MODE" == "local" ]]; then
+  ls -lh build/web/canvaskit/skwasm.wasm build/web/canvaskit/skwasm.wasm.gz
+fi
 
 if [[ -z "$TARGET" ]]; then
   echo ""
@@ -48,4 +57,4 @@ echo ""
 echo "请在服务器执行: nginx -t && nginx -s reload"
 echo "远程确认: ls -lh ${TARGET}main.dart.wasm*"
 echo ""
-bash web/deploy/verify_web_gzip.sh "$BASE_URL"
+bash web/deploy/verify_web_gzip.sh "$BASE_URL" "$MODE"

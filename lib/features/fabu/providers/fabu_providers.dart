@@ -16,7 +16,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../util/api_base_client.dart';
+import '../../../components/blog/network_image_carousel_pages.dart';
 import '../../data/models/address_entity.dart';
+import '../../tool/video_cover_tool.dart';
 import '../data/repos/fabu_repo.dart';
 import '../data/models/fabu_model.dart';
 import '../data/models/topic_model.dart';
@@ -555,7 +557,10 @@ class FabuNotifier extends _$FabuNotifier {
       }
       state = state.copyWith(uploadedVideoUrls: videoUrls);
       mediaUrls.addAll(videoUrls);
-      return (mediaUrls: mediaUrls, coverUrl: coverUrl);
+      return (
+        mediaUrls: mediaUrls,
+        coverUrl: coverUrl ?? await _uploadVideoCoverFallback(),
+      );
     }
 
     final imageUrls = <String>[];
@@ -569,37 +574,73 @@ class FabuNotifier extends _$FabuNotifier {
     }
     state = state.copyWith(uploadedFileUrls: imageUrls);
     mediaUrls.addAll(imageUrls);
-    return (mediaUrls: mediaUrls, coverUrl: coverUrl);
+    final resolvedCoverUrl = coverUrl ??
+        firstStillImageUrlFromResources(imageUrls.join(','));
+    return (mediaUrls: mediaUrls, coverUrl: resolvedCoverUrl);
+  }
+
+  Future<String?> _uploadVideoCoverFallback() async {
+    if (state.videoFiles.isEmpty) return null;
+    final coverFile = await _generateVideoCoverXFile(state.videoFiles.first);
+    if (coverFile == null) return null;
+    _updatePublishProgress(0.12, 'AI 正在上传视频封面...');
+    final url = await ApiBaseClient.uploadFile(file: coverFile);
+    state = state.copyWith(uploadedCoverUrl: url);
+    return url;
   }
 
   Future<XFile?> _resolveCoverFileForPublishAsync() async {
     if (state.coverFile != null) return state.coverFile;
     final previewBytes = state.coverPreviewBytes;
     if (previewBytes != null && previewBytes.isNotEmpty) {
-      return XFile.fromData(
-        previewBytes,
-        name: 'video-cover.png',
-        mimeType: 'image/png',
-      );
+      return _xFileFromCoverBytes(previewBytes);
     }
-    if (state.videoFiles.isEmpty || _widgetCoverCapture == null) {
-      return null;
+    if (state.videoFiles.isNotEmpty && _widgetCoverCapture != null) {
+      try {
+        final bytes = await _widgetCoverCapture!();
+        if (bytes != null && bytes.isNotEmpty) {
+          final file = _xFileFromCoverBytes(bytes);
+          state = state.copyWith(
+            coverFile: file,
+            coverPreviewBytes: bytes,
+          );
+          return file;
+        }
+      } catch (e, st) {
+        debugPrint('Capture widget cover before publish failed: $e\n$st');
+      }
+    }
+    if (state.videoFiles.isNotEmpty) {
+      return _generateVideoCoverXFile(state.videoFiles.first);
+    }
+    return null;
+  }
+
+  XFile _xFileFromCoverBytes(Uint8List bytes) {
+    return XFile.fromData(
+      bytes,
+      name: 'video-cover.png',
+      mimeType: 'image/png',
+    );
+  }
+
+  Future<XFile?> _generateVideoCoverXFile(XFile video) async {
+    try {
+      final durationMs = await _videoDurationMs(video);
+      final bytes = await generateStyledVideoCoverBytes(
+        videoPath: video.path,
+        durationMs: durationMs,
+        styleId: state.selectedCoverStyleId,
+      );
+      return _xFileFromCoverBytes(bytes);
+    } catch (e, st) {
+      debugPrint('Generate styled video cover failed: $e\n$st');
     }
     try {
-      final bytes = await _widgetCoverCapture!();
-      if (bytes == null || bytes.isEmpty) return null;
-      final file = XFile.fromData(
-        bytes,
-        name: 'video-cover.png',
-        mimeType: 'image/png',
-      );
-      state = state.copyWith(
-        coverFile: file,
-        coverPreviewBytes: bytes,
-      );
-      return file;
+      final bytes = await generateVideoCoverBytes(videoPath: video.path);
+      return _xFileFromCoverBytes(bytes);
     } catch (e, st) {
-      debugPrint('Capture widget cover before publish failed: $e\n$st');
+      debugPrint('Generate video cover thumbnail failed: $e\n$st');
       return null;
     }
   }

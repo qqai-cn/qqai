@@ -3,6 +3,7 @@
 set -euo pipefail
 
 BASE="${1:-https://qqai.cn}"
+MODE="${2:-local}"
 
 check_wasm() {
   local path="$1"
@@ -39,17 +40,30 @@ check_wasm() {
 
 failed=0
 check_wasm "main.dart.wasm" 4000000 || failed=1
-check_wasm "canvaskit/skwasm.wasm" 2500000 || failed=1
+if [[ "$MODE" == "local" ]]; then
+  check_wasm "canvaskit/skwasm.wasm" 2500000 || failed=1
+else
+  echo ""
+  echo "跳过本站 canvaskit/skwasm.wasm（cdn 模式，引擎由 gstatic 提供）"
+fi
 
 if [[ "$failed" -ne 0 ]]; then
   echo ""
   echo "处理：" >&2
-  echo "  1) 本地: ./build_web_wasm.sh" >&2
-  echo "  2) 确认 build/web/*.wasm.gz 与 canvaskit/skwasm.wasm.gz 存在" >&2
+  echo "  1) 本地: ./build_web_wasm.sh local  或  cdn: ./build_web_wasm.sh cdn" >&2
+  if [[ "$MODE" == "local" ]]; then
+    echo "  2) 确认 build/web/*.wasm.gz 与 canvaskit/skwasm.wasm.gz 存在" >&2
+  else
+    echo "  2) 确认 build/web/main.dart.wasm.gz 存在" >&2
+  fi
   echo "  3) rsync -av build/web/ 服务器:/var/www/qqai/web/  （须包含 .gz）" >&2
   echo "  4) 服务器: nginx -t && nginx -s reload" >&2
   exit 1
 fi
 
 echo ""
-echo "首屏 wasm 传输量（gzip 后约）：main ~2.4MB + skwasm ~1.5MB ≈ 4MB"
+if [[ "$MODE" == "local" ]]; then
+  echo "首屏 wasm 传输量（gzip 后约）：main ~2.4MB + skwasm ~1.5MB ≈ 4MB"
+else
+  echo "首屏 wasm（gzip 后约）：main ~2.4MB；skwasm 由 gstatic CDN 提供"
+fi
