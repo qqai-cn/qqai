@@ -2,6 +2,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
+import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:video_player/video_player.dart';
@@ -25,8 +26,7 @@ class BlogVideoDetailPlayer extends StatefulWidget {
 }
 
 class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
-  static const _defaultPoster =
-      'https://file.qqai.cn/qqai/2025/09/1.webp';
+  static const _defaultPoster = 'https://file.qqai.cn/qqai/2025/09/1.webp';
 
   late FlickManager flickManager;
   late VideoPlayerController videoController;
@@ -113,43 +113,51 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: SafeFlickVideoPlayer(
+            child: VideoAdOverlay(
+              videoController: videoController,
               flickManager: flickManager,
-              flickVideoWithControls: FlickVideoWithControls(
-                videoFit: BoxFit.contain,
-                playerLoadingFallback: Positioned.fill(
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: Image.network(poster, fit: BoxFit.contain),
-                      ),
-                      const Positioned(
-                        right: 10,
-                        top: 10,
-                        child: SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            backgroundColor: Colors.white,
-                            strokeWidth: 4,
+              videoId: widget.blog.id,
+              child: SafeFlickVideoPlayer(
+                flickManager: flickManager,
+                flickVideoWithControls: FlickVideoWithControls(
+                  videoFit: BoxFit.contain,
+                  playerLoadingFallback: Positioned.fill(
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Image.network(poster, fit: BoxFit.contain),
+                        ),
+                        const Positioned(
+                          right: 10,
+                          top: 10,
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                              strokeWidth: 4,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  controls: const BlogDetailVideoSurfaceControls(),
                 ),
-                controls: const BlogDetailVideoSurfaceControls(),
-              ),
-              flickVideoWithControlsFullscreen: FlickVideoWithControls(
-                videoFit: BoxFit.contain,
-                playerLoadingFallback: Center(
-                  child: Image.network(poster, fit: BoxFit.contain),
-                ),
-                controls: FlickLandscapeControls(),
-                iconThemeData: const IconThemeData(size: 40, color: Colors.white),
-                textStyle: context.typo.body.copyWith(
-                  fontSize: 16,
-                  color: Colors.white,
+                flickVideoWithControlsFullscreen: FlickVideoWithControls(
+                  videoFit: BoxFit.contain,
+                  playerLoadingFallback: Center(
+                    child: Image.network(poster, fit: BoxFit.contain),
+                  ),
+                  controls: FlickLandscapeControls(),
+                  iconThemeData: const IconThemeData(
+                    size: 40,
+                    color: Colors.white,
+                  ),
+                  textStyle: context.typo.body.copyWith(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

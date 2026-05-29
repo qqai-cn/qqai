@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../components/qq_tab_bar.dart';
 import '../../router/app_routes.dart';
 import '../../util/conversation_list_time_format.dart';
 import 'data/friend_repo.dart';
@@ -78,11 +79,11 @@ class _FriendRequestsPageState extends ConsumerState<FriendRequestsPage>
             onPressed: _showApplyDialog,
           ),
         ],
-        bottom: TabBar(
+        bottom: QqTabBarBottom(
           controller: _tabController,
-          tabs: const [
-            Tab(text: '待我处理'),
-            Tab(text: '待对方通过'),
+          items: const [
+            QqTabItem(label: '待我处理'),
+            QqTabItem(label: '待对方通过'),
           ],
         ),
       ),
@@ -387,60 +388,157 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('添加好友'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _idCtrl,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(
-                labelText: '对方用户编号',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _msgCtrl,
-              decoration: const InputDecoration(
-                labelText: '验证消息（可选）',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
+  InputDecoration _fieldDecoration(String label, {String? hintText}) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hintText,
+      filled: true,
+      fillColor: const Color(0xFFF8F9FB),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(14),
+        borderSide: const BorderSide(color: Color(0xFF3578E5), width: 1.2),
+      ),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+    );
+  }
+
+  Widget _dialogHeader() {
+    return Row(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: const Color(0xFFEFF6FF),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: const Icon(
+            Icons.person_add_alt_1_rounded,
+            color: Color(0xFF3578E5),
+          ),
         ),
-        FilledButton(
-          onPressed: () {
-            final id = _idCtrl.text.trim();
-            if (id.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('请输入用户编号')),
-              );
-              return;
-            }
-            Navigator.pop(
-              context,
-              _ApplyFriendResult(
-                friendUserIdRaw: id,
-                applyMessage: _msgCtrl.text,
+        const SizedBox(width: 12),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '添加好友',
+                style: TextStyle(
+                  color: Color(0xFF202124),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-            );
-          },
-          child: const Text('发送'),
+              SizedBox(height: 2),
+              Text(
+                '通过千千号搜索并发送好友申请',
+                style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+              ),
+            ],
+          ),
+        ),
+        IconButton(
+          tooltip: '关闭',
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.close),
         ),
       ],
+    );
+  }
+
+  void _submit() {
+    final id = _idCtrl.text.trim();
+    if (id.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请输入对方千千号')),
+      );
+      return;
+    }
+    Navigator.pop(
+      context,
+      _ApplyFriendResult(
+        friendUserIdRaw: id,
+        applyMessage: _msgCtrl.text,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      backgroundColor: Colors.transparent,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 480),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 30,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 20, 22, 22),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _dialogHeader(),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _idCtrl,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    textInputAction: TextInputAction.next,
+                    decoration: _fieldDecoration(
+                      '千千号 *',
+                      hintText: '输入对方千千号',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _msgCtrl,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: _fieldDecoration(
+                      '验证消息',
+                      hintText: '简单介绍一下自己（可选）',
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  FilledButton(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(46),
+                      backgroundColor: const Color(0xFF3578E5),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(23),
+                      ),
+                    ),
+                    onPressed: _submit,
+                    child: const Text(
+                      '发送申请',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

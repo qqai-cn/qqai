@@ -246,6 +246,65 @@ class BlogCollectionPageData {
   }
 }
 
+/// 我关注的会员 / 我的粉丝
+class BlogFollowMember {
+  const BlogFollowMember({
+    this.userId,
+    this.followedUserId,
+    this.nickname,
+    this.avatar,
+    this.followerCount,
+    this.memberLevel,
+    this.followTime,
+    this.followedByMe,
+  });
+
+  final int? userId;
+  final int? followedUserId;
+  final String? nickname;
+  final String? avatar;
+  final int? followerCount;
+  final int? memberLevel;
+  final String? followTime;
+  final int? followedByMe;
+
+  int? get memberUserId => userId ?? followedUserId;
+
+  bool get isFollowedByMe => followedByMe == 1;
+
+  factory BlogFollowMember.fromJson(Map<String, dynamic> json) {
+    final uid = (json['userId'] as num?)?.toInt() ??
+        (json['followedUserId'] as num?)?.toInt();
+    return BlogFollowMember(
+      userId: uid,
+      followedUserId: uid,
+      nickname: json['nickname'] as String?,
+      avatar: json['avatar'] as String?,
+      followerCount: (json['followerCount'] as num?)?.toInt(),
+      memberLevel: (json['memberLevel'] as num?)?.toInt(),
+      followTime: json['followTime'] as String?,
+      followedByMe: (json['followedByMe'] as num?)?.toInt(),
+    );
+  }
+}
+
+class BlogFollowMemberPageData {
+  const BlogFollowMemberPageData({this.list, this.total});
+
+  final List<BlogFollowMember>? list;
+  final int? total;
+
+  factory BlogFollowMemberPageData.fromJson(Map<String, dynamic> json) {
+    final raw = json['list'] as List<dynamic>?;
+    return BlogFollowMemberPageData(
+      total: (json['total'] as num?)?.toInt(),
+      list: raw
+          ?.map((e) => BlogFollowMember.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+}
+
 class BlogCollectionSaveReq {
   const BlogCollectionSaveReq({
     required this.name,

@@ -62,6 +62,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
                 key: Key('blog_video_${widget.blogItem.id}'),
                 url: videoUrl,
                 imgUrl: coverUrl,
+                videoId: widget.blogItem.id,
               ),
             ),
           ),
@@ -215,11 +216,13 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
 class _LazyVideoPlaceholder extends StatefulWidget {
   final String url;
   final String imgUrl;
+  final int? videoId;
 
   const _LazyVideoPlaceholder({
     super.key,
     required this.url,
     required this.imgUrl,
+    this.videoId,
   });
 
   @override
@@ -241,7 +244,11 @@ class _LazyVideoPlaceholderState extends State<_LazyVideoPlaceholder> {
         }
       },
       child: _visibleFraction >= _visibleThreshold
-          ? VideoItemPlayer(url: widget.url, imgUrl: widget.imgUrl)
+          ? VideoItemPlayer(
+              url: widget.url,
+              imgUrl: widget.imgUrl,
+              videoId: widget.videoId,
+            )
           : _VideoThumbnail(imgUrl: widget.imgUrl),
     );
   }

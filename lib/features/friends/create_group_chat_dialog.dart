@@ -9,6 +9,7 @@ import '../../providers/auth_providers.dart';
 import '../../router/app_routes.dart';
 import '../chat/data/repos/chat_repo.dart';
 import '../chat/providers/chat_providers.dart';
+import '../my/data/repos/profile_repo.dart';
 import 'data/friend_models.dart';
 import 'providers/friend_providers.dart';
 
@@ -137,7 +138,7 @@ Future<void> showCreateGroupChatDialog(
   ScaffoldMessenger.of(
     parentContext,
   ).showSnackBar(const SnackBar(content: Text('群聊已创建')));
-  parentContext.push('${Routes.chat}/$newId');
+  parentContext.go(Routes.messagePage);
 }
 
 class _CreateGroupChatPage extends StatelessWidget {
@@ -210,12 +211,14 @@ class _GroupChatPickerState extends ConsumerState<_GroupChatPicker> {
     final auth = widget.parentRef.read(authProvider);
     final selfId = int.tryParse(auth.userId ?? '');
     final ids = <int>[?selfId, ..._selectedIds.where((id) => id != selfId)];
+    final creatorName = await _resolveCreatorDisplayName(widget.parentRef);
+    final groupName = '$creatorName的群聊';
 
     setState(() => _submitting = true);
     try {
       final conv = await widget.parentRef
           .read(chatRepoProvider)
-          .createGroupConversation(memberIds: ids);
+          .createGroupConversation(name: groupName, memberIds: ids);
       final id = conv.id;
       if (!mounted) return;
       if (id == null) {
@@ -1210,4 +1213,15 @@ List<String> _visibleTags(List<_GroupContact> contacts) {
   }
   tags.sort((a, b) => _tagRank(a).compareTo(_tagRank(b)));
   return tags;
+}
+
+Future<String> _resolveCreatorDisplayName(WidgetRef ref) async {
+  try {
+    final page = await ref.read(profileRepoProvider).getMyPage();
+    final nickname = page.nickname?.trim();
+    if (nickname != null && nickname.isNotEmpty) return nickname;
+  } catch (_) {}
+  final username = ref.read(authProvider).username?.trim();
+  if (username != null && username.isNotEmpty) return username;
+  return '我';
 }

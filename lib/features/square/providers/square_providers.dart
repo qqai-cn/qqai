@@ -25,6 +25,7 @@ class SquareNotifier extends _$SquareNotifier {
 
   late final ISquareRepo _repo;
   bool _loading = false;
+  String _searchKeyword = '';
 
   @override
   SquareListState build() {
@@ -41,12 +42,26 @@ class SquareNotifier extends _$SquareNotifier {
     return (data.list?.length ?? 0) >= _pageSize;
   }
 
+  String? get _squareNameQuery =>
+      _searchKeyword.isEmpty ? null : _searchKeyword;
+
+  Future<void> search(String keyword) async {
+    final trimmed = keyword.trim();
+    if (trimmed == _searchKeyword) return;
+    _searchKeyword = trimmed;
+    await load();
+  }
+
   Future<void> load() async {
     if (_loading) return;
     _loading = true;
     state = state.copyWith(pageData: const AsyncLoading(), error: null);
     try {
-      final data = await _repo.getSquarePage(1, pageSize: _pageSize);
+      final data = await _repo.getSquarePage(
+        1,
+        pageSize: _pageSize,
+        squareName: _squareNameQuery,
+      );
       if (!ref.mounted) return;
       final list = data.list ?? [];
       state = state.copyWith(
@@ -69,7 +84,11 @@ class SquareNotifier extends _$SquareNotifier {
 
   Future<void> refresh() async {
     try {
-      final data = await _repo.getSquarePage(1, pageSize: _pageSize);
+      final data = await _repo.getSquarePage(
+        1,
+        pageSize: _pageSize,
+        squareName: _squareNameQuery,
+      );
       if (!ref.mounted) return;
       final list = data.list ?? [];
       state = state.copyWith(
@@ -91,7 +110,11 @@ class SquareNotifier extends _$SquareNotifier {
     state = state.copyWith(isLoadingMore: true);
     try {
       final nextPage = state.currentPage + 1;
-      final data = await _repo.getSquarePage(nextPage, pageSize: _pageSize);
+      final data = await _repo.getSquarePage(
+        nextPage,
+        pageSize: _pageSize,
+        squareName: _squareNameQuery,
+      );
       if (!ref.mounted) return;
       final newItems = data.list ?? [];
       final merged = [...state.allItems, ...newItems];

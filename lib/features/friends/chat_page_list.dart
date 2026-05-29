@@ -18,7 +18,9 @@ import 'package:qqai/util/conversation_list_time_format.dart';
 
 /// 消息 Tab：左侧会话列表（接口 [CHAT_CONVERSATION_LIST]），右侧或全屏进入聊天。
 class ChatPageList extends ConsumerStatefulWidget {
-  const ChatPageList({super.key});
+  const ChatPageList({super.key, this.initialConversationId});
+
+  final int? initialConversationId;
 
   @override
   ConsumerState<ChatPageList> createState() => _ChatPageListState();
@@ -28,6 +30,21 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
   int? _selectedConversationId;
   final String useDefault = 'imgs/user_default.png';
 
+  @override
+  void initState() {
+    super.initState();
+    _selectedConversationId = widget.initialConversationId;
+  }
+
+  @override
+  void didUpdateWidget(covariant ChatPageList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialConversationId != widget.initialConversationId &&
+        widget.initialConversationId != null) {
+      _selectedConversationId = widget.initialConversationId;
+    }
+  }
+
   Future<void> _refreshConversations() async {
     ref.invalidate(chatConversationsProvider);
     await ref.read(chatConversationsProvider.future);
@@ -35,9 +52,9 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
 
   Future<void> _markConversationRead(int conversationId) async {
     try {
-      await ref.read(chatRepoProvider).markConversationRead(
-            conversationId: conversationId,
-          );
+      await ref
+          .read(chatRepoProvider)
+          .markConversationRead(conversationId: conversationId);
       ref.invalidate(chatConversationsProvider);
     } catch (_) {}
   }
@@ -62,6 +79,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     LongPressStartDetails details,
   ) async {
     final muted = c.muted == true;
+    final pinned = c.pinned == true;
     final menuRect = Rect.fromCenter(
       center: details.globalPosition,
       width: 0,
@@ -72,6 +90,14 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
       context: context,
       position: menuRect,
       items: [
+        PullDownMenuItem(
+          title: pinned ? '取消置顶' : '置顶',
+          icon: pinned ? Icons.push_pin : Icons.push_pin_outlined,
+          onTap: () {
+            if (!mounted) return;
+            unawaited(_togglePin(c));
+          },
+        ),
         PullDownMenuItem(
           title: muted ? '取消免打扰' : '免打扰',
           icon: muted ? CupertinoIcons.bell : CupertinoIcons.bell_slash,
@@ -93,25 +119,45 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     );
   }
 
+  Future<void> _togglePin(ChatConversationDto c) async {
+    final id = c.id;
+    if (id == null) return;
+    final nextPinned = !(c.pinned == true);
+    try {
+      await ref
+          .read(chatRepoProvider)
+          .updateConversationPinned(conversationId: id, pinned: nextPinned);
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(nextPinned ? '已置顶' : '已取消置顶')));
+      await _refreshConversations();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('操作失败：$e')));
+    }
+  }
+
   Future<void> _toggleMute(ChatConversationDto c) async {
     final id = c.id;
     if (id == null) return;
     final nextMuted = !(c.muted == true);
     try {
-      await ref.read(chatRepoProvider).updateConversationMuted(
-            conversationId: id,
-            muted: nextMuted,
-          );
+      await ref
+          .read(chatRepoProvider)
+          .updateConversationMuted(conversationId: id, muted: nextMuted);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(nextMuted ? '已开启免打扰' : '已关闭免打扰')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(nextMuted ? '已开启免打扰' : '已关闭免打扰')));
       await _refreshConversations();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('操作失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('操作失败：$e')));
     }
   }
 
@@ -142,15 +188,15 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
         setState(() => _selectedConversationId = null);
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('会话已删除')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('会话已删除')));
       await _refreshConversations();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('删除失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('删除失败：$e')));
     }
   }
 
@@ -251,16 +297,13 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: convs.length,
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      indent: 80,
-                      color: Colors.grey[200],
-                    ),
+                    separatorBuilder: (context, index) =>
+                        Divider(height: 1, indent: 80, color: Colors.grey[200]),
                     itemBuilder: (context, position) {
                       final c = convs[position];
-                      final selected = c.id != null &&
-                          c.id ==
-                              (_selectedConversationId ?? convs.first.id);
+                      final selected =
+                          c.id != null &&
+                          c.id == (_selectedConversationId ?? convs.first.id);
                       return _conversationTile(c, selected);
                     },
                   ),
@@ -331,13 +374,12 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     final unreadCount = c.unreadCount ?? 0;
     final hasUnread = unreadCount > 0;
     final muted = c.muted == true;
+    final pinned = c.pinned == true;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: selected
-            ? const Color(0xFFE3F2FD)
-            : Colors.transparent,
+        color: selected ? const Color(0xFFE3F2FD) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: GestureDetector(
@@ -348,130 +390,137 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             child: Row(
-            children: [
-              // 头像
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: avatar != null && avatar.isNotEmpty
-                          ? Image.network(
-                              avatar,
-                              width: 52,
-                              height: 52,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => Image.asset(
+              children: [
+                // 头像
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: avatar != null && avatar.isNotEmpty
+                            ? Image.network(
+                                avatar,
+                                width: 52,
+                                height: 52,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => Image.asset(
+                                  useDefault,
+                                  width: 52,
+                                  height: 52,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Image.asset(
                                 useDefault,
                                 width: 52,
                                 height: 52,
                                 fit: BoxFit.cover,
                               ),
-                            )
-                          : Image.asset(
-                              useDefault,
-                              width: 52,
-                              height: 52,
-                              fit: BoxFit.cover,
-                            ),
+                      ),
                     ),
-                  ),
-                  if (hasUnread)
-                    Positioned(
-                      top: -2,
-                      right: -4,
-                      child: _unreadBadge(unreadCount),
-                    ),
-                ],
-              ),
-              const SizedBox(width: 12),
-              // 消息内容
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            c.displayTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: hasUnread
-                                  ? FontWeight.bold
-                                  : FontWeight.w500,
-                              color: selected
-                                  ? const Color(0xFF1565C0)
-                                  : (hasUnread
-                                      ? const Color(0xFF212121)
-                                      : const Color(0xFF424242)),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          formatConversationListTime(
-                            c.lastMessageTime ?? c.updateTime,
-                          ),
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: hasUnread
-                                ? const Color(0xFFE53935)
-                                : Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            c.lastMessageSummary ?? '',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: hasUnread
-                                  ? const Color(0xFF616161)
-                                  : Colors.grey[600],
-                              fontWeight: hasUnread
-                                  ? FontWeight.w500
-                                  : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        if (muted)
-                          Icon(
-                            Icons.notifications_off,
-                            color: Colors.grey[400],
-                            size: notiSize,
-                          ),
-                      ],
-                    ),
+                    if (hasUnread)
+                      Positioned(
+                        top: -2,
+                        right: -4,
+                        child: _unreadBadge(unreadCount),
+                      ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                // 消息内容
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              c.displayTitle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: hasUnread
+                                    ? FontWeight.bold
+                                    : FontWeight.w500,
+                                color: selected
+                                    ? const Color(0xFF1565C0)
+                                    : (hasUnread
+                                          ? const Color(0xFF212121)
+                                          : const Color(0xFF424242)),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            formatConversationListTime(
+                              c.lastMessageTime ?? c.updateTime,
+                            ),
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: hasUnread
+                                  ? const Color(0xFFE53935)
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              c.lastMessageSummary ?? '',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: hasUnread
+                                    ? const Color(0xFF616161)
+                                    : Colors.grey[600],
+                                fontWeight: hasUnread
+                                    ? FontWeight.w500
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          if (pinned)
+                            Icon(
+                              Icons.push_pin,
+                              color: Colors.grey[400],
+                              size: 16,
+                            ),
+                          if (pinned) const SizedBox(width: 4),
+                          if (muted)
+                            Icon(
+                              Icons.notifications_off,
+                              color: Colors.grey[400],
+                              size: notiSize,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
     );
   }
 }

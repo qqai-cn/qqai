@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../components/qq_tab_bar.dart';
 import '../providers/fabu_providers.dart';
 import '../widgets/fabu_ai_publish_overlay.dart';
 import 'fabu_publish_page.dart';
@@ -27,9 +28,6 @@ class _FabuViewState extends ConsumerState<FabuView>
     FabuPublishType.video,
     FabuPublishType.help,
   ];
-  late final List<String> _tabTitle = _tabTypes
-      .map((type) => type.title)
-      .toList();
   late final List<Widget> _tabBoby = _tabTypes
       .map((type) => FabuPublishPage(type: type))
       .toList();
@@ -37,7 +35,7 @@ class _FabuViewState extends ConsumerState<FabuView>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabTitle.length, vsync: this);
+    _tabController = TabController(length: _tabTypes.length, vsync: this);
     final initialIndex = _tabTypes.indexOf(widget.initialType);
     if (initialIndex > 0) {
       _tabController.index = initialIndex;
@@ -169,72 +167,16 @@ class _FabuViewState extends ConsumerState<FabuView>
             ),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(58),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 720),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F5F8),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE8EBF0)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4),
-                    child: TabBar(
-                      controller: _tabController,
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      dividerColor: Colors.transparent,
-                      labelColor: const Color(0xFF202124),
-                      unselectedLabelColor: const Color(0xFF6B7280),
-                      labelStyle: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      indicator: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      tabs: _tabTypes.map((type) {
-                        return Tab(
-                          height: 38,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(_iconFor(type), size: 16),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  type.title.replaceFirst('发布', ''),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
+        bottom: QqTabBarBottom(
+          controller: _tabController,
+          items: _tabTypes
+              .map(
+                (type) => QqTabItem(
+                  label: type.title.replaceFirst('发布', ''),
+                  icon: _iconFor(type),
                 ),
-              ),
-            ),
-          ),
+              )
+              .toList(),
         ),
       ),
       body: Stack(

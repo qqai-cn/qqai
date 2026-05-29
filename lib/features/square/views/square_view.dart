@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../components/in_page_search_bar.dart';
 import '../providers/square_providers.dart';
 import 'create_square_dialog.dart';
 import 'square_item_view.dart';
@@ -21,6 +22,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
 
   final ScrollController _scrollController = ScrollController();
   bool _loadingMoreGuard = false;
+  bool _searching = false;
 
   @override
   void initState() {
@@ -141,7 +143,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
     );
   }
 
-  Widget _emptyState() {
+  Widget _emptyState({required bool searching}) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -152,14 +154,14 @@ class _SquareViewState extends ConsumerState<SquareView> {
             borderRadius: BorderRadius.circular(18),
             border: Border.all(color: const Color(0xFFECEEF2)),
           ),
-          child: const Column(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.grid_view_rounded, color: Color(0xFF9CA3AF), size: 38),
-              SizedBox(height: 12),
+              const Icon(Icons.grid_view_rounded, color: Color(0xFF9CA3AF), size: 38),
+              const SizedBox(height: 12),
               Text(
-                '暂无广场',
-                style: TextStyle(
+                searching ? '未找到相关广场' : '暂无广场',
+                style: const TextStyle(
                   color: Color(0xFF6B7280),
                   fontWeight: FontWeight.w600,
                 ),
@@ -172,7 +174,15 @@ class _SquareViewState extends ConsumerState<SquareView> {
   }
 
   double _topContentInset(BuildContext context) {
-    return MediaQuery.paddingOf(context).top + kToolbarHeight;
+    return kToolbarHeight;
+  }
+
+  void _onSearchQuery(String query) {
+    setState(() => _searching = query.isNotEmpty);
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+    ref.read(squareProvider.notifier).search(query);
   }
 
   /// 单格宽度（与 [SliverGridDelegateWithMaxCrossAxisExtent] 列数算法一致）
@@ -202,6 +212,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
     required double gridW,
     required SquareListState squareState,
     required SquareNotifier notifier,
+    required bool searching,
   }) {
     return squareState.pageData.when(
       loading: () => const [
@@ -223,7 +234,10 @@ class _SquareViewState extends ConsumerState<SquareView> {
         final items = squareState.allItems;
         if (items.isEmpty) {
           return [
-            SliverFillRemaining(hasScrollBody: false, child: _emptyState()),
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: _emptyState(searching: searching),
+            ),
           ];
         }
         return [
@@ -280,13 +294,18 @@ class _SquareViewState extends ConsumerState<SquareView> {
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
                       SliverToBoxAdapter(
-                        child: SizedBox(height: _topContentInset(context)),
+                        child: InPageSearchBar(
+                          height: _topContentInset(context),
+                          hintText: '搜索广场名称',
+                          onQueryChanged: _onSearchQuery,
+                        ),
                       ),
                       SliverToBoxAdapter(child: _createSquareRow()),
                       ..._bodySlivers(
                         gridW: gridW,
                         squareState: squareState,
                         notifier: notifier,
+                        searching: _searching,
                       ),
                       const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
                     ],

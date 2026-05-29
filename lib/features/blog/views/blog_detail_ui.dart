@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,12 +9,13 @@ import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/util/format_count.dart';
-import '../../index/providers/home_follow_feed_providers.dart';
-import '../data/blog_list_patch.dart';
+
+import '../data/blog_detail_feed_resolver.dart';
 import '../data/blog_display_text.dart';
+import '../data/blog_feed_state_interactions.dart';
+import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
-import '../data/home_blog_tab.dart';
-import '../providers/blog_providers.dart';
+import '../data/repos/blog_repo.dart';
 import 'blog_avatar_preview.dart';
 
 /// 详情侧栏操作数：只显示数字（无数量时显示 0）。
@@ -20,65 +23,6 @@ String blogDetailCountLabel(int? count) {
   final n = count ?? 0;
   if (n <= 0) return '0';
   return formatCompactCount(n);
-}
-
-BlogItem _resolveFromState(BlogState state, BlogItem initial) {
-  final id = initial.id;
-  if (id == null) return initial;
-  for (final b in state.allItems) {
-    if (b.id == id) return b;
-  }
-  final pageList = switch (state.blogPageData) {
-    AsyncData(:final value) => value.list,
-    _ => null,
-  };
-  if (pageList != null) {
-    for (final b in pageList) {
-      if (b.id == id) return b;
-    }
-  }
-  return initial;
-}
-
-/// 从详情上下文 feed 状态中取最新条目（推荐 / 热点 / 本地 / 关注）。
-BlogItem resolveBlogItem(WidgetRef ref, BlogItem initial) {
-  final id = initial.id;
-  if (id == null) return initial;
-
-  final states = [
-    ref.watch(homeFollowFeedProvider),
-    ref.watch(blogProvider(HomeBlogTab.recommend)),
-    ref.watch(blogProvider(HomeBlogTab.hot)),
-    ref.watch(blogProvider(HomeBlogTab.local)),
-  ];
-  for (final state in states) {
-    for (final b in state.allItems) {
-      if (b.id == id) return b;
-    }
-    final pageList = switch (state.blogPageData) {
-      AsyncData(:final value) => value.list,
-      _ => null,
-    };
-    if (pageList != null) {
-      for (final b in pageList) {
-        if (b.id == id) return b;
-      }
-    }
-  }
-  return initial;
-}
-
-/// 从推荐/关注流列表取最新条目（点赞、分享后同步按钮文案）。
-BlogItem resolveFeedBlogItem(
-  WidgetRef ref,
-  BlogItem initial, {
-  required bool followFeed,
-  int feedCategory = HomeBlogTab.recommend,
-}) {
-  final state = followFeed
-      ? ref.watch(homeFollowFeedProvider)
-      : ref.watch(blogProvider(feedCategory));
-  return _resolveFromState(state, initial);
 }
 
 /// 详情左下角：作者头像、昵称、粉丝、正文。
@@ -184,7 +128,9 @@ class BlogDetailBottomInfo extends ConsumerWidget {
 }
 
 /// 博客详情：右侧操作条 + 可选左下角文案（图文/视频共用）。
-class BlogDetailMediaOverlay extends ConsumerWidget {
+///
+/// 五角星按钮为收藏；已收藏时高亮为琥珀色实心星。
+class BlogDetailMediaOverlay extends ConsumerStatefulWidget {
   final BlogItem blog;
   final VoidCallback onCommentTap;
   final double bottomInset;
@@ -197,11 +143,43 @@ class BlogDetailMediaOverlay extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final item = resolveBlogItem(ref, blog);
+  ConsumerState<BlogDetailMediaOverlay> createState() =>
+      _BlogDetailMediaOverlayState();
+}
+
+class _BlogDetailMediaOverlayState extends ConsumerState<BlogDetailMediaOverlay> {
+  BlogItem? _standaloneItem;
+
+  BlogItem _currentItem(WidgetRef ref) {
+    final resolved = resolveBlogItem(ref, widget.blog);
+    return _standaloneItem ?? resolved;
+  }
+
+  Future<void> _onCollectTap(BlogItem item) async {
+    if (blogItemExistsInKnownFeeds(ref, item)) {
+      resolveBlogFeedActions(ref, item).onCollectTap(item);
+      return;
+    }
+
+    final r = await toggleCollectStandalone(ref.read(blogRepoProvider), item);
+    if (!mounted) return;
+    if (r.error != null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(r.error!)));
+      return;
+    }
+    if (r.item != null) {
+      setState(() => _standaloneItem = r.item);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final item = _currentItem(ref);
     final auth = ref.watch(authProvider);
     final avatarUrl = blogCreatorAvatarUrl(item, currentUserId: auth.userId);
-    final notifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
+    final actions = resolveBlogFeedActions(ref, item);
     final showFollow = shouldShowBlogFollowButton(item, auth.userId);
     final following = blogFollowCare(item) == 1;
     final avatarHeroTag = avatarUrl != null
@@ -210,9 +188,9 @@ class BlogDetailMediaOverlay extends ConsumerWidget {
 
     return Stack(
       children: [
-        BlogDetailBottomInfo(blog: item, bottomInset: bottomInset),
+        BlogDetailBottomInfo(blog: item, bottomInset: widget.bottomInset),
         DetailSideActionRail(
-          bottomOffset: bottomInset,
+          bottomOffset: widget.bottomInset,
           avatarUrl: avatarUrl,
           avatarHeroTag: avatarHeroTag,
           onAvatarTap: avatarUrl != null && avatarHeroTag != null
@@ -232,11 +210,11 @@ class BlogDetailMediaOverlay extends ConsumerWidget {
           collectCountLabel: blogDetailCountLabel(item.collectCount),
           shareCountLabel: blogDetailCountLabel(item.shareCount),
           shareBlog: item,
-          onLikeTap: () => notifier.onZanTap(item),
-          onFollowTap: () => notifier.onCareTap(item),
-          onCollectTap: () => notifier.onCollectTap(item),
-          onShareTap: () => notifier.onShareTap(item),
-          onCommentTap: onCommentTap,
+          onLikeTap: () => actions.onZanTap(item),
+          onFollowTap: () => actions.onCareTap(item),
+          onCollectTap: () => unawaited(_onCollectTap(item)),
+          onShareTap: () => actions.onShareTap(item),
+          onCommentTap: widget.onCommentTap,
         ),
       ],
     );

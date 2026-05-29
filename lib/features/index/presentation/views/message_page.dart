@@ -13,7 +13,9 @@ import '../../../friends/create_group_chat_dialog.dart';
 import '../../../friends/friends_page.dart';
 
 class MessagePage extends ConsumerStatefulWidget {
-  const MessagePage({super.key});
+  const MessagePage({super.key, this.initialConversationId});
+
+  final int? initialConversationId;
 
   @override
   ConsumerState<MessagePage> createState() => _MessagePageState();
@@ -35,6 +37,17 @@ class _MessagePageState extends ConsumerState<MessagePage>
   }
 
   @override
+  void didUpdateWidget(covariant MessagePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialConversationId != widget.initialConversationId &&
+        widget.initialConversationId != null &&
+        _tabController.index != 0) {
+      _tabController.index = 0;
+      lazyTabMount(0);
+    }
+  }
+
+  @override
   void dispose() {
     _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
@@ -51,18 +64,15 @@ class _MessagePageState extends ConsumerState<MessagePage>
         automaticallyImplyLeading: false,
         title: TabBar(
           controller: _tabController,
+          isScrollable: true,
+          tabAlignment: TabAlignment.center,
           indicatorSize: TabBarIndicatorSize.label,
-          isScrollable: false,
+          dividerColor: Colors.transparent,
+          labelPadding: const EdgeInsets.symmetric(horizontal: 20),
+          tabs: HomeNotifier.messageTabItems
+              .map((e) => Tab(text: e, height: 40))
+              .toList(),
           onTap: lazyTabMount,
-          tabs: HomeNotifier.messageTabItems.map((e) {
-            return Tab(
-              child: Container(
-                height: 40,
-                alignment: Alignment.center,
-                child: Text(e),
-              ),
-            );
-          }).toList(),
         ),
         actions: [
           IconButton(
@@ -93,7 +103,7 @@ class _MessagePageState extends ConsumerState<MessagePage>
     return LazyTabSlot(
       isMounted: lazyTabMountedIndices.contains(index),
       builder: (_) => switch (index) {
-        0 => const ChatPageList(),
+        0 => ChatPageList(initialConversationId: widget.initialConversationId),
         _ => const FriendsPage(),
       },
     );

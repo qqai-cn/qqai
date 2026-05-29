@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../goods_tab_navigator.dart';
+import '../../../components/in_page_search_bar.dart';
 import '../../../util/media_url.dart';
 import '../data/models/mall_product_model.dart';
 import '../data/repos/goods_repo.dart';
@@ -23,11 +24,14 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
   static const _minColumnWidth = 220.0;
 
   final _scrollController = ScrollController();
+  final _searchController = TextEditingController();
   final _items = <MallProduct>[];
   int _pageNo = 1;
   int _total = 0;
   bool _loading = true;
   bool _loadingMore = false;
+  bool _searching = false;
+  String _keyword = '';
   Object? _error;
 
   bool get _hasMore =>
@@ -44,6 +48,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -64,7 +69,11 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
     try {
       final page = await ref
           .read(goodsRepoProvider)
-          .getMallProductsPage(1, pageSize: _pageSize);
+          .getMallProductsPage(
+            1,
+            pageSize: _pageSize,
+            keyword: _keyword.isEmpty ? null : _keyword,
+          );
       if (!mounted) return;
       setState(() {
         _items
@@ -88,7 +97,11 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
       final next = _pageNo + 1;
       final page = await ref
           .read(goodsRepoProvider)
-          .getMallProductsPage(next, pageSize: _pageSize);
+          .getMallProductsPage(
+            next,
+            pageSize: _pageSize,
+            keyword: _keyword.isEmpty ? null : _keyword,
+          );
       if (!mounted) return;
       setState(() {
         _pageNo = next;
@@ -107,10 +120,26 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
   }
 
   double _topContentInset(BuildContext context) {
-    return  kToolbarHeight;
+    return kToolbarHeight;
+  }
+
+  void _onSearchQuery(String query) {
+    setState(() {
+      _searching = query.isNotEmpty;
+      _keyword = query;
+    });
+    if (_scrollController.hasClients) {
+      _scrollController.jumpTo(0);
+    }
+    _refresh();
   }
 
   void _onMallTabReselect() {
+    _searchController.clear();
+    setState(() {
+      _searching = false;
+      _keyword = '';
+    });
     if (_scrollController.hasClients) {
       _scrollController.animateTo(
         0,
@@ -143,7 +172,12 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
                 physics: const AlwaysScrollableScrollPhysics(),
                 slivers: [
                   SliverToBoxAdapter(
-                    child: SizedBox(height: _topContentInset(context)),
+                    child: InPageSearchBar(
+                      controller: _searchController,
+                      height: _topContentInset(context),
+                      hintText: '搜索商品名称',
+                      onQueryChanged: _onSearchQuery,
+                    ),
                   ),
                   const SliverToBoxAdapter(child: _MallHeader()),
                   ..._buildBodySlivers(),
@@ -175,8 +209,11 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
       ];
     }
     if (_items.isEmpty) {
-      return const [
-        SliverFillRemaining(hasScrollBody: false, child: _MallEmpty()),
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _MallEmpty(searching: _searching),
+        ),
       ];
     }
     return [
@@ -485,12 +522,17 @@ class _MallError extends StatelessWidget {
 }
 
 class _MallEmpty extends StatelessWidget {
-  const _MallEmpty();
+  const _MallEmpty({this.searching = false});
+
+  final bool searching;
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('暂无在售商品', style: TextStyle(color: Color(0xFF6B7280))),
+    return Center(
+      child: Text(
+        searching ? '未找到相关商品' : '暂无在售商品',
+        style: const TextStyle(color: Color(0xFF6B7280)),
+      ),
     );
   }
 }

@@ -18,8 +18,8 @@ import '../data/models/blog_page_model.dart';
 import '../providers/blog_feed_list_actions.dart';
 import '../providers/blog_providers.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
+import '../data/blog_detail_feed_resolver.dart';
 import 'blog_avatar_preview.dart';
-import 'blog_detail_ui.dart';
 import 'blog_list_kind.dart';
 
 class BlogVideoItemView extends ConsumerStatefulWidget {
@@ -145,6 +145,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                     key: Key('blog_video_${widget.blogItem.id}'),
                     url: videoUrl,
                     imgUrl: coverUrl,
+                    videoId: widget.blogItem.id,
                   ),
                 ),
               ),
@@ -163,7 +164,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 onShare: () => blogNotifier.onShareTap(item),
                 onMenuSelected: (value) {
                   if (value == '0') {
-                    blogNotifier.onCollectTap(widget.blogItem);
+                    blogNotifier.onCollectTap(item);
                   }
                 },
                 onComment: () {
@@ -174,7 +175,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   }
                 },
                 menuBuilder: (context) {
-                  final collected = blogCollectedByMe(widget.blogItem);
+                  final collected = blogCollectedByMe(item);
                   final entries = feedVideoMoreMenuEntries(context);
                   if (entries.isNotEmpty && entries.first is PopupMenuItem) {
                     entries[0] = PopupMenuItem<String>(

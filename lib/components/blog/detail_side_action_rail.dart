@@ -4,7 +4,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/views/blog_share_button.dart';
 
-/// 详情页右侧竖向操作条：头像/关注、点赞、评论、收藏、分享。
+/// 详情页右侧竖向操作条：头像/关注、点赞、评论、收藏（五角星）、分享。
 class DetailSideActionRail extends StatelessWidget {
   final String? avatarUrl;
   final bool showFollowButton;

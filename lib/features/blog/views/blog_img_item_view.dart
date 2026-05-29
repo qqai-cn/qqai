@@ -18,7 +18,7 @@ import '../providers/blog_feed_list_actions.dart';
 import '../providers/blog_providers.dart';
 import '../../index/providers/home_follow_feed_providers.dart';
 import 'blog_avatar_preview.dart';
-import 'blog_detail_ui.dart';
+import '../data/blog_detail_feed_resolver.dart';
 import 'blog_list_kind.dart';
 
 class BlogImgItemView extends ConsumerStatefulWidget {
@@ -164,7 +164,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
               onShare: () => blogNotifier.onShareTap(item),
               onMenuSelected: (value) {
                 if (value == '0') {
-                  blogNotifier.onCollectTap(widget.blogItem);
+                  blogNotifier.onCollectTap(item);
                 }
               },
               onComment: () {
@@ -175,7 +175,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                 }
               },
               menuBuilder: (context) {
-                final collected = blogCollectedByMe(widget.blogItem);
+                final collected = blogCollectedByMe(item);
                 return <PopupMenuEntry<String>>[
                   PopupMenuItem<String>(
                     value: '0',

@@ -89,6 +89,16 @@ abstract class IProfileRepo {
     int pageNo, {
     int pageSize = 10,
   });
+
+  Future<BlogFollowMemberPageData> getMyFollowMembersPage(
+    int pageNo, {
+    int pageSize = 20,
+  });
+
+  Future<BlogFollowMemberPageData> getMyFollowerMembersPage(
+    int pageNo, {
+    int pageSize = 20,
+  });
 }
 
 bool _isOkCode(dynamic code) =>
@@ -492,6 +502,56 @@ class ProfileRepo implements IProfileRepo {
       },
     );
     return _parseBlogPage(response.data);
+  }
+
+  @override
+  Future<BlogFollowMemberPageData> getMyFollowMembersPage(
+    int pageNo, {
+    int pageSize = 20,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_FOLLOWS_MEMBERS_PAGE,
+      RequestType.get,
+      queryParameters: {
+        'pageNo': pageNo,
+        'pageSize': pageSize,
+      },
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '关注列表返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogFollowMemberPageData(list: [], total: 0);
+    }
+    return BlogFollowMemberPageData.fromJson(inner);
+  }
+
+  @override
+  Future<BlogFollowMemberPageData> getMyFollowerMembersPage(
+    int pageNo, {
+    int pageSize = 20,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_FOLLOWERS_MEMBERS_PAGE,
+      RequestType.get,
+      queryParameters: {
+        'pageNo': pageNo,
+        'pageSize': pageSize,
+      },
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '粉丝列表返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogFollowMemberPageData(list: [], total: 0);
+    }
+    return BlogFollowMemberPageData.fromJson(inner);
   }
 
   bool _parseBoolEnvelope(dynamic raw) {

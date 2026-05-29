@@ -11,11 +11,13 @@ import 'package:visibility_detector/visibility_detector.dart';
 class VisibilityVideoSlot extends StatefulWidget {
   final String url;
   final String imgUrl;
+  final int? videoId;
 
   const VisibilityVideoSlot({
     super.key,
     required this.url,
     required this.imgUrl,
+    this.videoId,
   });
 
   @override
@@ -62,7 +64,11 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
       key: Key('lazy_video_${widget.url.hashCode}'),
       onVisibilityChanged: _handleVisibility,
       child: hasResolvableMediaUrl(widget.url) && _shouldMountPlayer
-          ? VideoItemPlayer(url: widget.url, imgUrl: widget.imgUrl)
+          ? VideoItemPlayer(
+              url: widget.url,
+              imgUrl: widget.imgUrl,
+              videoId: widget.videoId,
+            )
           : _VideoThumbnail(imgUrl: widget.imgUrl),
     );
   }

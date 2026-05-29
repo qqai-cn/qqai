@@ -11,6 +11,8 @@ abstract class IChatRepo {
 
   Future<ChatConversationDto> getConversation(int id);
 
+  Future<ChatConversationDto> getOrCreateSingleConversation(int otherUserId);
+
   Future<ChatConversationDto> createGroupConversation({
     String? name,
     required List<int> memberIds,
@@ -34,12 +36,25 @@ abstract class IChatRepo {
     required bool muted,
   });
 
+  Future<void> updateConversationPinned({
+    required int conversationId,
+    required bool pinned,
+  });
+
   Future<void> deleteConversation(int conversationId);
+
+  Future<void> updateGroupConversation({
+    required int conversationId,
+    String? name,
+    String? avatar,
+  });
 
   Future<void> markConversationRead({
     required int conversationId,
     int? messageId,
   });
+
+  Future<List<ChatGroupMemberDto>> listGroupMembers(int conversationId);
 }
 
 void _throwIfBadEnvelope(Map<String, dynamic> root) {
@@ -60,9 +75,43 @@ class ChatRepo implements IChatRepo {
     _throwIfBadEnvelope(root);
     final data = root['data'];
     if (data is! List) return [];
-    return data
-        .map((e) => ChatConversationDto.fromJson(Map<String, dynamic>.from(e as Map)))
+    final conversations = data
+        .map(
+          (e) =>
+              ChatConversationDto.fromJson(Map<String, dynamic>.from(e as Map)),
+        )
         .toList();
+    return Future.wait(conversations.map(_withSinglePeerProfile));
+  }
+
+  Future<ChatConversationDto> _withSinglePeerProfile(
+    ChatConversationDto conversation,
+  ) async {
+    final peerUserId = conversation.peerUserId;
+    if (conversation.type != 1 || peerUserId == null) {
+      return conversation;
+    }
+    try {
+      final response = await ApiBaseClient.safeApiCall(
+        ApiConstant.profileUserPagePath(peerUserId),
+        RequestType.get,
+      );
+      final root = Map<String, dynamic>.from(response.data as Map);
+      _throwIfBadEnvelope(root);
+      final data = root['data'];
+      if (data is! Map) return conversation;
+      final profile = Map<String, dynamic>.from(data);
+      final nickname = profile['nickname']?.toString().trim();
+      final avatar = profile['avatar']?.toString().trim();
+      return conversation.copyWith(
+        name: nickname != null && nickname.isNotEmpty
+            ? nickname
+            : '用户 $peerUserId',
+        avatar: avatar != null && avatar.isNotEmpty ? avatar : null,
+      );
+    } catch (_) {
+      return conversation.copyWith(name: '用户 $peerUserId');
+    }
   }
 
   @override
@@ -71,6 +120,23 @@ class ChatRepo implements IChatRepo {
       ApiConstant.CHAT_CONVERSATION_GET,
       RequestType.get,
       queryParameters: {'id': id},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+    final data = root['data'] as Map<String, dynamic>?;
+    if (data == null) throw Exception('无会话数据');
+    final conversation = ChatConversationDto.fromJson(data);
+    return _withSinglePeerProfile(conversation);
+  }
+
+  @override
+  Future<ChatConversationDto> getOrCreateSingleConversation(
+    int otherUserId,
+  ) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_CONVERSATION_SINGLE,
+      RequestType.post,
+      queryParameters: {'otherUserId': otherUserId},
     );
     final root = Map<String, dynamic>.from(response.data as Map);
     _throwIfBadEnvelope(root);
@@ -155,10 +221,21 @@ class ChatRepo implements IChatRepo {
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.CHAT_CONVERSATION_MUTE,
       RequestType.put,
-      queryParameters: {
-        'id': conversationId,
-        'muted': muted,
-      },
+      queryParameters: {'id': conversationId, 'muted': muted},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+  }
+
+  @override
+  Future<void> updateConversationPinned({
+    required int conversationId,
+    required bool pinned,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_CONVERSATION_PIN,
+      RequestType.put,
+      queryParameters: {'id': conversationId, 'pinned': pinned},
     );
     final root = Map<String, dynamic>.from(response.data as Map);
     _throwIfBadEnvelope(root);
@@ -170,6 +247,25 @@ class ChatRepo implements IChatRepo {
       ApiConstant.CHAT_CONVERSATION_DELETE,
       RequestType.delete,
       queryParameters: {'id': conversationId},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+  }
+
+  @override
+  Future<void> updateGroupConversation({
+    required int conversationId,
+    String? name,
+    String? avatar,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_CONVERSATION_GROUP_UPDATE,
+      RequestType.put,
+      data: {
+        'id': conversationId,
+        if (name != null) 'name': name,
+        if (avatar != null) 'avatar': avatar,
+      },
     );
     final root = Map<String, dynamic>.from(response.data as Map);
     _throwIfBadEnvelope(root);
@@ -190,5 +286,23 @@ class ChatRepo implements IChatRepo {
     );
     final root = Map<String, dynamic>.from(response.data as Map);
     _throwIfBadEnvelope(root);
+  }
+
+  @override
+  Future<List<ChatGroupMemberDto>> listGroupMembers(int conversationId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_GROUP_MEMBER_LIST,
+      RequestType.get,
+      queryParameters: {'conversationId': conversationId},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+    final data = root['data'];
+    if (data is! List) return [];
+    return data
+        .map(
+          (e) => ChatGroupMemberDto.fromJson(Map<String, dynamic>.from(e as Map)),
+        )
+        .toList();
   }
 }

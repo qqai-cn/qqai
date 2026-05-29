@@ -10,6 +10,8 @@ import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
 
 import '../../douyin/widgets/douyin_service_strip.dart';
+import '../../chat/data/repos/chat_repo.dart';
+import '../../chat/providers/chat_providers.dart';
 import '../../friends/data/friend_repo.dart';
 import '../../friends/providers/friend_providers.dart';
 import '../data/models/area_models.dart';
@@ -23,11 +25,7 @@ import 'my_video_list_view.dart';
 import 'my_video_view.dart';
 
 class MyView extends ConsumerStatefulWidget {
-  const MyView({
-    super.key,
-    this.userId,
-    this.showLeadingBack = false,
-  });
+  const MyView({super.key, this.userId, this.showLeadingBack = false});
 
   /// 为空表示当前登录用户「我的」主页；有值表示查看他人主页（如好友详情）。
   final int? userId;
@@ -42,6 +40,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
   late TabController _tabController;
   bool? _followed;
   bool _followLoading = false;
+  bool _messageLoading = false;
 
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
@@ -87,8 +86,9 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     final userId = widget.userId;
     if (userId == null) return;
     try {
-      final followed =
-          await ref.read(profileRepoProvider).isFollowedByMe(userId);
+      final followed = await ref
+          .read(profileRepoProvider)
+          .isFollowedByMe(userId);
       if (mounted) setState(() => _followed = followed);
     } catch (_) {}
   }
@@ -109,12 +109,38 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('操作失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('操作失败：$e')));
       }
     } finally {
       if (mounted) setState(() => _followLoading = false);
+    }
+  }
+
+  Future<void> _openSingleConversation() async {
+    final userId = widget.userId;
+    if (userId == null || _messageLoading) return;
+    setState(() => _messageLoading = true);
+    try {
+      final conversation = await ref
+          .read(chatRepoProvider)
+          .getOrCreateSingleConversation(userId);
+      final conversationId = conversation.id;
+      if (conversationId == null) {
+        throw Exception('无会话编号');
+      }
+      ref.invalidate(chatConversationsProvider);
+      if (!mounted) return;
+      context.go('${Routes.messagePage}?conversationId=$conversationId');
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('打开聊天失败：$e')));
+      }
+    } finally {
+      if (mounted) setState(() => _messageLoading = false);
     }
   }
 
@@ -151,23 +177,22 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     try {
       if (ok == true && mounted) {
         final text = ctrl.text.trim();
-        await ref.read(friendRepoProvider).updateRemark(
-              friendUserId: userId,
-              remark: text,
-            );
+        await ref
+            .read(friendRepoProvider)
+            .updateRemark(friendUserId: userId, remark: text);
         ref.read(friendRemarkCacheProvider.notifier).setRemark(userId, text);
         ref.invalidate(friendListGroupedProvider);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('备注已更新')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('备注已更新')));
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('修改失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('修改失败：$e')));
       }
     } finally {
       ctrl.dispose();
@@ -200,23 +225,23 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
       ref.read(friendRemarkCacheProvider.notifier).setRemark(userId, '');
       ref.invalidate(friendListGroupedProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已删除好友')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('已删除好友')));
       if (context.canPop()) {
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('删除失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('删除失败：$e')));
       }
     }
   }
 
-  Widget _statColumn(String count, String label) {
-    return Column(
+  Widget _statColumn(String count, String label, {VoidCallback? onTap}) {
+    final child = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
@@ -226,6 +251,8 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
         Text(label, style: context.typo.cardSubtitle),
       ],
     );
+    if (onTap == null) return child;
+    return InkWell(onTap: onTap, child: child);
   }
 
   BlogMyPageResp? _resolvePage(AsyncValue<BlogMyPageResp> pageAsync) {
@@ -260,15 +287,35 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
       );
     }
     final followed = _followed == true;
-    return ElevatedButton(
-      onPressed: _followLoading ? null : _toggleFollow,
-      child: _followLoading
-          ? const SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : Text(followed ? '已关注' : '关注'),
+    return SizedBox(
+      width: 96,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ElevatedButton(
+            onPressed: _followLoading ? null : _toggleFollow,
+            child: _followLoading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(followed ? '已关注' : '关注'),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: _messageLoading ? null : _openSingleConversation,
+            child: _messageLoading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('发消息'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -361,8 +408,8 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                               const SizedBox(width: 20),
                               CircleAvatar(
                                 radius: 50,
-                                backgroundImage: avatarUrl != null &&
-                                        avatarUrl.isNotEmpty
+                                backgroundImage:
+                                    avatarUrl != null && avatarUrl.isNotEmpty
                                     ? CachedNetworkImageProvider(avatarUrl)
                                     : const AssetImage(_defaultAvatar),
                               ),
@@ -386,9 +433,9 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                         subtitle,
                                         style: context.typo.cardSubtitle
                                             .copyWith(
-                                          color: Colors.white,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                              color: Colors.white,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                         maxLines: 1,
                                       ),
                                     const Spacer(),
@@ -424,6 +471,9 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                 _statColumn(
                                   formatCompactCount(page?.followingCount),
                                   '关注',
+                                  onTap: _isSelf
+                                      ? () => context.push(Routes.care)
+                                      : null,
                                 ),
                                 const SizedBox(width: 20),
                                 _statColumn(

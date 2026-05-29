@@ -44,10 +44,13 @@ class ChatConversationDto {
     this.type,
     this.name,
     this.avatar,
+    this.peerUserId,
     this.lastMessageSummary,
     this.lastMessageTime,
     this.unreadCount,
     this.muted,
+    this.pinned,
+    this.memberCount,
     this.updateTime,
   });
 
@@ -55,10 +58,13 @@ class ChatConversationDto {
   final int? type;
   final String? name;
   final String? avatar;
+  final int? peerUserId;
   final String? lastMessageSummary;
   final String? lastMessageTime;
   final int? unreadCount;
   final bool? muted;
+  final bool? pinned;
+  final int? memberCount;
   final String? updateTime;
 
   factory ChatConversationDto.fromJson(Map<String, dynamic> json) {
@@ -67,33 +73,78 @@ class ChatConversationDto {
       type: (json['type'] as num?)?.toInt(),
       name: json['name'] as String?,
       avatar: json['avatar'] as String?,
+      peerUserId: (json['peerUserId'] as num?)?.toInt(),
       lastMessageSummary: json['lastMessageSummary'] as String?,
       lastMessageTime: json['lastMessageTime'] as String?,
       unreadCount: (json['unreadCount'] as num?)?.toInt(),
       muted: json['muted'] as bool?,
+      pinned: json['pinned'] as bool?,
+      memberCount: (json['memberCount'] as num?)?.toInt(),
       updateTime: json['updateTime'] as String?,
     );
   }
 
   ChatConversationDto copyWith({
+    String? name,
+    String? avatar,
     int? unreadCount,
     bool? muted,
+    bool? pinned,
+    int? memberCount,
   }) {
     return ChatConversationDto(
       id: id,
       type: type,
-      name: name,
-      avatar: avatar,
+      name: name ?? this.name,
+      avatar: avatar ?? this.avatar,
+      peerUserId: peerUserId,
       lastMessageSummary: lastMessageSummary,
       lastMessageTime: lastMessageTime,
       unreadCount: unreadCount ?? this.unreadCount,
       muted: muted ?? this.muted,
+      pinned: pinned ?? this.pinned,
+      memberCount: memberCount ?? this.memberCount,
       updateTime: updateTime,
     );
   }
 
+  bool get isGroup => type == 2;
+
+  bool get isSingle => type == 1;
+
   String get displayTitle =>
       (name != null && name!.isNotEmpty) ? name! : '会话 ${id ?? ''}';
+}
+
+class ChatGroupMemberDto {
+  ChatGroupMemberDto({
+    this.userId,
+    this.displayName,
+    this.nickname,
+    this.avatar,
+  });
+
+  final int? userId;
+  final String? displayName;
+  final String? nickname;
+  final String? avatar;
+
+  factory ChatGroupMemberDto.fromJson(Map<String, dynamic> json) {
+    return ChatGroupMemberDto(
+      userId: (json['userId'] as num?)?.toInt(),
+      displayName: json['displayName'] as String?,
+      nickname: json['nickname'] as String?,
+      avatar: json['avatar'] as String?,
+    );
+  }
+
+  String get label {
+    final name = displayName?.trim();
+    if (name != null && name.isNotEmpty) return name;
+    final nick = nickname?.trim();
+    if (nick != null && nick.isNotEmpty) return nick;
+    return '用户 ${userId ?? ''}';
+  }
 }
 
 class ChatMessagePageData {

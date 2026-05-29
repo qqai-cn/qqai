@@ -6,8 +6,14 @@ import '../../../../components/video_player/qqai_player.dart';
 class VideoItemPlayer extends StatefulWidget {
   final String url;
   final String imgUrl;
+  final int? videoId;
 
-  const VideoItemPlayer({super.key, required this.url, required this.imgUrl});
+  const VideoItemPlayer({
+    super.key,
+    required this.url,
+    required this.imgUrl,
+    this.videoId,
+  });
 
   @override
   _FeedPlayerState createState() => _FeedPlayerState();
@@ -30,6 +36,7 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           image: widget.imgUrl,
           url: widget.url,
           autoPlay: false,
+          videoId: widget.videoId,
         ),
       ),
     );

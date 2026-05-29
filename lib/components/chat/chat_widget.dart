@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flyer_chat_file_message/flyer_chat_file_message.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
 import 'package:flyer_chat_system_message/flyer_chat_system_message.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qqai/components/chat/qqai_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
@@ -23,6 +24,7 @@ import 'package:qqai/features/chat/data/chat_message_mapper.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
+import 'package:qqai/router/app_routes.dart';
 import 'package:uuid/uuid.dart';
 
 import 'chat_api_service.dart';
@@ -334,6 +336,15 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                           title: '清除',
                           onPressed: _confirmClearMessages,
                           destructive: true,
+                        ),
+                        ComposerActionButton(
+                          icon: Icons.more_horiz,
+                          title: '更多',
+                          onPressed: () {
+                            context.push(
+                              '${Routes.chat}/${widget.conversationId}/settings',
+                            );
+                          },
                         ),
                       ],
                     ),

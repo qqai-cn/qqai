@@ -1,8 +1,14 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../blog/data/blog_feed_state_interactions.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/repos/blog_repo.dart';
+import '../../blog/providers/blog_feed_list_actions.dart';
+import '../../my/data/repos/profile_repo.dart';
 
 part 'video_film_providers.freezed.dart';
 part 'video_film_providers.g.dart';
@@ -21,15 +27,17 @@ sealed class VideoFilmState with _$VideoFilmState {
 }
 
 @riverpod
-class VideoFilmNotifier extends _$VideoFilmNotifier {
+class VideoFilmNotifier extends _$VideoFilmNotifier implements BlogFeedListActions {
   static const int _pageSize = 12;
   static const int _blogTypeVideo = 2;
 
   late final IBlogRepo _repo;
+  late final IProfileRepo _profileRepo;
 
   @override
   VideoFilmState build() {
     _repo = ref.read(blogRepoProvider);
+    _profileRepo = ref.read(profileRepoProvider);
     Future.microtask(load);
     return const VideoFilmState();
   }
@@ -98,4 +106,91 @@ class VideoFilmNotifier extends _$VideoFilmNotifier {
       );
     }
   }
+
+  void _applyFeedPatch({
+    required List<BlogItem> allItems,
+    required AsyncValue<BlogPageModelData> blogPageData,
+    String? error,
+  }) {
+    state = state.copyWith(
+      allItems: allItems,
+      blogPageData: blogPageData,
+      error: error,
+    );
+  }
+
+  @override
+  void onCollectTap(BlogItem blogItem) {
+    unawaited(
+      runToggleCollectOnFeedState(
+        repo: _repo,
+        allItems: state.allItems,
+        blogPageData: state.blogPageData,
+        blogItem: blogItem,
+        apply: _applyFeedPatch,
+      ),
+    );
+  }
+
+  @override
+  void onZanTap(BlogItem blogItem) {
+    unawaited(
+      runToggleZanOnFeedState(
+        repo: _repo,
+        allItems: state.allItems,
+        blogPageData: state.blogPageData,
+        blogItem: blogItem,
+        apply: _applyFeedPatch,
+      ),
+    );
+  }
+
+  @override
+  void onCareTap(BlogItem blogItem) {
+    unawaited(
+      runToggleCareOnFeedState(
+        profileRepo: _profileRepo,
+        allItems: state.allItems,
+        blogPageData: state.blogPageData,
+        blogItem: blogItem,
+        apply: _applyFeedPatch,
+      ),
+    );
+  }
+
+  @override
+  void onShareTap(BlogItem blogItem) {
+    unawaited(
+      runRecordShareOnFeedState(
+        repo: _repo,
+        allItems: state.allItems,
+        blogPageData: state.blogPageData,
+        blogItem: blogItem,
+        apply: _applyFeedPatch,
+      ),
+    );
+  }
+
+  @override
+  void onBlogItemTap(BuildContext context, BlogItem blogItem) {}
+
+  @override
+  void onBlogImgItemTap(
+    BuildContext context,
+    BlogItem blogItem,
+    int index,
+    String heroTag,
+    List<String> imageUrls,
+  ) {}
+
+  @override
+  void onBlogAvatarTap(
+    BuildContext context,
+    BlogItem blogItem,
+    String heroTag,
+    String avatarUrl,
+  ) {}
+
+  @override
+  double getVideoItemHeightWithWidth(int colCount, double screenWidth) => 300;
 }

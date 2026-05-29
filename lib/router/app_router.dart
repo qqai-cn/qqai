@@ -173,10 +173,8 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.HOME,
                 name: 'homeIndex',
-                builder: (context, state) => const LazyShellTab(
-                  tabIndex: 0,
-                  child: IndexPage(),
-                ),
+                builder: (context, state) =>
+                    const LazyShellTab(tabIndex: 0, child: IndexPage()),
               ),
             ],
           ),
@@ -185,10 +183,8 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.videoPage,
                 name: 'homeVideo',
-                builder: (context, state) => const LazyShellTab(
-                  tabIndex: 1,
-                  child: VideoPage(),
-                ),
+                builder: (context, state) =>
+                    const LazyShellTab(tabIndex: 1, child: VideoPage()),
               ),
             ],
           ),
@@ -197,10 +193,15 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.messagePage,
                 name: 'homeMessage',
-                builder: (context, state) => const LazyShellTab(
-                  tabIndex: 2,
-                  child: MessagePage(),
-                ),
+                builder: (context, state) {
+                  final conversationId = int.tryParse(
+                    state.uri.queryParameters['conversationId'] ?? '',
+                  );
+                  return LazyShellTab(
+                    tabIndex: 2,
+                    child: MessagePage(initialConversationId: conversationId),
+                  );
+                },
               ),
             ],
           ),
@@ -209,10 +210,8 @@ GoRouter appRouter(Ref ref) {
               GoRoute(
                 path: Routes.mePage,
                 name: 'homeMe',
-                builder: (context, state) => const LazyShellTab(
-                  tabIndex: 3,
-                  child: MePage(),
-                ),
+                builder: (context, state) =>
+                    const LazyShellTab(tabIndex: 3, child: MePage()),
               ),
             ],
           ),
@@ -352,7 +351,8 @@ GoRouter appRouter(Ref ref) {
           final videoItem = s.extra;
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
-            builder: () => route_pages.FullScreenVideoPlayer(videoItem: videoItem),
+            builder: () =>
+                route_pages.FullScreenVideoPlayer(videoItem: videoItem),
           );
         },
       ),
@@ -384,9 +384,7 @@ GoRouter appRouter(Ref ref) {
         builder: (c, s) {
           final blogItem = parseBlogItemRouteExtra(s.extra);
           if (blogItem == null) {
-            return const Scaffold(
-              body: Center(child: Text('博客数据无效，请返回重试')),
-            );
+            return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
@@ -400,9 +398,7 @@ GoRouter appRouter(Ref ref) {
         builder: (c, s) {
           final blogItem = parseBlogItemRouteExtra(s.extra);
           if (blogItem == null) {
-            return const Scaffold(
-              body: Center(child: Text('博客数据无效，请返回重试')),
-            );
+            return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
@@ -416,9 +412,7 @@ GoRouter appRouter(Ref ref) {
         builder: (c, s) {
           final blogItem = parseBlogItemRouteExtra(s.extra);
           if (blogItem == null) {
-            return const Scaffold(
-              body: Center(child: Text('博客数据无效，请返回重试')),
-            );
+            return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
@@ -523,6 +517,28 @@ GoRouter appRouter(Ref ref) {
             ),
           );
         },
+        routes: [
+          GoRoute(
+            path: 'settings',
+            name: 'chatSettings',
+            builder: (context, state) {
+              final id =
+                  int.tryParse(state.pathParameters['chatId'] ?? '') ?? 0;
+              if (id == 0) {
+                return Scaffold(
+                  appBar: AppBar(title: const Text('聊天设置')),
+                  body: const Center(child: Text('无效会话')),
+                );
+              }
+              return AppDeferredWidget(
+                libraryLoader: route_pages.loadLibrary,
+                builder: () => route_pages.ChatConversationSettingsPage(
+                  conversationId: id,
+                ),
+              );
+            },
+          ),
+        ],
       ),
 
       /// ========== 发布 ==========
@@ -541,7 +557,10 @@ GoRouter appRouter(Ref ref) {
                 'help' => route_pages.FabuPublishType.help,
                 _ => route_pages.FabuPublishType.dynamic,
               };
-              return route_pages.FabuView(squareId: squareId, initialType: type);
+              return route_pages.FabuView(
+                squareId: squareId,
+                initialType: type,
+              );
             },
           );
         },

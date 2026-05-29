@@ -6,6 +6,7 @@ export '../components/imgpreview/image_detail_page.dart';
 export '../components/video_player_detail/FullScreenVideoPlayer.dart';
 export '../features/blog/views/blog_img_detail_view.dart';
 export '../features/blog/views/blog_video_detail_view.dart';
+export '../features/chat/views/chat_conversation_settings_page.dart';
 export '../features/douyin/views/douyin_all_features_page.dart';
 export '../features/douyin/views/douyin_anchor_center_page.dart';
 export '../features/douyin/views/douyin_group_buy_page.dart';

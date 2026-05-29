@@ -23,6 +23,7 @@ class ApiConstant {
 
   static const String TOPIC_PAGE = '/app-api/blog/topic/page';
   static const String FILE_UPLOAD = '/app-api/infra/file/upload';
+  static const String VIDEO_AD_CURRENT = '/app-api/infra/video-ad/current';
 
   // Auth
   static const String LOGIN = '/app-api/member/auth/login';
@@ -49,14 +50,22 @@ class ApiConstant {
       '/app-api/infra/chat/conversation/list';
   static const String CHAT_CONVERSATION_GET =
       '/app-api/infra/chat/conversation/get';
+  static const String CHAT_CONVERSATION_SINGLE =
+      '/app-api/infra/chat/conversation/single';
   static const String CHAT_CONVERSATION_GROUP =
       '/app-api/infra/chat/conversation/group';
+  static const String CHAT_CONVERSATION_GROUP_UPDATE =
+      '/app-api/infra/chat/conversation/group/update';
   static const String CHAT_CONVERSATION_MUTE =
       '/app-api/infra/chat/conversation/mute';
+  static const String CHAT_CONVERSATION_PIN =
+      '/app-api/infra/chat/conversation/pin';
   static const String CHAT_CONVERSATION_DELETE =
       '/app-api/infra/chat/conversation/delete';
   static const String CHAT_CONVERSATION_READ =
       '/app-api/infra/chat/conversation/read';
+  static const String CHAT_GROUP_MEMBER_LIST =
+      '/app-api/member/chat/conversation/members';
 
   static const String MEMBER_USER_UPDATE = '/app-api/member/user/update';
   static const String SYSTEM_AREA_TREE = '/app-api/system/area/tree';
@@ -100,6 +109,14 @@ class ApiConstant {
   /// 我的关注博客流（分页）
   static const String PROFILE_MY_FOLLOWS_FEED_PAGE =
       '/app-api/blog/qqai/profile/my/follows/feed/page';
+
+  /// 我关注的会员分页
+  static const String PROFILE_MY_FOLLOWS_MEMBERS_PAGE =
+      '/app-api/blog/qqai/profile/my/follows/members/page';
+
+  /// 我的粉丝分页
+  static const String PROFILE_MY_FOLLOWERS_MEMBERS_PAGE =
+      '/app-api/blog/qqai/profile/my/followers/members/page';
 
   /// 博客评论
   static const String BLOG_COMMENTS = '/app-api/blog/qqai/comments';
