@@ -1,11 +1,15 @@
+import 'dart:async';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pull_down_button/pull_down_button.dart';
 import 'package:qqai/components/chat/chat_widget.dart';
-import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/constant.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
+import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -22,8 +26,164 @@ class ChatPageList extends ConsumerStatefulWidget {
 
 class _ChatPageListState extends ConsumerState<ChatPageList> {
   int? _selectedConversationId;
-  bool ignore = false;
   final String useDefault = 'imgs/user_default.png';
+
+  Future<void> _refreshConversations() async {
+    ref.invalidate(chatConversationsProvider);
+    await ref.read(chatConversationsProvider.future);
+  }
+
+  Future<void> _markConversationRead(int conversationId) async {
+    try {
+      await ref.read(chatRepoProvider).markConversationRead(
+            conversationId: conversationId,
+          );
+      ref.invalidate(chatConversationsProvider);
+    } catch (_) {}
+  }
+
+  Future<void> _openConversation(ChatConversationDto c) async {
+    final id = c.id;
+    if (id == null) return;
+    setState(() => _selectedConversationId = id);
+    if ((c.unreadCount ?? 0) > 0) {
+      unawaited(_markConversationRead(id));
+    }
+    if (1.sw < Constant.CHAT_TWO_VIEW_WIDTH) {
+      await context.push('${Routes.chat}/$id');
+      if (mounted) {
+        await _refreshConversations();
+      }
+    }
+  }
+
+  Future<void> _showConversationActions(
+    ChatConversationDto c,
+    LongPressStartDetails details,
+  ) async {
+    final muted = c.muted == true;
+    final menuRect = Rect.fromCenter(
+      center: details.globalPosition,
+      width: 0,
+      height: 0,
+    );
+
+    await showPullDownMenu(
+      context: context,
+      position: menuRect,
+      items: [
+        PullDownMenuItem(
+          title: muted ? '取消免打扰' : '免打扰',
+          icon: muted ? CupertinoIcons.bell : CupertinoIcons.bell_slash,
+          onTap: () {
+            if (!mounted) return;
+            unawaited(_toggleMute(c));
+          },
+        ),
+        PullDownMenuItem(
+          title: '删除',
+          icon: CupertinoIcons.delete,
+          isDestructive: true,
+          onTap: () {
+            if (!mounted) return;
+            unawaited(_confirmDelete(c));
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> _toggleMute(ChatConversationDto c) async {
+    final id = c.id;
+    if (id == null) return;
+    final nextMuted = !(c.muted == true);
+    try {
+      await ref.read(chatRepoProvider).updateConversationMuted(
+            conversationId: id,
+            muted: nextMuted,
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(nextMuted ? '已开启免打扰' : '已关闭免打扰')),
+      );
+      await _refreshConversations();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('操作失败：$e')),
+      );
+    }
+  }
+
+  Future<void> _confirmDelete(ChatConversationDto c) async {
+    final id = c.id;
+    if (id == null) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('删除会话'),
+        content: Text('确定删除与「${c.displayTitle}」的会话吗？'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('删除', style: TextStyle(color: Color(0xFFE53935))),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    try {
+      await ref.read(chatRepoProvider).deleteConversation(id);
+      if (_selectedConversationId == id) {
+        setState(() => _selectedConversationId = null);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('会话已删除')),
+      );
+      await _refreshConversations();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('删除失败：$e')),
+      );
+    }
+  }
+
+  Widget _unreadBadge(int count) {
+    final label = count > 99 ? '99+' : '$count';
+    return Container(
+      constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+      padding: EdgeInsets.symmetric(horizontal: count > 9 ? 5 : 0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE53935),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFE53935).withOpacity(0.3),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            height: 1.1,
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +328,9 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
   Widget _conversationTile(ChatConversationDto c, bool selected) {
     const notiSize = 20.0;
     final avatar = c.avatar;
-    final hasUnread = (c.unreadCount ?? 0) > 0;
+    final unreadCount = c.unreadCount ?? 0;
+    final hasUnread = unreadCount > 0;
+    final muted = c.muted == true;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -178,22 +340,18 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: InkWell(
-        onTap: () {
-          final id = c.id;
-          if (id == null) return;
-          setState(() => _selectedConversationId = id);
-          if (1.sw < Constant.CHAT_TWO_VIEW_WIDTH) {
-            context.push('${Routes.chat}/$id');
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          child: Row(
+      child: GestureDetector(
+        onLongPressStart: (details) => _showConversationActions(c, details),
+        child: InkWell(
+          onTap: () => _openConversation(c),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
             children: [
               // 头像
               Stack(
+                clipBehavior: Clip.none,
                 children: [
                   Container(
                     width: 52,
@@ -230,39 +388,11 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                             ),
                     ),
                   ),
-                  // 未读消息小圆点
                   if (hasUnread)
                     Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        width: 18,
-                        height: 18,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE53935),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFE53935).withOpacity(0.3),
-                              blurRadius: 4,
-                              offset: const Offset(0, 1),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            (c.unreadCount ?? 0) > 99
-                                ? '99+'
-                                : '${c.unreadCount ?? 0}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
+                      top: -2,
+                      right: -4,
+                      child: _unreadBadge(unreadCount),
                     ),
                 ],
               ),
@@ -326,12 +456,12 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        // 通知图标
-                        Icon(
-                          ignore ? Icons.notifications_off : Icons.notifications_none,
-                          color: Colors.grey[400],
-                          size: notiSize,
-                        ),
+                        if (muted)
+                          Icon(
+                            Icons.notifications_off,
+                            color: Colors.grey[400],
+                            size: notiSize,
+                          ),
                       ],
                     ),
                   ],
@@ -341,6 +471,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
           ),
         ),
       ),
+    ),
     );
   }
 }

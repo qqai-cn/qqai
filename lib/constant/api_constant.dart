@@ -51,6 +51,12 @@ class ApiConstant {
       '/app-api/infra/chat/conversation/get';
   static const String CHAT_CONVERSATION_GROUP =
       '/app-api/infra/chat/conversation/group';
+  static const String CHAT_CONVERSATION_MUTE =
+      '/app-api/infra/chat/conversation/mute';
+  static const String CHAT_CONVERSATION_DELETE =
+      '/app-api/infra/chat/conversation/delete';
+  static const String CHAT_CONVERSATION_READ =
+      '/app-api/infra/chat/conversation/read';
 
   static const String MEMBER_USER_UPDATE = '/app-api/member/user/update';
   static const String SYSTEM_AREA_TREE = '/app-api/system/area/tree';

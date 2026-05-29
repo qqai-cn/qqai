@@ -28,6 +28,18 @@ abstract class IChatRepo {
     String? content,
     String? extra,
   });
+
+  Future<void> updateConversationMuted({
+    required int conversationId,
+    required bool muted,
+  });
+
+  Future<void> deleteConversation(int conversationId);
+
+  Future<void> markConversationRead({
+    required int conversationId,
+    int? messageId,
+  });
 }
 
 void _throwIfBadEnvelope(Map<String, dynamic> root) {
@@ -133,5 +145,50 @@ class ChatRepo implements IChatRepo {
     final data = root['data'] as Map<String, dynamic>?;
     if (data == null) throw Exception('无消息数据');
     return ChatMessageDto.fromJson(data);
+  }
+
+  @override
+  Future<void> updateConversationMuted({
+    required int conversationId,
+    required bool muted,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_CONVERSATION_MUTE,
+      RequestType.put,
+      queryParameters: {
+        'id': conversationId,
+        'muted': muted,
+      },
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+  }
+
+  @override
+  Future<void> deleteConversation(int conversationId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_CONVERSATION_DELETE,
+      RequestType.delete,
+      queryParameters: {'id': conversationId},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+  }
+
+  @override
+  Future<void> markConversationRead({
+    required int conversationId,
+    int? messageId,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_CONVERSATION_READ,
+      RequestType.put,
+      queryParameters: {
+        'id': conversationId,
+        if (messageId != null) 'messageId': messageId,
+      },
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
   }
 }

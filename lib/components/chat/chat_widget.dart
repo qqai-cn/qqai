@@ -22,12 +22,14 @@ import 'package:qqai/constant/api_constant.dart';
 import 'package:qqai/features/chat/data/chat_message_mapper.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
+import 'package:qqai/features/chat/providers/chat_providers.dart';
 import 'package:uuid/uuid.dart';
 
 import 'chat_api_service.dart';
 import 'connection_status.dart';
 import 'create_message.dart';
 import 'upload_file.dart';
+import 'widgets/chat_emoji_panel.dart';
 import 'widgets/composer_action_bar.dart';
 
 class ChatWidget extends ConsumerStatefulWidget {
@@ -66,7 +68,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   final _systemUser = const User(id: 'system');
   late final User _meUser;
   final _defaultAvatar = 'https://file.qqai.cn/qqai/2025/09/1.webp';
-  bool _isTyping = false;
+  final _composerController = TextEditingController();
+  final _composerFocusNode = FocusNode();
+  bool _showEmojiPanel = false;
 
   static const int _historyPageSize = 30;
   int _nextOlderPage = 2;
@@ -97,7 +101,14 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       );
       _connectToWs();
     }
+    _composerFocusNode.addListener(_onComposerFocusChange);
     Future.microtask(_loadInitialHistory);
+  }
+
+  void _onComposerFocusChange() {
+    if (_composerFocusNode.hasFocus && _showEmojiPanel && mounted) {
+      setState(() => _showEmojiPanel = false);
+    }
   }
 
   @override
@@ -161,6 +172,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       if (mounted) {
         await _chatController.setMessages(messages);
         _hasMoreOlder = (page.list?.length ?? 0) >= _historyPageSize;
+        await _markConversationRead(page.list);
       }
     } catch (e) {
       debugPrint('chat history: $e');
@@ -169,6 +181,22 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
         _initialHistoryReady = true;
         setState(() {});
       }
+    }
+  }
+
+  Future<void> _markConversationRead(List<ChatMessageDto>? messages) async {
+    try {
+      final latestId = messages
+          ?.map((e) => e.id)
+          .whereType<int>()
+          .fold<int?>(null, (prev, id) => prev == null || id > prev ? id : prev);
+      await ref.read(chatRepoProvider).markConversationRead(
+            conversationId: widget.conversationId,
+            messageId: latestId,
+          );
+      ref.invalidate(chatConversationsProvider);
+    } catch (e) {
+      debugPrint('mark conversation read: $e');
     }
   }
 
@@ -207,6 +235,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   void dispose() {
     _webSocketSubscription?.cancel();
     _webSocketService?.dispose();
+    _composerFocusNode.removeListener(_onComposerFocusChange);
+    _composerController.dispose();
+    _composerFocusNode.dispose();
     _chatController.dispose();
     _crossCache.dispose();
     super.dispose();
@@ -223,7 +254,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
           Chat(
             builders: Builders(
               chatAnimatedListBuilder: (context, itemBuilder) {
-                return ChatAnimatedList(
+                final list = ChatAnimatedList(
                   itemBuilder: itemBuilder,
                   insertAnimationDurationResolver: (message) {
                     if (message is SystemMessage) return Duration.zero;
@@ -234,6 +265,12 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                           await _loadOlderHistory();
                         }
                       : null,
+                );
+                if (!_showEmojiPanel) return list;
+                return GestureDetector(
+                  onTap: _exitEmojiPanel,
+                  behavior: HitTestBehavior.translucent,
+                  child: list,
                 );
               },
               customMessageBuilder:
@@ -273,25 +310,32 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                     MessageGroupStatus? groupStatus,
                   }) => FlyerChatSystemMessage(message: message, index: index),
               composerBuilder: (context) => Composer(
+                textEditingController: _composerController,
+                focusNode: _composerFocusNode,
+                hintText: '输入消息',
                 // Web / 桌面键盘：Enter 发送，Shift+Enter 换行（库默认相反）
                 sendOnEnter: kIsWeb,
-                topWidget: ComposerActionBar(
-                  buttons: [
-                    ComposerActionButton(
-                      icon: Icons.type_specimen,
-                      title: '输入中...',
-                      onPressed: () => _toggleTyping(),
-                    ),
-                    ComposerActionButton(
-                      icon: Icons.shuffle,
-                      title: '随机发送',
-                      onPressed: () => _addItem('sasasa'),
-                    ),
-                    ComposerActionButton(
-                      icon: Icons.delete_sweep,
-                      title: '清除',
-                      onPressed: () => _chatController.setMessages([]),
-                      destructive: true,
+                topWidget: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_showEmojiPanel)
+                      ChatEmojiPanel(onEmojiSelected: _insertEmoji),
+                    ComposerActionBar(
+                      buttons: [
+                        ComposerActionButton(
+                          icon: _showEmojiPanel
+                              ? Icons.keyboard_outlined
+                              : Icons.emoji_emotions_outlined,
+                          title: _showEmojiPanel ? '键盘' : '表情',
+                          onPressed: _toggleEmojiPanel,
+                        ),
+                        ComposerActionButton(
+                          icon: Icons.delete_sweep,
+                          title: '清除',
+                          onPressed: _confirmClearMessages,
+                          destructive: true,
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -490,30 +534,63 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     ).showSnackBar(SnackBar(content: Text('Copied: ${message.text}')));
   }
 
-  Future<void> _toggleTyping() async {
-    if (!_isTyping) {
-      await _chatController.insertMessage(
-        CustomMessage(
-          id: _uuid.v4(),
-          authorId: _systemUser.id,
-          metadata: {'type': 'typing'},
-          createdAt: DateTime.now().toUtc(),
-        ),
-      );
-      _isTyping = true;
-    } else {
-      try {
-        final typingMessage = _chatController.messages.firstWhere(
-          (message) => message.metadata?['type'] == 'typing',
-        );
+  void _enterEmojiPanel() {
+    setState(() => _showEmojiPanel = true);
+    _composerFocusNode.unfocus();
+  }
 
-        await _chatController.removeMessage(typingMessage);
-        _isTyping = false;
-      } catch (e) {
-        _isTyping = false;
-        await _toggleTyping();
-      }
+  void _exitEmojiPanel() {
+    if (!_showEmojiPanel) return;
+    setState(() => _showEmojiPanel = false);
+    _composerFocusNode.requestFocus();
+  }
+
+  void _toggleEmojiPanel() {
+    if (_showEmojiPanel) {
+      _exitEmojiPanel();
+    } else {
+      _enterEmojiPanel();
     }
+  }
+
+  Future<void> _confirmClearMessages() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('清除消息'),
+        content: const Text('确定要清空当前会话的所有消息吗？此操作仅影响本地展示。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text(
+              '清除',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await _chatController.setMessages([]);
+    }
+  }
+
+  void _insertEmoji(String emoji) {
+    final controller = _composerController;
+    final text = controller.text;
+    final selection = controller.selection;
+    final start = selection.start >= 0 ? selection.start : text.length;
+    final end = selection.end >= 0 ? selection.end : text.length;
+    final newText = text.replaceRange(start, end, emoji);
+    controller.value = controller.value.copyWith(
+      text: newText,
+      selection: TextSelection.collapsed(offset: start + emoji.length),
+      composing: TextRange.empty,
+    );
   }
 
   void _connectToWs() {

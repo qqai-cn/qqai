@@ -47,6 +47,7 @@ class ChatConversationDto {
     this.lastMessageSummary,
     this.lastMessageTime,
     this.unreadCount,
+    this.muted,
     this.updateTime,
   });
 
@@ -57,6 +58,7 @@ class ChatConversationDto {
   final String? lastMessageSummary;
   final String? lastMessageTime;
   final int? unreadCount;
+  final bool? muted;
   final String? updateTime;
 
   factory ChatConversationDto.fromJson(Map<String, dynamic> json) {
@@ -68,7 +70,25 @@ class ChatConversationDto {
       lastMessageSummary: json['lastMessageSummary'] as String?,
       lastMessageTime: json['lastMessageTime'] as String?,
       unreadCount: (json['unreadCount'] as num?)?.toInt(),
+      muted: json['muted'] as bool?,
       updateTime: json['updateTime'] as String?,
+    );
+  }
+
+  ChatConversationDto copyWith({
+    int? unreadCount,
+    bool? muted,
+  }) {
+    return ChatConversationDto(
+      id: id,
+      type: type,
+      name: name,
+      avatar: avatar,
+      lastMessageSummary: lastMessageSummary,
+      lastMessageTime: lastMessageTime,
+      unreadCount: unreadCount ?? this.unreadCount,
+      muted: muted ?? this.muted,
+      updateTime: updateTime,
     );
   }
 
