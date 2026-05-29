@@ -1,6 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
-import 'package:qqai/components/qq_network_image.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:video_player/video_player.dart';
@@ -112,12 +112,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
           playerLoadingFallback: Positioned.fill(
             child: Stack(
               children: <Widget>[
-                Positioned.fill(
-                  child: QqNetworkImage(
-                    url: widget.image!,
-                    fit: BoxFit.fitWidth,
-                  ),
-                ),
+                Positioned.fill(child: VideoCoverFit(url: widget.image!)),
                 Positioned(
                   right: 10,
                   top: 10,
@@ -138,7 +133,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
         flickVideoWithControlsFullscreen: FlickVideoWithControls(
           videoFit: widget.videoFit,
           playerLoadingFallback: Center(
-            child: QqNetworkImage(url: widget.image!, fit: BoxFit.fitWidth),
+            child: VideoCoverFit(url: widget.image!),
           ),
           controls: FlickLandscapeControls(),
           iconThemeData: IconThemeData(size: 40, color: Colors.white),

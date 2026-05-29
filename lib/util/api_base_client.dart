@@ -143,6 +143,10 @@ class ApiBaseClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
+          // multipart 须由浏览器/Dio 自动带 boundary；全局 application/json 会导致 Web 上传 XHR onError
+          if (options.data is FormData) {
+            options.headers.remove(Headers.contentTypeHeader);
+          }
           // 每次请求都添加最新的 Authorization 头
           if (_authorization != null) {
             options.headers['Authorization'] = _authorization;
@@ -254,9 +258,14 @@ class ApiBaseClient {
         if (_authorization != null) 'Authorization': _authorization,
         ...?headers,
       };
+      if (data is FormData) {
+        mergedHeaders.remove(Headers.contentTypeHeader);
+      }
       final timeout = Duration(seconds: timeoutInSeconds ?? _timeoutInSeconds);
-      // Only set sendTimeout when there's data to send (avoids Web warning)
+      // Web 的 XHR 不支持 sendTimeout；大文件上传设 sendTimeout 可能直接 connection error
       final bool hasData = data != null;
+      final Duration? sendTimeout =
+          hasData && !kIsWeb ? timeout : null;
       if (requestType == RequestType.get) {
         response = await _dio.get(
           url,
@@ -274,7 +283,7 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: timeout,
-            sendTimeout: hasData ? timeout : null,
+            sendTimeout: sendTimeout,
           ),
         );
       } else if (requestType == RequestType.put) {
@@ -285,7 +294,7 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: timeout,
-            sendTimeout: hasData ? timeout : null,
+            sendTimeout: sendTimeout,
           ),
         );
       } else {
@@ -296,7 +305,7 @@ class ApiBaseClient {
           options: Options(
             headers: mergedHeaders,
             receiveTimeout: timeout,
-            sendTimeout: hasData ? timeout : null,
+            sendTimeout: sendTimeout,
           ),
         );
       }
@@ -464,7 +473,7 @@ class ApiBaseClient {
 
       final formData = FormData.fromMap({
         'file': multipartFile,
-        'directory': ?directory,
+        if (directory != null) 'directory': directory,
       });
 
       final response = await safeApiCall(

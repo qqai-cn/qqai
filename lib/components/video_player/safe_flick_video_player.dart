@@ -82,7 +82,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     _setSystemUIOverlays();
     _setPreferredOrientation();
 
-    if (widget.wakelockEnabled) {
+    if (widget.wakelockEnabled && !kIsWeb) {
       WakelockPlus.enable();
     }
 
@@ -99,7 +99,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     if (_managerInitialized) {
       flickManager.flickControlManager!.removeListener(listener);
     }
-    if (widget.wakelockEnabled) {
+    if (widget.wakelockEnabled && !kIsWeb) {
       WakelockPlus.disable();
     }
     WidgetsBinding.instance.removeObserver(this);
@@ -127,7 +127,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
 
   void _switchToFullscreen() {
     if (!mounted) return;
-    if (widget.wakelockEnabledFullscreen) {
+    if (widget.wakelockEnabledFullscreen && !kIsWeb) {
       WakelockPlus.disable();
       WakelockPlus.enable();
     }
@@ -162,7 +162,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
 
   void _exitFullscreen() {
     if (!mounted) return;
-    if (widget.wakelockEnabled) {
+    if (widget.wakelockEnabled && !kIsWeb) {
       WakelockPlus.disable();
       WakelockPlus.enable();
     }

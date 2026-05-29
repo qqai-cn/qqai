@@ -88,7 +88,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
           1.sw,
         ),
         child: Padding(
-          padding: EdgeInsets.all(2),
+          padding: const EdgeInsets.all(2),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[

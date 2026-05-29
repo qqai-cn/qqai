@@ -1,7 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -40,12 +40,12 @@ class _BlogVideoItemViewState extends ConsumerState<FriendBlogVideoItemView> {
     final videoUrl =
         firstPlayableVideoUrlFromResources(widget.blogItem.resources) ?? '';
     return Padding(
-      padding: EdgeInsets.all(2),
+      padding: const EdgeInsets.all(2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Padding(
-            padding: EdgeInsets.only(left: 5, right: 5),
+            padding: const EdgeInsets.only(left: 5, right: 5),
             child: Text(
               widget.blogItem.content!,
               maxLines: 1,
@@ -212,7 +212,6 @@ class _BlogVideoItemViewState extends ConsumerState<FriendBlogVideoItemView> {
   }
 }
 
-/// 仅当可见时加载视频播放器，否则只显示封面，减轻列表滑动卡顿。
 class _LazyVideoPlaceholder extends StatefulWidget {
   final String url;
   final String imgUrl;
@@ -259,8 +258,8 @@ class _VideoThumbnail extends StatelessWidget {
       fit: StackFit.expand,
       alignment: Alignment.center,
       children: [
-        CachedNetworkImage(imageUrl: imgUrl, fit: BoxFit.cover),
-        Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
+        VideoCoverFit(url: imgUrl),
+        const Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
       ],
     );
   }

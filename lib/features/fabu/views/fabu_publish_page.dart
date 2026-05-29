@@ -581,12 +581,8 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
         barrierColor: Colors.black.withValues(alpha: 0.92),
         builder: (context) {
           return _VideoCoverStyledFullscreenDialog(
+            bytes: resolvedBytes,
             alreadyFramed: alreadyFramed,
-            child: Image.memory(
-              resolvedBytes,
-              fit: BoxFit.fill,
-              gaplessPlayback: true,
-            ),
           );
         },
       );
@@ -1031,11 +1027,11 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
 
 class _VideoCoverStyledFullscreenDialog extends StatelessWidget {
   const _VideoCoverStyledFullscreenDialog({
-    required this.child,
+    required this.bytes,
     this.alreadyFramed = false,
   });
 
-  final Widget child;
+  final Uint8List bytes;
   final bool alreadyFramed;
 
   @override
@@ -1047,27 +1043,30 @@ class _VideoCoverStyledFullscreenDialog extends StatelessWidget {
       maxHeight: size.height - padding.top - padding.bottom - 80,
     );
 
+    final image = Image.memory(
+      bytes,
+      width: previewSize.width,
+      height: previewSize.height,
+      fit: BoxFit.fill,
+      gaplessPlayback: true,
+    );
+
     return Dialog.fullscreen(
       backgroundColor: Colors.black,
       child: Stack(
         children: [
           Center(
-            child: InteractiveViewer(
-              minScale: 1,
-              maxScale: 4,
-              boundaryMargin: const EdgeInsets.all(48),
-              child: SizedBox(
-                width: previewSize.width,
-                height: previewSize.height,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Material(
-                    color: Colors.white,
-                    clipBehavior: Clip.antiAlias,
-                    child: alreadyFramed
-                        ? child
-                        : VideoCoverFramedContent(child: child),
-                  ),
+            child: SizedBox(
+              width: previewSize.width,
+              height: previewSize.height,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Material(
+                  color: Colors.white,
+                  clipBehavior: Clip.antiAlias,
+                  child: alreadyFramed
+                      ? image
+                      : VideoCoverFramedContent(child: image),
                 ),
               ),
             ),

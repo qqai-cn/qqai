@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:qqai/components/qq_network_image.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:qqai/util/visibility_safe.dart';
@@ -79,12 +79,7 @@ class _VideoThumbnail extends StatelessWidget {
       fit: StackFit.expand,
       alignment: Alignment.center,
       children: [
-        QqNetworkImage(
-          url: imgUrl,
-          fit: BoxFit.cover,
-          placeholderColor: const Color(0xFF1F1F28),
-          errorIconColor: const Color(0xFF6B6B78),
-        ),
+        VideoCoverFit(url: imgUrl),
         const Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
       ],
     );
