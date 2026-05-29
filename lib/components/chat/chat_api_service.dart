@@ -1,5 +1,6 @@
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 
+import '../../features/chat/data/chat_message_extra.dart';
 import '../../features/chat/data/repos/chat_repo.dart';
 
 /// 将 [Message] 发到业务接口 `/app-api/infra/chat/message/send`。
@@ -16,6 +17,7 @@ class ChatApiService {
     if (message is TextMessage) return 1;
     if (message is ImageMessage) return 2;
     if (message is FileMessage) return 4;
+    if (message is VideoMessage) return 5;
     return 1;
   }
 
@@ -23,6 +25,7 @@ class ChatApiService {
     if (message is TextMessage) return message.text;
     if (message is ImageMessage) return message.source;
     if (message is FileMessage) return message.source;
+    if (message is VideoMessage) return message.source;
     return null;
   }
 
@@ -32,7 +35,7 @@ class ChatApiService {
       conversationId: conversationId,
       type: _messageType(message),
       content: _content(message),
-      extra: message.metadata?.toString(),
+      extra: encodeMessageExtra(message),
     );
     final t = dto.createTimeParsed?.toUtc().millisecondsSinceEpoch ??
         DateTime.now().toUtc().millisecondsSinceEpoch;

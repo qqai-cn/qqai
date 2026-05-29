@@ -11,9 +11,10 @@ import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
 import 'package:flutter_link_previewer/flutter_link_previewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flyer_chat_file_message/flyer_chat_file_message.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
 import 'package:flyer_chat_system_message/flyer_chat_system_message.dart';
+import 'package:qqai/components/chat/qqai_chat_file_message.dart';
+import 'package:qqai/components/chat/qqai_chat_video_message.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/chat/qqai_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
@@ -28,9 +29,10 @@ import 'package:qqai/router/app_routes.dart';
 import 'package:uuid/uuid.dart';
 
 import 'chat_api_service.dart';
+import 'chat_file_download.dart';
+import 'chat_media_helper.dart';
 import 'connection_status.dart';
 import 'create_message.dart';
-import 'upload_file.dart';
 import 'widgets/chat_emoji_panel.dart';
 import 'widgets/composer_action_bar.dart';
 
@@ -373,12 +375,20 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                   }) => QqaiChatTextMessage(message: message, index: index),
               fileMessageBuilder:
                   (
-                    context,
-                    message,
-                    index, {
+                    BuildContext context,
+                    FileMessage message,
+                    int index, {
                     required bool isSentByMe,
                     MessageGroupStatus? groupStatus,
-                  }) => FlyerChatFileMessage(message: message, index: index),
+                  }) => QqaiChatFileMessage(message: message, index: index),
+              videoMessageBuilder:
+                  (
+                    BuildContext context,
+                    VideoMessage message,
+                    int index, {
+                    required bool isSentByMe,
+                    MessageGroupStatus? groupStatus,
+                  }) => QqaiChatVideoMessage(message: message, index: index),
               chatMessageBuilder:
                   (
                     context,
@@ -524,6 +534,25 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
             _copyMessage(message);
           },
         ),
+      if (message is FileMessage)
+        PullDownMenuItem(
+          title: '下载',
+          icon: CupertinoIcons.arrow_down_circle,
+          onTap: () async {
+            try {
+              await downloadChatFile(message);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('已下载：${chatFileDisplayName(message)}')),
+              );
+            } catch (error) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('下载失败：$error')),
+              );
+            }
+          },
+        ),
       PullDownMenuItem(
         title: '删除',
         icon: CupertinoIcons.delete,
@@ -607,12 +636,16 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   void _connectToWs() {
     final ws = _webSocketService;
     if (ws == null) return;
-    _webSocketSubscription = ws.connect().listen((event) {
+    _webSocketSubscription = ws.connect().listen((event) async {
       if (!mounted) return;
 
       switch (event.type) {
         case WebSocketEventType.newMessage:
-          _chatController.insertMessage(event.message!);
+          final incoming = event.message!;
+          final exists = _chatController.messages.any((m) => m.id == incoming.id);
+          if (!exists) {
+            await _chatController.insertMessage(incoming);
+          }
           break;
         case WebSocketEventType.deleteMessage:
           _chatController.removeMessage(event.message!);
@@ -653,19 +686,113 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
           (element) => element.id == message.id,
           orElse: () => message,
         );
-        final nextMessage = currentMessage.copyWith(
-          id: response['id'],
-          createdAt: null,
-          sentAt: DateTime.fromMillisecondsSinceEpoch(
-            response['ts'],
-            isUtc: true,
-          ),
-          metadata: originalMetadata,
+        final nextMessage = _withServerResponse(
+          currentMessage,
+          response,
+          originalMetadata,
         );
         await _chatController.updateMessage(currentMessage, nextMessage);
       }
     } catch (error) {
       debugPrint('Error sending message: $error');
+    }
+  }
+
+  Message _withServerResponse(
+    Message message,
+    Map<String, dynamic> response,
+    Map<String, dynamic>? metadata,
+  ) {
+    final id = response['id']?.toString() ?? message.id;
+    final sentAt = DateTime.fromMillisecondsSinceEpoch(
+      (response['ts'] as num).toInt(),
+      isUtc: true,
+    );
+    return switch (message) {
+      TextMessage() => message.copyWith(
+          id: id,
+          createdAt: null,
+          sentAt: sentAt,
+          metadata: metadata,
+        ),
+      ImageMessage() => message.copyWith(
+          id: id,
+          createdAt: null,
+          sentAt: sentAt,
+          metadata: metadata,
+        ),
+      FileMessage() => message.copyWith(
+          id: id,
+          createdAt: null,
+          sentAt: sentAt,
+          metadata: metadata,
+        ),
+      VideoMessage() => message.copyWith(
+          id: id,
+          createdAt: null,
+          sentAt: sentAt,
+          metadata: metadata,
+        ),
+      _ => message.copyWith(
+          id: id,
+          createdAt: null,
+          sentAt: sentAt,
+          metadata: metadata,
+        ),
+    };
+  }
+
+  Future<void> _finalizeSentMessage({
+    required Message localMessage,
+    required Map<String, dynamic>? originalMetadata,
+    required Map<String, dynamic> response,
+  }) async {
+    if (!mounted) return;
+    final currentMessage = _chatController.messages.firstWhere(
+      (element) => element.id == localMessage.id,
+      orElse: () => localMessage,
+    );
+    final cleanedMetadata = originalMetadata == null
+        ? null
+        : (Map<String, dynamic>.from(originalMetadata)..remove('sending'));
+    final nextMessage = _withServerResponse(
+      currentMessage,
+      response,
+      cleanedMetadata,
+    );
+    await _chatController.updateMessage(currentMessage, nextMessage);
+  }
+
+  Future<void> _sendUploadedMessage({
+    required Message localMessage,
+    required Future<String> Function() upload,
+    required Message Function(String url) onUploaded,
+  }) async {
+    final originalMetadata = {...?localMessage.metadata, 'sending': true};
+    await _chatController.insertMessage(
+      localMessage.copyWith(metadata: originalMetadata),
+    );
+    try {
+      final url = await upload();
+      final uploadedMessage = onUploaded(url);
+      final currentMessage = _chatController.messages.firstWhere(
+        (element) => element.id == localMessage.id,
+        orElse: () => localMessage,
+      );
+      await _chatController.updateMessage(currentMessage, uploadedMessage);
+      final response = await _apiService.send(uploadedMessage);
+      await _finalizeSentMessage(
+        localMessage: uploadedMessage,
+        originalMetadata: originalMetadata,
+        response: response,
+      );
+    } catch (error) {
+      debugPrint('Error uploading/sending message: $error');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('发送失败: $error')),
+        );
+      }
     }
   }
 
@@ -679,30 +806,72 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
             children: <Widget>[
               ListTile(
                 leading: const Icon(Icons.image),
-                title: const Text('Image'),
+                title: const Text('图片'),
                 onTap: () async {
                   Navigator.pop(context);
                   final picker = ImagePicker();
                   final image = await picker.pickImage(
                     source: ImageSource.gallery,
                   );
+                  if (image == null || !mounted) return;
 
-                  if (image != null) {
-                    final imageMessage = ImageMessage(
-                      id: _uuid.v4(),
-                      authorId: _meUser.id,
-                      createdAt: DateTime.now().toUtc(),
-                      sentAt: DateTime.now().toUtc(),
-                      source: image.path,
-                    );
+                  final imageMessage = ImageMessage(
+                    id: _uuid.v4(),
+                    authorId: _meUser.id,
+                    createdAt: DateTime.now().toUtc(),
+                    source: image.path,
+                  );
+                  await _sendUploadedMessage(
+                    localMessage: imageMessage,
+                    upload: () => uploadChatFile(image),
+                    onUploaded: (url) => imageMessage.copyWith(source: url),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.videocam),
+                title: const Text('视频'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final picker = ImagePicker();
+                  final video = await picker.pickVideo(
+                    source: ImageSource.gallery,
+                  );
+                  if (video == null || !mounted) return;
 
-                    await _chatController.insertMessage(imageMessage);
-                  }
+                  final durationMs = await readVideoDurationMs(video);
+                  final (width, height) = await readVideoSize(video);
+                  final coverUrl = await generateAndUploadVideoCover(video);
+                  final fileSize = await video.length();
+                  final durationSec = durationMs > 0
+                      ? (durationMs / 1000).round()
+                      : null;
+                  final metadata = <String, dynamic>{
+                    if (durationSec != null) 'duration': durationSec,
+                    if (coverUrl != null) 'coverUrl': coverUrl,
+                  };
+
+                  final videoMessage = VideoMessage(
+                    id: _uuid.v4(),
+                    authorId: _meUser.id,
+                    createdAt: DateTime.now().toUtc(),
+                    source: video.path,
+                    width: width,
+                    height: height,
+                    size: fileSize,
+                    name: video.name,
+                    metadata: metadata,
+                  );
+                  await _sendUploadedMessage(
+                    localMessage: videoMessage,
+                    upload: () => uploadChatFile(video),
+                    onUploaded: (url) => videoMessage.copyWith(source: url),
+                  );
                 },
               ),
               ListTile(
                 leading: const Icon(Icons.file_present),
-                title: const Text('File'),
+                title: const Text('文件'),
                 onTap: () async {
                   Navigator.pop(context);
                   final result = await FilePicker.platform.pickFiles(
@@ -710,28 +879,35 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                     withReadStream: false,
                   );
 
-                  if (result != null && result.files.isNotEmpty) {
-                    final file = result.files.first;
-                    final filePath = file.path!;
-                    final fileName = file.name;
-                    final fileSize = file.size;
-
-                    // Create a proper file message
-                    final fileMessage = FileMessage(
-                      id: _uuid.v4(),
-                      authorId: _meUser.id,
-                      createdAt: DateTime.now().toUtc(),
-                      sentAt: DateTime.now().toUtc(),
-                      source: filePath,
-                      name: fileName,
-                      size: fileSize,
-                      mimeType: file.extension != null
-                          ? 'application/${file.extension}'
-                          : null,
-                    );
-
-                    await _chatController.insertMessage(fileMessage);
+                  if (result == null ||
+                      result.files.isEmpty ||
+                      result.files.first.path == null ||
+                      !mounted) {
+                    return;
                   }
+
+                  final file = result.files.first;
+                  final filePath = file.path!;
+                  final fileName = file.name;
+                  final fileSize = file.size;
+                  final localFile = XFile(filePath, name: fileName);
+
+                  final fileMessage = FileMessage(
+                    id: _uuid.v4(),
+                    authorId: _meUser.id,
+                    createdAt: DateTime.now().toUtc(),
+                    source: filePath,
+                    name: fileName,
+                    size: fileSize,
+                    mimeType: file.extension != null
+                        ? 'application/${file.extension}'
+                        : null,
+                  );
+                  await _sendUploadedMessage(
+                    localMessage: fileMessage,
+                    upload: () => uploadChatFile(localFile),
+                    onUploaded: (url) => fileMessage.copyWith(source: url),
+                  );
                 },
               ),
             ],
@@ -741,102 +917,10 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     );
   }
 
-  void _handleAttachmentTap1() async {
-    final picker = ImagePicker();
-
-    final image = await picker.pickImage(source: ImageSource.gallery);
-
-    if (image == null) return;
-
-    final bytes = await image.readAsBytes();
-    // Saves image to persistent cache using image.path as key
-    await _crossCache.set(image.path, bytes);
-
-    final id = _uuid.v4();
-
-    final imageMessage = ImageMessage(
-      id: id,
-      authorId: widget.currentUserId,
-      createdAt: DateTime.now().toUtc(),
-      source: image.path,
-    );
-
-    // Insert message to UI before uploading
-    await _chatController.insertMessage(imageMessage);
-
-    try {
-      final response = await uploadFile(image.path, bytes, id, _chatController);
-
-      if (mounted) {
-        final blobId = response['blob_id'];
-
-        // Make sure to get the updated message
-        // (width and height might have been set by the image message widget)
-        final currentMessage =
-            _chatController.messages.firstWhere(
-                  (element) => element.id == id,
-                  orElse: () => imageMessage,
-                )
-                as ImageMessage;
-        final originalMetadata = currentMessage.metadata;
-        final nextMessage = currentMessage.copyWith(
-          source: 'https://whatever.diamanthq.dev/blob/$blobId',
-        );
-        // Saves the same image to persistent cache using the new url as key
-        // Alternatively, you could use updateKey to update the same content with a different key
-        await _crossCache.set(nextMessage.source, bytes);
-        await _chatController.updateMessage(
-          currentMessage,
-          nextMessage.copyWith(
-            metadata: {...?originalMetadata, 'sending': true},
-          ),
-        );
-
-        final newMessageResponse = await _apiService.send(nextMessage);
-
-        if (mounted) {
-          // Make sure to get the updated message
-          // (width and height might have been set by the image message widget)
-          final currentMessage2 = _chatController.messages.firstWhere(
-            (element) => element.id == nextMessage.id,
-            orElse: () => nextMessage,
-          );
-          final nextMessage2 = currentMessage2.copyWith(
-            id: newMessageResponse['id'],
-            createdAt: null,
-            sentAt: DateTime.fromMillisecondsSinceEpoch(
-              newMessageResponse['ts'],
-              isUtc: true,
-            ),
-            metadata: originalMetadata,
-          );
-          await _chatController.updateMessage(currentMessage2, nextMessage2);
-        }
-      }
-    } catch (error) {
-      debugPrint('Error uploading/sending image message: $error');
-    }
-  }
-
   void _removeItem(Message item) async {
     await _chatController.removeMessage(item);
     if (_chatController.messages.length == 1) {
       await _chatController.removeMessage(_chatController.messages[0]);
-    }
-  }
-
-  void _removeItem1(
-    BuildContext context,
-    Message item, {
-    int? index,
-    TapUpDetails? details,
-  }) async {
-    await _chatController.removeMessage(item);
-
-    try {
-      await _apiService.delete(item);
-    } catch (error) {
-      debugPrint(error.toString());
     }
   }
 

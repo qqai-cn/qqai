@@ -173,10 +173,6 @@ class _SquareViewState extends ConsumerState<SquareView> {
     );
   }
 
-  double _topContentInset(BuildContext context) {
-    return kToolbarHeight;
-  }
-
   void _onSearchQuery(String query) {
     setState(() => _searching = query.isNotEmpty);
     if (_scrollController.hasClients) {
@@ -276,6 +272,8 @@ class _SquareViewState extends ConsumerState<SquareView> {
       }
     });
 
+    final topInset = InPageSearchBar.homeTabTopInset(context);
+
     return MediaQuery.removePadding(
       context: context,
       removeTop: true,
@@ -295,7 +293,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
                     slivers: [
                       SliverToBoxAdapter(
                         child: InPageSearchBar(
-                          height: _topContentInset(context),
+                          height: topInset,
                           hintText: '搜索广场名称',
                           onQueryChanged: _onSearchQuery,
                         ),

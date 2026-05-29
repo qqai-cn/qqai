@@ -51,6 +51,7 @@ class ChatConversationDto {
     this.muted,
     this.pinned,
     this.memberCount,
+    this.creatorId,
     this.updateTime,
   });
 
@@ -65,6 +66,7 @@ class ChatConversationDto {
   final bool? muted;
   final bool? pinned;
   final int? memberCount;
+  final int? creatorId;
   final String? updateTime;
 
   factory ChatConversationDto.fromJson(Map<String, dynamic> json) {
@@ -80,6 +82,7 @@ class ChatConversationDto {
       muted: json['muted'] as bool?,
       pinned: json['pinned'] as bool?,
       memberCount: (json['memberCount'] as num?)?.toInt(),
+      creatorId: (json['creatorId'] as num?)?.toInt(),
       updateTime: json['updateTime'] as String?,
     );
   }

@@ -242,6 +242,10 @@ class _ChatConversationSettingsPageState
   Widget build(BuildContext context) {
     final conversation = _conversation;
     final isGroup = conversation?.isGroup == true;
+    final selfId = int.tryParse(ref.watch(authProvider).userId ?? '');
+    final isGroupOwner =
+        isGroup && selfId != null && conversation?.creatorId == selfId;
+    final showDeleteConversation = !isGroup || isGroupOwner;
     final title = isGroup ? '群聊设置' : '聊天设置';
 
     return Scaffold(
@@ -338,20 +342,22 @@ class _ChatConversationSettingsPageState
                       onTap: _openUserProfile,
                     ),
                   ]),
-                const SizedBox(height: 12),
-                _section([
-                  ListTile(
-                    leading: const Icon(
-                      CupertinoIcons.delete,
-                      color: Color(0xFFE53935),
+                if (showDeleteConversation) ...[
+                  const SizedBox(height: 12),
+                  _section([
+                    ListTile(
+                      leading: const Icon(
+                        CupertinoIcons.delete,
+                        color: Color(0xFFE53935),
+                      ),
+                      title: const Text(
+                        '删除会话',
+                        style: TextStyle(color: Color(0xFFE53935)),
+                      ),
+                      onTap: _saving ? null : _confirmDelete,
                     ),
-                    title: const Text(
-                      '删除会话',
-                      style: TextStyle(color: Color(0xFFE53935)),
-                    ),
-                    onTap: _saving ? null : _confirmDelete,
-                  ),
-                ]),
+                  ]),
+                ],
                 const SizedBox(height: 32),
               ],
             ),

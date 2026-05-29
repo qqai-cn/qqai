@@ -119,10 +119,6 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
     return math.max(1, (width / _minColumnWidth).floor()).clamp(1, 5);
   }
 
-  double _topContentInset(BuildContext context) {
-    return kToolbarHeight;
-  }
-
   void _onSearchQuery(String query) {
     setState(() {
       _searching = query.isNotEmpty;
@@ -157,6 +153,8 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
       _onMallTabReselect();
     });
 
+    final topInset = InPageSearchBar.homeTabTopInset(context);
+
     return MediaQuery.removePadding(
       context: context,
       removeTop: true,
@@ -174,7 +172,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
                   SliverToBoxAdapter(
                     child: InPageSearchBar(
                       controller: _searchController,
-                      height: _topContentInset(context),
+                      height: topInset,
                       hintText: '搜索商品名称',
                       onQueryChanged: _onSearchQuery,
                     ),

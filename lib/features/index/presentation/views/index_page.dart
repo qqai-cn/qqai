@@ -72,11 +72,10 @@ class _IndexPageState extends ConsumerState<IndexPage>
     });
 
     final isWideScreen = 1.sw > 800;
-    const feedBackdrop = Colors.black12;
     return Scaffold(
-      extendBodyBehindAppBar: false,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: feedBackdrop,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,

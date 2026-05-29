@@ -144,6 +144,11 @@ class _DrawerLoggedInHeader extends ConsumerWidget {
       data: (page) => page.avatar,
       orElse: () => null,
     );
+    final qqId = profileAsync.maybeWhen(
+          data: (page) => page.id,
+          orElse: () => null,
+        ) ??
+        int.tryParse(auth.userId ?? '');
 
     return DrawerHeader(
       decoration: const BoxDecoration(color: Colors.blue),
@@ -171,7 +176,18 @@ class _DrawerLoggedInHeader extends ConsumerWidget {
                     fontSize: 18,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
+                if (qqId != null)
+                  Text(
+                    '千千号 $qqId',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typo.caption.copyWith(
+                      color: Colors.white70,
+                      fontSize: 11,
+                    ),
+                  ),
+                if (qqId != null) const SizedBox(height: 4),
                 if (profileAsync.isLoading)
                   const SizedBox(
                     width: 16,

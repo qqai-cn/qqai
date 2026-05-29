@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_chat_core/flutter_chat_core.dart';
+import 'package:qqai/features/chat/data/chat_message_mapper.dart';
+import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 enum WebSocketEventType { newMessage, deleteMessage, flush, error, unknown }
@@ -22,7 +24,9 @@ class SocketioService {
   final UserID authorId;
   final String? token;
   final _statusController = StreamController<WebSocketStatus>.broadcast();
+  final _eventController = StreamController<WebSocketEvent>.broadcast();
   WebSocketStatus _status = WebSocketStatus.disconnected;
+  IO.Socket? _socket;
 
   SocketioService({
     required this.host,
@@ -40,44 +44,88 @@ class SocketioService {
     _statusController.add(newStatus);
   }
 
-  Stream<WebSocketEvent> connect() async* {
+  Stream<WebSocketEvent> connect() {
+    if (_socket == null) {
+      _connectSocket();
+    }
+    return _eventController.stream;
+  }
+
+  void _connectSocket() {
     try {
+      _updateStatus(WebSocketStatus.connecting);
       var builder = IO.OptionBuilder()
           .setPath('/socket.io')
           .setTransports(['websocket']);
       if (token != null && token!.isNotEmpty) {
         builder = builder.setQuery({'token': token});
       }
-      IO.Socket socket = IO.io(host, builder.build());
+      final socket = IO.io(host, builder.build());
+      _socket = socket;
 
       socket.onConnect((_) {
-        print('connect');
         _updateStatus(WebSocketStatus.connected);
-        socket.emit('infra:send-msg', 'test');
       });
-      socket.on('infra:new-msg', (data) => _parseWebSocketMessage(data));
-      socket.onDisconnect((_) => print('disconnect'));
+      socket.on('infra:new-msg', (data) {
+        try {
+          final event = _parseWebSocketMessage(data);
+          if (event.type != WebSocketEventType.unknown) {
+            _eventController.add(event);
+          }
+        } catch (e) {
+          _eventController.add(
+            WebSocketEvent(
+              type: WebSocketEventType.error,
+              error: e.toString(),
+            ),
+          );
+        }
+      });
+      socket.onDisconnect((_) {
+        _updateStatus(WebSocketStatus.disconnected);
+      });
     } catch (e) {
-      yield WebSocketEvent(
-        type: WebSocketEventType.error,
-        error: 'Connection error: $e',
+      _eventController.add(
+        WebSocketEvent(
+          type: WebSocketEventType.error,
+          error: 'Connection error: $e',
+        ),
       );
     }
   }
 
   WebSocketEvent _parseWebSocketMessage(dynamic message) {
-    print(message);
     final Map<String, dynamic> json;
-    try {
-      json = jsonDecode(message);
-    } catch (e) {
-      throw FormatException('Invalid JSON format: $e');
+    if (message is Map) {
+      json = Map<String, dynamic>.from(message);
+    } else if (message is String) {
+      json = Map<String, dynamic>.from(jsonDecode(message) as Map);
+    } else {
+      return const WebSocketEvent(type: WebSocketEventType.unknown);
+    }
+
+    if (json.containsKey('type') && json.containsKey('conversationId')) {
+      final conversationId = json['conversationId']?.toString();
+      if (conversationId != chatId) {
+        return const WebSocketEvent(type: WebSocketEventType.unknown);
+      }
+      final dto = ChatMessageDto.fromJson(json);
+      final parsedMessage = mapChatMessageDtoToMessage(dto);
+      if (parsedMessage == null) {
+        return const WebSocketEvent(type: WebSocketEventType.unknown);
+      }
+      return WebSocketEvent(
+        type: WebSocketEventType.newMessage,
+        message: parsedMessage,
+      );
     }
 
     if (json['msg'] != null) {
       final Message parsedMessage;
       try {
-        parsedMessage = Message.fromJson(json['msg']);
+        parsedMessage = Message.fromJson(
+          Map<String, dynamic>.from(json['msg'] as Map),
+        );
       } catch (e) {
         throw FormatException('Invalid message format: $e');
       }
@@ -101,6 +149,8 @@ class SocketioService {
   }
 
   void dispose() {
+    _socket?.dispose();
     _statusController.close();
+    _eventController.close();
   }
 }
