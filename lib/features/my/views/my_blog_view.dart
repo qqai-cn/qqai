@@ -17,8 +17,14 @@ import 'package:qqai/config/theme/app_typography.dart';
 class MyBlogView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex;
+  final int? userId;
 
-  const MyBlogView({super.key, required this.tabIndex, required this.currentIndex});
+  const MyBlogView({
+    super.key,
+    required this.tabIndex,
+    required this.currentIndex,
+    this.userId,
+  });
 
   @override
   ConsumerState<MyBlogView> createState() => _MyBlogViewState();
@@ -57,12 +63,40 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
   @override
   void didUpdateWidget(MyBlogView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId != widget.userId) {
+      _items = [];
+      _page = 1;
+      _hasMore = true;
+      _error = null;
+      if (widget.tabIndex == widget.currentIndex) {
+        unawaited(_loadFirstPage());
+      }
+      return;
+    }
     if (widget.tabIndex == widget.currentIndex &&
         oldWidget.currentIndex != widget.currentIndex &&
         _items.isEmpty &&
         !_loading) {
       unawaited(_loadFirstPage());
     }
+  }
+
+  Future<BlogPageModelData> _fetchPage(int pageNo) {
+    final repo = ref.read(profileRepoProvider);
+    final userId = widget.userId;
+    if (userId != null) {
+      return repo.getUserWorksPage(
+        userId,
+        pageNo,
+        pageSize: _pageSize,
+        blogType: _blogTypeImage,
+      );
+    }
+    return repo.getMyWorksPage(
+      pageNo,
+      pageSize: _pageSize,
+      blogType: _blogTypeImage,
+    );
   }
 
   void _onScroll() {
@@ -81,12 +115,7 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
       _error = null;
     });
     try {
-      final repo = ref.read(profileRepoProvider);
-      final data = await repo.getMyWorksPage(
-        1,
-        pageSize: _pageSize,
-        blogType: _blogTypeImage,
-      );
+      final data = await _fetchPage(1);
       if (!mounted) return;
       setState(() {
         _items = List.from(data.list ?? []);
@@ -107,13 +136,8 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     if (_loadingMore || !_hasMore) return;
     setState(() => _loadingMore = true);
     try {
-      final repo = ref.read(profileRepoProvider);
       final next = _page + 1;
-      final data = await repo.getMyWorksPage(
-        next,
-        pageSize: _pageSize,
-        blogType: _blogTypeImage,
-      );
+      final data = await _fetchPage(next);
       final add = data.list ?? [];
       if (!mounted) return;
       setState(() {

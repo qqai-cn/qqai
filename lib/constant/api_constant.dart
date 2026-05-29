@@ -63,6 +63,14 @@ class ApiConstant {
 
   /// 个人中心 / 我的（QQAI blog profile）
   static const String PROFILE_MY_PAGE = '/app-api/blog/qqai/profile/my/page';
+  static String profileUserPagePath(int userId) =>
+      '/app-api/blog/qqai/profile/user/$userId/page';
+  static String profileUserWorksPagePath(int userId) =>
+      '/app-api/blog/qqai/profile/user/$userId/works/page';
+  static String profileUserCollectionsPagePath(int userId) =>
+      '/app-api/blog/qqai/profile/user/$userId/collections/page';
+  static String profileUserShopProductsPagePath(int userId) =>
+      '/app-api/blog/qqai/profile/user/$userId/shop/products/page';
   static const String PROFILE_MY_SHOP = '/app-api/blog/qqai/profile/my/shop';
   static const String PROFILE_MY_SHOP_PRODUCTS =
       '/app-api/blog/qqai/profile/my/shop/products';

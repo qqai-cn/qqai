@@ -12,6 +12,8 @@ final profileRepoProvider = Provider<IProfileRepo>((ref) => ProfileRepo());
 abstract class IProfileRepo {
   Future<BlogMyPageResp> getMyPage();
 
+  Future<BlogMyPageResp> getUserPage(int userId);
+
   Future<bool> updateMyShop(BlogShopSaveReq req);
 
   Future<bool> updateMemberUser(MemberUserUpdateReq req);
@@ -19,6 +21,13 @@ abstract class IProfileRepo {
   Future<BlogShopResp?> getMyShop();
 
   Future<BlogPageModelData> getMyWorksPage(
+    int pageNo, {
+    int pageSize = 12,
+    int? blogType,
+  });
+
+  Future<BlogPageModelData> getUserWorksPage(
+    int userId,
     int pageNo, {
     int pageSize = 12,
     int? blogType,
@@ -32,6 +41,13 @@ abstract class IProfileRepo {
     String? name,
   });
 
+  Future<BlogCollectionPageData> getUserCollectionsPage(
+    int userId,
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
+  });
+
   Future<int> createCollection(BlogCollectionSaveReq req);
 
   Future<BlogShopProductPageData> getMyShopProductsPage(
@@ -39,6 +55,13 @@ abstract class IProfileRepo {
     int pageSize = 12,
     String? name,
     int? status,
+  });
+
+  Future<BlogShopProductPageData> getUserShopProductsPage(
+    int userId,
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
   });
 
   Future<int> createShopProduct(BlogShopProductSaveReq req);
@@ -92,6 +115,24 @@ class ProfileRepo implements IProfileRepo {
     final inner = data['data'];
     if (inner is! Map<String, dynamic>) {
       throw '我的主页数据为空';
+    }
+    return BlogMyPageResp.fromJson(inner);
+  }
+
+  @override
+  Future<BlogMyPageResp> getUserPage(int userId) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileUserPagePath(userId),
+      RequestType.get,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '用户主页接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      throw '用户主页数据为空';
     }
     return BlogMyPageResp.fromJson(inner);
   }
@@ -163,6 +204,26 @@ class ProfileRepo implements IProfileRepo {
   }
 
   @override
+  Future<BlogPageModelData> getUserWorksPage(
+    int userId,
+    int pageNo, {
+    int pageSize = 12,
+    int? blogType,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': pageNo,
+      'pageSize': pageSize,
+    };
+    if (blogType != null) query['blogType'] = blogType;
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileUserWorksPagePath(userId),
+      RequestType.get,
+      queryParameters: query,
+    );
+    return _parseBlogPage(response.data);
+  }
+
+  @override
   Future<BlogPageModelData> getMyLikesPage(int pageNo, {int pageSize = 12}) async {
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_LIKES_PAGE,
@@ -188,6 +249,35 @@ class ProfileRepo implements IProfileRepo {
     if (name != null && name.isNotEmpty) query['name'] = name;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_COLLECTIONS_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '合集接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogCollectionPageData(list: [], total: 0);
+    }
+    return BlogCollectionPageData.fromJson(inner);
+  }
+
+  @override
+  Future<BlogCollectionPageData> getUserCollectionsPage(
+    int userId,
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': pageNo,
+      'pageSize': pageSize,
+    };
+    if (name != null && name.isNotEmpty) query['name'] = name;
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileUserCollectionsPagePath(userId),
       RequestType.get,
       queryParameters: query,
     );
@@ -235,6 +325,35 @@ class ProfileRepo implements IProfileRepo {
     if (status != null) query['status'] = status;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_SHOP_PRODUCTS_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '商品接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogShopProductPageData(list: [], total: 0);
+    }
+    return BlogShopProductPageData.fromJson(inner);
+  }
+
+  @override
+  Future<BlogShopProductPageData> getUserShopProductsPage(
+    int userId,
+    int pageNo, {
+    int pageSize = 12,
+    String? name,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': pageNo,
+      'pageSize': pageSize,
+    };
+    if (name != null && name.isNotEmpty) query['name'] = name;
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileUserShopProductsPagePath(userId),
       RequestType.get,
       queryParameters: query,
     );

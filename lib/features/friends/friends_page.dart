@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,6 +7,7 @@ import 'package:lpinyin/lpinyin.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/constant.dart';
 
+import '../../../util/media_url.dart';
 import '../../../util/utils.dart';
 import '../../components/azlist/az_common.dart';
 import '../../components/azlist/az_listview.dart';
@@ -322,34 +324,10 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     ContactInfo model, {
     Color? defHeaderBgColor,
   }) {
-    final img = model.img?.trim();
-    final hasAvatar = img != null && img.isNotEmpty;
-
     return ListTile(
       selected: model.id != null && indexSel == model.id,
       selectedTileColor: Constant.SELECT_COLOR,
-      leading: Container(
-        width: 36,
-        height: 36,
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          borderRadius: BorderRadius.circular(4.0),
-          color: model.bgColor ?? defHeaderBgColor,
-        ),
-        clipBehavior: Clip.antiAlias,
-        alignment: Alignment.center,
-        child: hasAvatar
-            ? Image.network(
-                img,
-                fit: BoxFit.cover,
-                width: 36,
-                height: 36,
-                errorBuilder: (_, _, _) => _letterLeading(context, model),
-              )
-            : model.iconData == null
-                ? _letterLeading(context, model)
-                : Icon(model.iconData, color: Colors.white, size: 20),
-      ),
+      leading: _buildFriendLeading(context, model, defHeaderBgColor: defHeaderBgColor),
       title: Text(_contactTitle(model)),
       trailing: model.id == 12 ? _newFriendsTrailing() : null,
       onTap: () {
@@ -364,6 +342,41 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
           context.push('${Routes.userDetail}/${indexSel.toString()}/true');
         }
       },
+    );
+  }
+
+  Widget _buildFriendLeading(
+    BuildContext context,
+    ContactInfo model, {
+    Color? defHeaderBgColor,
+  }) {
+    const size = 36.0;
+    final resolvedAvatar = resolveMediaUrl(model.img);
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(4.0),
+        color: model.bgColor ?? defHeaderBgColor,
+      ),
+      clipBehavior: Clip.antiAlias,
+      alignment: Alignment.center,
+      child: model.iconData != null && resolvedAvatar == null
+          ? Icon(model.iconData, color: Colors.white, size: 20)
+          : resolvedAvatar != null
+              ? CachedNetworkImage(
+                  key: ValueKey(resolvedAvatar),
+                  imageUrl: resolvedAvatar,
+                  cacheKey: resolvedAvatar,
+                  width: size,
+                  height: size,
+                  fit: BoxFit.cover,
+                  fadeInDuration: const Duration(milliseconds: 150),
+                  errorWidget: (_, _, _) => _letterLeading(context, model),
+                )
+              : _letterLeading(context, model),
     );
   }
 

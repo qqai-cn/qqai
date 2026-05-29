@@ -15,11 +15,13 @@ import 'package:qqai/config/theme/app_typography.dart';
 class MyGoodsView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex;
+  final int? userId;
 
   const MyGoodsView({
     super.key,
     required this.tabIndex,
     required this.currentIndex,
+    this.userId,
   });
 
   @override
@@ -60,6 +62,16 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
   @override
   void didUpdateWidget(MyGoodsView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId != widget.userId) {
+      _items = [];
+      _page = 1;
+      _hasMore = true;
+      _error = null;
+      if (widget.tabIndex == widget.currentIndex) {
+        unawaited(_loadFirstPage());
+      }
+      return;
+    }
     if (widget.tabIndex == widget.currentIndex &&
         oldWidget.currentIndex != widget.currentIndex &&
         _items.isEmpty &&
@@ -67,6 +79,8 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
       unawaited(_loadFirstPage());
     }
   }
+
+  bool get _isSelf => widget.userId == null;
 
   void _onScroll() {
     if (!_hasMore || _loadingMore || _loading) return;
@@ -85,7 +99,10 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
     });
     try {
       final repo = ref.read(profileRepoProvider);
-      final data = await repo.getMyShopProductsPage(1, pageSize: _pageSize);
+      final userId = widget.userId;
+      final data = userId != null
+          ? await repo.getUserShopProductsPage(userId, 1, pageSize: _pageSize)
+          : await repo.getMyShopProductsPage(1, pageSize: _pageSize);
       if (!mounted) return;
       setState(() {
         _items = List.from(data.list ?? []);
@@ -108,7 +125,10 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
     try {
       final repo = ref.read(profileRepoProvider);
       final next = _page + 1;
-      final data = await repo.getMyShopProductsPage(next, pageSize: _pageSize);
+      final userId = widget.userId;
+      final data = userId != null
+          ? await repo.getUserShopProductsPage(userId, next, pageSize: _pageSize)
+          : await repo.getMyShopProductsPage(next, pageSize: _pageSize);
       final add = data.list ?? [];
       if (!mounted) return;
       setState(() {
@@ -327,7 +347,10 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
           SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
-              child: Text('暂无商品，点击右下角添加', style: context.typo.body),
+              child: Text(
+                _isSelf ? '暂无商品，点击右下角添加' : '暂无商品',
+                style: context.typo.body,
+              ),
             ),
           ),
         ],
@@ -361,7 +384,7 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
                     color: Colors.white,
                     child: InkWell(
                       onTap: () => _openProduct(p),
-                      onLongPress: () => _confirmDelete(p),
+                      onLongPress: _isSelf ? () => _confirmDelete(p) : null,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -377,18 +400,19 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
                                     fit: BoxFit.cover,
                                   ),
                                 ),
-                                Positioned(
-                                  top: 6,
-                                  right: 6,
-                                  child: IconButton(
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: Colors.black45,
-                                      foregroundColor: Colors.white,
+                                if (_isSelf)
+                                  Positioned(
+                                    top: 6,
+                                    right: 6,
+                                    child: IconButton(
+                                      style: IconButton.styleFrom(
+                                        backgroundColor: Colors.black45,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      icon: const Icon(Icons.delete_outline, size: 20),
+                                      onPressed: () => _confirmDelete(p),
                                     ),
-                                    icon: const Icon(Icons.delete_outline, size: 20),
-                                    onPressed: () => _confirmDelete(p),
                                   ),
-                                ),
                               ],
                             ),
                           ),
@@ -443,6 +467,8 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
         ),
       );
     }
+
+    if (!_isSelf) return body;
 
     return Stack(
       children: [

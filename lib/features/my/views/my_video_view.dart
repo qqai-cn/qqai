@@ -23,12 +23,14 @@ class MyVideoView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex;
   final MyProfileWorkGridKind kind;
+  final int? userId;
 
   const MyVideoView({
     super.key,
     required this.tabIndex,
     required this.currentIndex,
     this.kind = MyProfileWorkGridKind.works,
+    this.userId,
   });
 
   @override
@@ -69,12 +71,40 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
   @override
   void didUpdateWidget(MyVideoView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId != widget.userId) {
+      _items = [];
+      _page = 1;
+      _hasMore = true;
+      _error = null;
+      if (widget.tabIndex == widget.currentIndex) {
+        unawaited(_loadFirstPage());
+      }
+      return;
+    }
     if (widget.tabIndex == widget.currentIndex &&
         oldWidget.currentIndex != widget.currentIndex &&
         _items.isEmpty &&
         !_loading) {
       unawaited(_loadFirstPage());
     }
+  }
+
+  bool get _isOtherUserLikes =>
+      widget.userId != null && widget.kind == MyProfileWorkGridKind.likes;
+
+  Future<BlogPageModelData> _fetchPage(int pageNo) {
+    final repo = ref.read(profileRepoProvider);
+    final userId = widget.userId;
+    if (userId != null) {
+      if (widget.kind == MyProfileWorkGridKind.likes) {
+        return Future.value(BlogPageModelData(list: []));
+      }
+      return repo.getUserWorksPage(userId, pageNo, pageSize: _pageSize);
+    }
+    if (widget.kind == MyProfileWorkGridKind.likes) {
+      return repo.getMyLikesPage(pageNo, pageSize: _pageSize);
+    }
+    return repo.getMyWorksPage(pageNo, pageSize: _pageSize);
   }
 
   void _onScroll() {
@@ -93,13 +123,7 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
       _error = null;
     });
     try {
-      final repo = ref.read(profileRepoProvider);
-      final BlogPageModelData data;
-      if (widget.kind == MyProfileWorkGridKind.likes) {
-        data = await repo.getMyLikesPage(1, pageSize: _pageSize);
-      } else {
-        data = await repo.getMyWorksPage(1, pageSize: _pageSize);
-      }
+      final data = await _fetchPage(1);
       if (!mounted) return;
       setState(() {
         _items = List.from(data.list ?? []);
@@ -120,14 +144,8 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
     if (_loadingMore || !_hasMore) return;
     setState(() => _loadingMore = true);
     try {
-      final repo = ref.read(profileRepoProvider);
       final next = _page + 1;
-      final BlogPageModelData data;
-      if (widget.kind == MyProfileWorkGridKind.likes) {
-        data = await repo.getMyLikesPage(next, pageSize: _pageSize);
-      } else {
-        data = await repo.getMyWorksPage(next, pageSize: _pageSize);
-      }
+      final data = await _fetchPage(next);
       final add = data.list ?? [];
       if (!mounted) return;
       setState(() {
@@ -214,9 +232,11 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
             hasScrollBody: false,
             child: Center(
               child: Text(
-                widget.kind == MyProfileWorkGridKind.likes
-                    ? '暂无喜欢的作品'
-                    : '暂无作品',
+                _isOtherUserLikes
+                    ? '喜欢的作品仅本人可见'
+                    : widget.kind == MyProfileWorkGridKind.likes
+                        ? '暂无喜欢的作品'
+                        : '暂无作品',
                 style: context.typo.body,
               ),
             ),

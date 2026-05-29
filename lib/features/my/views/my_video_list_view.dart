@@ -14,11 +14,13 @@ import 'package:qqai/config/theme/app_typography.dart';
 class MyVideoListView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex;
+  final int? userId;
 
   const MyVideoListView({
     super.key,
     required this.tabIndex,
     required this.currentIndex,
+    this.userId,
   });
 
   @override
@@ -59,6 +61,16 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
   @override
   void didUpdateWidget(MyVideoListView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId != widget.userId) {
+      _items = [];
+      _page = 1;
+      _hasMore = true;
+      _error = null;
+      if (widget.tabIndex == widget.currentIndex) {
+        unawaited(_loadFirstPage());
+      }
+      return;
+    }
     if (widget.tabIndex == widget.currentIndex &&
         oldWidget.currentIndex != widget.currentIndex &&
         _items.isEmpty &&
@@ -66,6 +78,8 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
       unawaited(_loadFirstPage());
     }
   }
+
+  bool get _isSelf => widget.userId == null;
 
   void _onScroll() {
     if (!_hasMore || _loadingMore || _loading) return;
@@ -84,7 +98,10 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
     });
     try {
       final repo = ref.read(profileRepoProvider);
-      final data = await repo.getMyCollectionsPage(1, pageSize: _pageSize);
+      final userId = widget.userId;
+      final data = userId != null
+          ? await repo.getUserCollectionsPage(userId, 1, pageSize: _pageSize)
+          : await repo.getMyCollectionsPage(1, pageSize: _pageSize);
       if (!mounted) return;
       setState(() {
         _items = List.from(data.list ?? []);
@@ -107,7 +124,10 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
     try {
       final repo = ref.read(profileRepoProvider);
       final next = _page + 1;
-      final data = await repo.getMyCollectionsPage(next, pageSize: _pageSize);
+      final userId = widget.userId;
+      final data = userId != null
+          ? await repo.getUserCollectionsPage(userId, next, pageSize: _pageSize)
+          : await repo.getMyCollectionsPage(next, pageSize: _pageSize);
       final add = data.list ?? [];
       if (!mounted) return;
       setState(() {
@@ -297,7 +317,10 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
           SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
-              child: Text('暂无合集，点击右下角创建', style: context.typo.body),
+              child: Text(
+                _isSelf ? '暂无合集，点击右下角创建' : '暂无合集',
+                style: context.typo.body,
+              ),
             ),
           ),
         ],
@@ -305,6 +328,8 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
     } else {
       body = _buildCollectionGrid(isWideScreen);
     }
+
+    if (!_isSelf) return body;
 
     return Stack(
       children: [
