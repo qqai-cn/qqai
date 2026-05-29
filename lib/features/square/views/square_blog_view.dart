@@ -5,11 +5,13 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../router/app_routes.dart';
+import '../../../util/amap_launcher.dart';
 import '../../../util/format_count.dart';
 import '../../../util/media_url.dart';
 import '../../blog/providers/blog_providers.dart';
 import '../../blog/views/blog_img_item_view.dart';
 import '../../blog/views/blog_video_item_view.dart';
+import '../../my/data/models/area_models.dart';
 import '../data/models/square_model.dart';
 import '../data/repos/square_repo.dart';
 import '../../../providers/auth_providers.dart';
@@ -325,6 +327,7 @@ class _SquareDetailHeader extends StatelessWidget {
         ? square.squareName!.trim()
         : '广场';
     final desc = square.squareDesc?.trim();
+    final areaLabel = formatAddressForDisplay(square.areaName, empty: '');
     final blogCount = square.blogCount;
     final canChat = square.hasChatConversation == true ||
         (square.chatConversationId != null && square.chatConversationId! > 0);
@@ -376,7 +379,35 @@ class _SquareDetailHeader extends StatelessWidget {
                 if (desc != null && desc.isNotEmpty) const SizedBox(height: 8),
                 if (desc != null && desc.isNotEmpty)
                   Text(desc, style: Theme.of(context).textTheme.bodyMedium),
-                if (desc != null && desc.isNotEmpty) const SizedBox(height: 8),
+                if (areaLabel.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 2,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        foregroundColor: Colors.black54,
+                      ),
+                      onPressed: () => _openAreaLocation(context, square),
+                      icon: const Icon(Icons.location_on_outlined, size: 16),
+                      label: Text(
+                        areaLabel,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.black54,
+                            ),
+                      ),
+                    ),
+                  ),
+                ],
+                if (desc != null && desc.isNotEmpty || areaLabel.isNotEmpty)
+                  const SizedBox(height: 8),
                 Text(
                   '${formatCompactCount(blogCount?.toInt())} 篇公开作品',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -407,5 +438,20 @@ class _SquareDetailHeader extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _openAreaLocation(BuildContext context, SquareItem square) async {
+    final keyword = square.areaName?.trim();
+    if (keyword == null || keyword.isEmpty) return;
+
+    final ok = await openAmapLocation(
+      name: keyword,
+      keyword: keyword,
+    );
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('无法打开高德地图')),
+      );
+    }
   }
 }

@@ -581,48 +581,42 @@ Widget buildVideoCoverStyleView(
               ),
             ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Container(height: 30),
-                Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.3), // 阴影颜色
-                        offset: Offset(3, 3), // 阴影偏移量，正值表示向右和向下
-                        blurRadius: 10, // 阴影模糊半径
-                        spreadRadius: 2, // 阴影扩散半径
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Container(
-                      height: 441,
-                      width: 211,
-                      decoration: BoxDecoration(
-                        color: Colors.blueAccent,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3), // 阴影颜色
-                            // color: Colors.black, // 阴影颜色
-                            offset: Offset(3, 3), // 阴影偏移量，正值表示向右和向下
-                            blurRadius: 15, // 阴影模糊半径
-                            spreadRadius: 2, // 阴影扩散半径
-                          ),
-                        ],
-                      ),
-                      child:
-                          imgMap[1] == null
-                              ? IconButton(
-                                onPressed: () {},
-                                icon: Text(
-                                  '添加到此1',
-                                  style: context.typo.body.copyWith(
-                                    color: Colors.white,
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 17),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          offset: const Offset(3, 3),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: SizedBox(
+                        height: 468,
+                        child:
+                            imgMap[1] == null
+                                ? ColoredBox(
+                                  color: Colors.blueAccent,
+                                  child: IconButton(
+                                    onPressed: () {},
+                                    icon: Text(
+                                      '添加到此1',
+                                      style: context.typo.body.copyWith(
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              )
-                              : imgMap[1],
+                                )
+                                : imgMap[1],
+                      ),
                     ),
                   ),
                 ),

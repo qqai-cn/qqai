@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SquareSaveReqVO {
 
- int get id; String get squareName; int? get userId; String? get squareImg; String? get squareDesc; int? get chatConversationId; int? get groupCreatorUserId;
+ int get id; String get squareName; int? get userId; String? get squareImg; String? get squareDesc; int? get areaId; int? get chatConversationId; int? get groupCreatorUserId;
 /// Create a copy of SquareSaveReqVO
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SquareSaveReqVOCopyWith<SquareSaveReqVO> get copyWith => _$SquareSaveReqVOCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareSaveReqVO&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.groupCreatorUserId, groupCreatorUserId) || other.groupCreatorUserId == groupCreatorUserId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareSaveReqVO&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.areaId, areaId) || other.areaId == areaId)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.groupCreatorUserId, groupCreatorUserId) || other.groupCreatorUserId == groupCreatorUserId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,squareName,userId,squareImg,squareDesc,chatConversationId,groupCreatorUserId);
+int get hashCode => Object.hash(runtimeType,id,squareName,userId,squareImg,squareDesc,areaId,chatConversationId,groupCreatorUserId);
 
 @override
 String toString() {
-  return 'SquareSaveReqVO(id: $id, squareName: $squareName, userId: $userId, squareImg: $squareImg, squareDesc: $squareDesc, chatConversationId: $chatConversationId, groupCreatorUserId: $groupCreatorUserId)';
+  return 'SquareSaveReqVO(id: $id, squareName: $squareName, userId: $userId, squareImg: $squareImg, squareDesc: $squareDesc, areaId: $areaId, chatConversationId: $chatConversationId, groupCreatorUserId: $groupCreatorUserId)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SquareSaveReqVOCopyWith<$Res>  {
   factory $SquareSaveReqVOCopyWith(SquareSaveReqVO value, $Res Function(SquareSaveReqVO) _then) = _$SquareSaveReqVOCopyWithImpl;
 @useResult
 $Res call({
- int id, String squareName, int? userId, String? squareImg, String? squareDesc, int? chatConversationId, int? groupCreatorUserId
+ int id, String squareName, int? userId, String? squareImg, String? squareDesc, int? areaId, int? chatConversationId, int? groupCreatorUserId
 });
 
 
@@ -65,14 +65,15 @@ class _$SquareSaveReqVOCopyWithImpl<$Res>
 
 /// Create a copy of SquareSaveReqVO
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? squareName = null,Object? userId = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? chatConversationId = freezed,Object? groupCreatorUserId = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? squareName = null,Object? userId = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? areaId = freezed,Object? chatConversationId = freezed,Object? groupCreatorUserId = freezed,}) {
   return _then(_self.copyWith(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,squareName: null == squareName ? _self.squareName : squareName // ignore: cast_nullable_to_non_nullable
 as String,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int?,squareImg: freezed == squareImg ? _self.squareImg : squareImg // ignore: cast_nullable_to_non_nullable
 as String?,squareDesc: freezed == squareDesc ? _self.squareDesc : squareDesc // ignore: cast_nullable_to_non_nullable
-as String?,chatConversationId: freezed == chatConversationId ? _self.chatConversationId : chatConversationId // ignore: cast_nullable_to_non_nullable
+as String?,areaId: freezed == areaId ? _self.areaId : areaId // ignore: cast_nullable_to_non_nullable
+as int?,chatConversationId: freezed == chatConversationId ? _self.chatConversationId : chatConversationId // ignore: cast_nullable_to_non_nullable
 as int?,groupCreatorUserId: freezed == groupCreatorUserId ? _self.groupCreatorUserId : groupCreatorUserId // ignore: cast_nullable_to_non_nullable
 as int?,
   ));
@@ -156,10 +157,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String squareName,  int? userId,  String? squareImg,  String? squareDesc,  int? chatConversationId,  int? groupCreatorUserId)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int id,  String squareName,  int? userId,  String? squareImg,  String? squareDesc,  int? areaId,  int? chatConversationId,  int? groupCreatorUserId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SquareSaveReqVO() when $default != null:
-return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squareDesc,_that.chatConversationId,_that.groupCreatorUserId);case _:
+return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squareDesc,_that.areaId,_that.chatConversationId,_that.groupCreatorUserId);case _:
   return orElse();
 
 }
@@ -177,10 +178,10 @@ return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squ
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String squareName,  int? userId,  String? squareImg,  String? squareDesc,  int? chatConversationId,  int? groupCreatorUserId)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int id,  String squareName,  int? userId,  String? squareImg,  String? squareDesc,  int? areaId,  int? chatConversationId,  int? groupCreatorUserId)  $default,) {final _that = this;
 switch (_that) {
 case _SquareSaveReqVO():
-return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squareDesc,_that.chatConversationId,_that.groupCreatorUserId);}
+return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squareDesc,_that.areaId,_that.chatConversationId,_that.groupCreatorUserId);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -194,10 +195,10 @@ return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squ
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String squareName,  int? userId,  String? squareImg,  String? squareDesc,  int? chatConversationId,  int? groupCreatorUserId)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int id,  String squareName,  int? userId,  String? squareImg,  String? squareDesc,  int? areaId,  int? chatConversationId,  int? groupCreatorUserId)?  $default,) {final _that = this;
 switch (_that) {
 case _SquareSaveReqVO() when $default != null:
-return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squareDesc,_that.chatConversationId,_that.groupCreatorUserId);case _:
+return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squareDesc,_that.areaId,_that.chatConversationId,_that.groupCreatorUserId);case _:
   return null;
 
 }
@@ -209,7 +210,7 @@ return $default(_that.id,_that.squareName,_that.userId,_that.squareImg,_that.squ
 @JsonSerializable()
 
 class _SquareSaveReqVO implements SquareSaveReqVO {
-  const _SquareSaveReqVO({required this.id, required this.squareName, this.userId, this.squareImg, this.squareDesc, this.chatConversationId, this.groupCreatorUserId});
+  const _SquareSaveReqVO({required this.id, required this.squareName, this.userId, this.squareImg, this.squareDesc, this.areaId, this.chatConversationId, this.groupCreatorUserId});
   factory _SquareSaveReqVO.fromJson(Map<String, dynamic> json) => _$SquareSaveReqVOFromJson(json);
 
 @override final  int id;
@@ -217,6 +218,7 @@ class _SquareSaveReqVO implements SquareSaveReqVO {
 @override final  int? userId;
 @override final  String? squareImg;
 @override final  String? squareDesc;
+@override final  int? areaId;
 @override final  int? chatConversationId;
 @override final  int? groupCreatorUserId;
 
@@ -233,16 +235,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareSaveReqVO&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.groupCreatorUserId, groupCreatorUserId) || other.groupCreatorUserId == groupCreatorUserId));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareSaveReqVO&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.areaId, areaId) || other.areaId == areaId)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.groupCreatorUserId, groupCreatorUserId) || other.groupCreatorUserId == groupCreatorUserId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,squareName,userId,squareImg,squareDesc,chatConversationId,groupCreatorUserId);
+int get hashCode => Object.hash(runtimeType,id,squareName,userId,squareImg,squareDesc,areaId,chatConversationId,groupCreatorUserId);
 
 @override
 String toString() {
-  return 'SquareSaveReqVO(id: $id, squareName: $squareName, userId: $userId, squareImg: $squareImg, squareDesc: $squareDesc, chatConversationId: $chatConversationId, groupCreatorUserId: $groupCreatorUserId)';
+  return 'SquareSaveReqVO(id: $id, squareName: $squareName, userId: $userId, squareImg: $squareImg, squareDesc: $squareDesc, areaId: $areaId, chatConversationId: $chatConversationId, groupCreatorUserId: $groupCreatorUserId)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$SquareSaveReqVOCopyWith<$Res> implements $SquareSaveReqVO
   factory _$SquareSaveReqVOCopyWith(_SquareSaveReqVO value, $Res Function(_SquareSaveReqVO) _then) = __$SquareSaveReqVOCopyWithImpl;
 @override @useResult
 $Res call({
- int id, String squareName, int? userId, String? squareImg, String? squareDesc, int? chatConversationId, int? groupCreatorUserId
+ int id, String squareName, int? userId, String? squareImg, String? squareDesc, int? areaId, int? chatConversationId, int? groupCreatorUserId
 });
 
 
@@ -270,14 +272,15 @@ class __$SquareSaveReqVOCopyWithImpl<$Res>
 
 /// Create a copy of SquareSaveReqVO
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? squareName = null,Object? userId = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? chatConversationId = freezed,Object? groupCreatorUserId = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? squareName = null,Object? userId = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? areaId = freezed,Object? chatConversationId = freezed,Object? groupCreatorUserId = freezed,}) {
   return _then(_SquareSaveReqVO(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int,squareName: null == squareName ? _self.squareName : squareName // ignore: cast_nullable_to_non_nullable
 as String,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
 as int?,squareImg: freezed == squareImg ? _self.squareImg : squareImg // ignore: cast_nullable_to_non_nullable
 as String?,squareDesc: freezed == squareDesc ? _self.squareDesc : squareDesc // ignore: cast_nullable_to_non_nullable
-as String?,chatConversationId: freezed == chatConversationId ? _self.chatConversationId : chatConversationId // ignore: cast_nullable_to_non_nullable
+as String?,areaId: freezed == areaId ? _self.areaId : areaId // ignore: cast_nullable_to_non_nullable
+as int?,chatConversationId: freezed == chatConversationId ? _self.chatConversationId : chatConversationId // ignore: cast_nullable_to_non_nullable
 as int?,groupCreatorUserId: freezed == groupCreatorUserId ? _self.groupCreatorUserId : groupCreatorUserId // ignore: cast_nullable_to_non_nullable
 as int?,
   ));

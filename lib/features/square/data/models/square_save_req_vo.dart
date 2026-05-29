@@ -12,6 +12,7 @@ sealed class SquareSaveReqVO with _$SquareSaveReqVO {
     int? userId,
     String? squareImg,
     String? squareDesc,
+    int? areaId,
     int? chatConversationId,
     int? groupCreatorUserId,
   }) = _SquareSaveReqVO;

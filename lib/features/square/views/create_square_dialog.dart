@@ -5,6 +5,9 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../router/app_routes.dart';
 import '../../../util/api_base_client.dart';
+import '../../my/data/models/area_models.dart';
+import '../../my/data/repos/area_repo.dart';
+import '../../my/widgets/area_picker_sheet.dart';
 import '../data/models/square_create_req_vo.dart';
 import '../data/models/square_model.dart';
 import '../data/repos/square_repo.dart';
@@ -44,6 +47,8 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
   final _descCtrl = TextEditingController();
   final _picker = ImagePicker();
   XFile? _imgFile;
+  int? _areaId;
+  String? _areaLabel;
   bool _submitting = false;
 
   @override
@@ -63,12 +68,63 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
     setState(() => _imgFile = file);
   }
 
+  Future<void> _pickArea() async {
+    final ref = widget.parentRef;
+    final treeAsync = ref.read(areaTreeProvider);
+    final tree = treeAsync.when(
+      data: (value) => value,
+      loading: () => null,
+      error: (error, stackTrace) => null,
+    );
+    if (tree == null || tree.isEmpty) {
+      try {
+        final loaded = await ref.read(areaRepoProvider).getTree();
+        if (!mounted) return;
+        if (loaded.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('地区数据加载失败')),
+          );
+          return;
+        }
+        ref.invalidate(areaTreeProvider);
+        await _openAreaPicker(loaded);
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('地区加载失败: $e')),
+          );
+        }
+      }
+      return;
+    }
+    await _openAreaPicker(tree);
+  }
+
+  Future<void> _openAreaPicker(List<AppAreaNode> tree) async {
+    final picked = await showAreaPickerSheet(
+      context,
+      provinces: tree,
+      initialAreaId: _areaId,
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _areaId = picked.areaId;
+      _areaLabel = picked.label;
+    });
+  }
+
   Future<void> _submit() async {
     final name = _nameCtrl.text.trim();
     if (name.isEmpty) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('请填写广场名称')));
+      return;
+    }
+    if (_areaId == null) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请选择所在地区')));
       return;
     }
     setState(() => _submitting = true);
@@ -83,6 +139,7 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
         squareDesc: _descCtrl.text.trim().isEmpty
             ? null
             : _descCtrl.text.trim(),
+        areaId: _areaId,
       );
       final item = await widget.parentRef
           .read(squareRepoProvider)
@@ -98,6 +155,41 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
     } finally {
       if (mounted) setState(() => _submitting = false);
     }
+  }
+
+  Widget _areaPickRow() {
+    final label = _areaLabel?.trim().isNotEmpty == true
+        ? _areaLabel!
+        : '请选择省 / 市 / 区';
+    final hasValue = _areaLabel?.trim().isNotEmpty == true;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: _submitting ? null : _pickArea,
+      child: InputDecorator(
+        decoration: _fieldDecoration('所在地区 *'),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: hasValue
+                      ? const Color(0xFF202124)
+                      : const Color(0xFF9CA3AF),
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF9CA3AF),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _imagePickRow({
@@ -327,6 +419,8 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
                     maxLines: 4,
                     decoration: _fieldDecoration('广场描述', hintText: '简单介绍这个广场'),
                   ),
+                  const SizedBox(height: 12),
+                  _areaPickRow(),
                   const SizedBox(height: 14),
                   _imagePickRow(
                     file: _imgFile,

@@ -13,6 +13,8 @@ sealed class SquareItem with _$SquareItem {
     String? userAvatar,
     String? squareImg,
     String? squareDesc,
+    int? areaId,
+    String? areaName,
     int? chatConversationId,
     bool? hasChatConversation,
     int? blogCount,

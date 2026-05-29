@@ -186,7 +186,7 @@ Uint8List _composeStyledCover(_StyledCoverComposeArgs args) {
       _drawImageSlot(canvas, frames[i + 1], x, y, 119, 67);
     }
   } else if (styleId == 3) {
-    _drawImageSlot(canvas, frames[0], 94, 30, 211, 441);
+    _drawImageSlot(canvas, frames[0], 17, 16, 366, 468);
   } else {
     for (var i = 0; i < 6; i++) {
       final x = 17 + (i % 3) * 124;

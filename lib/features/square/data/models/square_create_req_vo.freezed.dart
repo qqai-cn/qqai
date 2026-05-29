@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SquareCreateReqVO {
 
- String get squareName; String? get squareImg; String? get squareDesc;
+ String get squareName; String? get squareImg; String? get squareDesc; int? get areaId;
 /// Create a copy of SquareCreateReqVO
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SquareCreateReqVOCopyWith<SquareCreateReqVO> get copyWith => _$SquareCreateReqV
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareCreateReqVO&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareCreateReqVO&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.areaId, areaId) || other.areaId == areaId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,squareName,squareImg,squareDesc);
+int get hashCode => Object.hash(runtimeType,squareName,squareImg,squareDesc,areaId);
 
 @override
 String toString() {
-  return 'SquareCreateReqVO(squareName: $squareName, squareImg: $squareImg, squareDesc: $squareDesc)';
+  return 'SquareCreateReqVO(squareName: $squareName, squareImg: $squareImg, squareDesc: $squareDesc, areaId: $areaId)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SquareCreateReqVOCopyWith<$Res>  {
   factory $SquareCreateReqVOCopyWith(SquareCreateReqVO value, $Res Function(SquareCreateReqVO) _then) = _$SquareCreateReqVOCopyWithImpl;
 @useResult
 $Res call({
- String squareName, String? squareImg, String? squareDesc
+ String squareName, String? squareImg, String? squareDesc, int? areaId
 });
 
 
@@ -65,12 +65,13 @@ class _$SquareCreateReqVOCopyWithImpl<$Res>
 
 /// Create a copy of SquareCreateReqVO
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? squareName = null,Object? squareImg = freezed,Object? squareDesc = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? squareName = null,Object? squareImg = freezed,Object? squareDesc = freezed,Object? areaId = freezed,}) {
   return _then(_self.copyWith(
 squareName: null == squareName ? _self.squareName : squareName // ignore: cast_nullable_to_non_nullable
 as String,squareImg: freezed == squareImg ? _self.squareImg : squareImg // ignore: cast_nullable_to_non_nullable
 as String?,squareDesc: freezed == squareDesc ? _self.squareDesc : squareDesc // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,areaId: freezed == areaId ? _self.areaId : areaId // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 
@@ -152,10 +153,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String squareName,  String? squareImg,  String? squareDesc)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String squareName,  String? squareImg,  String? squareDesc,  int? areaId)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SquareCreateReqVO() when $default != null:
-return $default(_that.squareName,_that.squareImg,_that.squareDesc);case _:
+return $default(_that.squareName,_that.squareImg,_that.squareDesc,_that.areaId);case _:
   return orElse();
 
 }
@@ -173,10 +174,10 @@ return $default(_that.squareName,_that.squareImg,_that.squareDesc);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String squareName,  String? squareImg,  String? squareDesc)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String squareName,  String? squareImg,  String? squareDesc,  int? areaId)  $default,) {final _that = this;
 switch (_that) {
 case _SquareCreateReqVO():
-return $default(_that.squareName,_that.squareImg,_that.squareDesc);}
+return $default(_that.squareName,_that.squareImg,_that.squareDesc,_that.areaId);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -190,10 +191,10 @@ return $default(_that.squareName,_that.squareImg,_that.squareDesc);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String squareName,  String? squareImg,  String? squareDesc)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String squareName,  String? squareImg,  String? squareDesc,  int? areaId)?  $default,) {final _that = this;
 switch (_that) {
 case _SquareCreateReqVO() when $default != null:
-return $default(_that.squareName,_that.squareImg,_that.squareDesc);case _:
+return $default(_that.squareName,_that.squareImg,_that.squareDesc,_that.areaId);case _:
   return null;
 
 }
@@ -205,12 +206,13 @@ return $default(_that.squareName,_that.squareImg,_that.squareDesc);case _:
 @JsonSerializable()
 
 class _SquareCreateReqVO implements SquareCreateReqVO {
-  const _SquareCreateReqVO({required this.squareName, this.squareImg, this.squareDesc});
+  const _SquareCreateReqVO({required this.squareName, this.squareImg, this.squareDesc, this.areaId});
   factory _SquareCreateReqVO.fromJson(Map<String, dynamic> json) => _$SquareCreateReqVOFromJson(json);
 
 @override final  String squareName;
 @override final  String? squareImg;
 @override final  String? squareDesc;
+@override final  int? areaId;
 
 /// Create a copy of SquareCreateReqVO
 /// with the given fields replaced by the non-null parameter values.
@@ -225,16 +227,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareCreateReqVO&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareCreateReqVO&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.areaId, areaId) || other.areaId == areaId));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,squareName,squareImg,squareDesc);
+int get hashCode => Object.hash(runtimeType,squareName,squareImg,squareDesc,areaId);
 
 @override
 String toString() {
-  return 'SquareCreateReqVO(squareName: $squareName, squareImg: $squareImg, squareDesc: $squareDesc)';
+  return 'SquareCreateReqVO(squareName: $squareName, squareImg: $squareImg, squareDesc: $squareDesc, areaId: $areaId)';
 }
 
 
@@ -245,7 +247,7 @@ abstract mixin class _$SquareCreateReqVOCopyWith<$Res> implements $SquareCreateR
   factory _$SquareCreateReqVOCopyWith(_SquareCreateReqVO value, $Res Function(_SquareCreateReqVO) _then) = __$SquareCreateReqVOCopyWithImpl;
 @override @useResult
 $Res call({
- String squareName, String? squareImg, String? squareDesc
+ String squareName, String? squareImg, String? squareDesc, int? areaId
 });
 
 
@@ -262,12 +264,13 @@ class __$SquareCreateReqVOCopyWithImpl<$Res>
 
 /// Create a copy of SquareCreateReqVO
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? squareName = null,Object? squareImg = freezed,Object? squareDesc = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? squareName = null,Object? squareImg = freezed,Object? squareDesc = freezed,Object? areaId = freezed,}) {
   return _then(_SquareCreateReqVO(
 squareName: null == squareName ? _self.squareName : squareName // ignore: cast_nullable_to_non_nullable
 as String,squareImg: freezed == squareImg ? _self.squareImg : squareImg // ignore: cast_nullable_to_non_nullable
 as String?,squareDesc: freezed == squareDesc ? _self.squareDesc : squareDesc // ignore: cast_nullable_to_non_nullable
-as String?,
+as String?,areaId: freezed == areaId ? _self.areaId : areaId // ignore: cast_nullable_to_non_nullable
+as int?,
   ));
 }
 

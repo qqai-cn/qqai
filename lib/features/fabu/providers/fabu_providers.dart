@@ -13,9 +13,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get_thumbnail_video/index.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../util/api_base_client.dart';
+import '../../../util/image_bytes_xfile.dart';
 import '../../../components/blog/network_image_carousel_pages.dart';
 import '../../data/models/address_entity.dart';
 import '../../tool/video_cover_tool.dart';
@@ -227,14 +229,32 @@ class FabuNotifier extends _$FabuNotifier {
 
   void applyVideoCoverFromBytes(Uint8List bytes) {
     state = state.copyWith(
-      coverFile: XFile.fromData(
-        bytes,
-        name: 'video-cover.png',
-        mimeType: 'image/png',
-      ),
+      coverFile: xFileFromImageBytes(bytes, baseName: 'video-cover'),
       coverPreviewBytes: bytes,
       uploadedCoverUrl: null,
+      isCoverPreviewing: false,
     );
+  }
+
+  Future<void> captureVideoCoverAtTimeMs(XFile video, int timeMs) async {
+    _coverPreviewGeneration++;
+    state = state.copyWith(
+      isCoverPreviewing: true,
+      uploadedCoverUrl: null,
+    );
+    try {
+      final durationMs = await _videoDurationMs(video);
+      final clampedMs = timeMs.clamp(0, math.max(0, durationMs - 1)).toInt();
+      final bytes = await generateVideoCoverBytes(
+        videoPath: video.path,
+        timeMs: clampedMs,
+        imageFormat: ImageFormat.JPEG,
+      );
+      applyVideoCoverFromBytes(bytes);
+    } catch (e) {
+      state = state.copyWith(isCoverPreviewing: false);
+      rethrow;
+    }
   }
 
   void applyVideoCoverPreview() {
@@ -316,7 +336,9 @@ class FabuNotifier extends _$FabuNotifier {
     _resetVideoDurationCache();
     _coverPreviewGeneration++;
     state = state.copyWith(
+      files: [],
       videoFiles: [],
+      uploadedFileUrls: [],
       uploadedVideoUrls: [],
       coverFile: null,
       coverPreviewBytes: null,
@@ -617,11 +639,7 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   XFile _xFileFromCoverBytes(Uint8List bytes) {
-    return XFile.fromData(
-      bytes,
-      name: 'video-cover.png',
-      mimeType: 'image/png',
-    );
+    return xFileFromImageBytes(bytes, baseName: 'video-cover');
   }
 
   Future<XFile?> _generateVideoCoverXFile(XFile video) async {
@@ -637,7 +655,10 @@ class FabuNotifier extends _$FabuNotifier {
       debugPrint('Generate styled video cover failed: $e\n$st');
     }
     try {
-      final bytes = await generateVideoCoverBytes(videoPath: video.path);
+      final bytes = await generateVideoCoverBytes(
+        videoPath: video.path,
+        imageFormat: ImageFormat.JPEG,
+      );
       return _xFileFromCoverBytes(bytes);
     } catch (e, st) {
       debugPrint('Generate video cover thumbnail failed: $e\n$st');

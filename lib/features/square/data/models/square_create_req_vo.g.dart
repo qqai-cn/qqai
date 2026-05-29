@@ -11,6 +11,7 @@ _SquareCreateReqVO _$SquareCreateReqVOFromJson(Map<String, dynamic> json) =>
       squareName: json['squareName'] as String,
       squareImg: json['squareImg'] as String?,
       squareDesc: json['squareDesc'] as String?,
+      areaId: (json['areaId'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$SquareCreateReqVOToJson(_SquareCreateReqVO instance) =>
@@ -18,4 +19,5 @@ Map<String, dynamic> _$SquareCreateReqVOToJson(_SquareCreateReqVO instance) =>
       'squareName': instance.squareName,
       'squareImg': instance.squareImg,
       'squareDesc': instance.squareDesc,
+      'areaId': instance.areaId,
     };

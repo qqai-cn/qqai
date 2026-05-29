@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/components/video_player/local_qqai_player.dart';
 
 import '../../data/models/address_entity.dart';
 import '../../index/presentation/views/filter_page.dart';
@@ -45,6 +46,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
   final _coverRepaintKey = GlobalKey();
   final _coverPreviewKey = GlobalKey<VideoCoverStylePreviewState>();
+  final _videoPreviewController = LocalQqaiPlayerController();
   bool _showWidgetCoverPreview = false;
   int _coverDurationSeconds = 60;
 
@@ -341,6 +343,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
           FabuMediaPreviewTile(
             file: videoFile,
             isVideo: true,
+            videoPlayerController: _videoPreviewController,
             onRemove: notifier.clearVideo,
           ),
           12.verticalSpace,
@@ -422,7 +425,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               _VideoCoverPreviewCard(
                 bytes: previewBytes,
                 file: coverFile,
-                isLoading: false,
+                isLoading: state.isCoverPreviewing,
                 onTap: hasDisplay
                     ? () => _showCoverFullPreview(
                         bytes: previewBytes,
@@ -473,6 +476,13 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                   label: const Text('选择封面'),
                 ),
                 OutlinedButton.icon(
+                  onPressed: state.isCoverPreviewing
+                      ? null
+                      : () => _useCurrentVideoFrameAsCover(notifier),
+                  icon: const Icon(Icons.movie_creation_outlined, size: 18),
+                  label: const Text('使用当前帧'),
+                ),
+                OutlinedButton.icon(
                   onPressed: () => _refreshCoverPreview(notifier),
                   icon: const Icon(Icons.video_settings_outlined, size: 18),
                   label: const Text('生成预览'),
@@ -503,7 +513,29 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     if (hasDisplay) {
       return '当前预览将作为封面，发布时自动上传';
     }
-    return '选择样式后点击「生成预览」，或直接上传封面';
+    return '拖动进度条定位画面后点击「使用当前帧」，或上传/生成封面';
+  }
+
+  Future<void> _useCurrentVideoFrameAsCover(FabuNotifier notifier) async {
+    final state = ref.read(fabuProvider);
+    if (state.videoFiles.isEmpty) return;
+
+    final position = _videoPreviewController.position;
+    if (position == null) {
+      _showMessage('视频尚未就绪，请稍后再试');
+      return;
+    }
+
+    setState(() => _showWidgetCoverPreview = false);
+    try {
+      await notifier.captureVideoCoverAtTimeMs(
+        state.videoFiles.first,
+        position.inMilliseconds,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage('截取封面失败：$e');
+    }
   }
 
   Future<void> _refreshCoverPreview(FabuNotifier notifier) async {

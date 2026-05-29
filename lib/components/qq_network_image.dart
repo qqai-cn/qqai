@@ -27,19 +27,25 @@ class QqNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = CachedNetworkImage(
-      imageUrl: url,
+    Widget image = Image(
+      image: CachedNetworkImageProvider(
+        url,
+        maxWidth: cacheWidth,
+        maxHeight: cacheHeight,
+      ),
       fit: fit,
       width: width,
       height: height,
-      memCacheWidth: cacheWidth,
-      memCacheHeight: cacheHeight,
-      fadeInDuration: const Duration(milliseconds: 120),
-      placeholder: (_, _) => _ImagePlaceholder(
-        color: placeholderColor,
-        indicatorColor: errorIconColor,
-      ),
-      errorWidget: (_, _, _) =>
+      gaplessPlayback: true,
+      filterQuality: FilterQuality.medium,
+      frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded || frame != null) return child;
+        return _ImagePlaceholder(
+          color: placeholderColor,
+          indicatorColor: errorIconColor,
+        );
+      },
+      errorBuilder: (_, _, _) =>
           _ImageError(color: placeholderColor, iconColor: errorIconColor),
     );
 

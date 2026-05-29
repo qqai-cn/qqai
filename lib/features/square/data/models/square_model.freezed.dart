@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$SquareItem {
 
- int? get id; String? get squareName; int? get userId; String? get userAvatar; String? get squareImg; String? get squareDesc; int? get chatConversationId; bool? get hasChatConversation; int? get blogCount; bool? get followedByMe; String? get createTime;
+ int? get id; String? get squareName; int? get userId; String? get userAvatar; String? get squareImg; String? get squareDesc; int? get areaId; String? get areaName; int? get chatConversationId; bool? get hasChatConversation; int? get blogCount; bool? get followedByMe; String? get createTime;
 /// Create a copy of SquareItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -28,16 +28,16 @@ $SquareItemCopyWith<SquareItem> get copyWith => _$SquareItemCopyWithImpl<SquareI
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareItem&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.hasChatConversation, hasChatConversation) || other.hasChatConversation == hasChatConversation)&&(identical(other.blogCount, blogCount) || other.blogCount == blogCount)&&(identical(other.followedByMe, followedByMe) || other.followedByMe == followedByMe)&&(identical(other.createTime, createTime) || other.createTime == createTime));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SquareItem&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.areaId, areaId) || other.areaId == areaId)&&(identical(other.areaName, areaName) || other.areaName == areaName)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.hasChatConversation, hasChatConversation) || other.hasChatConversation == hasChatConversation)&&(identical(other.blogCount, blogCount) || other.blogCount == blogCount)&&(identical(other.followedByMe, followedByMe) || other.followedByMe == followedByMe)&&(identical(other.createTime, createTime) || other.createTime == createTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,squareName,userId,userAvatar,squareImg,squareDesc,chatConversationId,hasChatConversation,blogCount,followedByMe,createTime);
+int get hashCode => Object.hash(runtimeType,id,squareName,userId,userAvatar,squareImg,squareDesc,areaId,areaName,chatConversationId,hasChatConversation,blogCount,followedByMe,createTime);
 
 @override
 String toString() {
-  return 'SquareItem(id: $id, squareName: $squareName, userId: $userId, userAvatar: $userAvatar, squareImg: $squareImg, squareDesc: $squareDesc, chatConversationId: $chatConversationId, hasChatConversation: $hasChatConversation, blogCount: $blogCount, followedByMe: $followedByMe, createTime: $createTime)';
+  return 'SquareItem(id: $id, squareName: $squareName, userId: $userId, userAvatar: $userAvatar, squareImg: $squareImg, squareDesc: $squareDesc, areaId: $areaId, areaName: $areaName, chatConversationId: $chatConversationId, hasChatConversation: $hasChatConversation, blogCount: $blogCount, followedByMe: $followedByMe, createTime: $createTime)';
 }
 
 
@@ -48,7 +48,7 @@ abstract mixin class $SquareItemCopyWith<$Res>  {
   factory $SquareItemCopyWith(SquareItem value, $Res Function(SquareItem) _then) = _$SquareItemCopyWithImpl;
 @useResult
 $Res call({
- int? id, String? squareName, int? userId, String? userAvatar, String? squareImg, String? squareDesc, int? chatConversationId, bool? hasChatConversation, int? blogCount, bool? followedByMe, String? createTime
+ int? id, String? squareName, int? userId, String? userAvatar, String? squareImg, String? squareDesc, int? areaId, String? areaName, int? chatConversationId, bool? hasChatConversation, int? blogCount, bool? followedByMe, String? createTime
 });
 
 
@@ -65,7 +65,7 @@ class _$SquareItemCopyWithImpl<$Res>
 
 /// Create a copy of SquareItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? squareName = freezed,Object? userId = freezed,Object? userAvatar = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? chatConversationId = freezed,Object? hasChatConversation = freezed,Object? blogCount = freezed,Object? followedByMe = freezed,Object? createTime = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? squareName = freezed,Object? userId = freezed,Object? userAvatar = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? areaId = freezed,Object? areaName = freezed,Object? chatConversationId = freezed,Object? hasChatConversation = freezed,Object? blogCount = freezed,Object? followedByMe = freezed,Object? createTime = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,squareName: freezed == squareName ? _self.squareName : squareName // ignore: cast_nullable_to_non_nullable
@@ -73,6 +73,8 @@ as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nul
 as int?,userAvatar: freezed == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String?,squareImg: freezed == squareImg ? _self.squareImg : squareImg // ignore: cast_nullable_to_non_nullable
 as String?,squareDesc: freezed == squareDesc ? _self.squareDesc : squareDesc // ignore: cast_nullable_to_non_nullable
+as String?,areaId: freezed == areaId ? _self.areaId : areaId // ignore: cast_nullable_to_non_nullable
+as int?,areaName: freezed == areaName ? _self.areaName : areaName // ignore: cast_nullable_to_non_nullable
 as String?,chatConversationId: freezed == chatConversationId ? _self.chatConversationId : chatConversationId // ignore: cast_nullable_to_non_nullable
 as int?,hasChatConversation: freezed == hasChatConversation ? _self.hasChatConversation : hasChatConversation // ignore: cast_nullable_to_non_nullable
 as bool?,blogCount: freezed == blogCount ? _self.blogCount : blogCount // ignore: cast_nullable_to_non_nullable
@@ -160,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  String? squareName,  int? userId,  String? userAvatar,  String? squareImg,  String? squareDesc,  int? chatConversationId,  bool? hasChatConversation,  int? blogCount,  bool? followedByMe,  String? createTime)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  String? squareName,  int? userId,  String? userAvatar,  String? squareImg,  String? squareDesc,  int? areaId,  String? areaName,  int? chatConversationId,  bool? hasChatConversation,  int? blogCount,  bool? followedByMe,  String? createTime)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SquareItem() when $default != null:
-return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.squareImg,_that.squareDesc,_that.chatConversationId,_that.hasChatConversation,_that.blogCount,_that.followedByMe,_that.createTime);case _:
+return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.squareImg,_that.squareDesc,_that.areaId,_that.areaName,_that.chatConversationId,_that.hasChatConversation,_that.blogCount,_that.followedByMe,_that.createTime);case _:
   return orElse();
 
 }
@@ -181,10 +183,10 @@ return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.sq
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  String? squareName,  int? userId,  String? userAvatar,  String? squareImg,  String? squareDesc,  int? chatConversationId,  bool? hasChatConversation,  int? blogCount,  bool? followedByMe,  String? createTime)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  String? squareName,  int? userId,  String? userAvatar,  String? squareImg,  String? squareDesc,  int? areaId,  String? areaName,  int? chatConversationId,  bool? hasChatConversation,  int? blogCount,  bool? followedByMe,  String? createTime)  $default,) {final _that = this;
 switch (_that) {
 case _SquareItem():
-return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.squareImg,_that.squareDesc,_that.chatConversationId,_that.hasChatConversation,_that.blogCount,_that.followedByMe,_that.createTime);}
+return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.squareImg,_that.squareDesc,_that.areaId,_that.areaName,_that.chatConversationId,_that.hasChatConversation,_that.blogCount,_that.followedByMe,_that.createTime);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -198,10 +200,10 @@ return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.sq
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  String? squareName,  int? userId,  String? userAvatar,  String? squareImg,  String? squareDesc,  int? chatConversationId,  bool? hasChatConversation,  int? blogCount,  bool? followedByMe,  String? createTime)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  String? squareName,  int? userId,  String? userAvatar,  String? squareImg,  String? squareDesc,  int? areaId,  String? areaName,  int? chatConversationId,  bool? hasChatConversation,  int? blogCount,  bool? followedByMe,  String? createTime)?  $default,) {final _that = this;
 switch (_that) {
 case _SquareItem() when $default != null:
-return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.squareImg,_that.squareDesc,_that.chatConversationId,_that.hasChatConversation,_that.blogCount,_that.followedByMe,_that.createTime);case _:
+return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.squareImg,_that.squareDesc,_that.areaId,_that.areaName,_that.chatConversationId,_that.hasChatConversation,_that.blogCount,_that.followedByMe,_that.createTime);case _:
   return null;
 
 }
@@ -213,7 +215,7 @@ return $default(_that.id,_that.squareName,_that.userId,_that.userAvatar,_that.sq
 @JsonSerializable()
 
 class _SquareItem implements SquareItem {
-  const _SquareItem({this.id, this.squareName, this.userId, this.userAvatar, this.squareImg, this.squareDesc, this.chatConversationId, this.hasChatConversation, this.blogCount, this.followedByMe, this.createTime});
+  const _SquareItem({this.id, this.squareName, this.userId, this.userAvatar, this.squareImg, this.squareDesc, this.areaId, this.areaName, this.chatConversationId, this.hasChatConversation, this.blogCount, this.followedByMe, this.createTime});
   factory _SquareItem.fromJson(Map<String, dynamic> json) => _$SquareItemFromJson(json);
 
 @override final  int? id;
@@ -222,6 +224,8 @@ class _SquareItem implements SquareItem {
 @override final  String? userAvatar;
 @override final  String? squareImg;
 @override final  String? squareDesc;
+@override final  int? areaId;
+@override final  String? areaName;
 @override final  int? chatConversationId;
 @override final  bool? hasChatConversation;
 @override final  int? blogCount;
@@ -241,16 +245,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareItem&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.hasChatConversation, hasChatConversation) || other.hasChatConversation == hasChatConversation)&&(identical(other.blogCount, blogCount) || other.blogCount == blogCount)&&(identical(other.followedByMe, followedByMe) || other.followedByMe == followedByMe)&&(identical(other.createTime, createTime) || other.createTime == createTime));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _SquareItem&&(identical(other.id, id) || other.id == id)&&(identical(other.squareName, squareName) || other.squareName == squareName)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.userAvatar, userAvatar) || other.userAvatar == userAvatar)&&(identical(other.squareImg, squareImg) || other.squareImg == squareImg)&&(identical(other.squareDesc, squareDesc) || other.squareDesc == squareDesc)&&(identical(other.areaId, areaId) || other.areaId == areaId)&&(identical(other.areaName, areaName) || other.areaName == areaName)&&(identical(other.chatConversationId, chatConversationId) || other.chatConversationId == chatConversationId)&&(identical(other.hasChatConversation, hasChatConversation) || other.hasChatConversation == hasChatConversation)&&(identical(other.blogCount, blogCount) || other.blogCount == blogCount)&&(identical(other.followedByMe, followedByMe) || other.followedByMe == followedByMe)&&(identical(other.createTime, createTime) || other.createTime == createTime));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hash(runtimeType,id,squareName,userId,userAvatar,squareImg,squareDesc,chatConversationId,hasChatConversation,blogCount,followedByMe,createTime);
+int get hashCode => Object.hash(runtimeType,id,squareName,userId,userAvatar,squareImg,squareDesc,areaId,areaName,chatConversationId,hasChatConversation,blogCount,followedByMe,createTime);
 
 @override
 String toString() {
-  return 'SquareItem(id: $id, squareName: $squareName, userId: $userId, userAvatar: $userAvatar, squareImg: $squareImg, squareDesc: $squareDesc, chatConversationId: $chatConversationId, hasChatConversation: $hasChatConversation, blogCount: $blogCount, followedByMe: $followedByMe, createTime: $createTime)';
+  return 'SquareItem(id: $id, squareName: $squareName, userId: $userId, userAvatar: $userAvatar, squareImg: $squareImg, squareDesc: $squareDesc, areaId: $areaId, areaName: $areaName, chatConversationId: $chatConversationId, hasChatConversation: $hasChatConversation, blogCount: $blogCount, followedByMe: $followedByMe, createTime: $createTime)';
 }
 
 
@@ -261,7 +265,7 @@ abstract mixin class _$SquareItemCopyWith<$Res> implements $SquareItemCopyWith<$
   factory _$SquareItemCopyWith(_SquareItem value, $Res Function(_SquareItem) _then) = __$SquareItemCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, String? squareName, int? userId, String? userAvatar, String? squareImg, String? squareDesc, int? chatConversationId, bool? hasChatConversation, int? blogCount, bool? followedByMe, String? createTime
+ int? id, String? squareName, int? userId, String? userAvatar, String? squareImg, String? squareDesc, int? areaId, String? areaName, int? chatConversationId, bool? hasChatConversation, int? blogCount, bool? followedByMe, String? createTime
 });
 
 
@@ -278,7 +282,7 @@ class __$SquareItemCopyWithImpl<$Res>
 
 /// Create a copy of SquareItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? squareName = freezed,Object? userId = freezed,Object? userAvatar = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? chatConversationId = freezed,Object? hasChatConversation = freezed,Object? blogCount = freezed,Object? followedByMe = freezed,Object? createTime = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? squareName = freezed,Object? userId = freezed,Object? userAvatar = freezed,Object? squareImg = freezed,Object? squareDesc = freezed,Object? areaId = freezed,Object? areaName = freezed,Object? chatConversationId = freezed,Object? hasChatConversation = freezed,Object? blogCount = freezed,Object? followedByMe = freezed,Object? createTime = freezed,}) {
   return _then(_SquareItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,squareName: freezed == squareName ? _self.squareName : squareName // ignore: cast_nullable_to_non_nullable
@@ -286,6 +290,8 @@ as String?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nul
 as int?,userAvatar: freezed == userAvatar ? _self.userAvatar : userAvatar // ignore: cast_nullable_to_non_nullable
 as String?,squareImg: freezed == squareImg ? _self.squareImg : squareImg // ignore: cast_nullable_to_non_nullable
 as String?,squareDesc: freezed == squareDesc ? _self.squareDesc : squareDesc // ignore: cast_nullable_to_non_nullable
+as String?,areaId: freezed == areaId ? _self.areaId : areaId // ignore: cast_nullable_to_non_nullable
+as int?,areaName: freezed == areaName ? _self.areaName : areaName // ignore: cast_nullable_to_non_nullable
 as String?,chatConversationId: freezed == chatConversationId ? _self.chatConversationId : chatConversationId // ignore: cast_nullable_to_non_nullable
 as int?,hasChatConversation: freezed == hasChatConversation ? _self.hasChatConversation : hasChatConversation // ignore: cast_nullable_to_non_nullable
 as bool?,blogCount: freezed == blogCount ? _self.blogCount : blogCount // ignore: cast_nullable_to_non_nullable

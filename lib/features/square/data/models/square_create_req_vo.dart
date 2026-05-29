@@ -9,6 +9,7 @@ sealed class SquareCreateReqVO with _$SquareCreateReqVO {
     required String squareName,
     String? squareImg,
     String? squareDesc,
+    int? areaId,
   }) = _SquareCreateReqVO;
 
   factory SquareCreateReqVO.fromJson(Map<String, dynamic> json) =>

@@ -13,6 +13,7 @@ _SquareSaveReqVO _$SquareSaveReqVOFromJson(Map<String, dynamic> json) =>
       userId: (json['userId'] as num?)?.toInt(),
       squareImg: json['squareImg'] as String?,
       squareDesc: json['squareDesc'] as String?,
+      areaId: (json['areaId'] as num?)?.toInt(),
       chatConversationId: (json['chatConversationId'] as num?)?.toInt(),
       groupCreatorUserId: (json['groupCreatorUserId'] as num?)?.toInt(),
     );
@@ -24,6 +25,7 @@ Map<String, dynamic> _$SquareSaveReqVOToJson(_SquareSaveReqVO instance) =>
       'userId': instance.userId,
       'squareImg': instance.squareImg,
       'squareDesc': instance.squareDesc,
+      'areaId': instance.areaId,
       'chatConversationId': instance.chatConversationId,
       'groupCreatorUserId': instance.groupCreatorUserId,
     };

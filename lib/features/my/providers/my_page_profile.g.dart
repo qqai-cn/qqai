@@ -46,4 +46,4 @@ final class MyPageProfileProvider
   }
 }
 
-String _$myPageProfileHash() => r'b37760c7d2d1a24c2d8d678292754b69fd38d614';
+String _$myPageProfileHash() => r'16f9242baafa84d296bc93eb390559f4c2a39f3c';
