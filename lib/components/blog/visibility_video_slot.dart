@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:qqai/components/blog/video_cover_fit.dart';
+import 'package:qqai/components/blog/video_thumbnail.dart';
+import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:qqai/util/visibility_safe.dart';
@@ -63,31 +64,19 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
     return VisibilityDetector(
       key: Key('lazy_video_${widget.url.hashCode}'),
       onVisibilityChanged: _handleVisibility,
-      child: hasResolvableMediaUrl(widget.url) && _shouldMountPlayer
-          ? VideoItemPlayer(
-              url: widget.url,
-              imgUrl: widget.imgUrl,
-              videoId: widget.videoId,
-            )
-          : _VideoThumbnail(imgUrl: widget.imgUrl),
-    );
-  }
-}
-
-class _VideoThumbnail extends StatelessWidget {
-  final String imgUrl;
-
-  const _VideoThumbnail({required this.imgUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      alignment: Alignment.center,
-      children: [
-        VideoCoverFit(url: imgUrl),
-        const Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
-      ],
+      child: VideoAspectRatioBox(
+        videoUrl: widget.url,
+        builder: (context, aspectRatio) {
+          return hasResolvableMediaUrl(widget.url) && _shouldMountPlayer
+              ? VideoItemPlayer(
+                  url: widget.url,
+                  imgUrl: widget.imgUrl,
+                  videoId: widget.videoId,
+                  fallbackAspectRatio: aspectRatio,
+                )
+              : VideoThumbnail(imgUrl: widget.imgUrl, aspectRatio: aspectRatio);
+        },
+      ),
     );
   }
 }

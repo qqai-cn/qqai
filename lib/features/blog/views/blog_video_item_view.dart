@@ -140,14 +140,11 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
               ),
               Expanded(
                 flex: 9,
-                child: AspectRatio(
-                  aspectRatio: 15 / 9,
-                  child: VisibilityVideoSlot(
-                    key: Key('blog_video_${widget.blogItem.id}'),
-                    url: videoUrl,
-                    imgUrl: coverUrl,
-                    videoId: widget.blogItem.id,
-                  ),
+                child: VisibilityVideoSlot(
+                  key: Key('blog_video_${widget.blogItem.id}'),
+                  url: videoUrl,
+                  imgUrl: coverUrl,
+                  videoId: widget.blogItem.id,
                 ),
               ),
               if (widget.category == HomeBlogTab.local &&

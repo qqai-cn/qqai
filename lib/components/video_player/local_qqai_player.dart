@@ -5,6 +5,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
+import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:video_player/video_player.dart';
 
 /// 供父组件读取本地播放器当前进度（如截取封面帧）。
@@ -15,8 +16,7 @@ class LocalQqaiPlayerController {
 
   void detach() => _manager = null;
 
-  VideoPlayerValue? get _value =>
-      _manager?.flickVideoManager?.videoPlayerValue;
+  VideoPlayerValue? get _value => _manager?.flickVideoManager?.videoPlayerValue;
 
   Duration? get position {
     final value = _value;
@@ -42,6 +42,7 @@ class LocalQqaiPlayer extends StatefulWidget {
     this.playerController,
     this.autoPlay = false,
     this.videoFit = BoxFit.contain,
+    this.fallbackAspectRatio = 15 / 9,
   });
 
   final XFile file;
@@ -49,6 +50,7 @@ class LocalQqaiPlayer extends StatefulWidget {
   final LocalQqaiPlayerController? playerController;
   final bool autoPlay;
   final BoxFit videoFit;
+  final double fallbackAspectRatio;
 
   @override
   State<LocalQqaiPlayer> createState() => _LocalQqaiPlayerState();
@@ -56,6 +58,7 @@ class LocalQqaiPlayer extends StatefulWidget {
 
 class _LocalQqaiPlayerState extends State<LocalQqaiPlayer> {
   FlickManager? _flickManager;
+  VideoPlayerController? _videoController;
   Object? _initError;
 
   @override
@@ -90,6 +93,7 @@ class _LocalQqaiPlayerState extends State<LocalQqaiPlayer> {
       widget.playerController?.attach(manager);
       setState(() {
         _flickManager = manager;
+        _videoController = controller;
         _initError = null;
       });
     } catch (e) {
@@ -104,6 +108,7 @@ class _LocalQqaiPlayerState extends State<LocalQqaiPlayer> {
     widget.playerController?.detach();
     _flickManager?.dispose();
     _flickManager = null;
+    _videoController = null;
   }
 
   @override
@@ -138,7 +143,7 @@ class _LocalQqaiPlayerState extends State<LocalQqaiPlayer> {
       );
     }
 
-    return SafeFlickVideoPlayer(
+    final player = SafeFlickVideoPlayer(
       flickManager: manager,
       wakelockEnabled: false,
       flickVideoWithControls: FlickVideoWithControls(
@@ -155,6 +160,92 @@ class _LocalQqaiPlayerState extends State<LocalQqaiPlayer> {
         controls: widget.controls,
       ),
     );
+    final controller = _videoController;
+    if (controller == null) return player;
+    return ValueListenableBuilder<VideoPlayerValue>(
+      valueListenable: controller,
+      builder: (context, value, child) {
+        return AspectRatio(
+          aspectRatio: effectiveVideoAspectRatio(
+            value,
+            widget.fallbackAspectRatio,
+          ),
+          child: child!,
+        );
+      },
+      child: player,
+    );
+  }
+}
+
+typedef LocalVideoAspectRatioBuilder =
+    Widget Function(BuildContext context, double aspectRatio);
+
+class LocalVideoAspectRatioBox extends StatefulWidget {
+  const LocalVideoAspectRatioBox({
+    super.key,
+    required this.file,
+    required this.builder,
+    this.fallbackAspectRatio = 15 / 9,
+  });
+
+  final XFile file;
+  final LocalVideoAspectRatioBuilder builder;
+  final double fallbackAspectRatio;
+
+  @override
+  State<LocalVideoAspectRatioBox> createState() =>
+      _LocalVideoAspectRatioBoxState();
+}
+
+class _LocalVideoAspectRatioBoxState extends State<LocalVideoAspectRatioBox> {
+  double? _aspectRatio;
+  int _loadVersion = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAspectRatio();
+  }
+
+  @override
+  void didUpdateWidget(LocalVideoAspectRatioBox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.file.path != widget.file.path ||
+        oldWidget.fallbackAspectRatio != widget.fallbackAspectRatio) {
+      _aspectRatio = null;
+      _loadAspectRatio();
+    }
+  }
+
+  Future<void> _loadAspectRatio() async {
+    final version = ++_loadVersion;
+    final controller = createVideoControllerFromXFile(widget.file);
+    try {
+      await controller.initialize();
+      if (!mounted || version != _loadVersion) return;
+      setState(() {
+        _aspectRatio = effectiveVideoAspectRatio(
+          controller.value,
+          widget.fallbackAspectRatio,
+        );
+      });
+    } catch (_) {
+      // Keep the fallback ratio if metadata cannot be loaded.
+    } finally {
+      await controller.dispose();
+    }
+  }
+
+  @override
+  void dispose() {
+    _loadVersion++;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return widget.builder(context, _aspectRatio ?? widget.fallbackAspectRatio);
   }
 }
 

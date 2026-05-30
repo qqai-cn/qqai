@@ -31,16 +31,16 @@ class FabuMediaPreviewTile extends StatelessWidget {
             controls: const ItemControls(),
           )
         : kIsWeb
-            ? Image.network(
-                file.path,
-                fit: BoxFit.cover,
-                errorBuilder: _buildImageError,
-              )
-            : Image.file(
-                File(file.path),
-                fit: BoxFit.cover,
-                errorBuilder: _buildImageError,
-              );
+        ? Image.network(
+            file.path,
+            fit: BoxFit.cover,
+            errorBuilder: _buildImageError,
+          )
+        : Image.file(
+            File(file.path),
+            fit: BoxFit.cover,
+            errorBuilder: _buildImageError,
+          );
     final preview = ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: Stack(
@@ -79,9 +79,26 @@ class FabuMediaPreviewTile extends StatelessWidget {
           ),
           child: SizedBox(
             width: double.infinity,
-            child: AspectRatio(
-              aspectRatio: 15 / 9,
-              child: preview,
+            child: LocalVideoAspectRatioBox(
+              file: file,
+              builder: (context, aspectRatio) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxWidth = constraints.maxWidth;
+                    final width = aspectRatio < 1 ? maxWidth * 0.5 : maxWidth;
+                    return Align(
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: width,
+                        child: AspectRatio(
+                          aspectRatio: aspectRatio,
+                          child: preview,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ),
@@ -91,11 +108,7 @@ class FabuMediaPreviewTile extends StatelessWidget {
     final imageSize = 112.w.clamp(96.0, 132.0).toDouble();
     return Padding(
       padding: const EdgeInsets.only(right: 10, bottom: 10),
-      child: SizedBox(
-        width: imageSize,
-        height: imageSize,
-        child: preview,
-      ),
+      child: SizedBox(width: imageSize, height: imageSize, child: preview),
     );
   }
 

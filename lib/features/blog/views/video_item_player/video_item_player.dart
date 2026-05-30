@@ -7,16 +7,18 @@ class VideoItemPlayer extends StatefulWidget {
   final String url;
   final String imgUrl;
   final int? videoId;
+  final double fallbackAspectRatio;
 
   const VideoItemPlayer({
     super.key,
     required this.url,
     required this.imgUrl,
     this.videoId,
+    this.fallbackAspectRatio = 15 / 9,
   });
 
   @override
-  _FeedPlayerState createState() => _FeedPlayerState();
+  State<VideoItemPlayer> createState() => _FeedPlayerState();
 }
 
 class _FeedPlayerState extends State<VideoItemPlayer> {
@@ -37,6 +39,7 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           url: widget.url,
           autoPlay: false,
           videoId: widget.videoId,
+          fallbackAspectRatio: widget.fallbackAspectRatio,
         ),
       ),
     );

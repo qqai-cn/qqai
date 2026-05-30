@@ -374,6 +374,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final hasManualPreview =
         !styledPreviewActive && (previewBytes != null || coverFile != null);
     final hasDisplay = styledPreviewActive || hasManualPreview;
+    final videoFile = state.videoFiles.isNotEmpty
+        ? state.videoFiles.first
+        : null;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -412,26 +415,34 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               ],
             ),
             12.verticalSpace,
-            if (styledPreviewActive)
-              _WidgetVideoCoverPreviewCard(
-                videoPath: state.videoFiles.first.path,
-                styleId: state.selectedCoverStyleId,
-                durationSeconds: _coverDurationSeconds,
-                repaintKey: _coverRepaintKey,
-                previewKey: _coverPreviewKey,
-                onTap: () => _showWidgetCoverFullPreview(),
-              )
-            else
-              _VideoCoverPreviewCard(
-                bytes: previewBytes,
-                file: coverFile,
-                isLoading: state.isCoverPreviewing,
-                onTap: hasDisplay
-                    ? () => _showCoverFullPreview(
-                        bytes: previewBytes,
-                        file: coverFile,
-                      )
-                    : null,
+            if (videoFile != null)
+              LocalVideoAspectRatioBox(
+                file: videoFile,
+                builder: (context, aspectRatio) {
+                  if (styledPreviewActive) {
+                    return _WidgetVideoCoverPreviewCard(
+                      videoPath: videoFile.path,
+                      styleId: state.selectedCoverStyleId,
+                      durationSeconds: _coverDurationSeconds,
+                      repaintKey: _coverRepaintKey,
+                      previewKey: _coverPreviewKey,
+                      aspectRatio: aspectRatio,
+                      onTap: () => _showWidgetCoverFullPreview(),
+                    );
+                  }
+                  return _VideoCoverPreviewCard(
+                    bytes: previewBytes,
+                    file: coverFile,
+                    isLoading: state.isCoverPreviewing,
+                    aspectRatio: aspectRatio,
+                    onTap: hasDisplay
+                        ? () => _showCoverFullPreview(
+                            bytes: previewBytes,
+                            file: coverFile,
+                          )
+                        : null,
+                  );
+                },
               ),
             12.verticalSpace,
             Wrap(
@@ -969,6 +980,7 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
     required this.durationSeconds,
     required this.repaintKey,
     required this.previewKey,
+    required this.aspectRatio,
     this.onTap,
   });
 
@@ -977,6 +989,7 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
   final int durationSeconds;
   final GlobalKey repaintKey;
   final GlobalKey<VideoCoverStylePreviewState> previewKey;
+  final double aspectRatio;
   final VoidCallback? onTap;
 
   @override
@@ -1125,12 +1138,14 @@ class _VideoCoverPreviewCard extends StatelessWidget {
     required this.bytes,
     required this.file,
     required this.isLoading,
+    required this.aspectRatio,
     this.onTap,
   });
 
   final Uint8List? bytes;
   final XFile? file;
   final bool isLoading;
+  final double aspectRatio;
   final VoidCallback? onTap;
 
   @override
@@ -1154,7 +1169,11 @@ class _VideoCoverPreviewCard extends StatelessWidget {
                     fit: StackFit.expand,
                     children: [
                       if (bytes != null)
-                        Image.memory(bytes!, fit: BoxFit.cover, gaplessPlayback: true)
+                        Image.memory(
+                          bytes!,
+                          fit: BoxFit.cover,
+                          gaplessPlayback: true,
+                        )
                       else if (file != null)
                         _VideoCoverPreview(file: file!)
                       else if (isLoading)

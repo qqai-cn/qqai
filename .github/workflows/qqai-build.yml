@@ -151,6 +151,7 @@ jobs:
             rm -rf web.bak
             mv web web.bak 2>/dev/null || true
             unzip -o web.zip
+            systemctl reload nginx
             echo "Deployment complete!"
 
   build-android:

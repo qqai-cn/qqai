@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:qqai/components/blog/video_cover_fit.dart';
+import 'package:qqai/components/blog/video_thumbnail.dart';
+import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -32,8 +33,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
 
   @override
   Widget build(BuildContext context) {
-    final blogNotifier =
-        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
+    final blogNotifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
     final isWideScreen = 1.sw > 900;
     final bodyStyle = context.typo.body;
     final coverUrl = resolveBlogCoverUrl(widget.blogItem);
@@ -56,14 +56,11 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
           Container(height: 2, color: Colors.white),
           Expanded(
             flex: 9,
-            child: AspectRatio(
-              aspectRatio: 15 / 9,
-              child: _LazyVideoPlaceholder(
-                key: Key('blog_video_${widget.blogItem.id}'),
-                url: videoUrl,
-                imgUrl: coverUrl,
-                videoId: widget.blogItem.id,
-              ),
+            child: _LazyVideoPlaceholder(
+              key: Key('blog_video_${widget.blogItem.id}'),
+              url: videoUrl,
+              imgUrl: coverUrl,
+              videoId: widget.blogItem.id,
             ),
           ),
 
@@ -123,28 +120,36 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
                       value: '0',
                       child: Text(
                         '收藏',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '1',
                       child: Text(
                         '举报',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '2',
                       child: Text(
                         '不感兴趣',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '3',
                       child: Text(
                         '加入播放队列',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                   ];
@@ -243,31 +248,19 @@ class _LazyVideoPlaceholderState extends State<_LazyVideoPlaceholder> {
           setState(() => _visibleFraction = info.visibleFraction);
         }
       },
-      child: _visibleFraction >= _visibleThreshold
-          ? VideoItemPlayer(
-              url: widget.url,
-              imgUrl: widget.imgUrl,
-              videoId: widget.videoId,
-            )
-          : _VideoThumbnail(imgUrl: widget.imgUrl),
-    );
-  }
-}
-
-class _VideoThumbnail extends StatelessWidget {
-  final String imgUrl;
-
-  const _VideoThumbnail({required this.imgUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      alignment: Alignment.center,
-      children: [
-        VideoCoverFit(url: imgUrl),
-        const Icon(Icons.play_circle_fill, size: 56, color: Colors.white70),
-      ],
+      child: VideoAspectRatioBox(
+        videoUrl: widget.url,
+        builder: (context, aspectRatio) {
+          return _visibleFraction >= _visibleThreshold
+              ? VideoItemPlayer(
+                  url: widget.url,
+                  imgUrl: widget.imgUrl,
+                  videoId: widget.videoId,
+                  fallbackAspectRatio: aspectRatio,
+                )
+              : VideoThumbnail(imgUrl: widget.imgUrl, aspectRatio: aspectRatio);
+        },
+      ),
     );
   }
 }
