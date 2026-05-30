@@ -72,19 +72,26 @@ class _VideoViewState extends ConsumerState<VideoView>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leadingWidth: 132,
+        leadingWidth: isWideScreen ? 148 : 48,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
-        title: TabBar(
-          controller: _tabController,
-          indicatorSize: TabBarIndicatorSize.label,
-          indicator: BoxDecoration(
-            border: Border(
-              bottom: const BorderSide(color: Colors.white, width: 3),
+        centerTitle: false,
+        titleSpacing: 0,
+        title: Align(
+          alignment: Alignment.centerLeft,
+          child: TabBar(
+            controller: _tabController,
+            indicatorSize: TabBarIndicatorSize.label,
+            indicator: BoxDecoration(
+              border: Border(
+                bottom: const BorderSide(color: Colors.white, width: 3),
+              ),
             ),
-          ),
-          isScrollable: true,
-          onTap: lazyTabMount,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.zero,
+            onTap: lazyTabMount,
           tabs: HomeNotifier.videoTabItems.map((e) {
             return Tab(
               child: Container(
@@ -99,6 +106,7 @@ class _VideoViewState extends ConsumerState<VideoView>
               ),
             );
           }).toList(),
+          ),
         ),
         actions: [
           IconButton(

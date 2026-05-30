@@ -60,14 +60,16 @@ class _MessagePageState extends ConsumerState<MessagePage>
     final isWideScreen = 1.sw > 800;
     return Scaffold(
       appBar: AppBar(
-        leadingWidth: 132,
+        leadingWidth: isWideScreen ? 148 : 48,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
-        centerTitle: true,
+        centerTitle: false,
+        titleSpacing: 0,
         title: QqTabBar(
           controller: _tabController,
           onTap: lazyTabMount,
-          maxWidth: 220,
+          alignment: Alignment.centerLeft,
+          shrinkWrap: true,
           items: HomeNotifier.messageTabItems
               .map((e) => QqTabItem(label: e))
               .toList(),

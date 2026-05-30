@@ -84,6 +84,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
     });
 
     final isWideScreen = 1.sw > 800;
+    final showSearchTitle = _tabController.index == 0;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -95,6 +96,8 @@ class _IndexPageState extends ConsumerState<IndexPage>
         leadingWidth: isWideScreen ? 148 : 48,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
+        centerTitle: showSearchTitle,
+        titleSpacing: showSearchTitle ? null : 0,
         title: animatedTitle(),
         actions: [animateActions()],
       ),
@@ -137,14 +140,15 @@ class _IndexPageState extends ConsumerState<IndexPage>
     if (_tabController.index == 0) {
       final theme = Theme.of(context);
       final isDark = theme.brightness == Brightness.dark;
-      return InkWell(
+      return Center(
         key: const ValueKey('home_search_title'),
-        onTap: () => context.push(Routes.searchPage),
-        child: Container(
-          width: 0.5.sw,
-          height: 40,
-          margin: const EdgeInsets.all(10),
-          alignment: Alignment.centerLeft,
+        child: InkWell(
+          onTap: () => context.push(Routes.searchPage),
+          child: Container(
+            width: 0.5.sw,
+            height: 40,
+            margin: const EdgeInsets.all(10),
+            alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
             color: isDark ? theme.cardColor : Colors.white,
@@ -165,14 +169,21 @@ class _IndexPageState extends ConsumerState<IndexPage>
             ),
           ),
         ),
+        ),
       );
     }
-    return TabBar(
+    return Align(
+      alignment: Alignment.centerLeft,
       key: const ValueKey('home_tab_bar_title'),
-      controller: _tabController,
-      isScrollable: true,
-      onTap: _onHomeTabTap,
-      tabs: HomeNotifier.tabItems.map((m) => Tab(text: m)).toList(),
+      child: TabBar(
+        controller: _tabController,
+        isScrollable: true,
+        tabAlignment: TabAlignment.start,
+        labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.zero,
+        onTap: _onHomeTabTap,
+        tabs: HomeNotifier.tabItems.map((m) => Tab(text: m)).toList(),
+      ),
     );
   }
 
