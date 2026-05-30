@@ -33,6 +33,8 @@ class VideoAspectRatioBox extends StatefulWidget {
 }
 
 class _VideoAspectRatioBoxState extends State<VideoAspectRatioBox> {
+  static final Map<String, double> _aspectRatioCache = {};
+
   double? _aspectRatio;
   int _loadVersion = 0;
 
@@ -57,15 +59,23 @@ class _VideoAspectRatioBoxState extends State<VideoAspectRatioBox> {
     final url = resolveMediaUrl(widget.videoUrl);
     if (url == null) return;
 
+    final cachedAspectRatio = _aspectRatioCache[url];
+    if (cachedAspectRatio != null) {
+      _aspectRatio = cachedAspectRatio;
+      return;
+    }
+
     final controller = VideoPlayerController.networkUrl(Uri.parse(url));
     try {
       await controller.initialize();
       if (!mounted || version != _loadVersion) return;
+      final aspectRatio = effectiveVideoAspectRatio(
+        controller.value,
+        widget.fallbackAspectRatio,
+      );
+      _aspectRatioCache[url] = aspectRatio;
       setState(() {
-        _aspectRatio = effectiveVideoAspectRatio(
-          controller.value,
-          widget.fallbackAspectRatio,
-        );
+        _aspectRatio = aspectRatio;
       });
     } catch (_) {
       // Keep the fallback ratio if metadata cannot be loaded.

@@ -13,12 +13,14 @@ class VisibilityVideoSlot extends StatefulWidget {
   final String url;
   final String imgUrl;
   final int? videoId;
+  final double? aspectRatio;
 
   const VisibilityVideoSlot({
     super.key,
     required this.url,
     required this.imgUrl,
     this.videoId,
+    this.aspectRatio,
   });
 
   @override
@@ -61,22 +63,26 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
 
   @override
   Widget build(BuildContext context) {
+    Widget buildSlot(double aspectRatio) {
+      return hasResolvableMediaUrl(widget.url) && _shouldMountPlayer
+          ? VideoItemPlayer(
+              url: widget.url,
+              imgUrl: widget.imgUrl,
+              videoId: widget.videoId,
+              fallbackAspectRatio: aspectRatio,
+            )
+          : VideoThumbnail(imgUrl: widget.imgUrl, aspectRatio: aspectRatio);
+    }
+
     return VisibilityDetector(
       key: Key('lazy_video_${widget.url.hashCode}'),
       onVisibilityChanged: _handleVisibility,
-      child: VideoAspectRatioBox(
-        videoUrl: widget.url,
-        builder: (context, aspectRatio) {
-          return hasResolvableMediaUrl(widget.url) && _shouldMountPlayer
-              ? VideoItemPlayer(
-                  url: widget.url,
-                  imgUrl: widget.imgUrl,
-                  videoId: widget.videoId,
-                  fallbackAspectRatio: aspectRatio,
-                )
-              : VideoThumbnail(imgUrl: widget.imgUrl, aspectRatio: aspectRatio);
-        },
-      ),
+      child: widget.aspectRatio != null
+          ? buildSlot(widget.aspectRatio!)
+          : VideoAspectRatioBox(
+              videoUrl: widget.url,
+              builder: (context, aspectRatio) => buildSlot(aspectRatio),
+            ),
     );
   }
 }
