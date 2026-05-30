@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/views/blog_detail_side_panel.dart';
 import 'package:qqai/features/comment/views/comment_view.dart';
@@ -69,10 +70,32 @@ class MediaDetailShell extends StatelessWidget {
 class _BackButtonOverlay extends StatelessWidget {
   const _BackButtonOverlay();
 
+  static const _stackedDetailRoutes = {
+    Routes.blogVideoDetailView,
+    Routes.videoDetailView,
+    Routes.blogImgDetailView,
+  };
+
+  void _handleBack(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      var path = GoRouterState.of(context).uri.path;
+      while (context.canPop() && _stackedDetailRoutes.contains(path)) {
+        context.pop();
+        path = GoRouterState.of(context).uri.path;
+      }
+      return;
+    }
+
+    if (_stackedDetailRoutes.contains(GoRouterState.of(context).uri.path)) {
+      context.go(Routes.HOME);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: () => Navigator.pop(context),
+      onPressed: () => _handleBack(context),
       icon: Icon(
         Icons.arrow_circle_left,
         color: Colors.white.withValues(alpha: 0.5),

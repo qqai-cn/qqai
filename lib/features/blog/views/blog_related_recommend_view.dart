@@ -17,8 +17,13 @@ import '../../my/data/repos/profile_repo.dart';
 /// 详情侧栏「相关推荐」：同类型博客列表（排除当前篇）。
 class BlogRelatedRecommendView extends ConsumerStatefulWidget {
   final BlogItem currentBlog;
+  final String detailRoute;
 
-  const BlogRelatedRecommendView({super.key, required this.currentBlog});
+  const BlogRelatedRecommendView({
+    super.key,
+    required this.currentBlog,
+    this.detailRoute = Routes.blogVideoDetailView,
+  });
 
   @override
   ConsumerState<BlogRelatedRecommendView> createState() =>
@@ -71,9 +76,9 @@ class _BlogRelatedRecommendViewState
   void _openBlog(BlogItem item) {
     if (item.blogType == 1) {
       context.push(Routes.blogImgDetailView, extra: item);
-    } else {
-      context.push(Routes.blogVideoDetailView, extra: item);
+      return;
     }
+    context.pushReplacement(widget.detailRoute, extra: item);
   }
 
   @override
@@ -192,7 +197,7 @@ class _BlogCollectionVideosViewState
     if (collection != null) {
       ref.read(commentProvider.notifier).openCollectionPanel(collection);
     }
-    context.push(
+    context.pushReplacement(
       widget.detailRoute,
       extra: item.copyWith(
         collections: collection == null ? item.collections : [collection],

@@ -168,6 +168,8 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
         if (_adVisible)
           _AdSurface(
             secondsLeft: _secondsLeft,
+            durationSeconds: _config?.durationSeconds ?? _secondsLeft,
+            skipAfterSeconds: _config?.skipAfterSeconds ?? 0,
             config: _config,
             onSkip: _finishAd,
           ),
@@ -179,11 +181,15 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
 class _AdSurface extends StatelessWidget {
   const _AdSurface({
     required this.secondsLeft,
+    required this.durationSeconds,
+    required this.skipAfterSeconds,
     required this.config,
     required this.onSkip,
   });
 
   final int secondsLeft;
+  final int durationSeconds;
+  final int skipAfterSeconds;
   final VideoAdConfig? config;
   final VoidCallback onSkip;
 
@@ -200,6 +206,10 @@ class _AdSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final ad = config;
     final imageUrl = resolveMediaUrl(ad?.imageUrl);
+    final elapsedSeconds = (durationSeconds - secondsLeft).clamp(0, durationSeconds);
+    final canSkip = skipAfterSeconds <= 0 || elapsedSeconds >= skipAfterSeconds;
+    final skipWaitLeft =
+        (skipAfterSeconds - elapsedSeconds).clamp(0, skipAfterSeconds);
     return Positioned.fill(
       child: ColoredBox(
         color: Colors.black,
@@ -328,21 +338,39 @@ class _AdSurface extends StatelessWidget {
             Positioned(
               right: 12,
               bottom: 12,
-              child: TextButton(
-                onPressed: onSkip,
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.black.withValues(alpha: 0.42),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 8,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-                child: const Text('跳过广告'),
-              ),
+              child: canSkip
+                  ? TextButton(
+                      onPressed: onSkip,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.black.withValues(alpha: 0.42),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                      child: const Text('跳过广告'),
+                    )
+                  : Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.42),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Text(
+                        '$skipWaitLeft 秒后可跳过',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.72),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
             ),
           ],
         ),
@@ -359,6 +387,7 @@ class VideoAdConfig {
     required this.imageUrl,
     required this.actionUrl,
     required this.durationSeconds,
+    required this.skipAfterSeconds,
     required this.cuePoints,
     required this.deliveryRatio,
   });
@@ -369,6 +398,7 @@ class VideoAdConfig {
   final String? imageUrl;
   final String? actionUrl;
   final int durationSeconds;
+  final int skipAfterSeconds;
   final List<Duration> cuePoints;
   final int deliveryRatio;
 
@@ -405,6 +435,7 @@ class VideoAdConfig {
       imageUrl: json['imageUrl']?.toString(),
       actionUrl: json['actionUrl']?.toString(),
       durationSeconds: _parseInt(json['durationSeconds'], fallback: 5),
+      skipAfterSeconds: _parseInt(json['skipAfterSeconds'], fallback: 0),
       cuePoints: _parseCuePoints(json['cuePoints']),
       deliveryRatio: _parseInt(json['deliveryRatio'], fallback: 100),
     );

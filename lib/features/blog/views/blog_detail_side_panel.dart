@@ -123,7 +123,10 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
                 initialCommentCount: widget.blog.commentCount,
                 showTopHeader: false,
               ),
-              BlogRelatedRecommendView(currentBlog: widget.blog),
+              BlogRelatedRecommendView(
+                currentBlog: widget.blog,
+                detailRoute: widget.collectionVideoDetailRoute,
+              ),
               if (_hasCollection)
                 BlogCollectionVideosView(
                   currentBlog: widget.blog,
