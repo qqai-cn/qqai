@@ -19,11 +19,15 @@ import 'blog_detail_video_toolbar.dart';
 class BlogVideoDetailPlayer extends StatefulWidget {
   final BlogItem blog;
   final VoidCallback? onCompleted;
+  final double? adTopInset;
+  final double? adSkipRightInset;
 
   const BlogVideoDetailPlayer({
     super.key,
     required this.blog,
     this.onCompleted,
+    this.adTopInset,
+    this.adSkipRightInset,
   });
 
   @override
@@ -131,6 +135,9 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
               videoController: videoController,
               flickManager: flickManager,
               videoId: widget.blog.id,
+              adTopInset: widget.adTopInset ?? 12,
+              adSkipRightInset:
+                  widget.adSkipRightInset ?? kVideoAdDetailSkipRightInset,
               child: SafeFlickVideoPlayer(
                 flickManager: flickManager,
                 flickVideoWithControls: FlickVideoWithControls(

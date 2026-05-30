@@ -114,6 +114,14 @@ GoRouter appRouter(Ref ref) {
 
       /// ========== 抖音风「我的」扩展 ==========
       GoRoute(
+        path: Routes.footprint,
+        name: 'footprint',
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.FootprintPage(),
+        ),
+      ),
+      GoRoute(
         path: Routes.douyinGroupBuy,
         name: 'douyinGroupBuy',
         builder: (context, state) => AppDeferredWidget(
@@ -666,6 +674,7 @@ GoRouter appRouter(Ref ref) {
 // 辅助函数：检查路由是否需要认证
 bool _requiresAuth(String path) {
   if (path.startsWith('/douyin/')) return true;
+  if (path == Routes.cartPageUrl || path == Routes.footprint) return true;
   // 定义需要认证的路由路径
   const protectedPaths = [
     Routes.mePage, // 我的页面

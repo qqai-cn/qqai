@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../components/qq_tab_bar.dart';
 import '../../providers/home_providers.dart';
 import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
@@ -62,17 +63,14 @@ class _MessagePageState extends ConsumerState<MessagePage>
         leadingWidth: 132,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
-        title: TabBar(
+        centerTitle: true,
+        title: QqTabBar(
           controller: _tabController,
-          isScrollable: true,
-          tabAlignment: TabAlignment.center,
-          indicatorSize: TabBarIndicatorSize.label,
-          dividerColor: Colors.transparent,
-          labelPadding: const EdgeInsets.symmetric(horizontal: 20),
-          tabs: HomeNotifier.messageTabItems
-              .map((e) => Tab(text: e, height: 40))
-              .toList(),
           onTap: lazyTabMount,
+          maxWidth: 220,
+          items: HomeNotifier.messageTabItems
+              .map((e) => QqTabItem(label: e))
+              .toList(),
         ),
         actions: [
           IconButton(

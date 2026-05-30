@@ -9,7 +9,8 @@ import 'package:qqai/components/blog/media_detail_shell.dart';
 import 'package:qqai/features/blog/views/blog_detail_ui.dart';
 import 'package:qqai/features/blog/views/blog_detail_video_toolbar.dart';
 
-import '../../blog/data/models/blog_page_model.dart';
+import 'package:qqai/features/blog/data/blog_browse_record.dart';
+import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import '../../comment/providers/comment_providers.dart';
 import 'blog_detail_comment_side_panel.dart';
 
@@ -35,6 +36,7 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
       ref.read(commentProvider.notifier),
     );
     _commentSidePanel.bind();
+    recordBlogBrowseSilently(ref, widget.blogItem?.id);
   }
 
   @override

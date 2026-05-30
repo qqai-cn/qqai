@@ -3,17 +3,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
-import '../../../components/responsive_masonry_grid.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
 import '../data/repos/profile_repo.dart';
+import '../utils/footprint_timeline.dart';
 import 'my_blog_img_item_view.dart';
 import 'my_blog_video_item_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
-/// 「日常」Tab：我的作品分页，仅 [blogType] = 1（图文）。
+/// 「日常」Tab：我的/他人作品分页，仅 [blogType] = 1（图文），按时间线分组展示。
 class MyBlogView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex;
@@ -34,6 +35,8 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     with AutomaticKeepAliveClientMixin {
   static const int _pageSize = 10;
   static const int _blogTypeImage = 1;
+  static const int _kCategory = 8;
+  static const double _minColumnWidth = 400;
 
   final ScrollController _scrollController = ScrollController();
 
@@ -152,10 +155,86 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     }
   }
 
+  Widget _buildBlogTile(BlogItem blogItem, double itemHeight) {
+    return RepaintBoundary(
+      child: blogItem.blogType == 1
+          ? Card(child: MyBlogImgItemView(_kCategory, blogItem))
+          : Card(
+              child: SizedBox(
+                height: itemHeight,
+                child: MyBlogVideoItemView(_kCategory, blogItem),
+              ),
+            ),
+    );
+  }
+
+  List<Widget> _buildTimelineSlivers(BuildContext context) {
+    final isWide = 1.sw > 800;
+    final blogNotifier =
+        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
+    final itemHeight = blogNotifier.getVideoItemHeightWithWidth(
+      isWide ? 2 : 1,
+      1.sw,
+    );
+    final sections = groupFootprintByTimeline(
+      items: _items,
+      readTime: (item) => parseContentCreateTime(item.createTime),
+    );
+
+    final slivers = <Widget>[
+      SliverOverlapInjector(
+        handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+      ),
+    ];
+
+    for (final section in sections) {
+      slivers.add(
+        SliverToBoxAdapter(
+          child: ContentTimelineSectionHeader(title: section.title),
+        ),
+      );
+      slivers.add(
+        SliverLayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.crossAxisExtent;
+            if (width <= 0) {
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            }
+            final columns = (width / _minColumnWidth).floor().clamp(1, 2);
+            return SliverMasonryGrid.count(
+              crossAxisCount: columns,
+              childCount: section.items.length,
+              itemBuilder: (context, index) =>
+                  _buildBlogTile(section.items[index], itemHeight),
+            );
+          },
+        ),
+      );
+    }
+
+    if (_loadingMore) {
+      slivers.add(
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    slivers.add(const SliverPadding(padding: EdgeInsets.only(bottom: 24)));
+    return slivers;
+  }
+
   @override
   bool get wantKeepAlive => true;
-
-  static const int _kCategory = 8;
 
   @override
   Widget build(BuildContext context) {
@@ -164,85 +243,70 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
       return const SizedBox.shrink();
     }
 
-    const double kPinnedHeaderHeight = kToolbarHeight;
-    final blogNotifier =
-        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
-
     if (_loading && _items.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.only(top: kPinnedHeaderHeight),
-        child: Center(child: CircularProgressIndicator()),
+      return CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverOverlapInjector(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+          ),
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        ],
       );
     }
 
     if (_error != null && _items.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.only(top: kPinnedHeaderHeight),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '加载失败: $_error',
-                style: context.typo.body,
-              ),
-              TextButton(onPressed: _loadFirstPage, child: const Text('重试')),
-            ],
+      return CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverOverlapInjector(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
           ),
-        ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '加载失败: $_error',
+                    style: context.typo.body,
+                  ),
+                  TextButton(onPressed: _loadFirstPage, child: const Text('重试')),
+                ],
+              ),
+            ),
+          ),
+        ],
       );
     }
 
     if (_items.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.only(top: kPinnedHeaderHeight),
-        child: Center(
-          child: Text('暂无图文动态', style: context.typo.body),
-        ),
+      return CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverOverlapInjector(
+            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
+          ),
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: Text('暂无图文动态', style: context.typo.body),
+            ),
+          ),
+        ],
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: kPinnedHeaderHeight),
-      child: RefreshIndicator(
-        onRefresh: _loadFirstPage,
-        child: Stack(
-          alignment: Alignment.bottomCenter,
-          children: [
-            ResponsiveMasonryGrid(
-              controller: _scrollController,
-              itemCount: _items.length,
-              minColumnWidth: 400,
-              itemBuilder: (context, index) {
-                final blogItem = _items[index];
-                final isWide = 1.sw > 800;
-                final itemHeight = blogNotifier.getVideoItemHeightWithWidth(
-                  isWide ? 2 : 1,
-                  1.sw,
-                );
-                return RepaintBoundary(
-                  child: blogItem.blogType == 1
-                      ? Card(child: MyBlogImgItemView(_kCategory, blogItem))
-                      : Card(
-                          child: SizedBox(
-                            height: itemHeight,
-                            child: MyBlogVideoItemView(_kCategory, blogItem),
-                          ),
-                        ),
-                );
-              },
-            ),
-            if (_loadingMore)
-              const Padding(
-                padding: EdgeInsets.all(12),
-                child: SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ),
-          ],
-        ),
+    return RefreshIndicator(
+      onRefresh: _loadFirstPage,
+      child: CustomScrollView(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        slivers: _buildTimelineSlivers(context),
       ),
     );
   }

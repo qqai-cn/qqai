@@ -8,6 +8,9 @@ import 'package:qqai/util/media_url.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 
+/// 详情页右侧操作条区域宽度，跳过按钮默认右内边距。
+const double kVideoAdDetailSkipRightInset = 72;
+
 /// 视频插入广告遮罩：播放前触发一次，播放到配置时间点后可再次触发。
 class VideoAdOverlay extends StatefulWidget {
   const VideoAdOverlay({
@@ -18,6 +21,8 @@ class VideoAdOverlay extends StatefulWidget {
     this.enabled = true,
     this.placement = 'video',
     this.videoId,
+    this.adTopInset = 12,
+    this.adSkipRightInset = 12,
   });
 
   final Widget child;
@@ -26,6 +31,8 @@ class VideoAdOverlay extends StatefulWidget {
   final bool enabled;
   final String placement;
   final int? videoId;
+  final double adTopInset;
+  final double adSkipRightInset;
 
   @override
   State<VideoAdOverlay> createState() => _VideoAdOverlayState();
@@ -172,6 +179,8 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
             skipAfterSeconds: _config?.skipAfterSeconds ?? 0,
             config: _config,
             onSkip: _finishAd,
+            topInset: widget.adTopInset,
+            skipRightInset: widget.adSkipRightInset,
           ),
       ],
     );
@@ -185,6 +194,8 @@ class _AdSurface extends StatelessWidget {
     required this.skipAfterSeconds,
     required this.config,
     required this.onSkip,
+    required this.topInset,
+    required this.skipRightInset,
   });
 
   final int secondsLeft;
@@ -192,6 +203,8 @@ class _AdSurface extends StatelessWidget {
   final int skipAfterSeconds;
   final VideoAdConfig? config;
   final VoidCallback onSkip;
+  final double topInset;
+  final double skipRightInset;
 
   Future<void> _openActionUrl() async {
     final url = config?.actionUrl;
@@ -318,7 +331,7 @@ class _AdSurface extends StatelessWidget {
               ),
             ),
             Positioned(
-              top: 12,
+              top: topInset,
               right: 12,
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -336,7 +349,7 @@ class _AdSurface extends StatelessWidget {
               ),
             ),
             Positioned(
-              right: 12,
+              right: skipRightInset,
               bottom: 12,
               child: canSkip
                   ? TextButton(
@@ -352,7 +365,14 @@ class _AdSurface extends StatelessWidget {
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                      child: const Text('跳过广告'),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('跳过广告'),
+                          SizedBox(width: 4),
+                          Icon(Icons.skip_next_rounded, size: 18),
+                        ],
+                      ),
                     )
                   : Container(
                       padding: const EdgeInsets.symmetric(

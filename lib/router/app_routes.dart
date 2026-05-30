@@ -13,6 +13,7 @@ class Routes {
   static const String userDetail = "/user_detail";
   static const String care = "/cares";
   static const String collect = "/collects";
+  static const String footprint = "/footprint";
   static const String watchVideo = "/watchs";
   static const String whatArticle = "/look_art";
   static const String squareBlogView = "/square_blog_view";

@@ -1,98 +1,159 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../data/models/trade_models.dart';
+import '../data/repos/trade_repo.dart';
 import '../models/cart_line.dart';
 
 part 'cart_session.g.dart';
 
 @Riverpod(keepAlive: true)
 class CartSession extends _$CartSession {
+  late final ITradeRepo _repo;
+
   @override
-  List<CartLine> build() => [
-        CartLine(
-          id: '1',
-          title: '蓝月亮洗衣液 · 示例 1',
-          price: 18.88,
-          coverAsset: 'imgs/defbak.png',
-          quantity: 1,
-        ),
-        CartLine(
-          id: '2',
-          title: '蓝月亮洗衣液 · 示例 2',
-          price: 22.88,
-          coverAsset: 'imgs/defbak1.png',
-          quantity: 2,
-        ),
-      ];
-
-  void _notify() => state = List<CartLine>.from(state);
-
-  void toggleSelect(CartLine line, bool? value) {
-    line.selected = value ?? false;
-    _notify();
+  CartSessionData build() {
+    _repo = ref.read(tradeRepoProvider);
+    Future.microtask(load);
+    return const CartSessionData(loading: true);
   }
 
-  void selectAll(bool all) {
-    for (final e in state) {
+  Future<void> load() async {
+    state = state.copyWith(loading: true, clearError: true);
+    try {
+      final data = await _repo.getCartList();
+      state = CartSessionData(lines: _mapCartItems(data.validList));
+    } catch (e) {
+      state = state.copyWith(loading: false, error: e.toString());
+    }
+  }
+
+  List<CartLine> _mapCartItems(List<TradeCartItem> items) {
+    return items.map((item) {
+      final cartId = item.id;
+      return CartLine(
+        id: cartId?.toString() ?? '${item.spuId}-${item.skuId}',
+        cartId: cartId,
+        skuId: item.skuId,
+        spuId: item.spuId,
+        title: item.title,
+        price: item.priceYuan,
+        coverUrl: item.coverUrl,
+        quantity: item.count ?? 1,
+        selected: item.selected ?? true,
+      );
+    }).toList();
+  }
+
+  void _notifyLines(List<CartLine> lines) {
+    state = state.copyWith(lines: lines);
+  }
+
+  Future<void> toggleSelect(CartLine line, bool? value) async {
+    final cartId = line.cartId;
+    if (cartId == null) {
+      line.selected = value ?? false;
+      _notifyLines(List<CartLine>.from(state.lines));
+      return;
+    }
+    final selected = value ?? false;
+    line.selected = selected;
+    _notifyLines(List<CartLine>.from(state.lines));
+    try {
+      await _repo.updateCartSelected(cartId: cartId, selected: selected);
+    } catch (e) {
+      line.selected = !selected;
+      _notifyLines(List<CartLine>.from(state.lines));
+      rethrow;
+    }
+  }
+
+  Future<void> selectAll(bool all) async {
+    final lines = List<CartLine>.from(state.lines);
+    for (final e in lines) {
       e.selected = all;
     }
-    _notify();
+    _notifyLines(lines);
+    for (final line in lines) {
+      final cartId = line.cartId;
+      if (cartId != null) {
+        await _repo.updateCartSelected(cartId: cartId, selected: all);
+      }
+    }
   }
 
-  void setQty(CartLine line, int next) {
+  Future<void> setQty(CartLine line, int next) async {
     if (next < 1) return;
+    final cartId = line.cartId;
+    final prev = line.quantity;
     line.quantity = next;
-    _notify();
+    _notifyLines(List<CartLine>.from(state.lines));
+    if (cartId == null) return;
+    try {
+      await _repo.updateCartCount(cartId: cartId, count: next);
+    } catch (e) {
+      line.quantity = prev;
+      _notifyLines(List<CartLine>.from(state.lines));
+      rethrow;
+    }
   }
 
-  void remove(CartLine line) {
-    state = state.where((e) => e != line).toList();
+  Future<void> remove(CartLine line) async {
+    final cartId = line.cartId;
+    state = state.copyWith(
+      lines: state.lines.where((e) => e != line).toList(),
+    );
+    if (cartId == null) return;
+    try {
+      await _repo.deleteCartItems([cartId]);
+    } catch (e) {
+      await load();
+      rethrow;
+    }
   }
 
-  /// 已勾选行快照（用于结算页）
   List<CartLine> selectedSnapshot() =>
-      state.where((e) => e.selected).map((e) => e.copy()).toList();
+      state.lines.where((e) => e.selected).map((e) => e.copy()).toList();
 
   double selectedTotal() {
     var sum = 0.0;
-    for (final e in state) {
+    for (final e in state.lines) {
       if (e.selected) sum += e.subtotal;
     }
     return sum;
   }
 
-  int selectedCount() =>
-      state.where((e) => e.selected).fold<int>(0, (a, e) => a + e.quantity);
+  int selectedCount() => state.lines
+      .where((e) => e.selected)
+      .fold<int>(0, (a, e) => a + e.quantity);
 
-  /// 提交订单后从购物车移除已结算商品（按 id）
-  void removeByIds(Set<String> ids) {
-    state = state.where((e) => !ids.contains(e.id)).toList();
+  Future<void> removeByIds(Set<String> ids) async {
+    final cartIds = state.lines
+        .where((e) => ids.contains(e.id))
+        .map((e) => e.cartId)
+        .whereType<int>()
+        .toList();
+    state = state.copyWith(
+      lines: state.lines.where((e) => !ids.contains(e.id)).toList(),
+    );
+    if (cartIds.isEmpty) return;
+    try {
+      await _repo.deleteCartItems(cartIds);
+    } catch (e) {
+      await load();
+      rethrow;
+    }
   }
 
-  /// 从商品详情加入购物车：同 id 已存在则数量 +1
-  void addFromGoods({
-    required String id,
+  Future<void> addFromGoods({
+    required int skuId,
     required String title,
     required double price,
-    required String coverAsset,
+    String? coverUrl,
+    String? coverAsset,
     int addQty = 1,
-  }) {
-    final list = List<CartLine>.from(state);
-    final idx = list.indexWhere((e) => e.id == id);
-    if (idx >= 0) {
-      list[idx].quantity += addQty;
-      state = list;
-    } else {
-      state = [
-        ...list,
-        CartLine(
-          id: id,
-          title: title,
-          price: price,
-          coverAsset: coverAsset,
-          quantity: addQty,
-          selected: true,
-        ),
-      ];
-    }
+    int? spuId,
+  }) async {
+    await _repo.addCart(skuId: skuId, count: addQty);
+    await load();
   }
 }

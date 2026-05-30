@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qqai/features/blog/views/blog_video_detail_player.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
+import 'package:qqai/features/blog/data/blog_browse_record.dart';
 import '../../my/data/repos/profile_repo.dart';
 import '../../../router/app_routes.dart';
 import 'package:qqai/components/blog/media_detail_shell.dart';
@@ -39,6 +40,7 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
       ref.read(commentProvider.notifier),
     );
     _commentSidePanel.bind();
+    recordBlogBrowseSilently(ref, widget.blogItem.id);
     _selectCollectionTabOnEnter();
   }
 

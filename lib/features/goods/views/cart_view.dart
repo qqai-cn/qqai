@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/media_url.dart';
 import '../goods_tab_navigator.dart';
 import '../models/cart_line.dart';
 import '../providers/cart_session.dart';
@@ -26,10 +28,22 @@ class _CartViewState extends ConsumerState<CartView> {
   bool _isWide(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= GoodsPageStyle.wideBreakpoint;
 
+  Future<void> _handleCartAction(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('操作失败：$e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final lines = ref.watch(cartSessionProvider);
+    final session = ref.watch(cartSessionProvider);
     final notifier = ref.read(cartSessionProvider.notifier);
+    final lines = session.lines;
     final selectedTotal = notifier.selectedTotal();
     final selectedCount = notifier.selectedCount();
     final allSel = _allSelected(lines);
@@ -48,7 +62,23 @@ class _CartViewState extends ConsumerState<CartView> {
         ),
         centerTitle: true,
       ),
-      body: lines.isEmpty
+      body: session.loading && lines.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : session.error != null && lines.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(session.error!, textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: notifier.load,
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+            )
+          : lines.isEmpty
           ? const _EmptyCart()
           : wide
           ? _WideCartBody(
@@ -58,10 +88,12 @@ class _CartViewState extends ConsumerState<CartView> {
               selectedTotal: selectedTotal,
               selectedCount: selectedCount,
               onCheckout: _goCheckout,
+              onCartAction: _handleCartAction,
             )
           : _NarrowCartBody(
               lines: lines,
               notifier: notifier,
+              onCartAction: _handleCartAction,
             ),
       bottomNavigationBar: lines.isEmpty || wide
           ? null
@@ -69,7 +101,7 @@ class _CartViewState extends ConsumerState<CartView> {
               allSelected: allSel,
               selectedTotal: selectedTotal,
               selectedCount: selectedCount,
-              onSelectAll: notifier.selectAll,
+              onSelectAll: (v) => _handleCartAction(() => notifier.selectAll(v)),
               onCheckout: _goCheckout,
             ),
     );
@@ -80,10 +112,12 @@ class _NarrowCartBody extends StatelessWidget {
   const _NarrowCartBody({
     required this.lines,
     required this.notifier,
+    required this.onCartAction,
   });
 
   final List<CartLine> lines;
   final CartSession notifier;
+  final Future<void> Function(Future<void> Function()) onCartAction;
 
   @override
   Widget build(BuildContext context) {
@@ -100,10 +134,10 @@ class _NarrowCartBody extends StatelessWidget {
                   const BoxConstraints(maxWidth: GoodsPageStyle.pageMaxWidth),
               child: _CartItemCard(
                 line: line,
-                onToggle: (v) => notifier.toggleSelect(line, v),
-                onDec: () => notifier.setQty(line, line.quantity - 1),
-                onInc: () => notifier.setQty(line, line.quantity + 1),
-                onDelete: () => notifier.remove(line),
+                onToggle: (v) => onCartAction(() => notifier.toggleSelect(line, v)),
+                onDec: () => onCartAction(() => notifier.setQty(line, line.quantity - 1)),
+                onInc: () => onCartAction(() => notifier.setQty(line, line.quantity + 1)),
+                onDelete: () => onCartAction(() => notifier.remove(line)),
               ),
             ),
           ),
@@ -121,6 +155,7 @@ class _WideCartBody extends StatelessWidget {
     required this.selectedTotal,
     required this.selectedCount,
     required this.onCheckout,
+    required this.onCartAction,
   });
 
   final List<CartLine> lines;
@@ -129,6 +164,7 @@ class _WideCartBody extends StatelessWidget {
   final double selectedTotal;
   final int selectedCount;
   final VoidCallback onCheckout;
+  final Future<void> Function(Future<void> Function()) onCartAction;
 
   @override
   Widget build(BuildContext context) {
@@ -151,11 +187,15 @@ class _WideCartBody extends StatelessWidget {
                       padding: const EdgeInsets.only(bottom: 12),
                       child: _CartItemCard(
                         line: line,
-                        onToggle: (v) => notifier.toggleSelect(line, v),
-                        onDec: () => notifier.setQty(line, line.quantity - 1),
-                        onInc: () =>
-                            notifier.setQty(line, line.quantity + 1),
-                        onDelete: () => notifier.remove(line),
+                        onToggle: (v) =>
+                            onCartAction(() => notifier.toggleSelect(line, v)),
+                        onDec: () => onCartAction(
+                          () => notifier.setQty(line, line.quantity - 1),
+                        ),
+                        onInc: () => onCartAction(
+                          () => notifier.setQty(line, line.quantity + 1),
+                        ),
+                        onDelete: () => onCartAction(() => notifier.remove(line)),
                       ),
                     );
                   },
@@ -168,7 +208,7 @@ class _WideCartBody extends StatelessWidget {
                   allSelected: allSelected,
                   selectedTotal: selectedTotal,
                   selectedCount: selectedCount,
-                  onSelectAll: notifier.selectAll,
+                  onSelectAll: (v) => onCartAction(() => notifier.selectAll(v)),
                   onCheckout: onCheckout,
                 ),
               ),
@@ -512,13 +552,7 @@ class _CartItemCard extends StatelessWidget {
           ),
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              line.coverAsset,
-              width: 88,
-              height: 88,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const _CoverFallback(),
-            ),
+            child: _buildCover(line),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -593,6 +627,28 @@ class _CartItemCard extends StatelessWidget {
       ),
     );
   }
+  Widget _buildCover(CartLine line) {
+    final url = resolveMediaUrl(line.coverUrl) ?? '';
+    if (url.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: url,
+        width: 88,
+        height: 88,
+        fit: BoxFit.cover,
+        errorWidget: (_, _, _) => const _CoverFallback(),
+      );
+    }
+    if (line.coverAsset != null && line.coverAsset!.isNotEmpty) {
+      return Image.asset(
+        line.coverAsset!,
+        width: 88,
+        height: 88,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => const _CoverFallback(),
+      );
+    }
+    return const _CoverFallback();
+  }
 }
 
 class _CoverFallback extends StatelessWidget {
@@ -600,13 +656,17 @@ class _CoverFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: GoodsPageStyle.imageBg,
-      child: Center(
-        child: Icon(
-          Icons.shopping_bag_outlined,
-          size: 32,
-          color: Color(0xFF9CA3AF),
+    return const SizedBox(
+      width: 88,
+      height: 88,
+      child: ColoredBox(
+        color: GoodsPageStyle.imageBg,
+        child: Center(
+          child: Icon(
+            Icons.shopping_bag_outlined,
+            size: 32,
+            color: Color(0xFF9CA3AF),
+          ),
         ),
       ),
     );

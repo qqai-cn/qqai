@@ -68,30 +68,7 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
             title: homeState.isExtended ? Text('足迹') : null,
             onTap: () {
               Navigator.of(context).pop();
-            },
-          ),
-          ListTile(
-            leading: SvgPicture.asset(
-              imgPath + 'caogao.svg',
-              width: 35,
-              height: 35,
-              fit: BoxFit.fill,
-            ),
-            title: Text('草稿箱'),
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          ListTile(
-            leading: SvgPicture.asset(
-              imgPath + 'creator.svg',
-              width: 35,
-              height: 35,
-              fit: BoxFit.fill,
-            ),
-            title: Text('创作中心'),
-            onTap: () {
-              Navigator.of(context).pop();
+              context.push(Routes.footprint);
             },
           ),
           Container(height: 1, color: Colors.black12),
@@ -117,6 +94,7 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
             title: Text('订单'),
             onTap: () {
               Navigator.of(context).pop();
+              context.push(Routes.douyinMyOrders);
             },
           ),
           ListTile(
@@ -129,21 +107,10 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
             title: Text('购物车'),
             onTap: () {
               Navigator.of(context).pop();
+              context.push(Routes.cartPageUrl);
             },
           ),
           Container(height: 1, color: Colors.black12),
-          ListTile(
-            leading: SvgPicture.asset(
-              imgPath + 'fankui.svg',
-              width: 35,
-              height: 35,
-              fit: BoxFit.fill,
-            ),
-            title: Text('意见反馈'),
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-          ),
           ListTile(
             leading: SvgPicture.asset(
               imgPath + 'set.svg',

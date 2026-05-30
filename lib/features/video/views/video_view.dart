@@ -187,6 +187,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
     final recommendState = ref.watch(videoRecommendProvider);
     final recommendNotifier = ref.read(videoRecommendProvider.notifier);
     final playQueue = ref.watch(videoPlayQueueProvider);
+    final adTopInset = kToolbarHeight;
 
     return recommendState.blogPageData.when(
       loading: () => const ColoredBox(
@@ -271,6 +272,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
                   BlogVideoDetailPlayer(
                     key: ValueKey('video_recommend_player_${item.id ?? index}'),
                     blog: item,
+                    adTopInset: adTopInset,
                     onCompleted: () => _openNextCollectionVideo(item),
                   ),
                   BlogDetailMediaOverlay(

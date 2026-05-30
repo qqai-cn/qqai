@@ -7,6 +7,7 @@ import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.da
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
 import 'package:qqai/features/index/presentation/widgets/app_bar_user_avatar.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
+import 'package:qqai/features/index/providers/home_index_tab_navigate_provider.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
 import 'package:qqai/router/app_routes.dart';
 
@@ -68,6 +69,17 @@ class _IndexPageState extends ConsumerState<IndexPage>
     ref.listen(mainShellTabReselectProvider(0), (int? previous, int next) {
       if (previous != null && next > previous) {
         _refreshRecommendTab();
+      }
+    });
+
+    ref.listen(homeIndexTabNavigateProvider, (HomeIndexTabNavRequest? previous, next) {
+      if (previous == null || next.nonce <= previous.nonce) return;
+      final index = next.tabIndex.clamp(0, HomeNotifier.tabItems.length - 1);
+      lazyTabMount(index);
+      if (_tabController.index != index) {
+        _tabController.animateTo(index);
+      } else {
+        _refreshHomeTabAt(index);
       }
     });
 

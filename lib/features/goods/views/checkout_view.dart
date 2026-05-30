@@ -1,6 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../goods_tab_navigator.dart';
 import '../models/cart_line.dart';
@@ -613,13 +615,7 @@ class _CheckoutGoodsRow extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.asset(
-              line.coverAsset,
-              width: 72,
-              height: 72,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => const _CoverFallback(size: 72),
-            ),
+            child: _buildCover(line),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -655,6 +651,30 @@ class _CheckoutGoodsRow extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildCover(CartLine line) {
+    final url = resolveMediaUrl(line.coverUrl) ?? '';
+    if (url.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: url,
+        width: 72,
+        height: 72,
+        fit: BoxFit.cover,
+        errorWidget: (_, _, _) => const _CoverFallback(size: 72),
+      );
+    }
+    final asset = line.coverAsset;
+    if (asset != null && asset.isNotEmpty) {
+      return Image.asset(
+        asset,
+        width: 72,
+        height: 72,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) => const _CoverFallback(size: 72),
+      );
+    }
+    return const _CoverFallback(size: 72);
   }
 }
 

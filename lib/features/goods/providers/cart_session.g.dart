@@ -13,7 +13,7 @@ part of 'cart_session.dart';
 const cartSessionProvider = CartSessionProvider._();
 
 final class CartSessionProvider
-    extends $NotifierProvider<CartSession, List<CartLine>> {
+    extends $NotifierProvider<CartSession, CartSessionData> {
   const CartSessionProvider._()
     : super(
         from: null,
@@ -33,28 +33,28 @@ final class CartSessionProvider
   CartSession create() => CartSession();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(List<CartLine> value) {
+  Override overrideWithValue(CartSessionData value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<List<CartLine>>(value),
+      providerOverride: $SyncValueProvider<CartSessionData>(value),
     );
   }
 }
 
-String _$cartSessionHash() => r'b0d41554afba3a54d1ecaa5ddf77f87189a31763';
+String _$cartSessionHash() => r'3df0608bbe2c5ab3b86318ccbf9fb42c58818445';
 
-abstract class _$CartSession extends $Notifier<List<CartLine>> {
-  List<CartLine> build();
+abstract class _$CartSession extends $Notifier<CartSessionData> {
+  CartSessionData build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<List<CartLine>, List<CartLine>>;
+    final ref = this.ref as $Ref<CartSessionData, CartSessionData>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<List<CartLine>, List<CartLine>>,
-              List<CartLine>,
+              AnyNotifier<CartSessionData, CartSessionData>,
+              CartSessionData,
               Object?,
               Object?
             >;

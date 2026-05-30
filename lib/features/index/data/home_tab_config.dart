@@ -73,3 +73,6 @@ final List<HomeTabConfig> homeTabConfigs = [
   ),
   HomeTabConfig(title: '工具', builder: (_) => ToolPage()),
 ];
+
+/// 首页顶栏「商场」Tab 下标（与 [homeTabConfigs] 顺序一致）
+const int kHomeMallTabIndex = 5;

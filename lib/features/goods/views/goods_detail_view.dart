@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../util/media_url.dart';
+import '../data/product_browse_record.dart';
 import '../data/models/mall_product_model.dart';
 import '../data/repos/goods_repo.dart';
 import '../goods_tab_navigator.dart';
@@ -41,14 +42,17 @@ class GoodsDetailView extends ConsumerWidget {
         if (product == null) {
           return const Scaffold(body: Center(child: Text('商品已下架')));
         }
-        return _GoodsDetailPage(product: product);
+        return _GoodsDetailPage(
+          key: ValueKey('goods-detail-${product.id}'),
+          product: product,
+        );
       },
     );
   }
 }
 
 class _GoodsDetailPage extends ConsumerStatefulWidget {
-  const _GoodsDetailPage({required this.product});
+  const _GoodsDetailPage({super.key, required this.product});
 
   final MallProduct product;
 
@@ -144,27 +148,47 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => recordProductBrowseSilently(ref, _product.id),
+    );
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
   }
 
-  void _addToCart() {
-    final sku = _selectedSku;
-    ref
-        .read(cartSessionProvider.notifier)
-        .addFromGoods(
-          id: sku?.id != null
-              ? '${_product.id}-${sku!.id}'
-              : _product.id?.toString() ?? '',
-          title: sku == null ? _title : '$_title · ${sku.label}',
-          price: _price,
-          coverAsset: 'imgs/defbak.png',
-          addQty: _selectedQty,
-        );
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('已加入购物车')));
+  Future<void> _addToCart() async {
+    final sku = _selectedSku ?? _singleSpecSku;
+    final skuId = sku?.id;
+    if (skuId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('当前商品暂无可购规格')),
+      );
+      return;
+    }
+    try {
+      await ref.read(cartSessionProvider.notifier).addFromGoods(
+            skuId: skuId,
+            spuId: _product.id,
+            title: sku == null ? _title : '$_title · ${sku.label}',
+            price: _price,
+            coverUrl: sku?.picUrl ?? _product.coverUrl,
+            addQty: _selectedQty,
+          );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已加入购物车')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('加入购物车失败：$e')),
+      );
+    }
   }
 
   void _buyNow() {

@@ -8,6 +8,7 @@ import '../blog_page_parse.dart';
 import '../home_blog_tab.dart';
 import '../models/blog_model.dart';
 import '../models/blog_save_req_vo.dart';
+import 'package:qqai/features/goods/data/models/trade_models.dart';
 
 final blogRepoProvider = Provider<IBlogRepo>((ref) => BlogRepo());
 
@@ -79,6 +80,18 @@ abstract class IBlogRepo {
     required int reason,
     String? description,
   });
+
+  /// 记录博客浏览（足迹）。
+  Future<void> recordBlogBrowse(int blogId);
+
+  Future<BlogBrowseHistoryPageData> getBlogBrowseHistoryPage(
+    int pageNo, {
+    int pageSize = 20,
+  });
+
+  Future<void> deleteBlogBrowseHistoryIds(List<int> blogIds);
+
+  Future<void> cleanBlogBrowseHistory();
 }
 
 class BlogRepo implements IBlogRepo {
@@ -315,4 +328,59 @@ class BlogRepo implements IBlogRepo {
     _parseBooleanData(response.data, errorHint: '举报失败');
     return true;
   }
+
+  @override
+  Future<void> recordBlogBrowse(int blogId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogBrowsePath(blogId),
+      RequestType.post,
+    );
+    _parseBooleanData(response.data, errorHint: '记录浏览失败');
+  }
+
+  @override
+  Future<BlogBrowseHistoryPageData> getBlogBrowseHistoryPage(
+    int pageNo, {
+    int pageSize = 20,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_BROWSE_HISTORY_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '博客足迹接口返回格式错误';
+    }
+    if (!_isOkCode(data['code'])) {
+      throw data['msg']?.toString() ?? '请求失败';
+    }
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogBrowseHistoryPageData(list: [], total: 0);
+    }
+    return BlogBrowseHistoryPageData.fromJson(inner);
+  }
+
+  @override
+  Future<void> deleteBlogBrowseHistoryIds(List<int> blogIds) async {
+    if (blogIds.isEmpty) return;
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_BROWSE_HISTORY_DELETE,
+      RequestType.delete,
+      data: {'blogIds': blogIds},
+    );
+    _parseBooleanData(response.data, errorHint: '删除失败');
+  }
+
+  @override
+  Future<void> cleanBlogBrowseHistory() async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_BROWSE_HISTORY_CLEAN,
+      RequestType.delete,
+    );
+    _parseBooleanData(response.data, errorHint: '清空失败');
+  }
+
+  bool _isOkCode(dynamic code) => code == null || code == 0 || code == '0';
 }

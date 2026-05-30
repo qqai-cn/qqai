@@ -257,30 +257,7 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
       title: const Text('足迹'),
       onTap: () {
         Navigator.of(context).pop();
-      },
-    ),
-    ListTile(
-      leading: SvgPicture.asset(
-        '${imgPath}caogao.svg',
-        width: 35,
-        height: 35,
-        fit: BoxFit.fill,
-      ),
-      title: const Text('草稿箱'),
-      onTap: () {
-        Navigator.of(context).pop();
-      },
-    ),
-    ListTile(
-      leading: SvgPicture.asset(
-        '${imgPath}creator.svg',
-        width: 35,
-        height: 35,
-        fit: BoxFit.fill,
-      ),
-      title: const Text('创作中心'),
-      onTap: () {
-        Navigator.of(context).pop();
+        context.push(Routes.footprint);
       },
     ),
     Container(height: 1, color: Colors.black12),
@@ -306,6 +283,7 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
       title: const Text('订单'),
       onTap: () {
         Navigator.of(context).pop();
+        context.push(Routes.douyinMyOrders);
       },
     ),
     ListTile(
@@ -318,21 +296,10 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
       title: const Text('购物车'),
       onTap: () {
         Navigator.of(context).pop();
+        context.push(Routes.cartPageUrl);
       },
     ),
     Container(height: 1, color: Colors.black12),
-    ListTile(
-      leading: SvgPicture.asset(
-        '${imgPath}fankui.svg',
-        width: 35,
-        height: 35,
-        fit: BoxFit.fill,
-      ),
-      title: const Text('意见反馈'),
-      onTap: () {
-        Navigator.of(context).pop();
-      },
-    ),
     ListTile(
       leading: SvgPicture.asset(
         '${imgPath}set.svg',

@@ -87,6 +87,33 @@ class ApiConstant {
       '/app-api/blog/qqai/profile/my/shop/products/page';
   static const String MALL_PRODUCTS_PAGE = '/app-api/product/spu/page';
   static const String MALL_PRODUCT_DETAIL = '/app-api/product/spu/get-detail';
+  static String productBrowsePath(int spuId) =>
+      '/app-api/product/spu/$spuId/browse';
+  static const String MALL_BROWSE_HISTORY_PAGE =
+      '/app-api/product/browse-history/page';
+  static const String MALL_BROWSE_HISTORY_DELETE =
+      '/app-api/product/browse-history/delete';
+  static const String MALL_BROWSE_HISTORY_CLEAN =
+      '/app-api/product/browse-history/clean';
+
+  /// 商城交易：购物车 / 订单
+  static const String TRADE_CART_LIST = '/app-api/trade/cart/list';
+  static const String TRADE_CART_ADD = '/app-api/trade/cart/add';
+  static const String TRADE_CART_UPDATE_COUNT =
+      '/app-api/trade/cart/update-count';
+  static const String TRADE_CART_UPDATE_SELECTED =
+      '/app-api/trade/cart/update-selected';
+  static const String TRADE_CART_DELETE = '/app-api/trade/cart/delete';
+  static const String TRADE_ORDER_PAGE = '/app-api/trade/order/page';
+
+  static const String BLOG_BROWSE_HISTORY_PAGE =
+      '/app-api/blog/qqai/browse-history/page';
+  static const String BLOG_BROWSE_HISTORY_DELETE =
+      '/app-api/blog/qqai/browse-history/delete';
+  static const String BLOG_BROWSE_HISTORY_CLEAN =
+      '/app-api/blog/qqai/browse-history/clean';
+  static String blogBrowsePath(int blogId) =>
+      '/app-api/blog/qqai/$blogId/browse';
   static const String PROFILE_MY_WORKS_PAGE =
       '/app-api/blog/qqai/profile/my/works/page';
   static const String PROFILE_MY_LIKES_PAGE =

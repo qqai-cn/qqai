@@ -18,6 +18,9 @@ abstract class IGoodsRepo {
 
   Future<MallProduct?> getMallProduct(int id);
 
+  /// 记录商品浏览（足迹，需登录）。
+  Future<void> recordProductBrowse(int spuId);
+
   Future<List<GoodsModel>> getAllGoodss();
   Future<GoodsModel?> getGoodsById(String id);
   Future<void> addGoods(GoodsModel item);
@@ -78,6 +81,18 @@ class GoodsRepo implements IGoodsRepo {
     final inner = data['data'];
     if (inner is! Map<String, dynamic>) return null;
     return MallProduct.fromJson(inner);
+  }
+
+  @override
+  Future<void> recordProductBrowse(int spuId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.productBrowsePath(spuId),
+      RequestType.post,
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      _ensureEnvelope(data);
+    }
   }
 
   @override
