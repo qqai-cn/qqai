@@ -17,6 +17,7 @@ class QqaiPlayer extends StatefulWidget {
     required this.url,
     required this.autoPlay,
     this.videoId,
+    this.isActive = true,
 
     /// 默认 [BoxFit.contain]：父区域横竖与视频横竖不一致时仍完整显示（留边不裁切）。
     /// 竖滑全屏沉浸场景可设为 [BoxFit.cover]。
@@ -29,6 +30,7 @@ class QqaiPlayer extends StatefulWidget {
   final Widget controls;
   final bool autoPlay;
   final int? videoId;
+  final bool isActive;
   final BoxFit videoFit;
   final double fallbackAspectRatio;
 
@@ -51,20 +53,40 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
 
     flickManager = FlickManager(
       videoPlayerController: videoController,
-      autoPlay: widget.autoPlay,
+      autoPlay: widget.autoPlay && widget.isActive,
       autoInitialize: true,
     );
 
     // 使用 postFrameCallback 延迟设置音量，确保 FlickManager 完全初始化
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isDisposed && mounted) {
+      if (!_isDisposed && mounted && widget.isActive) {
         _setVolumeIfNeeded();
       }
     });
   }
 
+  @override
+  void didUpdateWidget(QqaiPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive != widget.isActive) {
+      if (widget.isActive && widget.autoPlay) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_isDisposed && mounted && widget.isActive) {
+            flickManager.flickControlManager?.autoResume();
+            _setVolumeIfNeeded();
+          }
+        });
+      } else {
+        _pause();
+      }
+    }
+  }
+
   void _videoListener() {
-    if (!_isDisposed && mounted && videoController.value.isInitialized) {
+    if (!_isDisposed &&
+        mounted &&
+        widget.isActive &&
+        videoController.value.isInitialized) {
       // 每次状态变化时都检查音量
       if (videoController.value.volume == 0.0) {
         _setVolumeIfNeeded();
@@ -73,7 +95,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
   }
 
   void _setVolumeIfNeeded() {
-    if (!_isDisposed && mounted) {
+    if (!_isDisposed && mounted && widget.isActive) {
       if (videoController.value.isInitialized) {
         // 始终设置音量为 1.0（不检查 _volumeSet，因为可能被重置）
         if (videoController.value.volume != 1.0) {
@@ -83,6 +105,11 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
         flickManager.flickControlManager?.unmute();
       }
     }
+  }
+
+  void _pause() {
+    if (_isDisposed || !mounted) return;
+    flickManager.flickControlManager?.autoPause();
   }
 
   @override
@@ -101,13 +128,13 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
       onVisibilityChanged: (visibility) {
         if (!_isDisposed && mounted) {
           final fraction = safeVisibleFraction(visibility);
-          if (fraction > 0.9 && widget.autoPlay) {
+          if (widget.isActive && fraction > 0.9 && widget.autoPlay) {
             flickManager.flickControlManager?.autoResume();
             // 每次恢复播放时确保音量正确
             _setVolumeIfNeeded();
           }
-          if (fraction == 0) {
-            flickManager.flickControlManager?.autoPause();
+          if (!widget.isActive || fraction == 0) {
+            _pause();
           }
         }
       },

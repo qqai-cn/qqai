@@ -21,7 +21,9 @@ import '../providers/video_play_queue_provider.dart';
 import '../providers/video_recommend_providers.dart';
 
 class VideoView extends ConsumerStatefulWidget {
-  const VideoView({super.key});
+  const VideoView({super.key, this.isActive = true});
+
+  final bool isActive;
 
   @override
   ConsumerState<VideoView> createState() => _VideoViewState();
@@ -125,7 +127,9 @@ class _VideoViewState extends ConsumerState<VideoView>
       isMounted: lazyTabMountedIndices.contains(index),
       placeholder: _tabPlaceholder,
       builder: (context) => switch (index) {
-        0 => const _VideoRecommendTab(),
+        0 => _VideoRecommendTab(
+          isActive: widget.isActive && index == _tabController.index,
+        ),
         _ => const VideoListView(),
       },
     );
@@ -133,7 +137,9 @@ class _VideoViewState extends ConsumerState<VideoView>
 }
 
 class _VideoRecommendTab extends ConsumerStatefulWidget {
-  const _VideoRecommendTab();
+  const _VideoRecommendTab({required this.isActive});
+
+  final bool isActive;
 
   @override
   ConsumerState<_VideoRecommendTab> createState() => _VideoRecommendTabState();
@@ -143,6 +149,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
   final PageController _pageController = PageController();
   final Map<int, BlogItem> _collectionNextItems = {};
   bool _openingNextCollectionVideo = false;
+  int _currentPage = 0;
 
   @override
   void dispose() {
@@ -254,6 +261,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
           itemCount: playable.length,
           onPageChanged: (index) {
             if (index < playable.length) {
+              setState(() => _currentPage = index);
               ref
                   .read(videoRecommendCurrentBlogProvider.notifier)
                   .select(playable[index]);
@@ -273,6 +281,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
                     key: ValueKey('video_recommend_player_${item.id ?? index}'),
                     blog: item,
                     adTopInset: adTopInset,
+                    isActive: widget.isActive && index == _currentPage,
                     onCompleted: () => _openNextCollectionVideo(item),
                   ),
                   BlogDetailMediaOverlay(

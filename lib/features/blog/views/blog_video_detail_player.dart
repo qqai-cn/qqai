@@ -21,6 +21,7 @@ class BlogVideoDetailPlayer extends StatefulWidget {
   final VoidCallback? onCompleted;
   final double? adTopInset;
   final double? adSkipRightInset;
+  final bool isActive;
 
   const BlogVideoDetailPlayer({
     super.key,
@@ -28,6 +29,7 @@ class BlogVideoDetailPlayer extends StatefulWidget {
     this.onCompleted,
     this.adTopInset,
     this.adSkipRightInset,
+    this.isActive = true,
   });
 
   @override
@@ -52,19 +54,39 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
 
     flickManager = FlickManager(
       videoPlayerController: videoController,
-      autoPlay: true,
+      autoPlay: widget.isActive,
       autoInitialize: true,
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isDisposed && mounted) {
+      if (!_isDisposed && mounted && widget.isActive) {
         _setVolumeIfNeeded();
       }
     });
   }
 
+  @override
+  void didUpdateWidget(BlogVideoDetailPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive != widget.isActive) {
+      if (widget.isActive) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!_isDisposed && mounted && widget.isActive) {
+            flickManager.flickControlManager?.autoResume();
+            _setVolumeIfNeeded();
+          }
+        });
+      } else {
+        _pause();
+      }
+    }
+  }
+
   void _videoListener() {
-    if (!_isDisposed && mounted && videoController.value.isInitialized) {
+    if (!_isDisposed &&
+        mounted &&
+        widget.isActive &&
+        videoController.value.isInitialized) {
       if (videoController.value.volume == 0.0) {
         _setVolumeIfNeeded();
       }
@@ -80,12 +102,20 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
   }
 
   void _setVolumeIfNeeded() {
-    if (!_isDisposed && mounted && videoController.value.isInitialized) {
+    if (!_isDisposed &&
+        mounted &&
+        widget.isActive &&
+        videoController.value.isInitialized) {
       if (videoController.value.volume != 1.0) {
         videoController.setVolume(1.0);
       }
       flickManager.flickControlManager?.unmute();
     }
+  }
+
+  void _pause() {
+    if (_isDisposed || !mounted) return;
+    flickManager.flickControlManager?.autoPause();
   }
 
   @override
@@ -118,12 +148,12 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
       onVisibilityChanged: (visibility) {
         if (!_isDisposed && mounted) {
           final fraction = safeVisibleFraction(visibility);
-          if (fraction > 0.9) {
+          if (widget.isActive && fraction > 0.9) {
             flickManager.flickControlManager?.autoResume();
             _setVolumeIfNeeded();
           }
-          if (fraction == 0) {
-            flickManager.flickControlManager?.autoPause();
+          if (!widget.isActive || fraction == 0) {
+            _pause();
           }
         }
       },

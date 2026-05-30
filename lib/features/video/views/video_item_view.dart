@@ -7,7 +7,9 @@ import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/qq_network_image.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 /// 与影视网格 [SliverGrid] 的 [childAspectRatio] 计算保持一致。
 const double kFilmGridTextBlockHeight = 54;
@@ -82,6 +84,7 @@ class _VideoItemViewState extends State<VideoItemView> {
   void dispose() {
     _hoverTimer?.cancel();
     _previewController?.dispose();
+    _previewController = null;
     super.dispose();
   }
 
@@ -100,6 +103,10 @@ class _VideoItemViewState extends State<VideoItemView> {
     _hovering = false;
     _hoverTimer?.cancel();
     _hoverTimer = null;
+    _stopPreview();
+  }
+
+  void _stopPreview() {
     final c = _previewController;
     _previewController = null;
     c?.dispose();
@@ -107,6 +114,15 @@ class _VideoItemViewState extends State<VideoItemView> {
       setState(() => _showPreview = false);
     } else {
       _showPreview = false;
+    }
+  }
+
+  void _onVisibilityChanged(VisibilityInfo info) {
+    if (safeVisibleFraction(info) == 0) {
+      _hovering = false;
+      _hoverTimer?.cancel();
+      _hoverTimer = null;
+      _stopPreview();
     }
   }
 
@@ -240,56 +256,60 @@ class _VideoItemViewState extends State<VideoItemView> {
       ),
     );
 
-    return Material(
-      color: _cardBg,
-      borderRadius: BorderRadius.circular(10),
-      clipBehavior: Clip.antiAlias,
-      child: MouseRegion(
-        onEnter: (_) => _onHoverEnter(),
-        onExit: (_) => _onHoverExit(),
-        child: InkWell(
-          onTap: () => context.push(Routes.videoDetailView, extra: item),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              thumb,
-              SizedBox(height: kFilmGridThumbTextGap),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
-                child: SizedBox(
-                  height: kFilmGridTextBlockHeight,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          _description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: _titleColor,
-                            fontSize: 13,
-                            height: 1.35,
-                            fontWeight: FontWeight.w400,
+    return VisibilityDetector(
+      key: Key('film_grid_video_${item.id ?? item.hashCode}'),
+      onVisibilityChanged: _onVisibilityChanged,
+      child: Material(
+        color: _cardBg,
+        borderRadius: BorderRadius.circular(10),
+        clipBehavior: Clip.antiAlias,
+        child: MouseRegion(
+          onEnter: (_) => _onHoverEnter(),
+          onExit: (_) => _onHoverExit(),
+          child: InkWell(
+            onTap: () => context.push(Routes.videoDetailView, extra: item),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                thumb,
+                SizedBox(height: kFilmGridThumbTextGap),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: SizedBox(
+                    height: kFilmGridTextBlockHeight,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _description,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: _titleColor,
+                              fontSize: 13,
+                              height: 1.35,
+                              fontWeight: FontWeight.w400,
+                            ),
                           ),
                         ),
-                      ),
-                      Text(
-                        footer,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _footerColor,
-                          fontSize: 11.5,
-                          height: 1.2,
+                        Text(
+                          footer,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: _footerColor,
+                            fontSize: 11.5,
+                            height: 1.2,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
