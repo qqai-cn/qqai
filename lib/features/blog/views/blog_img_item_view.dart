@@ -12,6 +12,7 @@ import 'package:qqai/components/blog/hero_image_wrap_grid.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../providers/auth_providers.dart';
 import '../data/home_blog_tab.dart';
+import '../data/blog_feed_more_menu_handler.dart';
 import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_feed_list_actions.dart';
@@ -163,9 +164,13 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
               shareCount: item.shareCount,
               onShare: () => blogNotifier.onShareTap(item),
               onMenuSelected: (value) {
-                if (value == '0') {
-                  blogNotifier.onCollectTap(item);
-                }
+                handleBlogFeedMoreMenuSelection(
+                  context: context,
+                  ref: ref,
+                  item: item,
+                  value: value,
+                  feedActions: blogNotifier,
+                );
               },
               onComment: () {
                 if (isWideScreen) {

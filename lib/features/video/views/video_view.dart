@@ -17,6 +17,7 @@ import '../../index/presentation/widgets/brand_drawer_leading.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/presentation/widgets/lazy_tab_slot.dart';
 import '../../index/providers/home_providers.dart';
+import '../providers/video_play_queue_provider.dart';
 import '../providers/video_recommend_providers.dart';
 
 class VideoView extends ConsumerStatefulWidget {
@@ -149,11 +150,11 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
     super.dispose();
   }
 
-  List<BlogItem> _playableItems(List<BlogItem> raw) {
+  List<BlogItem> _playableItems(List<BlogItem> raw, List<BlogItem> queued) {
     final base = raw
         .where((e) => firstPlayableVideoUrlFromResources(e.resources) != null)
         .toList();
-    if (_collectionNextItems.isEmpty) return base;
+    if (_collectionNextItems.isEmpty && queued.isEmpty) return base;
 
     final result = <BlogItem>[];
     final seen = <int>{};
@@ -175,6 +176,9 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
     for (final item in base) {
       addWithCollectionChain(item);
     }
+    for (final item in queued) {
+      addWithCollectionChain(item);
+    }
     return result;
   }
 
@@ -182,6 +186,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
   Widget build(BuildContext context) {
     final recommendState = ref.watch(videoRecommendProvider);
     final recommendNotifier = ref.read(videoRecommendProvider.notifier);
+    final playQueue = ref.watch(videoPlayQueueProvider);
 
     return recommendState.blogPageData.when(
       loading: () => const ColoredBox(
@@ -209,7 +214,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
         ),
       ),
       data: (_) {
-        final playable = _playableItems(recommendState.allItems);
+        final playable = _playableItems(recommendState.allItems, playQueue);
         if (playable.isEmpty) {
           return ColoredBox(
             color: Colors.black,
@@ -336,7 +341,10 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
       setState(() => _collectionNextItems[currentId] = nextBlog);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || !_pageController.hasClients) return;
-        final items = _playableItems(ref.read(videoRecommendProvider).allItems);
+        final items = _playableItems(
+          ref.read(videoRecommendProvider).allItems,
+          ref.read(videoPlayQueueProvider),
+        );
         final nextPage = items.indexWhere((item) => item.id == nextId);
         if (nextPage < 0) return;
         ref.read(videoRecommendCurrentBlogProvider.notifier).select(nextBlog);

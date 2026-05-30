@@ -41,7 +41,7 @@ final class VideoFilmNotifierProvider
   }
 }
 
-String _$videoFilmNotifierHash() => r'6d775974042d19121101f537e0723cc3f6e03950';
+String _$videoFilmNotifierHash() => r'a0436ed227db37769765ea2f3060484c9576fc55';
 
 abstract class _$VideoFilmNotifier extends $Notifier<VideoFilmState> {
   VideoFilmState build();

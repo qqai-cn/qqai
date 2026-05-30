@@ -195,6 +195,31 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     unawaited(_toggleCollect(blogItem));
   }
 
+  @override
+  Future<void> onNotInterestedTap(BlogItem blogItem) =>
+      _markNotInterested(blogItem);
+
+  Future<void> _markNotInterested(BlogItem blogItem) async {
+    try {
+      final r = await markNotInterestedForFeedLists(
+        state.allItems,
+        state.blogPageData,
+        _blogRepo,
+        blogItem,
+      );
+      if (r.errorMessage != null) {
+        state = state.copyWith(error: r.errorMessage);
+        return;
+      }
+      state = state.copyWith(
+        allItems: r.allItems,
+        blogPageData: r.blogPageData,
+      );
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
   Future<void> _toggleCollect(BlogItem blogItem) async {
     try {
       final r = await toggleCollectForFeedLists(

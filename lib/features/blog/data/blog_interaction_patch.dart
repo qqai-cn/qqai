@@ -98,3 +98,39 @@ Future<
     );
   }
 }
+
+Future<
+    ({
+      List<BlogItem> allItems,
+      AsyncValue<BlogPageModelData> blogPageData,
+      String? errorMessage,
+    })> markNotInterestedForFeedLists(
+  List<BlogItem> allItems,
+  AsyncValue<BlogPageModelData> blogPageData,
+  IBlogRepo repo,
+  BlogItem blogItem,
+) async {
+  final id = blogItem.id;
+  if (id == null) {
+    return (
+      allItems: allItems,
+      blogPageData: blogPageData,
+      errorMessage: '无法操作：缺少博客编号',
+    );
+  }
+  try {
+    await repo.markBlogNotInterested(id);
+    final patched = removeBlogFromFeedLists(allItems, blogPageData, id);
+    return (
+      allItems: patched.allItems,
+      blogPageData: patched.blogPageData,
+      errorMessage: null,
+    );
+  } catch (e) {
+    return (
+      allItems: allItems,
+      blogPageData: blogPageData,
+      errorMessage: e.toString(),
+    );
+  }
+}

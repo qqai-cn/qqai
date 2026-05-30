@@ -42,7 +42,7 @@ final class VideoRecommendNotifierProvider
 }
 
 String _$videoRecommendNotifierHash() =>
-    r'feafcfbb9c63c28cfb17d6462527c91087583a21';
+    r'7fd86d5531ea03dcf6b63cf3b81c7bd030b124fb';
 
 abstract class _$VideoRecommendNotifier extends $Notifier<VideoRecommendState> {
   VideoRecommendState build();

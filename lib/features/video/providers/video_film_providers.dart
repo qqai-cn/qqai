@@ -133,6 +133,17 @@ class VideoFilmNotifier extends _$VideoFilmNotifier implements BlogFeedListActio
   }
 
   @override
+  Future<void> onNotInterestedTap(BlogItem blogItem) {
+    return runNotInterestedOnFeedState(
+      repo: _repo,
+      allItems: state.allItems,
+      blogPageData: state.blogPageData,
+      blogItem: blogItem,
+      apply: _applyFeedPatch,
+    );
+  }
+
+  @override
   void onZanTap(BlogItem blogItem) {
     unawaited(
       runToggleZanOnFeedState(

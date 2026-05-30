@@ -62,7 +62,7 @@ final class SquareBlogsNotifierProvider
 }
 
 String _$squareBlogsNotifierHash() =>
-    r'20a3bce71be8901219863576a0bf1c6f78b3c438';
+    r'852bc7115bf1ba4a033b7b5c51103724d9f029f1';
 
 /// 单个广场下的公开博客瀑布流。
 

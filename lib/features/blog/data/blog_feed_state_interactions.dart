@@ -191,3 +191,42 @@ Future<({BlogItem? item, String? error})> toggleCollectStandalone(
     return (item: null, error: e.toString());
   }
 }
+
+Future<void> runNotInterestedOnFeedState({
+  required IBlogRepo repo,
+  required List<BlogItem> allItems,
+  required AsyncValue<BlogPageModelData> blogPageData,
+  required BlogItem blogItem,
+  required void Function({
+    required List<BlogItem> allItems,
+    required AsyncValue<BlogPageModelData> blogPageData,
+    String? error,
+  }) apply,
+}) async {
+  try {
+    final r = await markNotInterestedForFeedLists(
+      allItems,
+      blogPageData,
+      repo,
+      blogItem,
+    );
+    if (r.errorMessage != null) {
+      apply(
+        allItems: allItems,
+        blogPageData: blogPageData,
+        error: r.errorMessage,
+      );
+      return;
+    }
+    apply(
+      allItems: r.allItems,
+      blogPageData: r.blogPageData,
+    );
+  } catch (e) {
+    apply(
+      allItems: allItems,
+      blogPageData: blogPageData,
+      error: e.toString(),
+    );
+  }
+}

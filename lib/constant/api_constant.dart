@@ -147,6 +147,14 @@ class ApiConstant {
   static const String BLOG_MY_FAVORITES_PAGE =
       '/app-api/blog/qqai/my/favorites/page';
 
+  /// 不感兴趣 POST：`/app-api/blog/qqai/{blogId}/dislike`
+  static String blogDislikePath(int blogId) =>
+      '/app-api/blog/qqai/$blogId/dislike';
+
+  /// 举报 POST：`/app-api/blog/qqai/{blogId}/report`
+  static String blogReportPath(int blogId) =>
+      '/app-api/blog/qqai/$blogId/report';
+
   /// 广场分页
   static const String SQUARE_PAGE = '/app-api/blog/qqai/square/page';
 

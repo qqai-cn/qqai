@@ -41,7 +41,7 @@ final class CommentNotifierProvider
   }
 }
 
-String _$commentNotifierHash() => r'd40c0f8b20f996886f36c1771d36ba5d28dd925e';
+String _$commentNotifierHash() => r'dc9d75b40fad8892a4fb5f5728e508fb33877aba';
 
 abstract class _$CommentNotifier extends $Notifier<CommentState> {
   CommentState build();

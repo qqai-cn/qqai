@@ -25,6 +25,25 @@ patchBlogFeedLists(
   return (allItems: newItems, blogPageData: newPageData);
 }
 
+/// 从瀑布流中移除指定博客（不感兴趣后）。
+({List<BlogItem> allItems, AsyncValue<BlogPageModelData> blogPageData})
+removeBlogFromFeedLists(
+  List<BlogItem> allItems,
+  AsyncValue<BlogPageModelData> blogPageData,
+  int blogId,
+) {
+  final newItems = allItems.where((b) => b.id != blogId).toList();
+  final newPageData = switch (blogPageData) {
+    AsyncData(:final value) => AsyncData(
+      value.copyWith(
+        list: (value.list ?? []).where((b) => b.id != blogId).toList(),
+      ),
+    ),
+    _ => blogPageData,
+  };
+  return (allItems: newItems, blogPageData: newPageData);
+}
+
 int? authorUserId(BlogItem b) =>
     b.userId ?? int.tryParse((b.creator ?? '').trim());
 

@@ -69,6 +69,16 @@ abstract class IBlogRepo {
 
   /// 我的收藏分页。
   Future<BlogPageModelData> getMyFavoritesPage(int page, {int pageSize = 10});
+
+  /// 标记不感兴趣。
+  Future<bool> markBlogNotInterested(int blogId);
+
+  /// 举报博客。
+  Future<bool> reportBlog(
+    int blogId, {
+    required int reason,
+    String? description,
+  });
 }
 
 class BlogRepo implements IBlogRepo {
@@ -275,5 +285,34 @@ class BlogRepo implements IBlogRepo {
       queryParameters: {'pageNo': page, 'pageSize': pageSize},
     );
     return parseBlogPageEnvelope(response.data);
+  }
+
+  @override
+  Future<bool> markBlogNotInterested(int blogId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogDislikePath(blogId),
+      RequestType.post,
+    );
+    _parseBooleanData(response.data, errorHint: '操作失败');
+    return true;
+  }
+
+  @override
+  Future<bool> reportBlog(
+    int blogId, {
+    required int reason,
+    String? description,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogReportPath(blogId),
+      RequestType.post,
+      data: {
+        'reason': reason,
+        if (description != null && description.trim().isNotEmpty)
+          'description': description.trim(),
+      },
+    );
+    _parseBooleanData(response.data, errorHint: '举报失败');
+    return true;
   }
 }
