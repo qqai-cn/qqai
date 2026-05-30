@@ -5,6 +5,8 @@
 #   ./run_web.sh cdn       # 从 gstatic 拉 skwasm
 set -e
 cd "$(dirname "$0")"
+# shellcheck source=scripts/qqai_dart_defines.sh
+source "$(dirname "$0")/scripts/qqai_dart_defines.sh"
 
 MODE="${WEB_RENDERER_MODE:-local}"
 if [[ "${1:-}" == "local" || "${1:-}" == "cdn" ]]; then
@@ -25,7 +27,7 @@ trap cleanup EXIT INT TERM
 
 bash web/scripts/apply_web_renderer_mode.sh "$MODE"
 
-ARGS=(flutter run -d chrome)
+ARGS=(flutter run -d chrome "${QQAI_DART_DEFINES[@]}")
 if [[ "$MODE" == "local" ]]; then
   ARGS+=(--no-web-resources-cdn)
 fi

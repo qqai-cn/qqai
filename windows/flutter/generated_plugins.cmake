@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   dynamic_color
   file_selector_windows
+  flutter_webrtc
   geolocator_windows
   rive_native
   url_launcher_windows

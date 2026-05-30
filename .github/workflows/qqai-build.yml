@@ -184,7 +184,9 @@ jobs:
         run: bash scripts/sync_native_icons.sh
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          source scripts/qqai_dart_defines.sh
+          flutter build apk --release "${QQAI_DART_DEFINES[@]}"
 
       - name: Package artifact
         run: |
@@ -228,7 +230,9 @@ jobs:
         run: cd macos && pod install
 
       - name: Build macOS release
-        run: flutter build macos --release
+        run: |
+          source scripts/qqai_dart_defines.sh
+          flutter build macos --release "${QQAI_DART_DEFINES[@]}"
 
       - name: Package artifact
         run: |
@@ -271,7 +275,9 @@ jobs:
         run: cd ios && pod install
 
       - name: Build iOS (no codesign)
-        run: flutter build ios --release --no-codesign
+        run: |
+          source scripts/qqai_dart_defines.sh
+          flutter build ios --release --no-codesign "${QQAI_DART_DEFINES[@]}"
 
       - name: Package artifact
         run: |
@@ -312,7 +318,9 @@ jobs:
         run: bash scripts/sync_native_icons.sh
 
       - name: Build Windows release
-        run: flutter build windows --release
+        run: |
+          source scripts/qqai_dart_defines.sh
+          flutter build windows --release "${QQAI_DART_DEFINES[@]}"
 
       - name: Package artifact
         shell: pwsh

@@ -553,6 +553,25 @@ GoRouter appRouter(Ref ref) {
         },
         routes: [
           GoRoute(
+            path: 'video-call',
+            name: 'chatVideoCall',
+            builder: (context, state) {
+              final id =
+                  int.tryParse(state.pathParameters['chatId'] ?? '') ?? 0;
+              if (id == 0) {
+                return Scaffold(
+                  appBar: AppBar(title: const Text('视频通话')),
+                  body: const Center(child: Text('无效会话')),
+                );
+              }
+              return AppDeferredWidget(
+                libraryLoader: route_pages.loadLibrary,
+                builder: () =>
+                    route_pages.ChatVideoCallPage(conversationId: id),
+              );
+            },
+          ),
+          GoRoute(
             path: 'settings',
             name: 'chatSettings',
             builder: (context, state) {

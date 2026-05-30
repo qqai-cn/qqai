@@ -10,6 +10,8 @@
 # 产物标记：build/web/.web-renderer-mode（local|cdn）
 set -euo pipefail
 cd "$(dirname "$0")"
+# shellcheck source=scripts/qqai_dart_defines.sh
+source "$(dirname "$0")/scripts/qqai_dart_defines.sh"
 
 MODE="${WEB_RENDERER_MODE:-local}"
 EXTRA_ARGS=()
@@ -60,11 +62,11 @@ if [[ "$MODE" == "local" ]]; then
 fi
 
 if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
-  echo "==> flutter ${BUILD_ARGS[*]} ${EXTRA_ARGS[*]}"
-  flutter "${BUILD_ARGS[@]}" "${EXTRA_ARGS[@]}"
+  echo "==> flutter ${BUILD_ARGS[*]} ${QQAI_DART_DEFINES[*]} ${EXTRA_ARGS[*]}"
+  flutter "${BUILD_ARGS[@]}" "${QQAI_DART_DEFINES[@]}" "${EXTRA_ARGS[@]}"
 else
-  echo "==> flutter ${BUILD_ARGS[*]}"
-  flutter "${BUILD_ARGS[@]}"
+  echo "==> flutter ${BUILD_ARGS[*]} ${QQAI_DART_DEFINES[*]}"
+  flutter "${BUILD_ARGS[@]}" "${QQAI_DART_DEFINES[@]}"
 fi
 
 echo "$MODE" > build/web/.web-renderer-mode

@@ -7,7 +7,11 @@
       "type": "dart",
       "program": "lib/main.dart",
       "deviceId": "chrome",
-      "toolArgs": ["--no-web-resources-cdn", "--web-port=8080"],
+      "toolArgs": [
+        "--no-web-resources-cdn",
+        "--web-port=8080",
+        "--dart-define=QQAI_TURN_STATIC_AUTH_SECRET=YUhdKLTbPKk2BtYxf8Lu"
+      ],
     }
   ]
 }

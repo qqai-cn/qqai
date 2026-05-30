@@ -38,12 +38,15 @@ import 'widgets/composer_action_bar.dart';
 
 class ChatWidget extends ConsumerStatefulWidget {
   final UserID currentUserId;
+
   /// 业务会话 ID（与接口 `conversationId` 一致）
   final int conversationId;
   final List<Message> initialMessages;
   final Dio dio;
+
   /// 登录 token，用于 Socket.IO 连接鉴权
   final String? token;
+
   /// 是否连接 Socket.IO（默认关闭，仅走 HTTP 收发）
   final bool enableSocket;
 
@@ -166,7 +169,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     _nextOlderPage = 2;
     _hasMoreOlder = true;
     try {
-      final page = await ref.read(chatRepoProvider).getMessagePage(
+      final page = await ref
+          .read(chatRepoProvider)
+          .getMessagePage(
             conversationId: widget.conversationId,
             pageNo: 1,
             pageSize: _historyPageSize,
@@ -193,8 +198,13 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       final latestId = messages
           ?.map((e) => e.id)
           .whereType<int>()
-          .fold<int?>(null, (prev, id) => prev == null || id > prev ? id : prev);
-      await ref.read(chatRepoProvider).markConversationRead(
+          .fold<int?>(
+            null,
+            (prev, id) => prev == null || id > prev ? id : prev,
+          );
+      await ref
+          .read(chatRepoProvider)
+          .markConversationRead(
             conversationId: widget.conversationId,
             messageId: latestId,
           );
@@ -208,7 +218,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     if (!mounted || _loadingOlder || !_hasMoreOlder) return;
     _loadingOlder = true;
     try {
-      final page = await ref.read(chatRepoProvider).getMessagePage(
+      final page = await ref
+          .read(chatRepoProvider)
+          .getMessagePage(
             conversationId: widget.conversationId,
             pageNo: _nextOlderPage,
             pageSize: _historyPageSize,
@@ -332,6 +344,11 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                               : Icons.emoji_emotions_outlined,
                           title: _showEmojiPanel ? '键盘' : '表情',
                           onPressed: _toggleEmojiPanel,
+                        ),
+                        ComposerActionButton(
+                          icon: Icons.videocam_outlined,
+                          title: '视频通话',
+                          onPressed: _startVideoCall,
                         ),
                         ComposerActionButton(
                           icon: Icons.delete_sweep,
@@ -485,11 +502,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
             resolveUser: (id) => Future.value(switch (id) {
               final same when same == _meUser.id => _meUser,
               'system' => _systemUser,
-              _ => User(
-                  id: id,
-                  name: '用户 $id',
-                  imageSource: _defaultAvatar,
-                ),
+              _ => User(id: id, name: '用户 $id', imageSource: _defaultAvatar),
             }),
             theme: theme.brightness == Brightness.dark
                 ? ChatTheme.dark()
@@ -547,9 +560,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
               );
             } catch (error) {
               if (!context.mounted) return;
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('下载失败：$error')),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text('下载失败：$error')));
             }
           },
         ),
@@ -606,10 +619,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              '清除',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('清除', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -642,7 +652,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       switch (event.type) {
         case WebSocketEventType.newMessage:
           final incoming = event.message!;
-          final exists = _chatController.messages.any((m) => m.id == incoming.id);
+          final exists = _chatController.messages.any(
+            (m) => m.id == incoming.id,
+          );
           if (!exists) {
             await _chatController.insertMessage(incoming);
           }
@@ -710,35 +722,35 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     );
     return switch (message) {
       TextMessage() => message.copyWith(
-          id: id,
-          createdAt: null,
-          sentAt: sentAt,
-          metadata: metadata,
-        ),
+        id: id,
+        createdAt: null,
+        sentAt: sentAt,
+        metadata: metadata,
+      ),
       ImageMessage() => message.copyWith(
-          id: id,
-          createdAt: null,
-          sentAt: sentAt,
-          metadata: metadata,
-        ),
+        id: id,
+        createdAt: null,
+        sentAt: sentAt,
+        metadata: metadata,
+      ),
       FileMessage() => message.copyWith(
-          id: id,
-          createdAt: null,
-          sentAt: sentAt,
-          metadata: metadata,
-        ),
+        id: id,
+        createdAt: null,
+        sentAt: sentAt,
+        metadata: metadata,
+      ),
       VideoMessage() => message.copyWith(
-          id: id,
-          createdAt: null,
-          sentAt: sentAt,
-          metadata: metadata,
-        ),
+        id: id,
+        createdAt: null,
+        sentAt: sentAt,
+        metadata: metadata,
+      ),
       _ => message.copyWith(
-          id: id,
-          createdAt: null,
-          sentAt: sentAt,
-          metadata: metadata,
-        ),
+        id: id,
+        createdAt: null,
+        sentAt: sentAt,
+        metadata: metadata,
+      ),
     };
   }
 
@@ -789,9 +801,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     } catch (error) {
       debugPrint('Error uploading/sending message: $error');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('发送失败: $error')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('发送失败: $error')));
       }
     }
   }
@@ -915,6 +927,11 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
         );
       },
     );
+  }
+
+  void _startVideoCall() {
+    _exitEmojiPanel();
+    context.push('${Routes.chat}/${widget.conversationId}/video-call');
   }
 
   void _removeItem(Message item) async {

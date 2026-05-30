@@ -7,6 +7,7 @@ export '../components/video_player_detail/FullScreenVideoPlayer.dart';
 export '../features/blog/views/blog_img_detail_view.dart';
 export '../features/blog/views/blog_video_detail_view.dart';
 export '../features/chat/views/chat_conversation_settings_page.dart';
+export '../features/chat/views/chat_video_call_page.dart';
 export '../features/my/views/footprint_page.dart';
 export '../features/member_center/views/member_center_page.dart';
 export '../features/douyin/views/douyin_all_features_page.dart';
