@@ -85,7 +85,28 @@ class FabuMediaPreviewTile extends StatelessWidget {
           ),
           child: SizedBox(
             width: double.infinity,
-            child: AspectRatio(aspectRatio: 15 / 9, child: preview),
+            child: LocalVideoAspectRatioBox(
+              file: file,
+              fallbackAspectRatio: 9 / 16,
+              builder: (context, aspectRatio) {
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxWidth = constraints.maxWidth;
+                    final width = aspectRatio < 1 ? maxWidth * 0.5 : maxWidth;
+                    return Align(
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: width,
+                        child: AspectRatio(
+                          aspectRatio: aspectRatio,
+                          child: preview,
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
           ),
         ),
       );
