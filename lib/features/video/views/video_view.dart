@@ -191,6 +191,9 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
 
   @override
   Widget build(BuildContext context) {
+    final isWideScreen = 1.sw > 800;
+    final toolbarHeight =
+        blogDetailVideoToolbarHeight(showControlsRow: isWideScreen);
     final recommendState = ref.watch(videoRecommendProvider);
     final recommendNotifier = ref.read(videoRecommendProvider.notifier);
     final playQueue = ref.watch(videoPlayQueueProvider);
@@ -282,11 +285,12 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
                     blog: item,
                     adTopInset: adTopInset,
                     isActive: widget.isActive && index == _currentPage,
+                    showToolbarControlsRow: isWideScreen,
                     onCompleted: () => _openNextCollectionVideo(item),
                   ),
                   BlogDetailMediaOverlay(
                     blog: item,
-                    bottomInset: kBlogDetailVideoToolbarHeight,
+                    bottomInset: toolbarHeight,
                     onCommentTap: () =>
                         ref.read(commentProvider.notifier).changeShowComment(),
                   ),

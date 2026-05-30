@@ -23,6 +23,9 @@ class BlogVideoDetailPlayer extends StatefulWidget {
   final double? adSkipRightInset;
   final bool isActive;
 
+  /// 为 false 时底部工具条仅保留进度条（窄屏推荐流等）。
+  final bool showToolbarControlsRow;
+
   const BlogVideoDetailPlayer({
     super.key,
     required this.blog,
@@ -30,6 +33,7 @@ class BlogVideoDetailPlayer extends StatefulWidget {
     this.adTopInset,
     this.adSkipRightInset,
     this.isActive = true,
+    this.showToolbarControlsRow = true,
   });
 
   @override
@@ -215,7 +219,9 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
           ),
           FlickManagerBuilder(
             flickManager: flickManager,
-            child: const BlogDetailVideoToolbar(),
+            child: BlogDetailVideoToolbar(
+              showControlsRow: widget.showToolbarControlsRow,
+            ),
           ),
         ],
       ),

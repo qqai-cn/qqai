@@ -148,28 +148,28 @@ class _CollectionButton extends StatelessWidget {
     final name = collection.name?.trim();
     return Material(
       color: Colors.white.withValues(alpha: 0.26),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(
                 Icons.collections_bookmark_outlined,
                 color: Colors.white,
-                size: 18,
+                size: 14,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 220),
+                constraints: const BoxConstraints(maxWidth: 180),
                 child: Text(
                   '合集 · ${name?.isNotEmpty == true ? name! : '合集'}',
                   style: context.typo.bodyStrong.copyWith(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 13,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
