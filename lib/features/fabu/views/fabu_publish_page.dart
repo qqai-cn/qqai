@@ -1,6 +1,7 @@
-import 'dart:typed_data';
+import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -79,6 +80,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     if (widget.type == FabuPublishType.video) {
       ref.read(fabuProvider.notifier).setWidgetCoverCapture(null);
     }
+    _videoPreviewController.detach();
     _contentController.dispose();
     _titleController.dispose();
     _targetController.dispose();
@@ -374,8 +376,8 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final hasManualPreview =
         !styledPreviewActive && (previewBytes != null || coverFile != null);
     final hasDisplay = styledPreviewActive || hasManualPreview;
-    final videoFile = state.videoFiles.isNotEmpty
-        ? state.videoFiles.first
+    final videoFilePath = state.videoFiles.isNotEmpty
+        ? state.videoFiles.first.path
         : null;
 
     return DecoratedBox(
@@ -415,35 +417,27 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               ],
             ),
             12.verticalSpace,
-            if (videoFile != null)
-              LocalVideoAspectRatioBox(
-                file: videoFile,
-                builder: (context, aspectRatio) {
-                  if (styledPreviewActive) {
-                    return _WidgetVideoCoverPreviewCard(
-                      videoPath: videoFile.path,
+            if (videoFilePath != null)
+              styledPreviewActive
+                  ? _WidgetVideoCoverPreviewCard(
+                      videoPath: videoFilePath,
                       styleId: state.selectedCoverStyleId,
                       durationSeconds: _coverDurationSeconds,
                       repaintKey: _coverRepaintKey,
                       previewKey: _coverPreviewKey,
-                      aspectRatio: aspectRatio,
                       onTap: () => _showWidgetCoverFullPreview(),
-                    );
-                  }
-                  return _VideoCoverPreviewCard(
-                    bytes: previewBytes,
-                    file: coverFile,
-                    isLoading: state.isCoverPreviewing,
-                    aspectRatio: aspectRatio,
-                    onTap: hasDisplay
-                        ? () => _showCoverFullPreview(
-                            bytes: previewBytes,
-                            file: coverFile,
-                          )
-                        : null,
-                  );
-                },
-              ),
+                    )
+                  : _VideoCoverPreviewCard(
+                      bytes: previewBytes,
+                      file: coverFile,
+                      isLoading: state.isCoverPreviewing,
+                      onTap: hasDisplay
+                          ? () => _showCoverFullPreview(
+                              bytes: previewBytes,
+                              file: coverFile,
+                            )
+                          : null,
+                    ),
             12.verticalSpace,
             Wrap(
               spacing: 8,
@@ -980,7 +974,6 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
     required this.durationSeconds,
     required this.repaintKey,
     required this.previewKey,
-    required this.aspectRatio,
     this.onTap,
   });
 
@@ -989,7 +982,6 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
   final int durationSeconds;
   final GlobalKey repaintKey;
   final GlobalKey<VideoCoverStylePreviewState> previewKey;
-  final double aspectRatio;
   final VoidCallback? onTap;
 
   @override
@@ -1138,14 +1130,12 @@ class _VideoCoverPreviewCard extends StatelessWidget {
     required this.bytes,
     required this.file,
     required this.isLoading,
-    required this.aspectRatio,
     this.onTap,
   });
 
   final Uint8List? bytes;
   final XFile? file;
   final bool isLoading;
-  final double aspectRatio;
   final VoidCallback? onTap;
 
   @override
@@ -1173,6 +1163,9 @@ class _VideoCoverPreviewCard extends StatelessWidget {
                           bytes!,
                           fit: BoxFit.cover,
                           gaplessPlayback: true,
+                          cacheWidth: 640,
+                          cacheHeight: 800,
+                          filterQuality: FilterQuality.low,
                         )
                       else if (file != null)
                         _VideoCoverPreview(file: file!)
@@ -1298,37 +1291,36 @@ class _VideoCoverPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: file.readAsBytes(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return Image.memory(snapshot.data!, fit: BoxFit.cover);
-        }
-        if (snapshot.hasError) {
-          return _buildError(context, snapshot.error!, snapshot.stackTrace);
-        }
-        return Container(
-          color: Colors.white,
-          alignment: Alignment.center,
-          child: const SizedBox(
-            width: 18,
-            height: 18,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        );
-      },
-    );
+    final image = kIsWeb
+        ? Image.network(
+            file.path,
+            fit: BoxFit.cover,
+            cacheWidth: 640,
+            cacheHeight: 800,
+            filterQuality: FilterQuality.low,
+            errorBuilder: _buildImageError,
+          )
+        : Image.file(
+            File(file.path),
+            fit: BoxFit.cover,
+            cacheWidth: 640,
+            cacheHeight: 800,
+            filterQuality: FilterQuality.low,
+            errorBuilder: _buildImageError,
+          );
+    return image;
   }
 
-  Widget _buildError(
+  Widget _buildImageError(
     BuildContext context,
     Object error,
     StackTrace? stackTrace,
   ) {
-    return Container(
+    return const ColoredBox(
       color: Colors.white,
-      alignment: Alignment.center,
-      child: const Icon(Icons.broken_image_outlined, color: Color(0xFF9CA3AF)),
+      child: Center(
+        child: Icon(Icons.broken_image_outlined, color: Color(0xFF9CA3AF)),
+      ),
     );
   }
 }

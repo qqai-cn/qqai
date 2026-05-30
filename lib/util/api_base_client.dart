@@ -174,7 +174,12 @@ class ApiBaseClient {
                 return;
               }
             } else {
-              await _rejectUnauthorized(response, handler, message, logout: false);
+              await _rejectUnauthorized(
+                response,
+                handler,
+                message,
+                logout: false,
+              );
               return;
             }
           }
@@ -198,7 +203,12 @@ class ApiBaseClient {
                 return;
               }
             } else {
-              await _rejectUnauthorizedError(error, handler, message, logout: false);
+              await _rejectUnauthorizedError(
+                error,
+                handler,
+                message,
+                logout: false,
+              );
               return;
             }
           }
@@ -264,16 +274,12 @@ class ApiBaseClient {
       final timeout = Duration(seconds: timeoutInSeconds ?? _timeoutInSeconds);
       // Web 的 XHR 不支持 sendTimeout；大文件上传设 sendTimeout 可能直接 connection error
       final bool hasData = data != null;
-      final Duration? sendTimeout =
-          hasData && !kIsWeb ? timeout : null;
+      final Duration? sendTimeout = hasData && !kIsWeb ? timeout : null;
       if (requestType == RequestType.get) {
         response = await _dio.get(
           url,
           queryParameters: queryParameters,
-          options: Options(
-            headers: mergedHeaders,
-            receiveTimeout: timeout,
-          ),
+          options: Options(headers: mergedHeaders, receiveTimeout: timeout),
         );
       } else if (requestType == RequestType.post) {
         response = await _dio.post(
@@ -468,13 +474,13 @@ class ApiBaseClient {
     String? directory,
   }) async {
     try {
-      final bytes = await file.readAsBytes();
-      final multipartFile = MultipartFile.fromBytes(bytes, filename: file.name);
+      final multipartFile = await _multipartFileFromXFile(file);
 
-      final formData = FormData.fromMap({
-        'file': multipartFile,
-        if (directory != null) 'directory': directory,
-      });
+      final fields = <String, dynamic>{'file': multipartFile};
+      if (directory != null) {
+        fields['directory'] = directory;
+      }
+      final formData = FormData.fromMap(fields);
 
       final response = await safeApiCall(
         ApiConstant.FILE_UPLOAD,
@@ -487,6 +493,22 @@ class ApiBaseClient {
     } catch (error) {
       Logger().e('File upload error: $error');
       rethrow;
+    }
+  }
+
+  static Future<MultipartFile> _multipartFileFromXFile(XFile file) async {
+    final filename = file.name.isNotEmpty ? file.name : 'upload';
+    try {
+      return MultipartFile.fromStream(
+        () => file.openRead(),
+        await file.length(),
+        filename: filename,
+      );
+    } catch (_) {
+      // Browser-backed files can still require a byte fallback.
+      // Keep this scoped to the upload part instead of retaining bytes in state.
+      final bytes = await file.readAsBytes();
+      return MultipartFile.fromBytes(bytes, filename: filename);
     }
   }
 

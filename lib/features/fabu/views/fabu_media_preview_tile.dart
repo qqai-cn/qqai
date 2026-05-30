@@ -34,11 +34,17 @@ class FabuMediaPreviewTile extends StatelessWidget {
         ? Image.network(
             file.path,
             fit: BoxFit.cover,
+            cacheWidth: 320,
+            cacheHeight: 320,
+            filterQuality: FilterQuality.low,
             errorBuilder: _buildImageError,
           )
         : Image.file(
             File(file.path),
             fit: BoxFit.cover,
+            cacheWidth: 320,
+            cacheHeight: 320,
+            filterQuality: FilterQuality.low,
             errorBuilder: _buildImageError,
           );
     final preview = ClipRRect(
@@ -79,27 +85,7 @@ class FabuMediaPreviewTile extends StatelessWidget {
           ),
           child: SizedBox(
             width: double.infinity,
-            child: LocalVideoAspectRatioBox(
-              file: file,
-              builder: (context, aspectRatio) {
-                return LayoutBuilder(
-                  builder: (context, constraints) {
-                    final maxWidth = constraints.maxWidth;
-                    final width = aspectRatio < 1 ? maxWidth * 0.5 : maxWidth;
-                    return Align(
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: width,
-                        child: AspectRatio(
-                          aspectRatio: aspectRatio,
-                          child: preview,
-                        ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+            child: AspectRatio(aspectRatio: 15 / 9, child: preview),
           ),
         ),
       );

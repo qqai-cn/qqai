@@ -53,7 +53,7 @@ Future<Uint8List> generateVideoCoverBytes({
     video: videoPath,
     imageFormat: imageFormat,
     maxHeight: 0,
-    maxWidth: 0,
+    maxWidth: qqaiCoverThumbMaxWidth,
     timeMs: timeMs,
     quality: quality,
   );
@@ -136,7 +136,9 @@ Future<StyledCoverGenerateResult> generateStyledVideoCoverBytesProgressive({
 
   return StyledCoverGenerateResult(
     bytes: bytes,
-    durationMs: effectiveDurationMs > 0 ? effectiveDurationMs : detectedDurationMs,
+    durationMs: effectiveDurationMs > 0
+        ? effectiveDurationMs
+        : detectedDurationMs,
   );
 }
 
