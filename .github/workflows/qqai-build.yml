@@ -1,0 +1,277 @@
+name: QQAI Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - web
+          - android
+          - macos
+          - ios
+          - windows
+      deploy_web:
+        description: Deploy web zip to server after build (requires secrets)
+        required: false
+        default: false
+        type: boolean
+  push:
+    branches: [master, main]
+    paths:
+      - 'lib/**'
+      - 'pubspec.yaml'
+      - 'android/**'
+      - 'ios/**'
+      - 'macos/**'
+      - 'windows/**'
+      - 'web/**'
+      - '.github/workflows/qqai-build.yml'
+
+jobs:
+  build-web:
+    name: Web (WASM local)
+    if: github.event_name == 'push' || inputs.platform == 'all' || inputs.platform == 'web'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build Web WASM (local)
+        run: |
+          bash build_web_wasm.sh local
+          WEB_RENDERER_MODE=local bash web/compress_web_assets.sh
+
+      - name: Verify web artifacts
+        run: |
+          test -f build/web/main.dart.wasm.gz
+          test -f build/web/canvaskit/skwasm.wasm.gz
+          test "$(tr -d '[:space:]' < build/web/.web-renderer-mode)" = local
+
+      - name: Package artifact
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ZIP="qqai-web-${VERSION}.zip"
+          cd build
+          zip -r "$ZIP" web -x "*.DS_Store"
+          echo "ZIP_NAME=${ZIP}" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qqai-web-wasm-local
+          path: build/${{ env.ZIP_NAME }}
+          retention-days: 30
+
+  # Secrets: QQAI_DEPLOY_HOST, QQAI_DEPLOY_USER, QQAI_DEPLOY_PASSWORD
+  # 可选: QQAI_DEPLOY_SSH_KEY
+  deploy-web:
+    name: Deploy Web
+    needs: build-web
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.deploy_web == true &&
+      (inputs.platform == 'web' || inputs.platform == 'all') &&
+      needs.build-web.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: qqai-web-wasm-local
+
+      - name: Prepare web.zip
+        run: |
+          mv qqai-web-*.zip web.zip
+          ls -lh web.zip
+
+      - name: Upload web.zip to server
+        uses: appleboy/scp-action@v1.0.3
+        with:
+          host: ${{ secrets.QQAI_DEPLOY_HOST }}
+          username: ${{ secrets.QQAI_DEPLOY_USER }}
+          key: ${{ secrets.QQAI_DEPLOY_SSH_KEY }}
+          password: ${{ secrets.QQAI_DEPLOY_PASSWORD }}
+          port: 22
+          source: web.zip
+          target: /qqai/
+          overwrite: true
+
+      - name: Extract and activate on server
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.QQAI_DEPLOY_HOST }}
+          username: ${{ secrets.QQAI_DEPLOY_USER }}
+          key: ${{ secrets.QQAI_DEPLOY_SSH_KEY }}
+          password: ${{ secrets.QQAI_DEPLOY_PASSWORD }}
+          port: 22
+          script: |
+            set -e
+            cd /qqai
+            rm -rf web.bak
+            mv web web.bak 2>/dev/null || true
+            unzip -o web.zip
+            echo "Deployment complete!"
+
+  build-android:
+    name: Android (APK)
+    if: github.event_name == 'push' || inputs.platform == 'all' || inputs.platform == 'android'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Package artifact
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ZIP="qqai-android-${VERSION}.zip"
+          cd build/app/outputs/flutter-apk
+          zip "../../../${ZIP}" app-release.apk
+          echo "ZIP_NAME=${ZIP}" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qqai-android-apk
+          path: build/${{ env.ZIP_NAME }}
+          retention-days: 30
+
+  build-macos:
+    name: macOS (.app)
+    if: github.event_name != 'push' && (inputs.platform == 'all' || inputs.platform == 'macos')
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Install CocoaPods
+        run: cd macos && pod install
+
+      - name: Build macOS release
+        run: flutter build macos --release
+
+      - name: Package artifact
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ZIP="qqai-macos-${VERSION}.zip"
+          ditto -c -k --keepParent build/macos/Build/Products/Release/qqai.app "$ZIP"
+          echo "ZIP_NAME=${ZIP}" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qqai-macos-app
+          path: ${{ env.ZIP_NAME }}
+          retention-days: 30
+
+  build-ios:
+    name: iOS (unsigned)
+    if: github.event_name != 'push' && (inputs.platform == 'all' || inputs.platform == 'ios')
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Install CocoaPods
+        run: cd ios && pod install
+
+      - name: Build iOS (no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package artifact
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          ZIP="qqai-ios-${VERSION}-unsigned.zip"
+          cd build/ios/iphoneos
+          zip -r "../../../${ZIP}" Runner.app
+          echo "ZIP_NAME=${ZIP}" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qqai-ios-unsigned
+          path: ${{ env.ZIP_NAME }}
+          retention-days: 30
+
+  build-windows:
+    name: Windows (.exe)
+    if: github.event_name != 'push' && (inputs.platform == 'all' || inputs.platform == 'windows')
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run code generation
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      - name: Package artifact
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path pubspec.yaml -Pattern '^version:\s*(.+)$').Matches[0].Groups[1].Value.Trim()
+          $zipName = "qqai-windows-$version.zip"
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath $zipName -Force
+          Write-Output "ZIP_NAME=$zipName" >> $env:GITHUB_ENV
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: qqai-windows-release
+          path: ${{ env.ZIP_NAME }}
+          retention-days: 30
