@@ -170,8 +170,7 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
 
   List<Widget> _buildTimelineSlivers(BuildContext context) {
     final isWide = 1.sw > 800;
-    final blogNotifier =
-        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
+    final blogNotifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
     final itemHeight = blogNotifier.getVideoItemHeightWithWidth(
       isWide ? 2 : 1,
       1.sw,
@@ -190,24 +189,33 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     for (final section in sections) {
       slivers.add(
         SliverToBoxAdapter(
-          child: ContentTimelineSectionHeader(title: section.title),
-        ),
-      );
-      slivers.add(
-        SliverLayoutBuilder(
-          builder: (context, constraints) {
-            final width = constraints.crossAxisExtent;
-            if (width <= 0) {
-              return const SliverToBoxAdapter(child: SizedBox.shrink());
-            }
-            final columns = (width / _minColumnWidth).floor().clamp(1, 2);
-            return SliverMasonryGrid.count(
-              crossAxisCount: columns,
-              childCount: section.items.length,
-              itemBuilder: (context, index) =>
-                  _buildBlogTile(section.items[index], itemHeight),
-            );
-          },
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final contentWidth = (constraints.maxWidth - 114).clamp(
+                0,
+                double.infinity,
+              );
+              if (contentWidth <= 0) return const SizedBox.shrink();
+              final columns = (contentWidth / _minColumnWidth).floor().clamp(
+                1,
+                2,
+              );
+              return ContentTimelineSectionFrame(
+                title: section.title,
+                child: MasonryGridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: EdgeInsets.zero,
+                  crossAxisCount: columns,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  itemCount: section.items.length,
+                  itemBuilder: (context, index) =>
+                      _buildBlogTile(section.items[index], itemHeight),
+                ),
+              );
+            },
+          ),
         ),
       );
     }
@@ -271,11 +279,11 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    '加载失败: $_error',
-                    style: context.typo.body,
+                  Text('加载失败: $_error', style: context.typo.body),
+                  TextButton(
+                    onPressed: _loadFirstPage,
+                    child: const Text('重试'),
                   ),
-                  TextButton(onPressed: _loadFirstPage, child: const Text('重试')),
                 ],
               ),
             ),
@@ -293,9 +301,7 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
           ),
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(
-              child: Text('暂无图文动态', style: context.typo.body),
-            ),
+            child: Center(child: Text('暂无图文动态', style: context.typo.body)),
           ),
         ],
       );

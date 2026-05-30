@@ -122,6 +122,24 @@ GoRouter appRouter(Ref ref) {
         ),
       ),
       GoRoute(
+        path: Routes.memberCenter,
+        name: 'memberCenter',
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.MemberCenterPage(),
+        ),
+      ),
+      GoRoute(
+        path: '${Routes.memberCenterDetail}/:section',
+        name: 'memberCenterDetail',
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.MemberCenterDetailPage(
+            section: state.pathParameters['section'] ?? 'benefits',
+          ),
+        ),
+      ),
+      GoRoute(
         path: Routes.douyinGroupBuy,
         name: 'douyinGroupBuy',
         builder: (context, state) => AppDeferredWidget(
@@ -143,6 +161,14 @@ GoRouter appRouter(Ref ref) {
         builder: (context, state) => AppDeferredWidget(
           libraryLoader: route_pages.loadLibrary,
           builder: () => route_pages.DouyinMyOrdersPage(),
+        ),
+      ),
+      GoRoute(
+        path: Routes.douyinMyAddresses,
+        name: 'douyinMyAddresses',
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.DouyinMyAddressesPage(),
         ),
       ),
       GoRoute(
@@ -674,7 +700,12 @@ GoRouter appRouter(Ref ref) {
 // 辅助函数：检查路由是否需要认证
 bool _requiresAuth(String path) {
   if (path.startsWith('/douyin/')) return true;
-  if (path == Routes.cartPageUrl || path == Routes.footprint) return true;
+  if (path == Routes.cartPageUrl ||
+      path == Routes.footprint ||
+      path == Routes.memberCenter ||
+      path.startsWith('${Routes.memberCenterDetail}/')) {
+    return true;
+  }
   // 定义需要认证的路由路径
   const protectedPaths = [
     Routes.mePage, // 我的页面

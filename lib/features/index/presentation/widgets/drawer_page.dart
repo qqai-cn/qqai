@@ -127,9 +127,7 @@ class _DrawerLoggedInHeader extends ConsumerWidget {
       },
       orElse: () => null,
     );
-    final displayName = nickname ??
-        auth.username?.trim() ??
-        '用户';
+    final displayName = nickname ?? auth.username?.trim() ?? '用户';
 
     final followingLabel = profileAsync.maybeWhen(
       data: (page) => formatCompactCount(page.followingCount),
@@ -144,10 +142,8 @@ class _DrawerLoggedInHeader extends ConsumerWidget {
       data: (page) => page.avatar,
       orElse: () => null,
     );
-    final qqId = profileAsync.maybeWhen(
-          data: (page) => page.id,
-          orElse: () => null,
-        ) ??
+    final qqId =
+        profileAsync.maybeWhen(data: (page) => page.id, orElse: () => null) ??
         int.tryParse(auth.userId ?? '');
 
     return DrawerHeader(
@@ -268,9 +264,22 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
         height: 35,
         fit: BoxFit.fill,
       ),
-      title: const Text('福利中心'),
+      title: const Text('会员中心'),
       onTap: () {
         Navigator.of(context).pop();
+        context.push(Routes.memberCenter);
+      },
+    ),
+    ListTile(
+      leading: const Icon(
+        Icons.location_on_outlined,
+        size: 35,
+        color: Colors.black87,
+      ),
+      title: const Text('我的地址'),
+      onTap: () {
+        Navigator.of(context).pop();
+        context.push(Routes.douyinMyAddresses);
       },
     ),
     ListTile(

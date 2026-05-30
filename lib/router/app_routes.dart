@@ -14,6 +14,8 @@ class Routes {
   static const String care = "/cares";
   static const String collect = "/collects";
   static const String footprint = "/footprint";
+  static const String memberCenter = "/member_center";
+  static const String memberCenterDetail = "/member_center/detail";
   static const String watchVideo = "/watchs";
   static const String whatArticle = "/look_art";
   static const String squareBlogView = "/square_blog_view";
@@ -45,6 +47,7 @@ class Routes {
   static const String douyinGroupBuy = "/douyin/group_buy";
   static const String douyinAnchorCenter = "/douyin/anchor_center";
   static const String douyinMyOrders = "/douyin/my_orders";
+  static const String douyinMyAddresses = "/douyin/my_addresses";
   static const String douyinWatchHistory = "/douyin/watch_history";
   static const String douyinAllFeatures = "/douyin/all_features";
   static const String myProfileEdit = "/my/profile/edit";

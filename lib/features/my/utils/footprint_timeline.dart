@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class FootprintTimelineSection<T> {
-  const FootprintTimelineSection({
-    required this.title,
-    required this.items,
-  });
+  const FootprintTimelineSection({required this.title, required this.items});
 
   final String title;
   final List<T> items;
@@ -54,7 +51,8 @@ List<FootprintTimelineSection<T>> groupFootprintByTimeline<T>({
     );
   }
 
-  final sortedMonths = monthGroups.keys.toList()..sort((a, b) => b.compareTo(a));
+  final sortedMonths = monthGroups.keys.toList()
+    ..sort((a, b) => b.compareTo(a));
   for (final month in sortedMonths) {
     sections.add(
       FootprintTimelineSection(
@@ -65,9 +63,7 @@ List<FootprintTimelineSection<T>> groupFootprintByTimeline<T>({
   }
 
   if (unknown.isNotEmpty) {
-    sections.add(
-      FootprintTimelineSection(title: '更早', items: unknown),
-    );
+    sections.add(FootprintTimelineSection(title: '更早', items: unknown));
   }
 
   return sections;
@@ -107,6 +103,144 @@ class ContentTimelineSectionHeader extends StatelessWidget {
           fontSize: 16,
           color: Colors.black87,
         ),
+      ),
+    );
+  }
+}
+
+class ContentTimelineSectionFrame extends StatelessWidget {
+  const ContentTimelineSectionFrame({
+    super.key,
+    required this.title,
+    required this.child,
+    this.padding = const EdgeInsets.fromLTRB(16, 10, 16, 10),
+    this.labelWidth = 88,
+  });
+
+  final String title;
+  final Widget child;
+  final EdgeInsets padding;
+  final double labelWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: padding,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: labelWidth,
+            child: Text(
+              title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF123D4A),
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 18,
+                  top: 4,
+                  bottom: 8,
+                  child: Container(width: 1, color: const Color(0xFFE2E8F0)),
+                ),
+                child,
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ContentTimelineRecordTile extends StatelessWidget {
+  const ContentTimelineRecordTile({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.trailing,
+    required this.positive,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String trailing;
+  final bool positive;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = positive ? const Color(0xFF109B8F) : const Color(0xFFE45C3A);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: color.withValues(alpha: 0.36)),
+            ),
+            child: Icon(icon, color: color, size: 19),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.black.withValues(alpha: 0.48),
+                            fontSize: 12,
+                            height: 1.25,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    trailing,
+                    style: TextStyle(color: color, fontWeight: FontWeight.w900),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

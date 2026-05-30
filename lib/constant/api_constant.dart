@@ -68,6 +68,22 @@ class ApiConstant {
       '/app-api/member/chat/conversation/members';
 
   static const String MEMBER_USER_UPDATE = '/app-api/member/user/update';
+  static const String MEMBER_USER_GET = '/app-api/member/user/get';
+  static const String MEMBER_LEVEL_LIST = '/app-api/member/level/list';
+  static const String MEMBER_SIGN_IN_CONFIG_LIST =
+      '/app-api/member/sign-in/config/list';
+  static const String MEMBER_SIGN_IN_SUMMARY =
+      '/app-api/member/sign-in/record/get-summary';
+  static const String MEMBER_SIGN_IN_CREATE =
+      '/app-api/member/sign-in/record/create';
+  static const String MEMBER_POINT_RECORD_PAGE =
+      '/app-api/member/point/record/page';
+  static const String MEMBER_EXPERIENCE_RECORD_PAGE =
+      '/app-api/member/experience-record/page';
+  static const String MEMBER_ADDRESS_LIST = '/app-api/member/address/list';
+  static const String MEMBER_ADDRESS_CREATE = '/app-api/member/address/create';
+  static const String MEMBER_ADDRESS_UPDATE = '/app-api/member/address/update';
+  static const String MEMBER_ADDRESS_DELETE = '/app-api/member/address/delete';
   static const String SYSTEM_AREA_TREE = '/app-api/system/area/tree';
 
   /// 个人中心 / 我的（QQAI blog profile）

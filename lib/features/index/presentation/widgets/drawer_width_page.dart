@@ -79,9 +79,22 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
               height: 35,
               fit: BoxFit.fill,
             ),
-            title: Text('福利中心'),
+            title: Text('会员中心'),
             onTap: () {
               Navigator.of(context).pop();
+              context.push(Routes.memberCenter);
+            },
+          ),
+          ListTile(
+            leading: const Icon(
+              Icons.location_on_outlined,
+              size: 35,
+              color: Colors.black87,
+            ),
+            title: Text('我的地址'),
+            onTap: () {
+              Navigator.of(context).pop();
+              context.push(Routes.douyinMyAddresses);
             },
           ),
           ListTile(

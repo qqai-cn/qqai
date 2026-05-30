@@ -18,14 +18,22 @@ class DouyinAllFeaturesPage extends StatelessWidget {
         items: [
           _FeatureItem('商品', Icons.shopping_bag_outlined, Routes.goodsPageUrl),
           _FeatureItem('购物车', Icons.shopping_cart_outlined, Routes.cartPageUrl),
-          _FeatureItem('我的订单', Icons.receipt_long_outlined, Routes.douyinMyOrders),
+          _FeatureItem(
+            '我的订单',
+            Icons.receipt_long_outlined,
+            Routes.douyinMyOrders,
+          ),
         ],
       ),
       _FeatureGroup(
         title: '内容',
         items: [
           _FeatureItem('搜索', Icons.search, Routes.searchPage),
-          _FeatureItem('发布作品', Icons.add_circle_outline, Routes.publishZuoPinPageUrl),
+          _FeatureItem(
+            '发布作品',
+            Icons.add_circle_outline,
+            Routes.publishZuoPinPageUrl,
+          ),
           _FeatureItem('观看历史', Icons.history, Routes.douyinWatchHistory),
         ],
       ),
@@ -35,9 +43,21 @@ class DouyinAllFeaturesPage extends StatelessWidget {
           _FeatureItem('天气', Icons.wb_sunny_outlined, Routes.weatherPageUrl),
           _FeatureItem('AI 助手', Icons.auto_awesome, Routes.aiPageUrl),
           _FeatureItem('二维码', Icons.qr_code_2, Routes.qrCodePageUrl),
-          _FeatureItem('日历', Icons.calendar_today_outlined, Routes.calendarToolPageUrl),
-          _FeatureItem('团购带货', Icons.storefront_outlined, Routes.douyinGroupBuy),
-          _FeatureItem('主播中心', Icons.live_tv_outlined, Routes.douyinAnchorCenter),
+          _FeatureItem(
+            '日历',
+            Icons.calendar_today_outlined,
+            Routes.calendarToolPageUrl,
+          ),
+          _FeatureItem(
+            '团购带货',
+            Icons.storefront_outlined,
+            Routes.douyinGroupBuy,
+          ),
+          _FeatureItem(
+            '主播中心',
+            Icons.live_tv_outlined,
+            Routes.douyinAnchorCenter,
+          ),
         ],
       ),
     ];
@@ -52,7 +72,10 @@ class DouyinAllFeaturesPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         title: Text(
           '全部功能',
-          style: context.typo.sectionTitle.copyWith(fontSize: 17.sp, fontWeight: FontWeight.w600),
+          style: context.typo.sectionTitle.copyWith(
+            fontSize: 17.sp,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       body: ListView(
@@ -63,7 +86,11 @@ class DouyinAllFeaturesPage extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 8.h),
               child: Text(
                 g.title,
-                style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 13.sp, fontWeight: FontWeight.w500),
+                style: context.typo.caption.copyWith(
+                  color: DouyinTheme.sub,
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             _FeatureGrid(items: g.items),
@@ -121,7 +148,10 @@ class _FeatureGrid extends StatelessWidget {
                     item.label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 11.sp),
+                    style: context.typo.caption.copyWith(
+                      color: DouyinTheme.sub,
+                      fontSize: 11.sp,
+                    ),
                   ),
                 ],
               ),

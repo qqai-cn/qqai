@@ -89,14 +89,14 @@ class _FootprintPageState extends ConsumerState<FootprintPage>
       } else {
         _productTabKey.currentState?.reload();
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已清空足迹')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('已清空足迹')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('清空失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('清空失败：$e')));
     }
   }
 
@@ -164,8 +164,7 @@ class _BlogFootprintTabState extends ConsumerState<_BlogFootprintTab>
       });
     }
     try {
-      final page =
-          await ref.read(blogRepoProvider).getBlogBrowseHistoryPage(1);
+      final page = await ref.read(blogRepoProvider).getBlogBrowseHistoryPage(1);
       if (!mounted) return;
       setState(() {
         _items
@@ -190,8 +189,9 @@ class _BlogFootprintTabState extends ConsumerState<_BlogFootprintTab>
     setState(() => _loadingMore = true);
     try {
       final next = _page + 1;
-      final page =
-          await ref.read(blogRepoProvider).getBlogBrowseHistoryPage(next);
+      final page = await ref
+          .read(blogRepoProvider)
+          .getBlogBrowseHistoryPage(next);
       if (!mounted) return;
       setState(() {
         _items.addAll(page.list);
@@ -214,9 +214,9 @@ class _BlogFootprintTabState extends ConsumerState<_BlogFootprintTab>
       setState(() => _items.removeWhere((e) => e.blogId == blogId));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('删除失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('删除失败：$e')));
     }
   }
 
@@ -334,8 +334,7 @@ class _ProductFootprintTabState extends ConsumerState<_ProductFootprintTab>
     setState(() => _loadingMore = true);
     try {
       final next = _page + 1;
-      final page =
-          await ref.read(tradeRepoProvider).getBrowseHistoryPage(next);
+      final page = await ref.read(tradeRepoProvider).getBrowseHistoryPage(next);
       if (!mounted) return;
       setState(() {
         _items.addAll(page.list);
@@ -358,9 +357,9 @@ class _ProductFootprintTabState extends ConsumerState<_ProductFootprintTab>
       setState(() => _items.removeWhere((e) => e.spuId == spuId));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('删除失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('删除失败：$e')));
     }
   }
 
@@ -437,15 +436,9 @@ Widget _buildListBody({
           const SizedBox(height: 12),
           Text('暂无浏览记录', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(
-            emptyHint,
-            style: TextStyle(color: Colors.grey.shade600),
-          ),
+          Text(emptyHint, style: TextStyle(color: Colors.grey.shade600)),
           const SizedBox(height: 20),
-          FilledButton(
-            onPressed: onEmptyAction,
-            child: Text(emptyActionLabel),
-          ),
+          FilledButton(onPressed: onEmptyAction, child: Text(emptyActionLabel)),
         ],
       ),
     );
@@ -489,20 +482,21 @@ class _FootprintTimelineScrollViewState<T>
       slivers: [
         for (final section in widget.sections) ...[
           SliverToBoxAdapter(
-            child: ContentTimelineSectionHeader(title: section.title),
-          ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 180,
-                mainAxisSpacing: 8,
-                crossAxisSpacing: 8,
-                childAspectRatio: 0.72,
-              ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) => widget.itemBuilder(section.items[index]),
-                childCount: section.items.length,
+            child: ContentTimelineSectionFrame(
+              title: section.title,
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: EdgeInsets.zero,
+                itemCount: section.items.length,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 180,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 0.72,
+                ),
+                itemBuilder: (context, index) =>
+                    widget.itemBuilder(section.items[index]),
               ),
             ),
           ),
@@ -618,7 +612,10 @@ class _ProductFootprintCard extends StatelessWidget {
               child: cover.isEmpty
                   ? ColoredBox(
                       color: Colors.grey.shade200,
-                      child: const Icon(Icons.image_outlined, color: Colors.grey),
+                      child: const Icon(
+                        Icons.image_outlined,
+                        color: Colors.grey,
+                      ),
                     )
                   : CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover),
             ),

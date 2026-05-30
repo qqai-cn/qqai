@@ -115,7 +115,11 @@ class _DouyinEntryTile extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
-                style: context.typo.caption.copyWith(fontSize: 11.sp, color: DouyinTheme.sub, height: 1.3),
+                style: context.typo.caption.copyWith(
+                  fontSize: 11.sp,
+                  color: DouyinTheme.sub,
+                  height: 1.3,
+                ),
               ),
             ),
           ),
