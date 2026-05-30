@@ -20,6 +20,14 @@ on:
         required: false
         default: false
         type: boolean
+      web_mode:
+        description: Web renderer (cdn= gstatic skwasm, smaller zip; local= bundle canvaskit)
+        required: true
+        default: cdn
+        type: choice
+        options:
+          - cdn
+          - local
   push:
     branches: [master, main]
     paths:
@@ -35,9 +43,11 @@ on:
 
 jobs:
   build-web:
-    name: Web (WASM local)
+    name: Web (WASM)
     if: github.event_name == 'push' || inputs.platform == 'all' || inputs.platform == 'web'
     runs-on: ubuntu-latest
+    outputs:
+      web_mode: ${{ steps.web.outputs.mode }}
     steps:
       - uses: actions/checkout@v4
 
@@ -55,28 +65,41 @@ jobs:
       - name: Run code generation
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Build Web WASM (local)
+      - name: Resolve web mode
+        id: web
         run: |
-          bash build_web_wasm.sh local
-          WEB_RENDERER_MODE=local bash web/compress_web_assets.sh
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.web_mode }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=cdn" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build Web WASM
+        run: |
+          bash build_web_wasm.sh ${{ steps.web.outputs.mode }}
+          WEB_RENDERER_MODE=${{ steps.web.outputs.mode }} bash web/compress_web_assets.sh
 
       - name: Verify web artifacts
         run: |
+          MODE=${{ steps.web.outputs.mode }}
           test -f build/web/main.dart.wasm.gz
-          test -f build/web/canvaskit/skwasm.wasm.gz
-          test "$(tr -d '[:space:]' < build/web/.web-renderer-mode)" = local
+          test "$(tr -d '[:space:]' < build/web/.web-renderer-mode)" = "$MODE"
+          if [ "$MODE" = local ]; then
+            test -f build/web/canvaskit/skwasm.wasm.gz
+          fi
 
       - name: Package artifact
         run: |
           VERSION=$(grep '^version:' pubspec.yaml | awk '{print $2}')
-          ZIP="qqai-web-${VERSION}.zip"
+          MODE=${{ steps.web.outputs.mode }}
+          ZIP="qqai-web-${MODE}-${VERSION}.zip"
           cd build
           zip -r "$ZIP" web -x "*.DS_Store"
           echo "ZIP_NAME=${ZIP}" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: qqai-web-wasm-local
+          name: qqai-web-wasm-${{ steps.web.outputs.mode }}
           path: build/${{ env.ZIP_NAME }}
           retention-days: 30
 
@@ -95,7 +118,7 @@ jobs:
       - name: Download web artifact
         uses: actions/download-artifact@v4
         with:
-          name: qqai-web-wasm-local
+          name: qqai-web-wasm-${{ needs.build-web.outputs.web_mode }}
 
       - name: Prepare web.zip
         run: |
