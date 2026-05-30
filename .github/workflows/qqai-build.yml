@@ -24,6 +24,7 @@ on:
     branches: [master, main]
     paths:
       - 'lib/**'
+      - 'packages/**'
       - 'pubspec.yaml'
       - 'android/**'
       - 'ios/**'
@@ -44,6 +45,9 @@ jobs:
         with:
           channel: stable
           cache: true
+
+      - name: Verify path packages
+        run: test -f packages/flick_video_player/pubspec.yaml
 
       - name: Install dependencies
         run: flutter pub get
@@ -143,6 +147,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Verify path packages
+        run: test -f packages/flick_video_player/pubspec.yaml
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -177,6 +184,9 @@ jobs:
         with:
           channel: stable
           cache: true
+
+      - name: Verify path packages
+        run: test -f packages/flick_video_player/pubspec.yaml
 
       - name: Install dependencies
         run: flutter pub get
@@ -215,6 +225,9 @@ jobs:
           channel: stable
           cache: true
 
+      - name: Verify path packages
+        run: test -f packages/flick_video_player/pubspec.yaml
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -252,6 +265,9 @@ jobs:
         with:
           channel: stable
           cache: true
+
+      - name: Verify path packages
+        run: test -f packages/flick_video_player/pubspec.yaml
 
       - name: Install dependencies
         run: flutter pub get
