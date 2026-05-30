@@ -50,7 +50,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   barItems: HomeNotifier.barItems,
                   onBarTap: _onMainTabTap,
                   animationDuration: const Duration(milliseconds: 150),
-                  barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
+                  barStyle: const BarStyle(),
                 ),
               )
             : null,

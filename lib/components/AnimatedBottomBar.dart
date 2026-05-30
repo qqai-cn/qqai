@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
+/// 主 Shell 底部 Tab 内容区高度（对齐 Material [kBottomNavigationBarHeight] / iOS TabBar ~49pt）。
+const double kMainShellBottomBarHeight = 56;
+
 class AnimatedBottomBar extends StatefulWidget {
   final List<BarItem> barItems;
   final Duration animationDuration;
@@ -27,9 +30,13 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: _buildBarItems(),
+    return SizedBox(
+      height: kMainShellBottomBarHeight,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: _buildBarItems(),
+      ),
     );
   }
 
@@ -48,13 +55,7 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
             });
           },
           child: AnimatedContainer(
-            // alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(
-              bottom: 15,
-              top: 10,
-              left: 10,
-              right: 10,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             duration: widget.animationDuration,
             decoration: BoxDecoration(
               color: isSelected
@@ -63,11 +64,12 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
               borderRadius: BorderRadius.all(Radius.circular(10)),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 SvgPicture.asset(
                   isSelected ? item.selectPath : item.unSelectPath,
-                  width: 40,
-                  height: 40,
+                  width: widget.barStyle.iconSize,
+                  height: widget.barStyle.iconSize,
                 ),
                 SizedBox(width: 2.0),
                 AnimatedSize(
@@ -96,9 +98,9 @@ class BarStyle {
   final double fontSize, iconSize;
   final FontWeight fontWeight;
 
-  BarStyle({
-    this.fontSize = 18.0,
-    this.iconSize = 32,
+  const BarStyle({
+    this.fontSize = 13.0,
+    this.iconSize = 24.0,
     this.fontWeight = FontWeight.w600,
   });
 }
