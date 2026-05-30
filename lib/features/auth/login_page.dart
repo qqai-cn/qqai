@@ -95,6 +95,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
   }
 
+  void _enterAsGuest() {
+    context.go(Routes.HOME);
+  }
+
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_sliderVerified) {
@@ -524,6 +528,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           letterSpacing: 0.5,
                                         ),
                                       ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: _isLoading ? null : _enterAsGuest,
+                            style: TextButton.styleFrom(
+                              foregroundColor: c.secondaryText,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: Text(
+                              '游客',
+                              style: context.typo.button.copyWith(
+                                color: c.secondaryText,
+                                letterSpacing: 0.5,
                               ),
                             ),
                           ),
