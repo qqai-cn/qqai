@@ -3,11 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/components/blog/detail_side_action_rail.dart';
-import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/providers/auth_providers.dart';
+import 'package:qqai/util/conversation_list_time_format.dart';
 import 'package:qqai/util/format_count.dart';
 
 import '../data/blog_detail_feed_resolver.dart';
@@ -16,6 +15,7 @@ import '../data/blog_feed_state_interactions.dart';
 import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
 import '../data/repos/blog_repo.dart';
+import '../../comment/providers/comment_providers.dart';
 import 'blog_avatar_preview.dart';
 
 /// 详情侧栏操作数：只显示数字（无数量时显示 0）。
@@ -25,7 +25,7 @@ String blogDetailCountLabel(int? count) {
   return formatCompactCount(n);
 }
 
-/// 详情左下角：作者头像、昵称、粉丝、正文。
+/// 详情左下角：作者与时间、正文、合集按钮。
 class BlogDetailBottomInfo extends ConsumerWidget {
   final BlogItem blog;
   final double bottomInset;
@@ -39,76 +39,82 @@ class BlogDetailBottomInfo extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final item = resolveBlogItem(ref, blog);
-    final auth = ref.watch(authProvider);
-    final avatarUrl = blogCreatorAvatarUrl(item, currentUserId: auth.userId);
     final name = item.creatorName?.trim();
     final displayName = (name != null && name.isNotEmpty) ? name : '用户';
     final fullText = blogVideoDetailFullText(item);
+    final time = formatConversationListTime(item.createTime);
+    final collections = (item.collections ?? [])
+        .where((e) => e.name?.trim().isNotEmpty == true)
+        .toList();
 
     return Positioned(
       left: 12,
       right: 100,
       bottom: bottomInset,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          if (avatarUrl != null) ...[
-            InkWell(
-              onTap: () => openBlogAvatarPreview(
-                context,
-                blog: item,
-                heroTag: blogAvatarDetailHeroTag(item),
-                imageUrl: avatarUrl,
+          Row(
+            children: [
+              Flexible(
+                child: Text(
+                  '@$displayName',
+                  style: context.typo.bodyStrong.copyWith(
+                    color: Colors.white,
+                    fontSize: 18,
+                    shadows: const [
+                      Shadow(color: Colors.black54, blurRadius: 4),
+                    ],
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              child: buildDetailAvatar(
-                avatarUrl: avatarUrl,
-                size: 44,
-                context: context,
+              if (time.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                Text(
+                  time,
+                  style: context.typo.body.copyWith(
+                    color: Colors.white,
+                    fontSize: 16,
+                    shadows: const [
+                      Shadow(color: Colors.black54, blurRadius: 4),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          if (fullText.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            GestureDetector(
+              onTap: () => _showFullContent(context, fullText),
+              child: buildBlogVideoDetailText(
+                item: item,
+                bodyStyle: context.typo.body.copyWith(
+                  color: Colors.white,
+                  fontSize: 17,
+                  height: 1.35,
+                  shadows: const [Shadow(color: Colors.black54, blurRadius: 4)],
+                ),
+                maxLines: 3,
               ),
             ),
-            const SizedBox(width: 10),
           ],
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+          if (collections.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        '@$displayName',
-                        style: context.typo.bodyStrong.copyWith(
-                          color: Colors.white,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    if (blogCreatorLevel(item) > 0) ...[
-                      const SizedBox(width: 6),
-                      LevelIcon(lv: blogCreatorLevel(item)),
-                    ],
-                  ],
-                ),
-                if (fullText.isNotEmpty) ...[
-                  const SizedBox(height: 5),
-                  GestureDetector(
-                    onTap: () => _showFullContent(context, fullText),
-                    child: buildBlogVideoDetailText(
-                      item: item,
-                      titleStyle: context.typo.bodyStrong.copyWith(
-                        color: Colors.white,
-                      ),
-                      bodyStyle: context.typo.body.copyWith(
-                        color: Colors.white,
-                      ),
-                      maxLines: 3,
-                    ),
+                for (final collection in collections)
+                  _CollectionButton(
+                    collection: collection,
+                    onTap: () => _openCollectionPanel(ref, collection),
                   ),
-                ],
               ],
             ),
-          ),
+          ],
         ],
       ),
     );
@@ -122,6 +128,56 @@ class BlogDetailBottomInfo extends ConsumerWidget {
       builder: (ctx) => Padding(
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(child: Text(text)),
+      ),
+    );
+  }
+
+  void _openCollectionPanel(WidgetRef ref, BlogItemCollection collection) {
+    ref.read(commentProvider.notifier).openCollectionPanel(collection);
+  }
+}
+
+class _CollectionButton extends StatelessWidget {
+  final BlogItemCollection collection;
+  final VoidCallback onTap;
+
+  const _CollectionButton({required this.collection, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = collection.name?.trim();
+    return Material(
+      color: Colors.white.withValues(alpha: 0.26),
+      borderRadius: BorderRadius.circular(18),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.collections_bookmark_outlined,
+                color: Colors.white,
+                size: 18,
+              ),
+              const SizedBox(width: 6),
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 220),
+                child: Text(
+                  '合集 · ${name?.isNotEmpty == true ? name! : '合集'}',
+                  style: context.typo.bodyStrong.copyWith(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -147,7 +203,8 @@ class BlogDetailMediaOverlay extends ConsumerStatefulWidget {
       _BlogDetailMediaOverlayState();
 }
 
-class _BlogDetailMediaOverlayState extends ConsumerState<BlogDetailMediaOverlay> {
+class _BlogDetailMediaOverlayState
+    extends ConsumerState<BlogDetailMediaOverlay> {
   BlogItem? _standaloneItem;
 
   BlogItem _currentItem(WidgetRef ref) {

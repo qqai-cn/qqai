@@ -11,6 +11,8 @@ import 'package:qqai/util/media_url.dart';
 import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
 import '../data/repos/blog_repo.dart';
+import '../../comment/providers/comment_providers.dart';
+import '../../my/data/repos/profile_repo.dart';
 
 /// 详情侧栏「相关推荐」：同类型博客列表（排除当前篇）。
 class BlogRelatedRecommendView extends ConsumerStatefulWidget {
@@ -94,9 +96,7 @@ class _BlogRelatedRecommendViewState
       );
     }
     if (_items.isEmpty) {
-      return Center(
-        child: Text('暂无相关推荐', style: context.typo.body),
-      );
+      return Center(child: Text('暂无相关推荐', style: context.typo.body));
     }
     return RefreshIndicator(
       onRefresh: _load,
@@ -113,11 +113,166 @@ class _BlogRelatedRecommendViewState
   }
 }
 
+/// 详情侧栏「合集」：展示当前合集内的视频列表。
+class BlogCollectionVideosView extends ConsumerStatefulWidget {
+  final BlogItem currentBlog;
+  final BlogItemCollection? collection;
+  final String detailRoute;
+
+  const BlogCollectionVideosView({
+    super.key,
+    required this.currentBlog,
+    required this.collection,
+    this.detailRoute = Routes.blogVideoDetailView,
+  });
+
+  @override
+  ConsumerState<BlogCollectionVideosView> createState() =>
+      _BlogCollectionVideosViewState();
+}
+
+class _BlogCollectionVideosViewState
+    extends ConsumerState<BlogCollectionVideosView> {
+  List<BlogItem> _items = [];
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void didUpdateWidget(BlogCollectionVideosView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.collection?.id != widget.collection?.id) {
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    final collectionId = widget.collection?.id;
+    if (collectionId == null) {
+      setState(() {
+        _items = [];
+        _loading = false;
+        _error = null;
+      });
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final detail = await ref
+          .read(profileRepoProvider)
+          .getCollectionDetail(collectionId);
+      final videos = (detail.blogs ?? [])
+          .where((b) => b.id != null && b.blogType == 2)
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        _items = videos;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
+    }
+  }
+
+  void _openBlog(BlogItem item) {
+    final collection = widget.collection;
+    if (collection != null) {
+      ref.read(commentProvider.notifier).openCollectionPanel(collection);
+    }
+    context.push(
+      widget.detailRoute,
+      extra: item.copyWith(
+        collections: collection == null ? item.collections : [collection],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.collection == null) {
+      return Center(child: Text('请选择合集', style: context.typo.body));
+    }
+    if (widget.collection?.id == null) {
+      return Center(child: Text('合集信息缺少编号', style: context.typo.body));
+    }
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(_error!, textAlign: TextAlign.center),
+            ),
+            TextButton(onPressed: _load, child: const Text('重试')),
+          ],
+        ),
+      );
+    }
+    if (_items.isEmpty) {
+      return Center(child: Text('暂无合集视频', style: context.typo.body));
+    }
+
+    final name = widget.collection?.name?.trim();
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        itemCount: _items.length + (name?.isNotEmpty == true ? 1 : 0),
+        separatorBuilder: (_, index) => index == 0 && name?.isNotEmpty == true
+            ? const SizedBox.shrink()
+            : const Divider(height: 1),
+        itemBuilder: (context, index) {
+          if (name?.isNotEmpty == true && index == 0) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+              child: Text(
+                name!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.typo.bodyStrong,
+              ),
+            );
+          }
+          final itemIndex = name?.isNotEmpty == true ? index - 1 : index;
+          final item = _items[itemIndex];
+          return _RecommendTile(
+            item: item,
+            selected: item.id != null && item.id == widget.currentBlog.id,
+            onTap: () => _openBlog(item),
+          );
+        },
+      ),
+    );
+  }
+}
+
 class _RecommendTile extends StatelessWidget {
   final BlogItem item;
   final VoidCallback onTap;
+  final bool selected;
 
-  const _RecommendTile({required this.item, required this.onTap});
+  const _RecommendTile({
+    required this.item,
+    required this.onTap,
+    this.selected = false,
+  });
 
   static const _thumbSize = 72.0;
 
@@ -125,7 +280,8 @@ class _RecommendTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      child: Padding(
+      child: Container(
+        color: selected ? const Color(0xFFFFF3E0) : null,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,17 +293,21 @@ class _RecommendTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    item.content ?? '',
+                    selected
+                        ? '正在播放 · ${item.content ?? ''}'
+                        : item.content ?? '',
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: context.typo.body,
+                    style: selected
+                        ? context.typo.bodyStrong.copyWith(
+                            color: const Color(0xFFE65100),
+                          )
+                        : context.typo.body,
                   ),
                   const SizedBox(height: 6),
                   Text(
                     item.creatorName ?? '用户',
-                    style: context.typo.caption.copyWith(
-                      color: Colors.black54,
-                    ),
+                    style: context.typo.caption.copyWith(color: Colors.black54),
                   ),
                   const SizedBox(height: 2),
                   Text(
@@ -162,7 +322,6 @@ class _RecommendTile extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// 相关推荐缩略图：图文取首图，视频取封面；无则头像，再无则默认图。

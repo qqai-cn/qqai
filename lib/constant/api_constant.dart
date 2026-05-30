@@ -95,6 +95,8 @@ class ApiConstant {
       '/app-api/blog/qqai/profile/my/collections/page';
   static const String PROFILE_COLLECTIONS =
       '/app-api/blog/qqai/profile/collections';
+  static String profileCollectionDetailPath(int id) =>
+      '/app-api/blog/qqai/profile/collections/$id';
   static const String PROFILE_COLLECTIONS_ITEMS =
       '/app-api/blog/qqai/profile/collections/items';
 

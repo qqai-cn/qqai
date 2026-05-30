@@ -21,52 +21,26 @@ String blogVideoListPreview(BlogItem item) {
 }
 
 /// 视频详情：title 与 content 合并展示，最多 [maxLines] 行，超出省略。
+String blogVideoDetailPreviewText(BlogItem item) => blogVideoListPreview(item);
+
 Widget buildBlogVideoDetailText({
   required BlogItem item,
-  required TextStyle titleStyle,
   required TextStyle bodyStyle,
   int maxLines = 3,
 }) {
-  final title = item.title?.trim() ?? '';
-  final content = stripBlogRewardLines(item.content);
-
-  if (title.isEmpty && content.isEmpty) {
+  final text = blogVideoDetailPreviewText(item);
+  if (text.isEmpty) {
     return const SizedBox.shrink();
   }
-  if (title.isEmpty) {
-    return Text(
-      content,
-      maxLines: maxLines,
-      overflow: TextOverflow.ellipsis,
-      style: bodyStyle,
-    );
-  }
-  if (content.isEmpty) {
-    return Text(
-      title,
-      maxLines: maxLines,
-      overflow: TextOverflow.ellipsis,
-      style: titleStyle,
-    );
-  }
-  return Text.rich(
-    TextSpan(
-      children: [
-        TextSpan(text: title, style: titleStyle),
-        const TextSpan(text: '\n'),
-        TextSpan(text: content, style: bodyStyle),
-      ],
-    ),
+  return Text(
+    text,
     maxLines: maxLines,
     overflow: TextOverflow.ellipsis,
+    style: bodyStyle,
   );
 }
 
 /// 详情弹层用的完整文案。
 String blogVideoDetailFullText(BlogItem item) {
-  final title = item.title?.trim() ?? '';
-  final content = stripBlogRewardLines(item.content);
-  if (title.isEmpty) return content;
-  if (content.isEmpty) return title;
-  return '$title\n\n$content';
+  return blogVideoDetailPreviewText(item);
 }

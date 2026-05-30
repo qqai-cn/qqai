@@ -19,6 +19,36 @@ int? _firstPositiveInt(Map<String, dynamic> m, List<String> keys) {
   return null;
 }
 
+List<Map<String, dynamic>>? _pickCollections(Map<String, dynamic> m) {
+  for (final key in [
+    'collections',
+    'collectionList',
+    'blogCollections',
+    'collectionRespList',
+  ]) {
+    final value = m[key];
+    if (value is List) {
+      final collections = value
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
+      if (collections.isNotEmpty) return collections;
+    }
+  }
+
+  final id = _firstPositiveInt(m, ['collectionId', 'albumId']);
+  final name =
+      _firstNonEmptyString(m['collectionName']) ??
+      _firstNonEmptyString(m['albumName']);
+  if (id != null || name != null) {
+    final collection = <String, dynamic>{};
+    if (id != null) collection['id'] = id;
+    if (name != null) collection['name'] = name;
+    return [collection];
+  }
+  return null;
+}
+
 String _formatYuanFromCents(int cents) {
   if (cents % 100 == 0) return (cents ~/ 100).toString();
   return (cents / 100).toStringAsFixed(2);
@@ -109,6 +139,10 @@ Map<String, dynamic> normalizeBlogItemJson(Map<String, dynamic> json) {
         break;
       }
     }
+  }
+  final collections = _pickCollections(m);
+  if (collections != null) {
+    m['collections'] = collections;
   }
   final rewardAmount = _firstPositiveInt(m, [
     'rewardAmount',

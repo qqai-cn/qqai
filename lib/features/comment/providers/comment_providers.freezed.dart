@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$CommentState {
 
 // freezed 的 @Default 必须是 const
- AsyncValue<List<CommentModel>> get items; bool get showComment; String? get error;
+ AsyncValue<List<CommentModel>> get items; bool get showComment; int get selectedTabIndex; BlogItemCollection? get selectedCollection; String? get error;
 /// Create a copy of CommentState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $CommentStateCopyWith<CommentState> get copyWith => _$CommentStateCopyWithImpl<C
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CommentState&&(identical(other.items, items) || other.items == items)&&(identical(other.showComment, showComment) || other.showComment == showComment)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CommentState&&(identical(other.items, items) || other.items == items)&&(identical(other.showComment, showComment) || other.showComment == showComment)&&(identical(other.selectedTabIndex, selectedTabIndex) || other.selectedTabIndex == selectedTabIndex)&&(identical(other.selectedCollection, selectedCollection) || other.selectedCollection == selectedCollection)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,items,showComment,error);
+int get hashCode => Object.hash(runtimeType,items,showComment,selectedTabIndex,selectedCollection,error);
 
 @override
 String toString() {
-  return 'CommentState(items: $items, showComment: $showComment, error: $error)';
+  return 'CommentState(items: $items, showComment: $showComment, selectedTabIndex: $selectedTabIndex, selectedCollection: $selectedCollection, error: $error)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $CommentStateCopyWith<$Res>  {
   factory $CommentStateCopyWith(CommentState value, $Res Function(CommentState) _then) = _$CommentStateCopyWithImpl;
 @useResult
 $Res call({
- AsyncValue<List<CommentModel>> items, bool showComment, String? error
+ AsyncValue<List<CommentModel>> items, bool showComment, int selectedTabIndex, BlogItemCollection? selectedCollection, String? error
 });
 
 
@@ -63,11 +63,13 @@ class _$CommentStateCopyWithImpl<$Res>
 
 /// Create a copy of CommentState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? showComment = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? items = null,Object? showComment = null,Object? selectedTabIndex = null,Object? selectedCollection = freezed,Object? error = freezed,}) {
   return _then(_self.copyWith(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as AsyncValue<List<CommentModel>>,showComment: null == showComment ? _self.showComment : showComment // ignore: cast_nullable_to_non_nullable
-as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as bool,selectedTabIndex: null == selectedTabIndex ? _self.selectedTabIndex : selectedTabIndex // ignore: cast_nullable_to_non_nullable
+as int,selectedCollection: freezed == selectedCollection ? _self.selectedCollection : selectedCollection // ignore: cast_nullable_to_non_nullable
+as BlogItemCollection?,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }
@@ -150,10 +152,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<List<CommentModel>> items,  bool showComment,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<List<CommentModel>> items,  bool showComment,  int selectedTabIndex,  BlogItemCollection? selectedCollection,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CommentState() when $default != null:
-return $default(_that.items,_that.showComment,_that.error);case _:
+return $default(_that.items,_that.showComment,_that.selectedTabIndex,_that.selectedCollection,_that.error);case _:
   return orElse();
 
 }
@@ -171,10 +173,10 @@ return $default(_that.items,_that.showComment,_that.error);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<List<CommentModel>> items,  bool showComment,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<List<CommentModel>> items,  bool showComment,  int selectedTabIndex,  BlogItemCollection? selectedCollection,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _CommentState():
-return $default(_that.items,_that.showComment,_that.error);}
+return $default(_that.items,_that.showComment,_that.selectedTabIndex,_that.selectedCollection,_that.error);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -188,10 +190,10 @@ return $default(_that.items,_that.showComment,_that.error);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<List<CommentModel>> items,  bool showComment,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<List<CommentModel>> items,  bool showComment,  int selectedTabIndex,  BlogItemCollection? selectedCollection,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _CommentState() when $default != null:
-return $default(_that.items,_that.showComment,_that.error);case _:
+return $default(_that.items,_that.showComment,_that.selectedTabIndex,_that.selectedCollection,_that.error);case _:
   return null;
 
 }
@@ -203,12 +205,14 @@ return $default(_that.items,_that.showComment,_that.error);case _:
 
 
 class _CommentState implements CommentState {
-  const _CommentState({this.items = const AsyncLoading(), this.showComment = false, this.error});
+  const _CommentState({this.items = const AsyncLoading(), this.showComment = false, this.selectedTabIndex = 0, this.selectedCollection, this.error});
   
 
 // freezed 的 @Default 必须是 const
 @override@JsonKey() final  AsyncValue<List<CommentModel>> items;
 @override@JsonKey() final  bool showComment;
+@override@JsonKey() final  int selectedTabIndex;
+@override final  BlogItemCollection? selectedCollection;
 @override final  String? error;
 
 /// Create a copy of CommentState
@@ -221,16 +225,16 @@ _$CommentStateCopyWith<_CommentState> get copyWith => __$CommentStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CommentState&&(identical(other.items, items) || other.items == items)&&(identical(other.showComment, showComment) || other.showComment == showComment)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CommentState&&(identical(other.items, items) || other.items == items)&&(identical(other.showComment, showComment) || other.showComment == showComment)&&(identical(other.selectedTabIndex, selectedTabIndex) || other.selectedTabIndex == selectedTabIndex)&&(identical(other.selectedCollection, selectedCollection) || other.selectedCollection == selectedCollection)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,items,showComment,error);
+int get hashCode => Object.hash(runtimeType,items,showComment,selectedTabIndex,selectedCollection,error);
 
 @override
 String toString() {
-  return 'CommentState(items: $items, showComment: $showComment, error: $error)';
+  return 'CommentState(items: $items, showComment: $showComment, selectedTabIndex: $selectedTabIndex, selectedCollection: $selectedCollection, error: $error)';
 }
 
 
@@ -241,7 +245,7 @@ abstract mixin class _$CommentStateCopyWith<$Res> implements $CommentStateCopyWi
   factory _$CommentStateCopyWith(_CommentState value, $Res Function(_CommentState) _then) = __$CommentStateCopyWithImpl;
 @override @useResult
 $Res call({
- AsyncValue<List<CommentModel>> items, bool showComment, String? error
+ AsyncValue<List<CommentModel>> items, bool showComment, int selectedTabIndex, BlogItemCollection? selectedCollection, String? error
 });
 
 
@@ -258,11 +262,13 @@ class __$CommentStateCopyWithImpl<$Res>
 
 /// Create a copy of CommentState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? showComment = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? items = null,Object? showComment = null,Object? selectedTabIndex = null,Object? selectedCollection = freezed,Object? error = freezed,}) {
   return _then(_CommentState(
 items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as AsyncValue<List<CommentModel>>,showComment: null == showComment ? _self.showComment : showComment // ignore: cast_nullable_to_non_nullable
-as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
+as bool,selectedTabIndex: null == selectedTabIndex ? _self.selectedTabIndex : selectedTabIndex // ignore: cast_nullable_to_non_nullable
+as int,selectedCollection: freezed == selectedCollection ? _self.selectedCollection : selectedCollection // ignore: cast_nullable_to_non_nullable
+as BlogItemCollection?,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
   ));
 }

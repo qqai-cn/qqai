@@ -48,6 +48,8 @@ abstract class IProfileRepo {
     String? name,
   });
 
+  Future<BlogCollectionDetailResp> getCollectionDetail(int id);
+
   Future<int> createCollection(BlogCollectionSaveReq req);
 
   Future<BlogShopProductPageData> getMyShopProductsPage(
@@ -101,8 +103,7 @@ abstract class IProfileRepo {
   });
 }
 
-bool _isOkCode(dynamic code) =>
-    code == null || code == 0 || code == '0';
+bool _isOkCode(dynamic code) => code == null || code == 0 || code == '0';
 
 void _ensureEnvelope(Map<String, dynamic> root) {
   if (!_isOkCode(root['code'])) {
@@ -200,10 +201,7 @@ class ProfileRepo implements IProfileRepo {
     int pageSize = 12,
     int? blogType,
   }) async {
-    final query = <String, dynamic>{
-      'pageNo': pageNo,
-      'pageSize': pageSize,
-    };
+    final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (blogType != null) query['blogType'] = blogType;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_WORKS_PAGE,
@@ -220,10 +218,7 @@ class ProfileRepo implements IProfileRepo {
     int pageSize = 12,
     int? blogType,
   }) async {
-    final query = <String, dynamic>{
-      'pageNo': pageNo,
-      'pageSize': pageSize,
-    };
+    final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (blogType != null) query['blogType'] = blogType;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.profileUserWorksPagePath(userId),
@@ -234,14 +229,14 @@ class ProfileRepo implements IProfileRepo {
   }
 
   @override
-  Future<BlogPageModelData> getMyLikesPage(int pageNo, {int pageSize = 12}) async {
+  Future<BlogPageModelData> getMyLikesPage(
+    int pageNo, {
+    int pageSize = 12,
+  }) async {
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_LIKES_PAGE,
       RequestType.get,
-      queryParameters: {
-        'pageNo': pageNo,
-        'pageSize': pageSize,
-      },
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
     );
     return _parseBlogPage(response.data);
   }
@@ -252,10 +247,7 @@ class ProfileRepo implements IProfileRepo {
     int pageSize = 12,
     String? name,
   }) async {
-    final query = <String, dynamic>{
-      'pageNo': pageNo,
-      'pageSize': pageSize,
-    };
+    final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (name != null && name.isNotEmpty) query['name'] = name;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_COLLECTIONS_PAGE,
@@ -281,10 +273,7 @@ class ProfileRepo implements IProfileRepo {
     int pageSize = 12,
     String? name,
   }) async {
-    final query = <String, dynamic>{
-      'pageNo': pageNo,
-      'pageSize': pageSize,
-    };
+    final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (name != null && name.isNotEmpty) query['name'] = name;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.profileUserCollectionsPagePath(userId),
@@ -301,6 +290,24 @@ class ProfileRepo implements IProfileRepo {
       return const BlogCollectionPageData(list: [], total: 0);
     }
     return BlogCollectionPageData.fromJson(inner);
+  }
+
+  @override
+  Future<BlogCollectionDetailResp> getCollectionDetail(int id) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileCollectionDetailPath(id),
+      RequestType.get,
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '合集详情接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      throw '合集详情数据为空';
+    }
+    return BlogCollectionDetailResp.fromJson(inner);
   }
 
   @override
@@ -327,10 +334,7 @@ class ProfileRepo implements IProfileRepo {
     String? name,
     int? status,
   }) async {
-    final query = <String, dynamic>{
-      'pageNo': pageNo,
-      'pageSize': pageSize,
-    };
+    final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (name != null && name.isNotEmpty) query['name'] = name;
     if (status != null) query['status'] = status;
     final Response response = await ApiBaseClient.safeApiCall(
@@ -357,10 +361,7 @@ class ProfileRepo implements IProfileRepo {
     int pageSize = 12,
     String? name,
   }) async {
-    final query = <String, dynamic>{
-      'pageNo': pageNo,
-      'pageSize': pageSize,
-    };
+    final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (name != null && name.isNotEmpty) query['name'] = name;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.profileUserShopProductsPagePath(userId),
@@ -443,10 +444,7 @@ class ProfileRepo implements IProfileRepo {
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_COLLECTIONS_ITEMS,
       RequestType.delete,
-      queryParameters: {
-        'collectionId': collectionId,
-        'blogId': blogId,
-      },
+      queryParameters: {'collectionId': collectionId, 'blogId': blogId},
     );
     final data = response.data;
     if (data is! Map<String, dynamic>) {
@@ -496,10 +494,7 @@ class ProfileRepo implements IProfileRepo {
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_FOLLOWS_FEED_PAGE,
       RequestType.get,
-      queryParameters: {
-        'pageNo': pageNo,
-        'pageSize': pageSize,
-      },
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
     );
     return _parseBlogPage(response.data);
   }
@@ -512,10 +507,7 @@ class ProfileRepo implements IProfileRepo {
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_FOLLOWS_MEMBERS_PAGE,
       RequestType.get,
-      queryParameters: {
-        'pageNo': pageNo,
-        'pageSize': pageSize,
-      },
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
     );
     final data = response.data;
     if (data is! Map<String, dynamic>) {
@@ -537,10 +529,7 @@ class ProfileRepo implements IProfileRepo {
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_FOLLOWERS_MEMBERS_PAGE,
       RequestType.get,
-      queryParameters: {
-        'pageNo': pageNo,
-        'pageSize': pageSize,
-      },
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
     );
     final data = response.data;
     if (data is! Map<String, dynamic>) {
@@ -563,9 +552,6 @@ class ProfileRepo implements IProfileRepo {
   }
 
   BlogPageModelData _parseBlogPage(dynamic raw) {
-    return parseBlogPageEnvelope(
-      raw,
-      errorMessage: '作品分页返回格式错误',
-    );
+    return parseBlogPageEnvelope(raw, errorMessage: '作品分页返回格式错误');
   }
 }

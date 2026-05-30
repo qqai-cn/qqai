@@ -39,6 +39,9 @@ _BlogItem _$BlogItemFromJson(Map<String, dynamic> json) => _BlogItem(
   updateTime: json['updateTime'] as String?,
   liked: (json['liked'] as num?)?.toInt(),
   collect: (json['collect'] as num?)?.toInt(),
+  collections: (json['collections'] as List<dynamic>?)
+      ?.map((e) => BlogItemCollection.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$BlogItemToJson(_BlogItem instance) => <String, dynamic>{
@@ -74,6 +77,7 @@ Map<String, dynamic> _$BlogItemToJson(_BlogItem instance) => <String, dynamic>{
   'updateTime': instance.updateTime,
   'liked': instance.liked,
   'collect': instance.collect,
+  'collections': instance.collections,
 };
 
 _BlogPageModelData _$BlogPageModelDataFromJson(Map<String, dynamic> json) =>

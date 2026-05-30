@@ -25,7 +25,8 @@ mixin _$BlogItem {
  int? get followerCount; String? get creator; String? get creatorName; String? get creatorAvatar;/// 作者等级（用于等级图标，一般 1–6）
  int? get creatorLevel; String? get creatorLevelName; String? get updater; String? get createTime; String? get updateTime;/// 当前登录用户是否已点赞：1 是，0 否（若接口未返回则视为未赞）
  int? get liked;/// 当前登录用户是否已收藏：1 是，0 否
- int? get collect;
+ int? get collect;/// 视频所属合集。后端可返回 collections/collectionList 等字段，解析层会归一到这里。
+ List<BlogItemCollection>? get collections;
 /// Create a copy of BlogItem
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -38,16 +39,16 @@ $BlogItemCopyWith<BlogItem> get copyWith => _$BlogItemCopyWithImpl<BlogItem>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BlogItem&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareId, squareId) || other.squareId == squareId)&&(identical(other.topicIds, topicIds) || other.topicIds == topicIds)&&(identical(other.categary, categary) || other.categary == categary)&&(identical(other.blogType, blogType) || other.blogType == blogType)&&(identical(other.title, title) || other.title == title)&&(identical(other.content, content) || other.content == content)&&(identical(other.resources, resources) || other.resources == resources)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.addressId, addressId) || other.addressId == addressId)&&(identical(other.address, address) || other.address == address)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.shareType, shareType) || other.shareType == shareType)&&(identical(other.zan, zan) || other.zan == zan)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.collectCount, collectCount) || other.collectCount == collectCount)&&(identical(other.shareCount, shareCount) || other.shareCount == shareCount)&&(identical(other.care, care) || other.care == care)&&(identical(other.followerCount, followerCount) || other.followerCount == followerCount)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&(identical(other.creatorLevel, creatorLevel) || other.creatorLevel == creatorLevel)&&(identical(other.creatorLevelName, creatorLevelName) || other.creatorLevelName == creatorLevelName)&&(identical(other.updater, updater) || other.updater == updater)&&(identical(other.createTime, createTime) || other.createTime == createTime)&&(identical(other.updateTime, updateTime) || other.updateTime == updateTime)&&(identical(other.liked, liked) || other.liked == liked)&&(identical(other.collect, collect) || other.collect == collect));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BlogItem&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareId, squareId) || other.squareId == squareId)&&(identical(other.topicIds, topicIds) || other.topicIds == topicIds)&&(identical(other.categary, categary) || other.categary == categary)&&(identical(other.blogType, blogType) || other.blogType == blogType)&&(identical(other.title, title) || other.title == title)&&(identical(other.content, content) || other.content == content)&&(identical(other.resources, resources) || other.resources == resources)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.addressId, addressId) || other.addressId == addressId)&&(identical(other.address, address) || other.address == address)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.shareType, shareType) || other.shareType == shareType)&&(identical(other.zan, zan) || other.zan == zan)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.collectCount, collectCount) || other.collectCount == collectCount)&&(identical(other.shareCount, shareCount) || other.shareCount == shareCount)&&(identical(other.care, care) || other.care == care)&&(identical(other.followerCount, followerCount) || other.followerCount == followerCount)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&(identical(other.creatorLevel, creatorLevel) || other.creatorLevel == creatorLevel)&&(identical(other.creatorLevelName, creatorLevelName) || other.creatorLevelName == creatorLevelName)&&(identical(other.updater, updater) || other.updater == updater)&&(identical(other.createTime, createTime) || other.createTime == createTime)&&(identical(other.updateTime, updateTime) || other.updateTime == updateTime)&&(identical(other.liked, liked) || other.liked == liked)&&(identical(other.collect, collect) || other.collect == collect)&&const DeepCollectionEquality().equals(other.collections, collections));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,squareId,topicIds,categary,blogType,title,content,resources,coverUrl,addressId,address,latitude,longitude,distance,shareType,zan,commentCount,collectCount,shareCount,care,followerCount,creator,creatorName,creatorAvatar,creatorLevel,creatorLevelName,updater,createTime,updateTime,liked,collect]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,squareId,topicIds,categary,blogType,title,content,resources,coverUrl,addressId,address,latitude,longitude,distance,shareType,zan,commentCount,collectCount,shareCount,care,followerCount,creator,creatorName,creatorAvatar,creatorLevel,creatorLevelName,updater,createTime,updateTime,liked,collect,const DeepCollectionEquality().hash(collections)]);
 
 @override
 String toString() {
-  return 'BlogItem(id: $id, userId: $userId, squareId: $squareId, topicIds: $topicIds, categary: $categary, blogType: $blogType, title: $title, content: $content, resources: $resources, coverUrl: $coverUrl, addressId: $addressId, address: $address, latitude: $latitude, longitude: $longitude, distance: $distance, shareType: $shareType, zan: $zan, commentCount: $commentCount, collectCount: $collectCount, shareCount: $shareCount, care: $care, followerCount: $followerCount, creator: $creator, creatorName: $creatorName, creatorAvatar: $creatorAvatar, creatorLevel: $creatorLevel, creatorLevelName: $creatorLevelName, updater: $updater, createTime: $createTime, updateTime: $updateTime, liked: $liked, collect: $collect)';
+  return 'BlogItem(id: $id, userId: $userId, squareId: $squareId, topicIds: $topicIds, categary: $categary, blogType: $blogType, title: $title, content: $content, resources: $resources, coverUrl: $coverUrl, addressId: $addressId, address: $address, latitude: $latitude, longitude: $longitude, distance: $distance, shareType: $shareType, zan: $zan, commentCount: $commentCount, collectCount: $collectCount, shareCount: $shareCount, care: $care, followerCount: $followerCount, creator: $creator, creatorName: $creatorName, creatorAvatar: $creatorAvatar, creatorLevel: $creatorLevel, creatorLevelName: $creatorLevelName, updater: $updater, createTime: $createTime, updateTime: $updateTime, liked: $liked, collect: $collect, collections: $collections)';
 }
 
 
@@ -58,7 +59,7 @@ abstract mixin class $BlogItemCopyWith<$Res>  {
   factory $BlogItemCopyWith(BlogItem value, $Res Function(BlogItem) _then) = _$BlogItemCopyWithImpl;
 @useResult
 $Res call({
- int? id, int? userId, int? squareId, String? topicIds, int? categary, int? blogType, String? title, String? content, String? resources, String? coverUrl, int? addressId, String? address, double? latitude, double? longitude, double? distance, int? shareType, int? zan, int? commentCount, int? collectCount, int? shareCount, int? care, int? followerCount, String? creator, String? creatorName, String? creatorAvatar, int? creatorLevel, String? creatorLevelName, String? updater, String? createTime, String? updateTime, int? liked, int? collect
+ int? id, int? userId, int? squareId, String? topicIds, int? categary, int? blogType, String? title, String? content, String? resources, String? coverUrl, int? addressId, String? address, double? latitude, double? longitude, double? distance, int? shareType, int? zan, int? commentCount, int? collectCount, int? shareCount, int? care, int? followerCount, String? creator, String? creatorName, String? creatorAvatar, int? creatorLevel, String? creatorLevelName, String? updater, String? createTime, String? updateTime, int? liked, int? collect, List<BlogItemCollection>? collections
 });
 
 
@@ -75,7 +76,7 @@ class _$BlogItemCopyWithImpl<$Res>
 
 /// Create a copy of BlogItem
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? userId = freezed,Object? squareId = freezed,Object? topicIds = freezed,Object? categary = freezed,Object? blogType = freezed,Object? title = freezed,Object? content = freezed,Object? resources = freezed,Object? coverUrl = freezed,Object? addressId = freezed,Object? address = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? distance = freezed,Object? shareType = freezed,Object? zan = freezed,Object? commentCount = freezed,Object? collectCount = freezed,Object? shareCount = freezed,Object? care = freezed,Object? followerCount = freezed,Object? creator = freezed,Object? creatorName = freezed,Object? creatorAvatar = freezed,Object? creatorLevel = freezed,Object? creatorLevelName = freezed,Object? updater = freezed,Object? createTime = freezed,Object? updateTime = freezed,Object? liked = freezed,Object? collect = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = freezed,Object? userId = freezed,Object? squareId = freezed,Object? topicIds = freezed,Object? categary = freezed,Object? blogType = freezed,Object? title = freezed,Object? content = freezed,Object? resources = freezed,Object? coverUrl = freezed,Object? addressId = freezed,Object? address = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? distance = freezed,Object? shareType = freezed,Object? zan = freezed,Object? commentCount = freezed,Object? collectCount = freezed,Object? shareCount = freezed,Object? care = freezed,Object? followerCount = freezed,Object? creator = freezed,Object? creatorName = freezed,Object? creatorAvatar = freezed,Object? creatorLevel = freezed,Object? creatorLevelName = freezed,Object? updater = freezed,Object? createTime = freezed,Object? updateTime = freezed,Object? liked = freezed,Object? collect = freezed,Object? collections = freezed,}) {
   return _then(_self.copyWith(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -109,7 +110,8 @@ as String?,createTime: freezed == createTime ? _self.createTime : createTime // 
 as String?,updateTime: freezed == updateTime ? _self.updateTime : updateTime // ignore: cast_nullable_to_non_nullable
 as String?,liked: freezed == liked ? _self.liked : liked // ignore: cast_nullable_to_non_nullable
 as int?,collect: freezed == collect ? _self.collect : collect // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,collections: freezed == collections ? _self.collections : collections // ignore: cast_nullable_to_non_nullable
+as List<BlogItemCollection>?,
   ));
 }
 
@@ -191,10 +193,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int? userId,  int? squareId,  String? topicIds,  int? categary,  int? blogType,  String? title,  String? content,  String? resources,  String? coverUrl,  int? addressId,  String? address,  double? latitude,  double? longitude,  double? distance,  int? shareType,  int? zan,  int? commentCount,  int? collectCount,  int? shareCount,  int? care,  int? followerCount,  String? creator,  String? creatorName,  String? creatorAvatar,  int? creatorLevel,  String? creatorLevelName,  String? updater,  String? createTime,  String? updateTime,  int? liked,  int? collect)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int? id,  int? userId,  int? squareId,  String? topicIds,  int? categary,  int? blogType,  String? title,  String? content,  String? resources,  String? coverUrl,  int? addressId,  String? address,  double? latitude,  double? longitude,  double? distance,  int? shareType,  int? zan,  int? commentCount,  int? collectCount,  int? shareCount,  int? care,  int? followerCount,  String? creator,  String? creatorName,  String? creatorAvatar,  int? creatorLevel,  String? creatorLevelName,  String? updater,  String? createTime,  String? updateTime,  int? liked,  int? collect,  List<BlogItemCollection>? collections)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BlogItem() when $default != null:
-return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.categary,_that.blogType,_that.title,_that.content,_that.resources,_that.coverUrl,_that.addressId,_that.address,_that.latitude,_that.longitude,_that.distance,_that.shareType,_that.zan,_that.commentCount,_that.collectCount,_that.shareCount,_that.care,_that.followerCount,_that.creator,_that.creatorName,_that.creatorAvatar,_that.creatorLevel,_that.creatorLevelName,_that.updater,_that.createTime,_that.updateTime,_that.liked,_that.collect);case _:
+return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.categary,_that.blogType,_that.title,_that.content,_that.resources,_that.coverUrl,_that.addressId,_that.address,_that.latitude,_that.longitude,_that.distance,_that.shareType,_that.zan,_that.commentCount,_that.collectCount,_that.shareCount,_that.care,_that.followerCount,_that.creator,_that.creatorName,_that.creatorAvatar,_that.creatorLevel,_that.creatorLevelName,_that.updater,_that.createTime,_that.updateTime,_that.liked,_that.collect,_that.collections);case _:
   return orElse();
 
 }
@@ -212,10 +214,10 @@ return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.catega
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int? userId,  int? squareId,  String? topicIds,  int? categary,  int? blogType,  String? title,  String? content,  String? resources,  String? coverUrl,  int? addressId,  String? address,  double? latitude,  double? longitude,  double? distance,  int? shareType,  int? zan,  int? commentCount,  int? collectCount,  int? shareCount,  int? care,  int? followerCount,  String? creator,  String? creatorName,  String? creatorAvatar,  int? creatorLevel,  String? creatorLevelName,  String? updater,  String? createTime,  String? updateTime,  int? liked,  int? collect)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int? id,  int? userId,  int? squareId,  String? topicIds,  int? categary,  int? blogType,  String? title,  String? content,  String? resources,  String? coverUrl,  int? addressId,  String? address,  double? latitude,  double? longitude,  double? distance,  int? shareType,  int? zan,  int? commentCount,  int? collectCount,  int? shareCount,  int? care,  int? followerCount,  String? creator,  String? creatorName,  String? creatorAvatar,  int? creatorLevel,  String? creatorLevelName,  String? updater,  String? createTime,  String? updateTime,  int? liked,  int? collect,  List<BlogItemCollection>? collections)  $default,) {final _that = this;
 switch (_that) {
 case _BlogItem():
-return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.categary,_that.blogType,_that.title,_that.content,_that.resources,_that.coverUrl,_that.addressId,_that.address,_that.latitude,_that.longitude,_that.distance,_that.shareType,_that.zan,_that.commentCount,_that.collectCount,_that.shareCount,_that.care,_that.followerCount,_that.creator,_that.creatorName,_that.creatorAvatar,_that.creatorLevel,_that.creatorLevelName,_that.updater,_that.createTime,_that.updateTime,_that.liked,_that.collect);}
+return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.categary,_that.blogType,_that.title,_that.content,_that.resources,_that.coverUrl,_that.addressId,_that.address,_that.latitude,_that.longitude,_that.distance,_that.shareType,_that.zan,_that.commentCount,_that.collectCount,_that.shareCount,_that.care,_that.followerCount,_that.creator,_that.creatorName,_that.creatorAvatar,_that.creatorLevel,_that.creatorLevelName,_that.updater,_that.createTime,_that.updateTime,_that.liked,_that.collect,_that.collections);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -229,10 +231,10 @@ return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.catega
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int? userId,  int? squareId,  String? topicIds,  int? categary,  int? blogType,  String? title,  String? content,  String? resources,  String? coverUrl,  int? addressId,  String? address,  double? latitude,  double? longitude,  double? distance,  int? shareType,  int? zan,  int? commentCount,  int? collectCount,  int? shareCount,  int? care,  int? followerCount,  String? creator,  String? creatorName,  String? creatorAvatar,  int? creatorLevel,  String? creatorLevelName,  String? updater,  String? createTime,  String? updateTime,  int? liked,  int? collect)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int? id,  int? userId,  int? squareId,  String? topicIds,  int? categary,  int? blogType,  String? title,  String? content,  String? resources,  String? coverUrl,  int? addressId,  String? address,  double? latitude,  double? longitude,  double? distance,  int? shareType,  int? zan,  int? commentCount,  int? collectCount,  int? shareCount,  int? care,  int? followerCount,  String? creator,  String? creatorName,  String? creatorAvatar,  int? creatorLevel,  String? creatorLevelName,  String? updater,  String? createTime,  String? updateTime,  int? liked,  int? collect,  List<BlogItemCollection>? collections)?  $default,) {final _that = this;
 switch (_that) {
 case _BlogItem() when $default != null:
-return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.categary,_that.blogType,_that.title,_that.content,_that.resources,_that.coverUrl,_that.addressId,_that.address,_that.latitude,_that.longitude,_that.distance,_that.shareType,_that.zan,_that.commentCount,_that.collectCount,_that.shareCount,_that.care,_that.followerCount,_that.creator,_that.creatorName,_that.creatorAvatar,_that.creatorLevel,_that.creatorLevelName,_that.updater,_that.createTime,_that.updateTime,_that.liked,_that.collect);case _:
+return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.categary,_that.blogType,_that.title,_that.content,_that.resources,_that.coverUrl,_that.addressId,_that.address,_that.latitude,_that.longitude,_that.distance,_that.shareType,_that.zan,_that.commentCount,_that.collectCount,_that.shareCount,_that.care,_that.followerCount,_that.creator,_that.creatorName,_that.creatorAvatar,_that.creatorLevel,_that.creatorLevelName,_that.updater,_that.createTime,_that.updateTime,_that.liked,_that.collect,_that.collections);case _:
   return null;
 
 }
@@ -244,7 +246,7 @@ return $default(_that.id,_that.userId,_that.squareId,_that.topicIds,_that.catega
 @JsonSerializable()
 
 class _BlogItem implements BlogItem {
-  const _BlogItem({this.id, this.userId, this.squareId, this.topicIds, this.categary, this.blogType, this.title, this.content, this.resources, this.coverUrl, this.addressId, this.address, this.latitude, this.longitude, this.distance, this.shareType, this.zan, this.commentCount, this.collectCount, this.shareCount, this.care, this.followerCount, this.creator, this.creatorName, this.creatorAvatar, this.creatorLevel, this.creatorLevelName, this.updater, this.createTime, this.updateTime, this.liked, this.collect});
+  const _BlogItem({this.id, this.userId, this.squareId, this.topicIds, this.categary, this.blogType, this.title, this.content, this.resources, this.coverUrl, this.addressId, this.address, this.latitude, this.longitude, this.distance, this.shareType, this.zan, this.commentCount, this.collectCount, this.shareCount, this.care, this.followerCount, this.creator, this.creatorName, this.creatorAvatar, this.creatorLevel, this.creatorLevelName, this.updater, this.createTime, this.updateTime, this.liked, this.collect, final  List<BlogItemCollection>? collections}): _collections = collections;
   factory _BlogItem.fromJson(Map<String, dynamic> json) => _$BlogItemFromJson(json);
 
 @override final  int? id;
@@ -289,6 +291,17 @@ class _BlogItem implements BlogItem {
 @override final  int? liked;
 /// 当前登录用户是否已收藏：1 是，0 否
 @override final  int? collect;
+/// 视频所属合集。后端可返回 collections/collectionList 等字段，解析层会归一到这里。
+ final  List<BlogItemCollection>? _collections;
+/// 视频所属合集。后端可返回 collections/collectionList 等字段，解析层会归一到这里。
+@override List<BlogItemCollection>? get collections {
+  final value = _collections;
+  if (value == null) return null;
+  if (_collections is EqualUnmodifiableListView) return _collections;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
 
 /// Create a copy of BlogItem
 /// with the given fields replaced by the non-null parameter values.
@@ -303,16 +316,16 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BlogItem&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareId, squareId) || other.squareId == squareId)&&(identical(other.topicIds, topicIds) || other.topicIds == topicIds)&&(identical(other.categary, categary) || other.categary == categary)&&(identical(other.blogType, blogType) || other.blogType == blogType)&&(identical(other.title, title) || other.title == title)&&(identical(other.content, content) || other.content == content)&&(identical(other.resources, resources) || other.resources == resources)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.addressId, addressId) || other.addressId == addressId)&&(identical(other.address, address) || other.address == address)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.shareType, shareType) || other.shareType == shareType)&&(identical(other.zan, zan) || other.zan == zan)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.collectCount, collectCount) || other.collectCount == collectCount)&&(identical(other.shareCount, shareCount) || other.shareCount == shareCount)&&(identical(other.care, care) || other.care == care)&&(identical(other.followerCount, followerCount) || other.followerCount == followerCount)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&(identical(other.creatorLevel, creatorLevel) || other.creatorLevel == creatorLevel)&&(identical(other.creatorLevelName, creatorLevelName) || other.creatorLevelName == creatorLevelName)&&(identical(other.updater, updater) || other.updater == updater)&&(identical(other.createTime, createTime) || other.createTime == createTime)&&(identical(other.updateTime, updateTime) || other.updateTime == updateTime)&&(identical(other.liked, liked) || other.liked == liked)&&(identical(other.collect, collect) || other.collect == collect));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BlogItem&&(identical(other.id, id) || other.id == id)&&(identical(other.userId, userId) || other.userId == userId)&&(identical(other.squareId, squareId) || other.squareId == squareId)&&(identical(other.topicIds, topicIds) || other.topicIds == topicIds)&&(identical(other.categary, categary) || other.categary == categary)&&(identical(other.blogType, blogType) || other.blogType == blogType)&&(identical(other.title, title) || other.title == title)&&(identical(other.content, content) || other.content == content)&&(identical(other.resources, resources) || other.resources == resources)&&(identical(other.coverUrl, coverUrl) || other.coverUrl == coverUrl)&&(identical(other.addressId, addressId) || other.addressId == addressId)&&(identical(other.address, address) || other.address == address)&&(identical(other.latitude, latitude) || other.latitude == latitude)&&(identical(other.longitude, longitude) || other.longitude == longitude)&&(identical(other.distance, distance) || other.distance == distance)&&(identical(other.shareType, shareType) || other.shareType == shareType)&&(identical(other.zan, zan) || other.zan == zan)&&(identical(other.commentCount, commentCount) || other.commentCount == commentCount)&&(identical(other.collectCount, collectCount) || other.collectCount == collectCount)&&(identical(other.shareCount, shareCount) || other.shareCount == shareCount)&&(identical(other.care, care) || other.care == care)&&(identical(other.followerCount, followerCount) || other.followerCount == followerCount)&&(identical(other.creator, creator) || other.creator == creator)&&(identical(other.creatorName, creatorName) || other.creatorName == creatorName)&&(identical(other.creatorAvatar, creatorAvatar) || other.creatorAvatar == creatorAvatar)&&(identical(other.creatorLevel, creatorLevel) || other.creatorLevel == creatorLevel)&&(identical(other.creatorLevelName, creatorLevelName) || other.creatorLevelName == creatorLevelName)&&(identical(other.updater, updater) || other.updater == updater)&&(identical(other.createTime, createTime) || other.createTime == createTime)&&(identical(other.updateTime, updateTime) || other.updateTime == updateTime)&&(identical(other.liked, liked) || other.liked == liked)&&(identical(other.collect, collect) || other.collect == collect)&&const DeepCollectionEquality().equals(other._collections, _collections));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
-int get hashCode => Object.hashAll([runtimeType,id,userId,squareId,topicIds,categary,blogType,title,content,resources,coverUrl,addressId,address,latitude,longitude,distance,shareType,zan,commentCount,collectCount,shareCount,care,followerCount,creator,creatorName,creatorAvatar,creatorLevel,creatorLevelName,updater,createTime,updateTime,liked,collect]);
+int get hashCode => Object.hashAll([runtimeType,id,userId,squareId,topicIds,categary,blogType,title,content,resources,coverUrl,addressId,address,latitude,longitude,distance,shareType,zan,commentCount,collectCount,shareCount,care,followerCount,creator,creatorName,creatorAvatar,creatorLevel,creatorLevelName,updater,createTime,updateTime,liked,collect,const DeepCollectionEquality().hash(_collections)]);
 
 @override
 String toString() {
-  return 'BlogItem(id: $id, userId: $userId, squareId: $squareId, topicIds: $topicIds, categary: $categary, blogType: $blogType, title: $title, content: $content, resources: $resources, coverUrl: $coverUrl, addressId: $addressId, address: $address, latitude: $latitude, longitude: $longitude, distance: $distance, shareType: $shareType, zan: $zan, commentCount: $commentCount, collectCount: $collectCount, shareCount: $shareCount, care: $care, followerCount: $followerCount, creator: $creator, creatorName: $creatorName, creatorAvatar: $creatorAvatar, creatorLevel: $creatorLevel, creatorLevelName: $creatorLevelName, updater: $updater, createTime: $createTime, updateTime: $updateTime, liked: $liked, collect: $collect)';
+  return 'BlogItem(id: $id, userId: $userId, squareId: $squareId, topicIds: $topicIds, categary: $categary, blogType: $blogType, title: $title, content: $content, resources: $resources, coverUrl: $coverUrl, addressId: $addressId, address: $address, latitude: $latitude, longitude: $longitude, distance: $distance, shareType: $shareType, zan: $zan, commentCount: $commentCount, collectCount: $collectCount, shareCount: $shareCount, care: $care, followerCount: $followerCount, creator: $creator, creatorName: $creatorName, creatorAvatar: $creatorAvatar, creatorLevel: $creatorLevel, creatorLevelName: $creatorLevelName, updater: $updater, createTime: $createTime, updateTime: $updateTime, liked: $liked, collect: $collect, collections: $collections)';
 }
 
 
@@ -323,7 +336,7 @@ abstract mixin class _$BlogItemCopyWith<$Res> implements $BlogItemCopyWith<$Res>
   factory _$BlogItemCopyWith(_BlogItem value, $Res Function(_BlogItem) _then) = __$BlogItemCopyWithImpl;
 @override @useResult
 $Res call({
- int? id, int? userId, int? squareId, String? topicIds, int? categary, int? blogType, String? title, String? content, String? resources, String? coverUrl, int? addressId, String? address, double? latitude, double? longitude, double? distance, int? shareType, int? zan, int? commentCount, int? collectCount, int? shareCount, int? care, int? followerCount, String? creator, String? creatorName, String? creatorAvatar, int? creatorLevel, String? creatorLevelName, String? updater, String? createTime, String? updateTime, int? liked, int? collect
+ int? id, int? userId, int? squareId, String? topicIds, int? categary, int? blogType, String? title, String? content, String? resources, String? coverUrl, int? addressId, String? address, double? latitude, double? longitude, double? distance, int? shareType, int? zan, int? commentCount, int? collectCount, int? shareCount, int? care, int? followerCount, String? creator, String? creatorName, String? creatorAvatar, int? creatorLevel, String? creatorLevelName, String? updater, String? createTime, String? updateTime, int? liked, int? collect, List<BlogItemCollection>? collections
 });
 
 
@@ -340,7 +353,7 @@ class __$BlogItemCopyWithImpl<$Res>
 
 /// Create a copy of BlogItem
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? userId = freezed,Object? squareId = freezed,Object? topicIds = freezed,Object? categary = freezed,Object? blogType = freezed,Object? title = freezed,Object? content = freezed,Object? resources = freezed,Object? coverUrl = freezed,Object? addressId = freezed,Object? address = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? distance = freezed,Object? shareType = freezed,Object? zan = freezed,Object? commentCount = freezed,Object? collectCount = freezed,Object? shareCount = freezed,Object? care = freezed,Object? followerCount = freezed,Object? creator = freezed,Object? creatorName = freezed,Object? creatorAvatar = freezed,Object? creatorLevel = freezed,Object? creatorLevelName = freezed,Object? updater = freezed,Object? createTime = freezed,Object? updateTime = freezed,Object? liked = freezed,Object? collect = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = freezed,Object? userId = freezed,Object? squareId = freezed,Object? topicIds = freezed,Object? categary = freezed,Object? blogType = freezed,Object? title = freezed,Object? content = freezed,Object? resources = freezed,Object? coverUrl = freezed,Object? addressId = freezed,Object? address = freezed,Object? latitude = freezed,Object? longitude = freezed,Object? distance = freezed,Object? shareType = freezed,Object? zan = freezed,Object? commentCount = freezed,Object? collectCount = freezed,Object? shareCount = freezed,Object? care = freezed,Object? followerCount = freezed,Object? creator = freezed,Object? creatorName = freezed,Object? creatorAvatar = freezed,Object? creatorLevel = freezed,Object? creatorLevelName = freezed,Object? updater = freezed,Object? createTime = freezed,Object? updateTime = freezed,Object? liked = freezed,Object? collect = freezed,Object? collections = freezed,}) {
   return _then(_BlogItem(
 id: freezed == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as int?,userId: freezed == userId ? _self.userId : userId // ignore: cast_nullable_to_non_nullable
@@ -374,7 +387,8 @@ as String?,createTime: freezed == createTime ? _self.createTime : createTime // 
 as String?,updateTime: freezed == updateTime ? _self.updateTime : updateTime // ignore: cast_nullable_to_non_nullable
 as String?,liked: freezed == liked ? _self.liked : liked // ignore: cast_nullable_to_non_nullable
 as int?,collect: freezed == collect ? _self.collect : collect // ignore: cast_nullable_to_non_nullable
-as int?,
+as int?,collections: freezed == collections ? _self._collections : collections // ignore: cast_nullable_to_non_nullable
+as List<BlogItemCollection>?,
   ));
 }
 

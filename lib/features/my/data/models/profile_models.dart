@@ -1,5 +1,8 @@
 // 个人中心接口 VO（与 OpenAPI 字段对齐）
 
+import '../../../blog/data/blog_page_parse.dart';
+import '../../../blog/data/models/blog_page_model.dart';
+
 class BlogMyPageResp {
   const BlogMyPageResp({
     this.id,
@@ -67,11 +70,11 @@ class BlogShopSaveReq {
   final int status;
 
   Map<String, dynamic> toJson() => {
-        if (name != null) 'name': name,
-        if (intro != null) 'intro': intro,
-        if (coverUrl != null) 'coverUrl': coverUrl,
-        'status': status,
-      };
+    if (name != null) 'name': name,
+    if (intro != null) 'intro': intro,
+    if (coverUrl != null) 'coverUrl': coverUrl,
+    'status': status,
+  };
 }
 
 class MemberUserUpdateReq {
@@ -90,12 +93,12 @@ class MemberUserUpdateReq {
   final int? areaId;
 
   Map<String, dynamic> toJson() => {
-        if (nickname != null) 'nickname': nickname,
-        if (avatar != null) 'avatar': avatar,
-        if (sex != null) 'sex': sex,
-        if (birthday != null) 'birthday': birthday,
-        if (areaId != null) 'areaId': areaId,
-      };
+    if (nickname != null) 'nickname': nickname,
+    if (avatar != null) 'avatar': avatar,
+    if (sex != null) 'sex': sex,
+    if (birthday != null) 'birthday': birthday,
+    if (areaId != null) 'areaId': areaId,
+  };
 }
 
 class BlogShopResp {
@@ -115,6 +118,7 @@ class BlogShopResp {
   final String? name;
   final String? intro;
   final String? coverUrl;
+
   /// 营业状态等业务含义由后端定义
   final int? status;
   final int? productCount;
@@ -151,10 +155,12 @@ class BlogShopProductResp {
   final int? shopId;
   final String? name;
   final String? coverUrl;
+
   /// 售价（分）
   final int? price;
   final String? externalUrl;
   final int? sort;
+
   /// 1 上架 0 下架
   final int? status;
   final String? createTime;
@@ -246,6 +252,46 @@ class BlogCollectionPageData {
   }
 }
 
+class BlogCollectionDetailResp extends BlogCollectionResp {
+  const BlogCollectionDetailResp({
+    super.id,
+    super.userId,
+    super.name,
+    super.coverUrl,
+    super.intro,
+    super.visible,
+    super.sort,
+    super.itemCount,
+    super.createTime,
+    this.blogs,
+  });
+
+  final List<BlogItem>? blogs;
+
+  factory BlogCollectionDetailResp.fromJson(Map<String, dynamic> json) {
+    final rawBlogs = json['blogs'] as List<dynamic>?;
+    return BlogCollectionDetailResp(
+      id: (json['id'] as num?)?.toInt(),
+      userId: (json['userId'] as num?)?.toInt(),
+      name: json['name'] as String?,
+      coverUrl: json['coverUrl'] as String?,
+      intro: json['intro'] as String?,
+      visible: (json['visible'] as num?)?.toInt(),
+      sort: (json['sort'] as num?)?.toInt(),
+      itemCount: (json['itemCount'] as num?)?.toInt(),
+      createTime: json['createTime'] as String?,
+      blogs: rawBlogs
+          ?.whereType<Map>()
+          .map(
+            (e) => BlogItem.fromJson(
+              normalizeBlogItemJson(Map<String, dynamic>.from(e)),
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
 /// 我关注的会员 / 我的粉丝
 class BlogFollowMember {
   const BlogFollowMember({
@@ -273,7 +319,8 @@ class BlogFollowMember {
   bool get isFollowedByMe => followedByMe == 1;
 
   factory BlogFollowMember.fromJson(Map<String, dynamic> json) {
-    final uid = (json['userId'] as num?)?.toInt() ??
+    final uid =
+        (json['userId'] as num?)?.toInt() ??
         (json['followedUserId'] as num?)?.toInt();
     return BlogFollowMember(
       userId: uid,
@@ -321,12 +368,12 @@ class BlogCollectionSaveReq {
   final int? sort;
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'visible': visible,
-        if (coverUrl != null) 'coverUrl': coverUrl,
-        if (intro != null) 'intro': intro,
-        if (sort != null) 'sort': sort,
-      };
+    'name': name,
+    'visible': visible,
+    if (coverUrl != null) 'coverUrl': coverUrl,
+    if (intro != null) 'intro': intro,
+    if (sort != null) 'sort': sort,
+  };
 }
 
 class BlogShopProductSaveReq {
@@ -347,11 +394,11 @@ class BlogShopProductSaveReq {
   final int? sort;
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'price': price,
-        'status': status,
-        if (coverUrl != null) 'coverUrl': coverUrl,
-        if (externalUrl != null) 'externalUrl': externalUrl,
-        if (sort != null) 'sort': sort,
-      };
+    'name': name,
+    'price': price,
+    'status': status,
+    if (coverUrl != null) 'coverUrl': coverUrl,
+    if (externalUrl != null) 'externalUrl': externalUrl,
+    if (sort != null) 'sort': sort,
+  };
 }

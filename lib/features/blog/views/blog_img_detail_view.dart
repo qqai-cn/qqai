@@ -55,6 +55,8 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
       showCommentPanel: commentState.showComment,
       sidePanelBlog: blog,
       onCommentClose: commentNotifier.changeShowComment,
+      sidePanelInitialTabIndex: commentState.selectedTabIndex,
+      sidePanelCollection: commentState.selectedCollection,
       content: hasVideo
           ? Stack(
               fit: StackFit.expand,

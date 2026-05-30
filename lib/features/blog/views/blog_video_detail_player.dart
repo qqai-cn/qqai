@@ -18,8 +18,13 @@ import 'blog_detail_video_toolbar.dart';
 /// 列表内嵌视频请用 [VideoItemPlayer] + [ItemControls]（控件叠在画面上）。
 class BlogVideoDetailPlayer extends StatefulWidget {
   final BlogItem blog;
+  final VoidCallback? onCompleted;
 
-  const BlogVideoDetailPlayer({super.key, required this.blog});
+  const BlogVideoDetailPlayer({
+    super.key,
+    required this.blog,
+    this.onCompleted,
+  });
 
   @override
   State<BlogVideoDetailPlayer> createState() => _BlogVideoDetailPlayerState();
@@ -31,6 +36,7 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
   late FlickManager flickManager;
   late VideoPlayerController videoController;
   bool _isDisposed = false;
+  bool _didNotifyCompleted = false;
 
   @override
   void initState() {
@@ -57,6 +63,14 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
     if (!_isDisposed && mounted && videoController.value.isInitialized) {
       if (videoController.value.volume == 0.0) {
         _setVolumeIfNeeded();
+      }
+      final value = videoController.value;
+      final duration = value.duration;
+      if (!_didNotifyCompleted &&
+          duration > Duration.zero &&
+          value.position >= duration - const Duration(milliseconds: 300)) {
+        _didNotifyCompleted = true;
+        widget.onCompleted?.call();
       }
     }
   }

@@ -12,6 +12,7 @@ import 'package:qqai/features/video/views/video_list_view.dart';
 
 import '../../../router/app_routes.dart';
 import '../../comment/providers/comment_providers.dart';
+import '../../my/data/repos/profile_repo.dart';
 import '../../index/presentation/widgets/brand_drawer_leading.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/presentation/widgets/lazy_tab_slot.dart';
@@ -88,8 +89,9 @@ class _VideoViewState extends ConsumerState<VideoView>
                 alignment: Alignment.center,
                 child: Text(
                   e,
-                  style: context.typo.sectionTitle
-                      .copyWith(color: Colors.white),
+                  style: context.typo.sectionTitle.copyWith(
+                    color: Colors.white,
+                  ),
                 ),
               ),
             );
@@ -129,19 +131,55 @@ class _VideoViewState extends ConsumerState<VideoView>
   }
 }
 
-class _VideoRecommendTab extends ConsumerWidget {
+class _VideoRecommendTab extends ConsumerStatefulWidget {
   const _VideoRecommendTab();
 
+  @override
+  ConsumerState<_VideoRecommendTab> createState() => _VideoRecommendTabState();
+}
+
+class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
+  final PageController _pageController = PageController();
+  final Map<int, BlogItem> _collectionNextItems = {};
+  bool _openingNextCollectionVideo = false;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   List<BlogItem> _playableItems(List<BlogItem> raw) {
-    return raw
-        .where(
-          (e) => firstPlayableVideoUrlFromResources(e.resources) != null,
-        )
+    final base = raw
+        .where((e) => firstPlayableVideoUrlFromResources(e.resources) != null)
         .toList();
+    if (_collectionNextItems.isEmpty) return base;
+
+    final result = <BlogItem>[];
+    final seen = <int>{};
+    void addWithCollectionChain(BlogItem item) {
+      final id = item.id;
+      if (id != null && !seen.add(id)) return;
+      result.add(item);
+      if (id == null) return;
+
+      var next = _collectionNextItems[id];
+      while (next != null) {
+        final nextId = next.id;
+        if (nextId == null || !seen.add(nextId)) return;
+        result.add(next);
+        next = _collectionNextItems[nextId];
+      }
+    }
+
+    for (final item in base) {
+      addWithCollectionChain(item);
+    }
+    return result;
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final recommendState = ref.watch(videoRecommendProvider);
     final recommendNotifier = ref.read(videoRecommendProvider.notifier);
 
@@ -179,14 +217,14 @@ class _VideoRecommendTab extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '暂无推荐视频',
-                    style: TextStyle(color: Colors.white70),
-                  ),
+                  const Text('暂无推荐视频', style: TextStyle(color: Colors.white70)),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => recommendNotifier.refresh(),
-                    child: const Text('刷新', style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      '刷新',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ],
               ),
@@ -194,11 +232,18 @@ class _VideoRecommendTab extends ConsumerWidget {
           );
         }
         WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          final current = ref.read(videoRecommendCurrentBlogProvider);
+          final currentStillVisible =
+              current?.id != null &&
+              playable.any((item) => item.id == current!.id);
+          if (currentStillVisible) return;
           ref
               .read(videoRecommendCurrentBlogProvider.notifier)
               .select(playable.first);
         });
         return PageView.builder(
+          controller: _pageController,
           scrollDirection: Axis.vertical,
           itemCount: playable.length,
           onPageChanged: (index) {
@@ -218,13 +263,16 @@ class _VideoRecommendTab extends ConsumerWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  BlogVideoDetailPlayer(blog: item),
+                  BlogVideoDetailPlayer(
+                    key: ValueKey('video_recommend_player_${item.id ?? index}'),
+                    blog: item,
+                    onCompleted: () => _openNextCollectionVideo(item),
+                  ),
                   BlogDetailMediaOverlay(
                     blog: item,
                     bottomInset: kBlogDetailVideoToolbarHeight,
-                    onCommentTap: () => ref
-                        .read(commentProvider.notifier)
-                        .changeShowComment(),
+                    onCommentTap: () =>
+                        ref.read(commentProvider.notifier).changeShowComment(),
                   ),
                 ],
               ),
@@ -233,5 +281,87 @@ class _VideoRecommendTab extends ConsumerWidget {
         );
       },
     );
+  }
+
+  BlogItemCollection? _effectiveCollection(
+    BlogItem blog,
+    BlogItemCollection? selected,
+  ) {
+    final collections = blog.collections ?? const <BlogItemCollection>[];
+    if (collections.isEmpty) return null;
+    final selectedId = selected?.id;
+    if (selectedId != null) {
+      for (final collection in collections) {
+        if (collection.id == selectedId) return collection;
+      }
+    }
+    return collections.first;
+  }
+
+  Future<void> _openNextCollectionVideo(BlogItem currentBlog) async {
+    final currentId = currentBlog.id;
+    final commentState = ref.read(commentProvider);
+    final collection = _effectiveCollection(
+      currentBlog,
+      commentState.selectedCollection,
+    );
+    final collectionId = collection?.id;
+    if (_openingNextCollectionVideo ||
+        currentId == null ||
+        collection == null ||
+        collectionId == null) {
+      return;
+    }
+
+    _openingNextCollectionVideo = true;
+    try {
+      final detail = await ref
+          .read(profileRepoProvider)
+          .getCollectionDetail(collectionId);
+      final videos = (detail.blogs ?? [])
+          .where((b) => b.id != null && b.blogType == 2)
+          .toList();
+      final currentIndex = videos.indexWhere((b) => b.id == currentId);
+      if (!mounted || currentIndex < 0 || currentIndex + 1 >= videos.length) {
+        return;
+      }
+
+      final nextBlog = videos[currentIndex + 1].copyWith(
+        collections: [collection],
+      );
+      final nextId = nextBlog.id;
+      if (nextId == null) return;
+
+      _showAutoPlayNextTip();
+      setState(() => _collectionNextItems[currentId] = nextBlog);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_pageController.hasClients) return;
+        final items = _playableItems(ref.read(videoRecommendProvider).allItems);
+        final nextPage = items.indexWhere((item) => item.id == nextId);
+        if (nextPage < 0) return;
+        ref.read(videoRecommendCurrentBlogProvider.notifier).select(nextBlog);
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+        );
+      });
+    } finally {
+      _openingNextCollectionVideo = false;
+    }
+  }
+
+  void _showAutoPlayNextTip() {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('即将自动播放下一集'),
+          duration: const Duration(milliseconds: 1600),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 }

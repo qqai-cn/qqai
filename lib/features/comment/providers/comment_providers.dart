@@ -1,10 +1,10 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/repos/comment_repo.dart';
 import '../data/models/comment_model.dart';
+import '../../blog/data/models/blog_page_model.dart';
 
 part 'comment_providers.freezed.dart';
 
@@ -14,8 +14,10 @@ part 'comment_providers.g.dart';
 sealed class CommentState with _$CommentState {
   const factory CommentState({
     // freezed 的 @Default 必须是 const
-    @Default(const AsyncLoading()) AsyncValue<List<CommentModel>> items,
+    @Default(AsyncLoading()) AsyncValue<List<CommentModel>> items,
     @Default(false) bool showComment,
+    @Default(0) int selectedTabIndex,
+    BlogItemCollection? selectedCollection,
     String? error,
   }) = _CommentState;
 }
@@ -23,7 +25,7 @@ sealed class CommentState with _$CommentState {
 @riverpod
 class CommentNotifier extends _$CommentNotifier {
   late final ICommentRepo _repo;
-  final List<String> tabValues = ['评论', '相关推荐'];
+  final List<String> tabValues = ['评论', '相关推荐', '合集'];
 
   @override
   CommentState build() {
@@ -78,13 +80,27 @@ class CommentNotifier extends _$CommentNotifier {
   }
 
   void changeShowComment() {
-    state = state.copyWith(showComment: !state.showComment);
+    state = state.showComment
+        ? state.copyWith(showComment: false)
+        : state.copyWith(showComment: true, selectedTabIndex: 0);
   }
 
   void openCommentPanel() {
     if (!state.showComment) {
-      state = state.copyWith(showComment: true);
+      state = state.copyWith(showComment: true, selectedTabIndex: 0);
     }
+  }
+
+  void openCollectionPanel(BlogItemCollection collection) {
+    state = state.copyWith(
+      showComment: true,
+      selectedTabIndex: 2,
+      selectedCollection: collection,
+    );
+  }
+
+  void selectCollectionTab(BlogItemCollection collection) {
+    state = state.copyWith(selectedTabIndex: 2, selectedCollection: collection);
   }
 
   void dontShowComment() {
