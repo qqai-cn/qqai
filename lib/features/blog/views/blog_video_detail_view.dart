@@ -18,11 +18,13 @@ import 'blog_detail_video_toolbar.dart';
 class BlogVideoDetailView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
   final String detailRoute;
+  final String? mediaHeroTag;
 
   const BlogVideoDetailView({
     super.key,
     required this.blogItem,
     this.detailRoute = Routes.blogVideoDetailView,
+    this.mediaHeroTag,
   });
 
   @override
@@ -33,6 +35,7 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
   late final BlogDetailCommentSidePanelLifecycle _commentSidePanel;
   bool _openingNextCollectionVideo = false;
   bool _keepCommentPanelStateOnDispose = false;
+  bool _wideCommentPanelClosed = false;
 
   @override
   void initState() {
@@ -58,6 +61,9 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
     final commentState = ref.watch(commentProvider);
     final commentNotifier = ref.read(commentProvider.notifier);
     final blog = widget.blogItem;
+    final isWideScreen = 1.sw > 900;
+    final showCommentPanel =
+        commentState.showComment || (isWideScreen && !_wideCommentPanelClosed);
     final sidePanelCollection = _effectiveCollection(
       blog,
       commentState.selectedCollection,
@@ -67,9 +73,13 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
       showControlsRow: showToolbarControlsRow,
     );
     return MediaDetailShell(
-      showCommentPanel: commentState.showComment,
+      showCommentPanel: showCommentPanel,
       sidePanelBlog: blog,
-      onCommentClose: commentNotifier.changeShowComment,
+      onCommentClose: () => _toggleCommentPanel(
+        commentNotifier,
+        panelVisible: showCommentPanel,
+        isWideScreen: isWideScreen,
+      ),
       sidePanelInitialTabIndex: commentState.selectedTabIndex,
       sidePanelCollection: sidePanelCollection,
       sidePanelCollectionVideoDetailRoute: widget.detailRoute,
@@ -78,17 +88,38 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
         children: [
           BlogVideoDetailPlayer(
             blog: blog,
+            mediaHeroTag: widget.mediaHeroTag,
             showToolbarControlsRow: showToolbarControlsRow,
             onCompleted: () => _openNextCollectionVideo(sidePanelCollection),
           ),
           BlogDetailMediaOverlay(
             blog: blog,
             bottomInset: toolbarHeight,
-            onCommentTap: commentNotifier.changeShowComment,
+            onCommentTap: () => _toggleCommentPanel(
+              commentNotifier,
+              panelVisible: showCommentPanel,
+              isWideScreen: isWideScreen,
+            ),
           ),
         ],
       ),
     );
+  }
+
+  void _toggleCommentPanel(
+    CommentNotifier notifier, {
+    required bool panelVisible,
+    required bool isWideScreen,
+  }) {
+    final providerVisible = ref.read(commentProvider).showComment;
+    if (panelVisible && !providerVisible && isWideScreen) {
+      setState(() => _wideCommentPanelClosed = true);
+      return;
+    }
+    setState(() {
+      _wideCommentPanelClosed = providerVisible;
+    });
+    notifier.changeShowComment();
   }
 
   BlogItemCollection? _effectiveCollection(

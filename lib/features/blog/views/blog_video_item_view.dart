@@ -13,6 +13,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 import '../../../../providers/auth_providers.dart';
 import '../data/blog_display_text.dart';
 import '../data/blog_list_patch.dart';
+import '../data/blog_route_extra.dart';
 import '../data/home_blog_tab.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_feed_list_actions.dart';
@@ -46,7 +47,7 @@ class BlogVideoItemView extends ConsumerStatefulWidget {
 }
 
 class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
-  static const double _initialVideoAspectRatio = 9 / 16;
+  static const double _initialVideoAspectRatio = 15 / 9;
   static const double _portraitDisplayAspectRatio = 1.1875;
 
   String text = '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。';
@@ -84,11 +85,67 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     final bodyStyle = context.typo.body;
     final coverUrl = resolveBlogCoverUrl(item);
     final videoUrl = firstPlayableVideoUrlFromResources(item.resources) ?? '';
+    final mediaHeroTag = blogVideoDetailHeroTag(
+      widget.category,
+      widget.blogItem,
+    );
+    final storedAspectRatio = _validVideoAspectRatio(item.videoAspectRatio);
+    if (storedAspectRatio != null) {
+      return _buildVideoCard(
+        context: context,
+        item: item,
+        blogNotifier: blogNotifier,
+        showCareButton: showCareButton,
+        avatarUrl: avatarUrl,
+        avatarHeroTag: avatarHeroTag,
+        preview: preview,
+        rewardText: rewardText,
+        bodyStyle: bodyStyle,
+        coverUrl: coverUrl,
+        videoUrl: videoUrl,
+        mediaHeroTag: mediaHeroTag,
+        aspectRatio: storedAspectRatio,
+      );
+    }
     return VideoAspectRatioBox(
       videoUrl: videoUrl,
       fallbackAspectRatio: _initialVideoAspectRatio,
       builder: (context, aspectRatio) {
-        return Card(
+        return _buildVideoCard(
+          context: context,
+          item: item,
+          blogNotifier: blogNotifier,
+          showCareButton: showCareButton,
+          avatarUrl: avatarUrl,
+          avatarHeroTag: avatarHeroTag,
+          preview: preview,
+          rewardText: rewardText,
+          bodyStyle: bodyStyle,
+          coverUrl: coverUrl,
+          videoUrl: videoUrl,
+          mediaHeroTag: mediaHeroTag,
+          aspectRatio: aspectRatio,
+        );
+      },
+    );
+  }
+
+  Widget _buildVideoCard({
+    required BuildContext context,
+    required BlogItem item,
+    required BlogFeedListActions blogNotifier,
+    required bool showCareButton,
+    required String? avatarUrl,
+    required String? avatarHeroTag,
+    required String preview,
+    required String? rewardText,
+    required TextStyle bodyStyle,
+    required String coverUrl,
+    required String videoUrl,
+    required String mediaHeroTag,
+    required double aspectRatio,
+  }) {
+    return Card(
           child: SizedBox(
             height: _videoItemHeightWithAspectRatio(aspectRatio),
             child: Padding(
@@ -149,6 +206,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                       imgUrl: coverUrl,
                       videoId: widget.blogItem.id,
                       aspectRatio: aspectRatio,
+                      playerHeroTag: mediaHeroTag,
                     ),
                   ),
                   if (widget.category == HomeBlogTab.local &&
@@ -173,8 +231,11 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                         feedActions: blogNotifier,
                       );
                     },
-                    onComment: () =>
-                        blogNotifier.onBlogItemTap(context, widget.blogItem),
+                    onComment: () => blogNotifier.onBlogItemTap(
+                      context,
+                      widget.blogItem,
+                      mediaHeroTag: mediaHeroTag,
+                    ),
                     menuBuilder: (context) {
                       final collected = blogCollectedByMe(item);
                       final entries = feedVideoMoreMenuEntries(context);
@@ -198,8 +259,6 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
             ),
           ),
         );
-      },
-    );
   }
 
   double _videoItemHeightWithAspectRatio(double aspectRatio) {
@@ -212,6 +271,11 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
         ? _portraitDisplayAspectRatio
         : 15 / 9;
     return widthItem / displayAspectRatio + 150;
+  }
+
+  double? _validVideoAspectRatio(double? value) {
+    if (value == null || !value.isFinite || value <= 0) return null;
+    return value;
   }
 }
 

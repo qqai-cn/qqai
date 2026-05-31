@@ -546,6 +546,9 @@ class FabuNotifier extends _$FabuNotifier {
       final collectionIds = blogType == 2 && state.collectionSel.isNotEmpty
           ? state.collectionSel.keys.toList()
           : null;
+      final videoMetadata = blogType == 2 && state.videoFiles.isNotEmpty
+          ? await _readVideoMetadata(state.videoFiles.first)
+          : null;
 
       final req = BlogSaveReqVO(
         squareId: squareId,
@@ -556,6 +559,9 @@ class FabuNotifier extends _$FabuNotifier {
         content: blogContent,
         resources: blogResources,
         coverUrl: uploadResult.coverUrl,
+        videoWidth: videoMetadata?.width,
+        videoHeight: videoMetadata?.height,
+        videoAspectRatio: videoMetadata?.aspectRatio,
         addressId: resolvedAddressId != null && resolvedAddressId != 0
             ? resolvedAddressId
             : null,

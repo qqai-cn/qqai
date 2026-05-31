@@ -40,6 +40,7 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           autoPlay: false,
           videoId: widget.videoId,
           fallbackAspectRatio: widget.fallbackAspectRatio,
+          showLoadingPoster: false,
         ),
       ),
     );

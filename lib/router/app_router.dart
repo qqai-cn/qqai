@@ -12,7 +12,10 @@ import '../../features/meleft/mycollect_page.dart' deferred as my_collect;
 import '../../features/watchvideo/play_video_page.dart' deferred as play_video;
 import '../cache/deferred_widget.dart';
 import '../components/imgpreview/preview_img.dart';
+import '../components/video_player/video_loading_placeholder.dart';
 import '../features/blog/data/blog_route_extra.dart';
+import '../features/blog/views/blog_detail_video_toolbar.dart';
+import '../features/comment/providers/comment_providers.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
 import '../features/goods/models/cart_line.dart';
 import '../features/index/presentation/views/home_page.dart';
@@ -419,13 +422,16 @@ GoRouter appRouter(Ref ref) {
         path: Routes.blogImgDetailView,
         name: 'blogImgDetailView',
         builder: (c, s) {
-          final blogItem = parseBlogItemRouteExtra(s.extra);
-          if (blogItem == null) {
+          final detailExtra = parseBlogDetailRouteExtra(s.extra);
+          if (detailExtra == null) {
             return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
-            builder: () => route_pages.BlogImgDetailView(blogItem: blogItem),
+            builder: () => route_pages.BlogImgDetailView(
+              blogItem: detailExtra.blogItem,
+              mediaHeroTag: detailExtra.mediaHeroTag,
+            ),
           );
         },
       ),
@@ -433,13 +439,19 @@ GoRouter appRouter(Ref ref) {
         path: Routes.blogVideoDetailView,
         name: 'blogVideoDetailView',
         builder: (c, s) {
-          final blogItem = parseBlogItemRouteExtra(s.extra);
-          if (blogItem == null) {
+          final detailExtra = parseBlogDetailRouteExtra(s.extra);
+          if (detailExtra == null) {
             return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
-            builder: () => route_pages.BlogVideoDetailView(blogItem: blogItem),
+            placeholder: _DeferredVideoDetailPlaceholder(
+              mediaHeroTag: detailExtra.mediaHeroTag,
+            ),
+            builder: () => route_pages.BlogVideoDetailView(
+              blogItem: detailExtra.blogItem,
+              mediaHeroTag: detailExtra.mediaHeroTag,
+            ),
           );
         },
       ),
@@ -447,13 +459,19 @@ GoRouter appRouter(Ref ref) {
         path: Routes.videoDetailView,
         name: 'videoDetailView',
         builder: (c, s) {
-          final blogItem = parseBlogItemRouteExtra(s.extra);
-          if (blogItem == null) {
+          final detailExtra = parseBlogDetailRouteExtra(s.extra);
+          if (detailExtra == null) {
             return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
-            builder: () => route_pages.VideoDetailView(blogItem: blogItem),
+            placeholder: _DeferredVideoDetailPlaceholder(
+              mediaHeroTag: detailExtra.mediaHeroTag,
+            ),
+            builder: () => route_pages.VideoDetailView(
+              blogItem: detailExtra.blogItem,
+              mediaHeroTag: detailExtra.mediaHeroTag,
+            ),
           );
         },
       ),
@@ -728,6 +746,90 @@ GoRouter appRouter(Ref ref) {
       body: Center(child: Text('PageRoute not found: ${state.uri}')),
     ),
   );
+}
+
+class _DeferredVideoDetailPlaceholder extends ConsumerWidget {
+  const _DeferredVideoDetailPlaceholder({this.mediaHeroTag});
+
+  final String? mediaHeroTag;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final size = MediaQuery.sizeOf(context);
+    final isWideScreen = size.width > 900;
+    final providerShowCommentPanel = ref.watch(
+      commentProvider.select((state) => state.showComment),
+    );
+    final showCommentPanel = providerShowCommentPanel || isWideScreen;
+    final showToolbarControlsRow = size.width > 800;
+    final toolbarHeight = blogDetailVideoToolbarHeight(
+      showControlsRow: showToolbarControlsRow,
+    );
+    final mediaContent = ColoredBox(
+      color: Colors.black,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: _DeferredVideoHero(mediaHeroTag: mediaHeroTag)),
+          SizedBox(height: toolbarHeight),
+        ],
+      ),
+    );
+
+    return Scaffold(
+      body: isWideScreen
+          ? Row(
+              children: [
+                Expanded(child: mediaContent),
+                if (showCommentPanel)
+                  const SizedBox(
+                    width: 350,
+                    child: ColoredBox(color: Color(0xFF111111)),
+                  ),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(child: mediaContent),
+                if (showCommentPanel)
+                  SizedBox(
+                    width: size.width,
+                    height: size.height * 0.6,
+                    child: const ColoredBox(color: Color(0xFF111111)),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+class _DeferredVideoHero extends StatelessWidget {
+  const _DeferredVideoHero({this.mediaHeroTag});
+
+  final String? mediaHeroTag;
+
+  @override
+  Widget build(BuildContext context) {
+    final heroTag = mediaHeroTag;
+    const child = VideoLoadingPlaceholder(showPoster: false);
+    if (heroTag == null || heroTag.isEmpty) return child;
+    return Hero(
+      tag: heroTag,
+      transitionOnUserGestures: true,
+      flightShuttleBuilder: _buildVideoHeroFlight,
+      child: child,
+    );
+  }
+
+  Widget _buildVideoHeroFlight(
+    BuildContext flightContext,
+    Animation<double> animation,
+    HeroFlightDirection flightDirection,
+    BuildContext fromHeroContext,
+    BuildContext toHeroContext,
+  ) {
+    return const VideoLoadingPlaceholder(showPoster: false);
+  }
 }
 
 // 辅助函数：检查路由是否需要认证

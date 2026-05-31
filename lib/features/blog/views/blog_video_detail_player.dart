@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
+import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:video_player/video_player.dart';
@@ -18,6 +19,7 @@ import 'blog_detail_video_toolbar.dart';
 /// 列表内嵌视频请用 [VideoItemPlayer] + [ItemControls]（控件叠在画面上）。
 class BlogVideoDetailPlayer extends StatefulWidget {
   final BlogItem blog;
+  final String? mediaHeroTag;
   final VoidCallback? onCompleted;
   final double? adTopInset;
   final double? adSkipRightInset;
@@ -29,6 +31,7 @@ class BlogVideoDetailPlayer extends StatefulWidget {
   const BlogVideoDetailPlayer({
     super.key,
     required this.blog,
+    this.mediaHeroTag,
     this.onCompleted,
     this.adTopInset,
     this.adSkipRightInset,
@@ -41,8 +44,6 @@ class BlogVideoDetailPlayer extends StatefulWidget {
 }
 
 class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
-  static const _defaultPoster = 'https://file.qqai.cn/qqai/2025/09/1.webp';
-
   late FlickManager flickManager;
   late VideoPlayerController videoController;
   bool _isDisposed = false;
@@ -140,13 +141,6 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
       );
     }
 
-    final posterRaw = resolveBlogCoverUrlFromFields(
-      coverUrl: widget.blog.coverUrl,
-      resources: widget.blog.resources,
-      fallback: _defaultPoster,
-    );
-    final poster = resolveMediaUrl(posterRaw) ?? _defaultPoster;
-
     return VisibilityDetector(
       key: ObjectKey(flickManager),
       onVisibilityChanged: (visibility) {
@@ -165,53 +159,39 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: VideoAdOverlay(
-              videoController: videoController,
-              flickManager: flickManager,
-              videoId: widget.blog.id,
-              adTopInset: widget.adTopInset ?? 12,
-              adSkipRightInset:
-                  widget.adSkipRightInset ?? kVideoAdDetailSkipRightInset,
-              child: SafeFlickVideoPlayer(
+            child: _VideoSurfaceHero(
+              tag: widget.mediaHeroTag,
+              child: VideoAdOverlay(
+                videoController: videoController,
                 flickManager: flickManager,
-                flickVideoWithControls: FlickVideoWithControls(
-                  videoFit: BoxFit.contain,
-                  playerLoadingFallback: Positioned.fill(
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: Image.network(poster, fit: BoxFit.contain),
-                        ),
-                        const Positioned(
-                          right: 10,
-                          top: 10,
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              backgroundColor: Colors.white,
-                              strokeWidth: 4,
-                            ),
-                          ),
-                        ),
-                      ],
+                videoId: widget.blog.id,
+                adTopInset: widget.adTopInset ?? 12,
+                adSkipRightInset:
+                    widget.adSkipRightInset ?? kVideoAdDetailSkipRightInset,
+                child: SafeFlickVideoPlayer(
+                  flickManager: flickManager,
+                  flickVideoWithControls: FlickVideoWithControls(
+                    videoFit: BoxFit.contain,
+                    playerLoadingFallback: const Positioned.fill(
+                      child: VideoLoadingPlaceholder(showPoster: false),
                     ),
+                    controls: const BlogDetailVideoSurfaceControls(),
                   ),
-                  controls: const BlogDetailVideoSurfaceControls(),
-                ),
-                flickVideoWithControlsFullscreen: FlickVideoWithControls(
-                  videoFit: BoxFit.contain,
-                  playerLoadingFallback: Center(
-                    child: Image.network(poster, fit: BoxFit.contain),
-                  ),
-                  controls: FlickLandscapeControls(),
-                  iconThemeData: const IconThemeData(
-                    size: 40,
-                    color: Colors.white,
-                  ),
-                  textStyle: context.typo.body.copyWith(
-                    fontSize: 16,
-                    color: Colors.white,
+                  flickVideoWithControlsFullscreen: FlickVideoWithControls(
+                    videoFit: BoxFit.contain,
+                    playerLoadingFallback: const VideoLoadingPlaceholder(
+                      showPoster: false,
+                      showIndicator: false,
+                    ),
+                    controls: FlickLandscapeControls(),
+                    iconThemeData: const IconThemeData(
+                      size: 40,
+                      color: Colors.white,
+                    ),
+                    textStyle: context.typo.body.copyWith(
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -226,5 +206,34 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
         ],
       ),
     );
+  }
+}
+
+class _VideoSurfaceHero extends StatelessWidget {
+  const _VideoSurfaceHero({required this.child, this.tag});
+
+  final Widget child;
+  final String? tag;
+
+  @override
+  Widget build(BuildContext context) {
+    final heroTag = tag;
+    if (heroTag == null || heroTag.isEmpty) return child;
+    return Hero(
+      tag: heroTag,
+      transitionOnUserGestures: true,
+      flightShuttleBuilder: _buildVideoHeroFlight,
+      child: child,
+    );
+  }
+
+  Widget _buildVideoHeroFlight(
+    BuildContext flightContext,
+    Animation<double> animation,
+    HeroFlightDirection flightDirection,
+    BuildContext fromHeroContext,
+    BuildContext toHeroContext,
+  ) {
+    return const VideoLoadingPlaceholder(showPoster: false);
   }
 }

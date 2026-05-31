@@ -262,10 +262,14 @@ class LocalVideoMetadata {
   const LocalVideoMetadata({
     required this.aspectRatio,
     required this.durationMs,
+    this.width,
+    this.height,
   });
 
   final double aspectRatio;
   final int durationMs;
+  final int? width;
+  final int? height;
 }
 
 final Map<String, double> _localVideoAspectRatioCache = {};
@@ -302,6 +306,12 @@ Future<LocalVideoMetadata> resolveLocalVideoMetadata(
     return LocalVideoMetadata(
       aspectRatio: aspectRatio,
       durationMs: controller.value.duration.inMilliseconds,
+      width: controller.value.size.width > 0
+          ? controller.value.size.width.round()
+          : null,
+      height: controller.value.size.height > 0
+          ? controller.value.size.height.round()
+          : null,
     );
   } catch (_) {
     _localVideoAspectRatioCache[file.path] = fallbackAspectRatio;

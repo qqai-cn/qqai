@@ -27,7 +27,8 @@ sealed class VideoFilmState with _$VideoFilmState {
 }
 
 @riverpod
-class VideoFilmNotifier extends _$VideoFilmNotifier implements BlogFeedListActions {
+class VideoFilmNotifier extends _$VideoFilmNotifier
+    implements BlogFeedListActions {
   static const int _pageSize = 12;
   static const int _blogTypeVideo = 2;
 
@@ -100,10 +101,7 @@ class VideoFilmNotifier extends _$VideoFilmNotifier implements BlogFeedListActio
         isLoadingMore: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
 
@@ -183,7 +181,11 @@ class VideoFilmNotifier extends _$VideoFilmNotifier implements BlogFeedListActio
   }
 
   @override
-  void onBlogItemTap(BuildContext context, BlogItem blogItem) {}
+  void onBlogItemTap(
+    BuildContext context,
+    BlogItem blogItem, {
+    String? mediaHeroTag,
+  }) {}
 
   @override
   void onBlogImgItemTap(

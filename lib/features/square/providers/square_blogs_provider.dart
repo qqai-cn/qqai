@@ -8,6 +8,7 @@ import '../../../components/imgpreview/preview_img.dart';
 import '../../../router/app_routes.dart';
 import '../../blog/data/blog_interaction_patch.dart';
 import '../../blog/data/blog_list_patch.dart';
+import '../../blog/data/blog_route_extra.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/repos/blog_repo.dart';
 import '../../blog/providers/blog_feed_list_actions.dart';
@@ -115,19 +116,26 @@ class SquareBlogsNotifier extends _$SquareBlogsNotifier
       );
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
 
   @override
-  void onBlogItemTap(BuildContext context, BlogItem blogItem) {
+  void onBlogItemTap(
+    BuildContext context,
+    BlogItem blogItem, {
+    String? mediaHeroTag,
+  }) {
     if (blogItem.blogType == 1) {
-      context.push(Routes.blogImgDetailView, extra: blogItem);
+      context.push(
+        Routes.blogImgDetailView,
+        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+      );
     } else {
-      context.push(Routes.blogVideoDetailView, extra: blogItem);
+      context.push(
+        Routes.blogVideoDetailView,
+        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+      );
     }
   }
 
@@ -180,17 +188,12 @@ class SquareBlogsNotifier extends _$SquareBlogsNotifier
       );
       if (!ref.mounted) return;
       final count = blogItem.zan ?? 0;
-      final newCount = nowLiked
-          ? count + 1
-          : (count > 0 ? count - 1 : 0);
+      final newCount = nowLiked ? count + 1 : (count > 0 ? count - 1 : 0);
       final patched = patchBlogFeedLists(
         state.allItems,
         state.blogPageData,
         shouldPatch: (b) => b.id == id,
-        patch: (b) => b.copyWith(
-          liked: nowLiked ? 1 : 0,
-          zan: newCount,
-        ),
+        patch: (b) => b.copyWith(liked: nowLiked ? 1 : 0, zan: newCount),
       );
       state = state.copyWith(
         allItems: patched.allItems,

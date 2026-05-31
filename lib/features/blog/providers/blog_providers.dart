@@ -12,6 +12,7 @@ import '../../my/data/repos/profile_repo.dart';
 import '../data/blog_feed_location.dart';
 import '../data/blog_interaction_patch.dart';
 import '../data/blog_list_patch.dart';
+import '../data/blog_route_extra.dart';
 import '../data/home_blog_tab.dart';
 import '../data/models/blog_model.dart';
 import '../data/models/blog_page_model.dart';
@@ -176,11 +177,21 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
 
   // 跳转到博客详情页
   @override
-  void onBlogItemTap(BuildContext context, BlogItem blogItem) {
+  void onBlogItemTap(
+    BuildContext context,
+    BlogItem blogItem, {
+    String? mediaHeroTag,
+  }) {
     if (blogItem.blogType == 1) {
-      context.push(Routes.blogImgDetailView, extra: blogItem);
+      context.push(
+        Routes.blogImgDetailView,
+        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+      );
     } else {
-      context.push(Routes.blogVideoDetailView, extra: blogItem);
+      context.push(
+        Routes.blogVideoDetailView,
+        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+      );
     }
   }
 

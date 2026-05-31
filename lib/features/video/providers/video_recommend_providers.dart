@@ -101,10 +101,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
         isLoadingMore: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
 
@@ -184,7 +181,11 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
   }
 
   @override
-  void onBlogItemTap(BuildContext context, BlogItem blogItem) {}
+  void onBlogItemTap(
+    BuildContext context,
+    BlogItem blogItem, {
+    String? mediaHeroTag,
+  }) {}
 
   @override
   void onBlogImgItemTap(

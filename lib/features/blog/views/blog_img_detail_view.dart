@@ -16,8 +16,9 @@ import 'blog_detail_comment_side_panel.dart';
 
 class BlogImgDetailView extends ConsumerStatefulWidget {
   final BlogItem? blogItem;
+  final String? mediaHeroTag;
 
-  const BlogImgDetailView({super.key, this.blogItem});
+  const BlogImgDetailView({super.key, this.blogItem, this.mediaHeroTag});
 
   @override
   ConsumerState<BlogImgDetailView> createState() => _BlogImgDetailView();
@@ -78,13 +79,24 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
                 ),
               ],
             )
-          : _buildImageCarousel(blog, commentNotifier),
+          : _buildImageCarousel(
+              blog,
+              commentNotifier,
+              mediaHeroTag: widget.mediaHeroTag,
+            ),
     );
   }
 
-  Widget _buildImageCarousel(BlogItem blog, CommentNotifier commentNotifier) {
+  Widget _buildImageCarousel(
+    BlogItem blog,
+    CommentNotifier commentNotifier, {
+    String? mediaHeroTag,
+  }) {
     final imageUrls = parseCommaSeparatedUrls(blog.resources);
-    final imageWidgets = buildNetworkImageCarouselPages(imageUrls);
+    final imageWidgets = buildNetworkImageCarouselPages(
+      imageUrls,
+      firstHeroTag: mediaHeroTag,
+    );
     return Stack(
       children: [
         CarouselSlider(

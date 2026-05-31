@@ -14,7 +14,11 @@ abstract interface class BlogFeedListActions {
 
   void onShareTap(BlogItem blogItem);
 
-  void onBlogItemTap(BuildContext context, BlogItem blogItem);
+  void onBlogItemTap(
+    BuildContext context,
+    BlogItem blogItem, {
+    String? mediaHeroTag,
+  });
 
   void onBlogImgItemTap(
     BuildContext context,

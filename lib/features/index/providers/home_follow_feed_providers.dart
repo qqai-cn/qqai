@@ -9,6 +9,7 @@ import '../../../providers/auth_providers.dart';
 import '../../../router/app_routes.dart';
 import '../../blog/data/blog_interaction_patch.dart';
 import '../../blog/data/blog_list_patch.dart';
+import '../../blog/data/blog_route_extra.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/repos/blog_repo.dart';
 import '../../blog/providers/blog_feed_list_actions.dart';
@@ -109,11 +110,21 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   }
 
   @override
-  void onBlogItemTap(BuildContext context, BlogItem blogItem) {
+  void onBlogItemTap(
+    BuildContext context,
+    BlogItem blogItem, {
+    String? mediaHeroTag,
+  }) {
     if (blogItem.blogType == 1) {
-      context.push(Routes.blogImgDetailView, extra: blogItem);
+      context.push(
+        Routes.blogImgDetailView,
+        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+      );
     } else {
-      context.push(Routes.blogVideoDetailView, extra: blogItem);
+      context.push(
+        Routes.blogVideoDetailView,
+        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+      );
     }
   }
 

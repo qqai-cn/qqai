@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:qqai/components/blog/video_thumbnail.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
+import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:qqai/util/visibility_safe.dart';
@@ -14,6 +14,7 @@ class VisibilityVideoSlot extends StatefulWidget {
   final String imgUrl;
   final int? videoId;
   final double? aspectRatio;
+  final String? playerHeroTag;
 
   const VisibilityVideoSlot({
     super.key,
@@ -21,6 +22,7 @@ class VisibilityVideoSlot extends StatefulWidget {
     required this.imgUrl,
     this.videoId,
     this.aspectRatio,
+    this.playerHeroTag,
   });
 
   @override
@@ -64,14 +66,28 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
   @override
   Widget build(BuildContext context) {
     Widget buildSlot(double aspectRatio) {
-      return hasResolvableMediaUrl(widget.url) && _shouldMountPlayer
-          ? VideoItemPlayer(
-              url: widget.url,
-              imgUrl: widget.imgUrl,
-              videoId: widget.videoId,
-              fallbackAspectRatio: aspectRatio,
-            )
-          : VideoThumbnail(imgUrl: widget.imgUrl, aspectRatio: aspectRatio);
+      Widget slotChild;
+      if (hasResolvableMediaUrl(widget.url) && _shouldMountPlayer) {
+        slotChild = VideoItemPlayer(
+          url: widget.url,
+          imgUrl: widget.imgUrl,
+          videoId: widget.videoId,
+          fallbackAspectRatio: aspectRatio,
+        );
+      } else {
+        slotChild = const VideoLoadingPlaceholder(showPoster: false);
+      }
+
+      final slot = AspectRatio(aspectRatio: aspectRatio, child: slotChild);
+      final heroTag = widget.playerHeroTag;
+      if (heroTag == null || heroTag.isEmpty) return slot;
+
+      return Hero(
+        tag: heroTag,
+        transitionOnUserGestures: true,
+        flightShuttleBuilder: _buildVideoHeroFlight,
+        child: slot,
+      );
     }
 
     return VisibilityDetector(
@@ -84,5 +100,15 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
               builder: (context, aspectRatio) => buildSlot(aspectRatio),
             ),
     );
+  }
+
+  Widget _buildVideoHeroFlight(
+    BuildContext flightContext,
+    Animation<double> animation,
+    HeroFlightDirection flightDirection,
+    BuildContext fromHeroContext,
+    BuildContext toHeroContext,
+  ) {
+    return const VideoLoadingPlaceholder(showPoster: false);
   }
 }

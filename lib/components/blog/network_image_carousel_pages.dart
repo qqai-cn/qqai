@@ -85,9 +85,14 @@ String resolveBlogCoverUrl(
 }
 
 /// 全屏轮播子页：圆角网络图 + 加载/错误占位。
-List<Widget> buildNetworkImageCarouselPages(List<String> imageUrls) {
-  return imageUrls.map((url) {
-    return Container(
+List<Widget> buildNetworkImageCarouselPages(
+  List<String> imageUrls, {
+  String? firstHeroTag,
+}) {
+  return imageUrls.asMap().entries.map((entry) {
+    final index = entry.key;
+    final url = entry.value;
+    final image = Container(
       margin: const EdgeInsets.only(top: 10, bottom: 10),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
       child: QqNetworkImage(
@@ -96,5 +101,9 @@ List<Widget> buildNetworkImageCarouselPages(List<String> imageUrls) {
         borderRadius: BorderRadius.circular(8),
       ),
     );
+    if (index == 0 && firstHeroTag != null && firstHeroTag.isNotEmpty) {
+      return Hero(tag: firstHeroTag, child: image);
+    }
+    return image;
   }).toList();
 }

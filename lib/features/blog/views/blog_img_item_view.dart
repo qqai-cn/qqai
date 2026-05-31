@@ -9,6 +9,7 @@ import 'package:qqai/components/blog/hero_image_wrap_grid.dart';
 
 import '../../../../../constant/constant.dart';
 import '../../../../providers/auth_providers.dart';
+import '../data/blog_route_extra.dart';
 import '../data/home_blog_tab.dart';
 import '../data/blog_feed_more_menu_handler.dart';
 import '../data/blog_list_patch.dart';
@@ -89,6 +90,10 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
     final content = _contentWithoutReward(item.content);
     final rewardText = _rewardText(item.content);
     final bodyStyle = context.typo.body;
+    final mediaHeroTag = blogImageDetailHeroTag(
+      widget.category,
+      widget.blogItem,
+    );
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -136,8 +141,11 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
             HeroImageWrapGrid(
               imageUrls: _imageUrls,
               maxVisibleCount: 3,
-              heroTagBuilder: (i) =>
-                  'lookBlogImg-${widget.category}-${widget.blogItem.id}-$i',
+              heroTagBuilder: (i) => blogImageDetailHeroTag(
+                widget.category,
+                widget.blogItem,
+                index: i,
+              ),
               onImageTap: (i, heroTag) {
                 blogNotifier.onBlogImgItemTap(
                   context,
@@ -169,8 +177,11 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                   feedActions: blogNotifier,
                 );
               },
-              onComment: () =>
-                  blogNotifier.onBlogItemTap(context, widget.blogItem),
+              onComment: () => blogNotifier.onBlogItemTap(
+                context,
+                widget.blogItem,
+                mediaHeroTag: mediaHeroTag,
+              ),
               menuBuilder: (context) {
                 final collected = blogCollectedByMe(item);
                 return <PopupMenuEntry<String>>[

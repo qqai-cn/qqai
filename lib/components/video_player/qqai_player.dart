@@ -1,9 +1,9 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
-import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
+import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:video_player/video_player.dart';
 import 'package:qqai/util/visibility_safe.dart';
@@ -18,6 +18,7 @@ class QqaiPlayer extends StatefulWidget {
     required this.autoPlay,
     this.videoId,
     this.isActive = true,
+    this.showLoadingPoster = true,
 
     /// 默认 [BoxFit.contain]：父区域横竖与视频横竖不一致时仍完整显示（留边不裁切）。
     /// 竖滑全屏沉浸场景可设为 [BoxFit.cover]。
@@ -31,6 +32,7 @@ class QqaiPlayer extends StatefulWidget {
   final bool autoPlay;
   final int? videoId;
   final bool isActive;
+  final bool showLoadingPoster;
   final BoxFit videoFit;
   final double fallbackAspectRatio;
 
@@ -121,6 +123,23 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     super.dispose();
   }
 
+  Widget _buildLoadingFallback() {
+    return Positioned.fill(
+      child: VideoLoadingPlaceholder(
+        imageUrl: widget.image,
+        showPoster: widget.showLoadingPoster,
+      ),
+    );
+  }
+
+  Widget _buildFullscreenLoadingFallback() {
+    return VideoLoadingPlaceholder(
+      imageUrl: widget.image,
+      showPoster: widget.showLoadingPoster,
+      showIndicator: false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
@@ -157,32 +176,12 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
             flickManager: flickManager,
             flickVideoWithControls: FlickVideoWithControls(
               videoFit: widget.videoFit,
-              playerLoadingFallback: Positioned.fill(
-                child: Stack(
-                  children: <Widget>[
-                    Positioned.fill(child: VideoCoverFit(url: widget.image!)),
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: const CircularProgressIndicator(
-                          backgroundColor: Colors.white,
-                          strokeWidth: 4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              playerLoadingFallback: _buildLoadingFallback(),
               controls: widget.controls,
             ),
             flickVideoWithControlsFullscreen: FlickVideoWithControls(
               videoFit: widget.videoFit,
-              playerLoadingFallback: Center(
-                child: VideoCoverFit(url: widget.image!),
-              ),
+              playerLoadingFallback: _buildFullscreenLoadingFallback(),
               controls: FlickLandscapeControls(),
               iconThemeData: IconThemeData(size: 40, color: Colors.white),
               textStyle: context.typo.body.copyWith(

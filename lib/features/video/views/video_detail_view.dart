@@ -7,5 +7,6 @@ class VideoDetailView extends BlogVideoDetailView {
     super.key,
     required super.blogItem,
     super.detailRoute = Routes.videoDetailView,
+    super.mediaHeroTag,
   });
 }
