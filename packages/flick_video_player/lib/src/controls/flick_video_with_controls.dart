@@ -20,9 +20,13 @@ class FlickVideoWithControls extends StatefulWidget {
       child: CircularProgressIndicator(),
     ),
     this.playerErrorFallback = const Center(
-      child: const Icon(
-        Icons.error,
-        color: Colors.white,
+      child: Text(
+        '视频丢失了',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     ),
     this.backgroundColor = Colors.black,
