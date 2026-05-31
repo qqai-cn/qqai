@@ -29,39 +29,107 @@ class MediaDetailShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
+    final isWideScreen = 1.sw > 900;
+    final sidePanel = showCommentPanel ? _buildSidePanel() : null;
+    final mediaContent = Container(
+      color: Colors.black,
+      child: Stack(
         children: [
-          Expanded(
-            child: Container(
-              color: Colors.black,
-              child: Stack(
-                children: [
-                  content,
-                  const Positioned(left: 10, child: _BackButtonOverlay()),
-                ],
-              ),
-            ),
-          ),
-          Visibility(
-            visible: showCommentPanel,
-            child: SizedBox(
-              width: 350,
-              height: 1.sh,
-              child: sidePanelBlog != null
-                  ? BlogDetailSidePanel(
-                      blog: sidePanelBlog!,
-                      onClose: onCommentClose,
-                      initialTabIndex: sidePanelInitialTabIndex,
-                      collection: sidePanelCollection,
-                      collectionVideoDetailRoute:
-                          sidePanelCollectionVideoDetailRoute ??
-                          Routes.blogVideoDetailView,
-                    )
-                  : const CommentView(),
-            ),
-          ),
+          content,
+          const Positioned(left: 10, child: _BackButtonOverlay()),
         ],
+      ),
+    );
+
+    return Scaffold(
+      body: isWideScreen
+          ? Row(
+              children: [
+                Expanded(child: mediaContent),
+                if (sidePanel != null)
+                  SizedBox(width: 350, height: 1.sh, child: sidePanel),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(child: mediaContent),
+                if (sidePanel != null)
+                  _PortraitCommentPanel(
+                    onDismiss: onCommentClose,
+                    child: SizedBox(
+                      width: 1.sw,
+                      height: 0.6.sh,
+                      child: sidePanel,
+                    ),
+                  ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSidePanel() {
+    return sidePanelBlog != null
+        ? BlogDetailSidePanel(
+            blog: sidePanelBlog!,
+            onClose: onCommentClose,
+            initialTabIndex: sidePanelInitialTabIndex,
+            collection: sidePanelCollection,
+            collectionVideoDetailRoute:
+                sidePanelCollectionVideoDetailRoute ??
+                Routes.blogVideoDetailView,
+          )
+        : const CommentView();
+  }
+}
+
+class _PortraitCommentPanel extends StatefulWidget {
+  const _PortraitCommentPanel({required this.child, this.onDismiss});
+
+  final Widget child;
+  final VoidCallback? onDismiss;
+
+  @override
+  State<_PortraitCommentPanel> createState() => _PortraitCommentPanelState();
+}
+
+class _PortraitCommentPanelState extends State<_PortraitCommentPanel> {
+  double _dragOffset = 0;
+  bool _dismissed = false;
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    if (_dismissed) return;
+    final delta = details.primaryDelta ?? 0;
+    if (delta <= 0 && _dragOffset <= 0) return;
+    setState(() {
+      _dragOffset = (_dragOffset + delta).clamp(0, 120).toDouble();
+    });
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    if (_dismissed) return;
+    final velocity = details.primaryVelocity ?? 0;
+    if (_dragOffset > 56 || velocity > 700) {
+      _dismissed = true;
+      widget.onDismiss?.call();
+      return;
+    }
+    if (_dragOffset == 0) return;
+    setState(() => _dragOffset = 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onVerticalDragUpdate: _handleDragUpdate,
+      onVerticalDragEnd: _handleDragEnd,
+      child: AnimatedSlide(
+        offset: Offset(0, _dragOffset / (0.6.sh)),
+        duration: _dragOffset == 0
+            ? const Duration(milliseconds: 160)
+            : Duration.zero,
+        curve: Curves.easeOutCubic,
+        child: widget.child,
       ),
     );
   }

@@ -368,7 +368,7 @@ class _AdSurface extends StatelessWidget {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('跳过广告'),
+                          Text('跳过'),
                           SizedBox(width: 4),
                           Icon(Icons.skip_next_rounded, size: 18),
                         ],

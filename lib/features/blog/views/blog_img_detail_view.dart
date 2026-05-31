@@ -52,6 +52,10 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
 
     final blog = widget.blogItem!;
     final hasVideo = blogItemHasVideoResources(blog.resources);
+    final showToolbarControlsRow = 1.sw > 800;
+    final toolbarHeight = blogDetailVideoToolbarHeight(
+      showControlsRow: showToolbarControlsRow,
+    );
 
     return MediaDetailShell(
       showCommentPanel: commentState.showComment,
@@ -63,10 +67,13 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
           ? Stack(
               fit: StackFit.expand,
               children: [
-                BlogVideoDetailPlayer(blog: blog),
+                BlogVideoDetailPlayer(
+                  blog: blog,
+                  showToolbarControlsRow: showToolbarControlsRow,
+                ),
                 BlogDetailMediaOverlay(
                   blog: blog,
-                  bottomInset: kBlogDetailVideoToolbarHeight,
+                  bottomInset: toolbarHeight,
                   onCommentTap: commentNotifier.changeShowComment,
                 ),
               ],

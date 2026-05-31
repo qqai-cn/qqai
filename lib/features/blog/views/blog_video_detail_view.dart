@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/features/blog/views/blog_video_detail_player.dart';
 
@@ -61,6 +62,10 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
       blog,
       commentState.selectedCollection,
     );
+    final showToolbarControlsRow = 1.sw > 800;
+    final toolbarHeight = blogDetailVideoToolbarHeight(
+      showControlsRow: showToolbarControlsRow,
+    );
     return MediaDetailShell(
       showCommentPanel: commentState.showComment,
       sidePanelBlog: blog,
@@ -73,11 +78,12 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
         children: [
           BlogVideoDetailPlayer(
             blog: blog,
+            showToolbarControlsRow: showToolbarControlsRow,
             onCompleted: () => _openNextCollectionVideo(sidePanelCollection),
           ),
           BlogDetailMediaOverlay(
             blog: blog,
-            bottomInset: kBlogDetailVideoToolbarHeight,
+            bottomInset: toolbarHeight,
             onCommentTap: commentNotifier.changeShowComment,
           ),
         ],

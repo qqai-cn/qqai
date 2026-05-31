@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
-import 'blog_comment_panel.dart';
 import 'package:qqai/components/blog/blog_local_location_button.dart';
 import 'package:qqai/components/blog/creator_header_row.dart';
 import 'package:qqai/components/blog/feed_action_bar.dart';
@@ -80,7 +78,6 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
     final avatarHeroTag = avatarUrl != null
         ? blogAvatarHeroTag(widget.category, widget.blogItem)
         : null;
-    final isWideScreen = 1.sw > 900;
     final item = widget.feedActions != null
         ? widget.blogItem
         : resolveFeedBlogItem(
@@ -172,13 +169,8 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                   feedActions: blogNotifier,
                 );
               },
-              onComment: () {
-                if (isWideScreen) {
-                  blogNotifier.onBlogItemTap(context, widget.blogItem);
-                } else {
-                  showBlogCommentSheet(context, widget.blogItem);
-                }
-              },
+              onComment: () =>
+                  blogNotifier.onBlogItemTap(context, widget.blogItem),
               menuBuilder: (context) {
                 final collected = blogCollectedByMe(item);
                 return <PopupMenuEntry<String>>[
