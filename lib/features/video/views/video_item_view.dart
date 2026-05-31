@@ -5,15 +5,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/qq_network_image.dart';
+import 'package:qqai/components/video_player/qqai_player.dart';
+import 'package:qqai/features/blog/data/blog_route_extra.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/media_url.dart';
 import 'package:qqai/util/visibility_safe.dart';
-import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 /// 与影视网格 [SliverGrid] 的 [childAspectRatio] 计算保持一致。
 const double kFilmGridTextBlockHeight = 54;
 const double kFilmGridThumbTextGap = 8;
+const int _filmHeroCategory = -1001;
 
 double filmGridChildAspectRatio(double cellWidth) {
   final thumbH = cellWidth * 2 / 3;
@@ -69,7 +72,6 @@ class _VideoItemViewState extends State<VideoItemView> {
 
   Timer? _hoverTimer;
   bool _hovering = false;
-  VideoPlayerController? _previewController;
   bool _showPreview = false;
 
   BlogItem get item => widget.item;
@@ -83,8 +85,6 @@ class _VideoItemViewState extends State<VideoItemView> {
   @override
   void dispose() {
     _hoverTimer?.cancel();
-    _previewController?.dispose();
-    _previewController = null;
     super.dispose();
   }
 
@@ -107,9 +107,6 @@ class _VideoItemViewState extends State<VideoItemView> {
   }
 
   void _stopPreview() {
-    final c = _previewController;
-    _previewController = null;
-    c?.dispose();
     if (mounted && _showPreview) {
       setState(() => _showPreview = false);
     } else {
@@ -127,37 +124,9 @@ class _VideoItemViewState extends State<VideoItemView> {
   }
 
   Future<void> _startPreview() async {
-    final url = firstPlayableVideoUrlFromResources(item.resources);
-    if (url == null || !mounted || !_hovering) return;
-
-    final c = VideoPlayerController.networkUrl(Uri.parse(url));
-    try {
-      await c.initialize();
-    } catch (_) {
-      await c.dispose();
-      return;
-    }
-    if (!mounted || !_hovering) {
-      await c.dispose();
-      return;
-    }
-    _previewController = c;
-    try {
-      await c.setVolume(0);
-      await c.setLooping(true);
-      await c.play();
-    } catch (_) {
-      if (_previewController == c) {
-        _previewController = null;
-        await c.dispose();
-      }
-      return;
-    }
-    if (!mounted || !_hovering || _previewController != c) {
-      if (_previewController == c) {
-        _previewController = null;
-        await c.dispose();
-      }
+    if (firstPlayableVideoUrlFromResources(item.resources) == null ||
+        !mounted ||
+        !_hovering) {
       return;
     }
     setState(() => _showPreview = true);
@@ -166,92 +135,105 @@ class _VideoItemViewState extends State<VideoItemView> {
   @override
   Widget build(BuildContext context) {
     final cover = resolveBlogCoverUrl(item, fallback: widget.defaultCover);
+    final videoUrl = resolveMediaUrl(
+      firstPlayableVideoUrlFromResources(item.resources),
+    );
+    final mediaHeroTag = blogVideoDetailHeroTag(_filmHeroCategory, item);
     final name = item.creatorName?.trim().isNotEmpty == true
         ? item.creatorName!.trim()
         : '用户';
     final footer = '@$name · ${_formatFooterTime(item.updateTime)}';
 
-    final thumb = AspectRatio(
-      aspectRatio: 3 / 2,
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final dpr = MediaQuery.devicePixelRatioOf(context);
-                final cw = (constraints.maxWidth * dpr).round().clamp(120, 900);
-                final ch = (constraints.maxHeight * dpr).round().clamp(80, 600);
-                return QqNetworkImage(
-                  url: cover,
-                  fit: BoxFit.cover,
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight,
-                  cacheWidth: cw,
-                  cacheHeight: ch,
-                  placeholderColor: const Color(0xFF2A2A36),
-                  errorIconColor: const Color(0xFF6B6B78),
-                );
-              },
-            ),
-            if (_showPreview &&
-                _previewController != null &&
-                _previewController!.value.isInitialized)
-              Positioned.fill(
-                child: IgnorePointer(
-                  child: FittedBox(
+    final thumb = Hero(
+      tag: mediaHeroTag,
+      transitionOnUserGestures: true,
+      child: AspectRatio(
+        aspectRatio: 3 / 2,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final dpr = MediaQuery.devicePixelRatioOf(context);
+                  final cw = (constraints.maxWidth * dpr).round().clamp(
+                    120,
+                    900,
+                  );
+                  final ch = (constraints.maxHeight * dpr).round().clamp(
+                    80,
+                    600,
+                  );
+                  return QqNetworkImage(
+                    url: cover,
                     fit: BoxFit.cover,
-                    clipBehavior: Clip.hardEdge,
-                    child: SizedBox(
-                      width: _previewController!.value.size.width,
-                      height: _previewController!.value.size.height,
-                      child: VideoPlayer(_previewController!),
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    cacheWidth: cw,
+                    cacheHeight: ch,
+                    placeholderColor: const Color(0xFF2A2A36),
+                    errorIconColor: const Color(0xFF6B6B78),
+                  );
+                },
+              ),
+              if (_showPreview && videoUrl != null)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: QqaiPlayer(
+                      controls: const SizedBox.shrink(),
+                      image: cover,
+                      url: videoUrl,
+                      autoPlay: true,
+                      showLoadingPoster: true,
+                      sharedPlaybackKey: videoUrl,
+                      videoFit: BoxFit.cover,
+                      fallbackAspectRatio: 3 / 2,
                     ),
                   ),
                 ),
-              ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.72),
-                    ],
-                    stops: const [0.45, 1],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 8,
-              bottom: 8,
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.favorite_border,
-                    size: 15,
-                    color: Colors.white.withValues(alpha: 0.92),
-                  ),
-                  const SizedBox(width: 3),
-                  Text(
-                    _formatLikeCount(item.zan),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.92),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      shadows: const [
-                        Shadow(blurRadius: 6, color: Colors.black54),
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withValues(alpha: 0.72),
                       ],
+                      stops: const [0.45, 1],
                     ),
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+              Positioned(
+                left: 8,
+                bottom: 8,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.favorite_border,
+                      size: 15,
+                      color: Colors.white.withValues(alpha: 0.92),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      _formatLikeCount(item.zan),
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.92),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        shadows: const [
+                          Shadow(blurRadius: 6, color: Colors.black54),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -267,7 +249,10 @@ class _VideoItemViewState extends State<VideoItemView> {
           onEnter: (_) => _onHoverEnter(),
           onExit: (_) => _onHoverExit(),
           child: InkWell(
-            onTap: () => context.push(Routes.videoDetailView, extra: item),
+            onTap: () => context.push(
+              Routes.videoDetailView,
+              extra: blogDetailRouteExtra(item, mediaHeroTag: mediaHeroTag),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
