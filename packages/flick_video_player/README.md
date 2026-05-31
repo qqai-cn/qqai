@@ -14,7 +14,7 @@ The [video_player](https://pub.dev/packages/video_player) plugin gives low level
 - Change playback speed.
 - Keyboard shortcuts for web.
 
-# Demo Mobile
+# Demo Mobile1
 
 |                                                              ![](https://github.com/GeekyAnts/flick-video-player-demo-videos/blob/master/demo/default_player.gif?raw=true)                                                              |                                                                ![](https://github.com/GeekyAnts/flick-video-player-demo-videos/blob/master/demo/animation_player.gif?raw=true)                                                                |                                                           ![](https://github.com/GeekyAnts/flick-video-player-demo-videos/blob/master/demo/feed_player.gif?raw=true)                                                           |
 | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
