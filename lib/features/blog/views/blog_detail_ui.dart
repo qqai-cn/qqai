@@ -108,7 +108,7 @@ class BlogDetailBottomInfo extends ConsumerWidget {
               runSpacing: 8,
               children: [
                 for (final collection in collections)
-                  _CollectionButton(
+                  BlogCollectionChip(
                     collection: collection,
                     onTap: () => _openCollectionPanel(ref, collection),
                   ),
@@ -137,11 +137,18 @@ class BlogDetailBottomInfo extends ConsumerWidget {
   }
 }
 
-class _CollectionButton extends StatelessWidget {
+/// 详情 / 列表共用的「合集 · xxx」胶囊按钮。
+class BlogCollectionChip extends StatelessWidget {
   final BlogItemCollection collection;
   final VoidCallback onTap;
+  final double? maxLabelWidth;
 
-  const _CollectionButton({required this.collection, required this.onTap});
+  const BlogCollectionChip({
+    super.key,
+    required this.collection,
+    required this.onTap,
+    this.maxLabelWidth = 180,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -164,7 +171,7 @@ class _CollectionButton extends StatelessWidget {
               ),
               const SizedBox(width: 4),
               ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 180),
+                constraints: BoxConstraints(maxWidth: maxLabelWidth ?? 180),
                 child: Text(
                   '合集 · ${name?.isNotEmpty == true ? name! : '合集'}',
                   style: context.typo.bodyStrong.copyWith(

@@ -25,6 +25,7 @@ class _VideoPageState extends ConsumerState<VideoPage>
     final isActive = MainShellIndexScope.of(context).currentIndex == 1;
     final commentState = ref.watch(commentProvider);
     final commentNotifier = ref.read(commentProvider.notifier);
+    final onRecommendSubTab = ref.watch(videoSubTabIndexProvider) == 0;
     final currentBlog = ref.watch(videoRecommendCurrentBlogProvider);
     final sidePanelCollection = _effectiveCollection(
       currentBlog,
@@ -32,7 +33,7 @@ class _VideoPageState extends ConsumerState<VideoPage>
     );
 
     Widget? sidePanel;
-    if (commentState.showComment && currentBlog != null) {
+    if (onRecommendSubTab && commentState.showComment && currentBlog != null) {
       sidePanel = BlogDetailSidePanel(
         key: ValueKey('video_side_${currentBlog.id}'),
         blog: currentBlog,

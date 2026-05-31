@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/qq_network_image.dart';
 import 'package:qqai/components/video_player/qqai_player.dart';
 import 'package:qqai/features/blog/data/blog_route_extra.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
+import 'package:qqai/features/blog/views/blog_detail_ui.dart';
+import 'package:qqai/features/comment/providers/comment_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:qqai/util/visibility_safe.dart';
@@ -51,7 +54,7 @@ String _formatFooterTime(String? raw) {
 /// 影视 Tab 网格卡片：圆角封面 + 左下角点赞 + 双行标题 + `@作者 · 日期`。
 ///
 /// Web：鼠标在卡片上停留约 2 秒后，在封面区域静音自动循环预览视频。
-class VideoItemView extends StatefulWidget {
+class VideoItemView extends ConsumerStatefulWidget {
   const VideoItemView({
     super.key,
     required this.item,
@@ -62,10 +65,10 @@ class VideoItemView extends StatefulWidget {
   final String defaultCover;
 
   @override
-  State<VideoItemView> createState() => _VideoItemViewState();
+  ConsumerState<VideoItemView> createState() => _VideoItemViewState();
 }
 
-class _VideoItemViewState extends State<VideoItemView> {
+class _VideoItemViewState extends ConsumerState<VideoItemView> {
   static const Color _cardBg = Color(0xFF14141C);
   static const Color _titleColor = Color(0xFFF2F2F5);
   static const Color _footerColor = Color(0xFF9A9AA8);
@@ -132,6 +135,23 @@ class _VideoItemViewState extends State<VideoItemView> {
     setState(() => _showPreview = true);
   }
 
+  List<BlogItemCollection> get _namedCollections {
+    return (item.collections ?? [])
+        .where((e) => e.name?.trim().isNotEmpty == true)
+        .toList();
+  }
+
+  void _openDetail({BlogItemCollection? openCollection}) {
+    final mediaHeroTag = blogVideoDetailHeroTag(_filmHeroCategory, item);
+    if (openCollection != null) {
+      ref.read(commentProvider.notifier).openCollectionPanel(openCollection);
+    }
+    context.push(
+      Routes.videoDetailView,
+      extra: blogDetailRouteExtra(item, mediaHeroTag: mediaHeroTag),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cover = resolveBlogCoverUrl(item, fallback: widget.defaultCover);
@@ -139,6 +159,8 @@ class _VideoItemViewState extends State<VideoItemView> {
       firstPlayableVideoUrlFromResources(item.resources),
     );
     final mediaHeroTag = blogVideoDetailHeroTag(_filmHeroCategory, item);
+    final collections = _namedCollections;
+    final primaryCollection = collections.isEmpty ? null : collections.first;
     final name = item.creatorName?.trim().isNotEmpty == true
         ? item.creatorName!.trim()
         : '用户';
@@ -208,7 +230,7 @@ class _VideoItemViewState extends State<VideoItemView> {
                 ),
               ),
               Positioned(
-                left: 8,
+                right: 8,
                 bottom: 8,
                 child: Row(
                   children: [
@@ -232,6 +254,16 @@ class _VideoItemViewState extends State<VideoItemView> {
                   ],
                 ),
               ),
+              if (primaryCollection != null)
+                Positioned(
+                  left: 8,
+                  bottom: 8,
+                  child: BlogCollectionChip(
+                    collection: primaryCollection,
+                    maxLabelWidth: 96,
+                    onTap: () => _openDetail(openCollection: primaryCollection),
+                  ),
+                ),
             ],
           ),
         ),
@@ -249,10 +281,7 @@ class _VideoItemViewState extends State<VideoItemView> {
           onEnter: (_) => _onHoverEnter(),
           onExit: (_) => _onHoverExit(),
           child: InkWell(
-            onTap: () => context.push(
-              Routes.videoDetailView,
-              extra: blogDetailRouteExtra(item, mediaHeroTag: mediaHeroTag),
-            ),
+            onTap: () => _openDetail(),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,

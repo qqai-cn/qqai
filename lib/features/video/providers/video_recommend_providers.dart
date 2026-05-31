@@ -208,6 +208,17 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
   double getVideoItemHeightWithWidth(int colCount, double screenWidth) => 300;
 }
 
+/// 影视壳内子 Tab：0 = 推荐，1 = 影视网格。
+@riverpod
+class VideoSubTabIndex extends _$VideoSubTabIndex {
+  @override
+  int build() => 0;
+
+  void select(int index) {
+    state = index;
+  }
+}
+
 /// 影视 Tab「推荐」竖滑流当前播放条目（评论 / 相关推荐侧栏用）。
 @riverpod
 class VideoRecommendCurrentBlog extends _$VideoRecommendCurrentBlog {

@@ -72,36 +72,42 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
     final toolbarHeight = blogDetailVideoToolbarHeight(
       showControlsRow: showToolbarControlsRow,
     );
-    return MediaDetailShell(
-      showCommentPanel: showCommentPanel,
-      sidePanelBlog: blog,
-      onCommentClose: () => _toggleCommentPanel(
-        commentNotifier,
-        panelVisible: showCommentPanel,
-        isWideScreen: isWideScreen,
-      ),
-      sidePanelInitialTabIndex: commentState.selectedTabIndex,
-      sidePanelCollection: sidePanelCollection,
-      sidePanelCollectionVideoDetailRoute: widget.detailRoute,
-      content: Stack(
-        fit: StackFit.expand,
-        children: [
-          BlogVideoDetailPlayer(
-            blog: blog,
-            mediaHeroTag: widget.mediaHeroTag,
-            showToolbarControlsRow: showToolbarControlsRow,
-            onCompleted: () => _openNextCollectionVideo(sidePanelCollection),
-          ),
-          BlogDetailMediaOverlay(
-            blog: blog,
-            bottomInset: toolbarHeight,
-            onCommentTap: () => _toggleCommentPanel(
-              commentNotifier,
-              panelVisible: showCommentPanel,
-              isWideScreen: isWideScreen,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop || _keepCommentPanelStateOnDispose) return;
+        ref.read(commentProvider.notifier).dontShowComment();
+      },
+      child: MediaDetailShell(
+        showCommentPanel: showCommentPanel,
+        sidePanelBlog: blog,
+        onCommentClose: () => _toggleCommentPanel(
+          commentNotifier,
+          panelVisible: showCommentPanel,
+          isWideScreen: isWideScreen,
+        ),
+        sidePanelInitialTabIndex: commentState.selectedTabIndex,
+        sidePanelCollection: sidePanelCollection,
+        sidePanelCollectionVideoDetailRoute: widget.detailRoute,
+        content: Stack(
+          fit: StackFit.expand,
+          children: [
+            BlogVideoDetailPlayer(
+              blog: blog,
+              mediaHeroTag: widget.mediaHeroTag,
+              showToolbarControlsRow: showToolbarControlsRow,
+              onCompleted: () => _openNextCollectionVideo(sidePanelCollection),
             ),
-          ),
-        ],
+            BlogDetailMediaOverlay(
+              blog: blog,
+              bottomInset: toolbarHeight,
+              onCommentTap: () => _toggleCommentPanel(
+                commentNotifier,
+                panelVisible: showCommentPanel,
+                isWideScreen: isWideScreen,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -19,8 +19,10 @@ class BlogDetailCommentSidePanelLifecycle {
     });
   }
 
-  /// 须在 widget 树构建/销毁阶段之外修改 provider，故异步执行。
+  /// 须在 widget 树构建/销毁阶段之外修改 provider；下一帧收起，避免 pop 后列表页闪出侧栏。
   void unbind() {
-    Future(() => _notifier.dontShowComment());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifier.dontShowComment();
+    });
   }
 }

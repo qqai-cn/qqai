@@ -43,12 +43,19 @@ class _VideoViewState extends ConsumerState<VideoView>
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(videoSubTabIndexProvider.notifier).select(_tabController.index);
+    });
   }
 
   void _onTabChanged() {
     onLazyTabChanged(
       _tabController,
       onSettled: () {
+        ref
+            .read(videoSubTabIndexProvider.notifier)
+            .select(_tabController.index);
         if (_tabController.index != 0) {
           ref.read(commentProvider.notifier).dontShowComment();
         }
