@@ -1,11 +1,10 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../components/in_page_search_bar.dart';
 import '../providers/square_providers.dart';
 import 'create_square_dialog.dart';
+import 'square_grid_layout.dart';
 import 'square_item_view.dart';
 
 class SquareView extends ConsumerStatefulWidget {
@@ -16,10 +15,6 @@ class SquareView extends ConsumerStatefulWidget {
 }
 
 class _SquareViewState extends ConsumerState<SquareView> {
-  static const _maxCross = 360.0;
-  static const _crossGap = 14.0;
-  static const _pageMaxWidth = 1180.0;
-
   final ScrollController _scrollController = ScrollController();
   bool _loadingMoreGuard = false;
   bool _searching = false;
@@ -181,26 +176,13 @@ class _SquareViewState extends ConsumerState<SquareView> {
     ref.read(squareProvider.notifier).search(query);
   }
 
-  /// 单格宽度（与 [SliverGridDelegateWithMaxCrossAxisExtent] 列数算法一致）
-  double _tileWidth(double gridW) {
-    final crossAxisCount = math.max(
-      1,
-      (gridW / (_maxCross + _crossGap)).ceil(),
-    );
-    return (gridW - _crossGap * (crossAxisCount - 1)) / crossAxisCount;
-  }
-
-  /// 卡片内图片:文字 = 2:1，据此反推网格 cell 宽高比
   SliverGridDelegate _gridDelegate(double gridW) {
-    final tileW = _tileWidth(gridW);
-    // 文字区最小高度；总高度 = 3 × 文字区（占 1/3）
-    final textMinH = tileW < 260 ? 68.0 : 76.0;
-    final tileH = math.max(textMinH * 3, tileW * 0.88);
+    final tileW = squareTileWidth(gridW);
     return SliverGridDelegateWithMaxCrossAxisExtent(
-      maxCrossAxisExtent: _maxCross,
-      mainAxisSpacing: _crossGap,
-      crossAxisSpacing: _crossGap,
-      childAspectRatio: tileW / tileH,
+      maxCrossAxisExtent: kSquareGridMaxCross,
+      mainAxisSpacing: kSquareGridCrossGap,
+      crossAxisSpacing: kSquareGridCrossGap,
+      childAspectRatio: squareGridChildAspectRatio(tileW),
     );
   }
 
@@ -281,10 +263,10 @@ class _SquareViewState extends ConsumerState<SquareView> {
         color: const Color(0xFFF6F7F9),
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: _pageMaxWidth),
+            constraints: const BoxConstraints(maxWidth: kSquarePageMaxWidth),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final gridW = math.max(1.0, constraints.maxWidth - 28);
+                final gridW = (constraints.maxWidth - 28).clamp(1.0, double.infinity);
                 return RefreshIndicator(
                   onRefresh: notifier.refresh,
                   child: CustomScrollView(

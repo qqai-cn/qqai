@@ -146,7 +146,14 @@ class SquareNotifier extends _$SquareNotifier {
     if (squareId == null) return;
 
     final wasFollowed = square.followedByMe == true;
-    _replaceSquare(squareId, square.copyWith(followedByMe: !wasFollowed));
+    final prevCount = square.followCount ?? 0;
+    final nextCount = wasFollowed
+        ? (prevCount > 0 ? prevCount - 1 : 0)
+        : prevCount + 1;
+    _replaceSquare(
+      squareId,
+      square.copyWith(followedByMe: !wasFollowed, followCount: nextCount),
+    );
     try {
       if (wasFollowed) {
         await _repo.unfollowSquare(squareId);
@@ -155,7 +162,7 @@ class SquareNotifier extends _$SquareNotifier {
       }
     } catch (e) {
       if (!ref.mounted) return;
-      _replaceSquare(squareId, square.copyWith(followedByMe: wasFollowed));
+      _replaceSquare(squareId, square.copyWith(followedByMe: wasFollowed, followCount: prevCount));
       state = state.copyWith(error: e.toString());
     }
   }
