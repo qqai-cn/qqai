@@ -376,9 +376,58 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final hasManualPreview =
         !styledPreviewActive && (previewBytes != null || coverFile != null);
     final hasDisplay = styledPreviewActive || hasManualPreview;
-    final videoFilePath = state.videoFiles.isNotEmpty
-        ? state.videoFiles.first.path
-        : null;
+    final videoFile = state.videoFiles.isNotEmpty ? state.videoFiles.first : null;
+
+    if (videoFile == null) {
+      return const SizedBox.shrink();
+    }
+
+    return LocalVideoAspectRatioBox(
+      file: videoFile,
+      fallbackAspectRatio: 9 / 16,
+      builder: (context, videoAspectRatio) {
+        return _buildVideoCoverPickerContent(
+          state: state,
+          notifier: notifier,
+          videoFile: videoFile,
+          videoAspectRatio: videoAspectRatio,
+          coverFile: coverFile,
+          previewBytes: previewBytes,
+          styledPreviewActive: styledPreviewActive,
+          hasManualPreview: hasManualPreview,
+          hasDisplay: hasDisplay,
+        );
+      },
+    );
+  }
+
+  Widget _buildVideoCoverPickerContent({
+    required FabuState state,
+    required FabuNotifier notifier,
+    required XFile videoFile,
+    required double videoAspectRatio,
+    required XFile? coverFile,
+    required Uint8List? previewBytes,
+    required bool styledPreviewActive,
+    required bool hasManualPreview,
+    required bool hasDisplay,
+  }) {
+    final availableStyles = qqaiVideoCoverStylesForAspectRatio(videoAspectRatio);
+    if (!availableStyles.any((style) => style.id == state.selectedCoverStyleId)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final current = ref.read(fabuProvider);
+        if (!qqaiVideoCoverStylesForAspectRatio(videoAspectRatio)
+            .any((style) => style.id == current.selectedCoverStyleId)) {
+          notifier.setCoverStyle(
+            qqaiDefaultVideoCoverStyleForAspectRatio(videoAspectRatio),
+          );
+          if (_showWidgetCoverPreview) {
+            _coverPreviewKey.currentState?.regenerate();
+          }
+        }
+      });
+    }
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -417,32 +466,31 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               ],
             ),
             12.verticalSpace,
-            if (videoFilePath != null)
-              styledPreviewActive
-                  ? _WidgetVideoCoverPreviewCard(
-                      videoPath: videoFilePath,
-                      styleId: state.selectedCoverStyleId,
-                      durationSeconds: _coverDurationSeconds,
-                      repaintKey: _coverRepaintKey,
-                      previewKey: _coverPreviewKey,
-                      onTap: () => _showWidgetCoverFullPreview(),
-                    )
-                  : _VideoCoverPreviewCard(
-                      bytes: previewBytes,
-                      file: coverFile,
-                      isLoading: state.isCoverPreviewing,
-                      onTap: hasDisplay
-                          ? () => _showCoverFullPreview(
-                              bytes: previewBytes,
-                              file: coverFile,
-                            )
-                          : null,
-                    ),
+            styledPreviewActive
+                ? _WidgetVideoCoverPreviewCard(
+                    videoPath: videoFile.path,
+                    styleId: state.selectedCoverStyleId,
+                    durationSeconds: _coverDurationSeconds,
+                    repaintKey: _coverRepaintKey,
+                    previewKey: _coverPreviewKey,
+                    onTap: () => _showWidgetCoverFullPreview(),
+                  )
+                : _VideoCoverPreviewCard(
+                    bytes: previewBytes,
+                    file: coverFile,
+                    isLoading: state.isCoverPreviewing,
+                    onTap: hasDisplay
+                        ? () => _showCoverFullPreview(
+                            bytes: previewBytes,
+                            file: coverFile,
+                          )
+                        : null,
+                  ),
             12.verticalSpace,
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: qqaiVideoCoverStyles.map((style) {
+              children: availableStyles.map((style) {
                 final selected = style.id == state.selectedCoverStyleId;
                 return ChoiceChip(
                   label: Text(style.label),

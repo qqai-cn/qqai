@@ -4,7 +4,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../../components/blog/network_image_carousel_pages.dart';
@@ -40,6 +39,7 @@ class MyVideoView extends ConsumerStatefulWidget {
 class _MyVideoViewState extends ConsumerState<MyVideoView>
     with AutomaticKeepAliveClientMixin {
   static const int _pageSize = 12;
+  static const double _gridItemAspectRatio = 2 / 3;
   static const String _placeholderCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
 
@@ -259,53 +259,75 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
               crossAxisCount: isWideScreen ? 4 : 3,
               crossAxisSpacing: 2,
               mainAxisSpacing: 2,
-              childAspectRatio: 2 / 3,
+              childAspectRatio: _gridItemAspectRatio,
             ),
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final item = _items[index];
                 final cover = resolveBlogCoverUrl(item, fallback: _placeholderCover);
                 final isVideo = item.blogType == 2;
-                return GestureDetector(
-                  onTap: () => blogNotifier.onBlogItemTap(context, item),
-                  child: Container(
-                    color: Colors.black12,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Positioned.fill(
-                          child: CachedNetworkImage(
-                            imageUrl: cover,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => Image.network(
-                              _placeholderCover,
-                              fit: BoxFit.cover,
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    final width = constraints.maxWidth;
+                    final height = constraints.maxHeight;
+                    final dpr = MediaQuery.devicePixelRatioOf(context);
+                    final cacheWidth =
+                        (width * dpr).round().clamp(120, 900);
+                    final cacheHeight =
+                        (height * dpr).round().clamp(80, 600);
+                    return GestureDetector(
+                      onTap: () => blogNotifier.onBlogItemTap(context, item),
+                      child: SizedBox(
+                        width: width,
+                        height: height,
+                        child: Stack(
+                          fit: StackFit.expand,
+                          clipBehavior: Clip.hardEdge,
+                          children: [
+                            Positioned.fill(
+                              child: Image(
+                                image: CachedNetworkImageProvider(
+                                  cover,
+                                  maxWidth: cacheWidth,
+                                  maxHeight: cacheHeight,
+                                ),
+                                fit: BoxFit.cover,
+                                alignment: Alignment.center,
+                                filterQuality: FilterQuality.medium,
+                                gaplessPlayback: true,
+                                errorBuilder: (_, _, _) => Image.network(
+                                  _placeholderCover,
+                                  fit: BoxFit.cover,
+                                  width: width,
+                                  height: height,
+                                ),
+                              ),
                             ),
-                          ),
+                            if (isVideo)
+                              Positioned(
+                                bottom: 10,
+                                left: 10,
+                                child: Row(
+                                  spacing: 3,
+                                  children: [
+                                    const Icon(
+                                      Icons.play_circle_outline_rounded,
+                                      size: 25,
+                                      color: Colors.white,
+                                    ),
+                                    Text(
+                                      '${item.zan ?? 0}',
+                                      style: context.typo.label
+                                          .copyWith(color: Colors.white),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
-                        if (isVideo)
-                          Positioned(
-                            bottom: 10,
-                            left: 10,
-                            child: Row(
-                              spacing: 3,
-                              children: [
-                                const Icon(
-                                  Icons.play_circle_outline_rounded,
-                                  size: 25,
-                                  color: Colors.white,
-                                ),
-                                Text(
-                                  '${item.zan ?? 0}',
-                                  style: context.typo.label
-                                      .copyWith(color: Colors.white),
-                                ),
-                              ],
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
               childCount: _items.length,

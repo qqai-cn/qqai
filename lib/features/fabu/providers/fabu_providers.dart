@@ -19,6 +19,8 @@ import 'package:video_player/video_player.dart';
 import '../../../../util/api_base_client.dart';
 import '../../../util/image_bytes_xfile.dart';
 import '../../../components/blog/network_image_carousel_pages.dart';
+import '../../../components/video_player/local_qqai_player.dart';
+import '../../../components/video_player/video_aspect_ratio.dart';
 import '../../data/models/address_entity.dart';
 import '../../tool/video_cover_tool.dart';
 import '../data/repos/fabu_repo.dart';
@@ -70,6 +72,7 @@ class FabuNotifier extends _$FabuNotifier {
   late final IFabuRepo _repo;
   int? _cachedVideoDurationMs;
   String? _cachedVideoPath;
+  double? _cachedVideoAspectRatio;
   int _coverPreviewGeneration = 0;
   Future<Uint8List?> Function()? _widgetCoverCapture;
 
@@ -227,6 +230,19 @@ class FabuNotifier extends _$FabuNotifier {
     return (durationMs / 1000).round();
   }
 
+  Future<double> getVideoAspectRatio(
+    XFile video, {
+    double fallback = 9 / 16,
+  }) async {
+    if (_cachedVideoPath == video.path && _cachedVideoAspectRatio != null) {
+      return _cachedVideoAspectRatio!;
+    }
+    final aspectRatio = await _readVideoAspectRatio(video, fallback: fallback);
+    _cachedVideoPath = video.path;
+    _cachedVideoAspectRatio = aspectRatio;
+    return aspectRatio;
+  }
+
   void applyVideoCoverFromBytes(Uint8List bytes) {
     state = state.copyWith(
       coverFile: xFileFromImageBytes(bytes, baseName: 'video-cover'),
@@ -320,6 +336,50 @@ class FabuNotifier extends _$FabuNotifier {
   void _resetVideoDurationCache() {
     _cachedVideoPath = null;
     _cachedVideoDurationMs = null;
+    _cachedVideoAspectRatio = null;
+  }
+
+  Future<double> _readVideoAspectRatio(
+    XFile video, {
+    double fallback = 9 / 16,
+  }) async {
+    VideoPlayerController? controller;
+    try {
+      controller = createVideoControllerFromXFile(video);
+      await controller.initialize();
+      return effectiveVideoAspectRatio(controller.value, fallback);
+    } catch (e) {
+      debugPrint('Read video aspect ratio error: $e');
+      return fallback;
+    } finally {
+      await controller?.dispose();
+    }
+  }
+
+  void _syncCoverStyleForAspectRatio(double aspectRatio) {
+    final styleId = normalizeVideoCoverStyleForAspectRatio(
+      state.selectedCoverStyleId,
+      aspectRatio,
+    );
+    if (styleId == state.selectedCoverStyleId) return;
+    state = state.copyWith(
+      selectedCoverStyleId: styleId,
+      coverPreviewBytes: null,
+    );
+  }
+
+  Future<void> _prepareVideoCoverDefaults(XFile video) async {
+    final results = await Future.wait([
+      _videoDurationMs(video),
+      _readVideoAspectRatio(video),
+    ]);
+    if (state.videoFiles.isEmpty || state.videoFiles.first.path != video.path) {
+      return;
+    }
+    _cachedVideoPath = video.path;
+    _cachedVideoDurationMs = results[0] as int;
+    _cachedVideoAspectRatio = results[1] as double;
+    _syncCoverStyleForAspectRatio(_cachedVideoAspectRatio!);
   }
 
   void clearList(XFile file) {
@@ -409,8 +469,8 @@ class FabuNotifier extends _$FabuNotifier {
       uploadedCoverUrl: null,
       isCoverPreviewing: false,
     );
-    if (newVideoFiles.isNotEmpty && !kIsWeb) {
-      unawaited(_videoDurationMs(newVideoFiles.first));
+    if (newVideoFiles.isNotEmpty) {
+      unawaited(_prepareVideoCoverDefaults(newVideoFiles.first));
     }
   }
 

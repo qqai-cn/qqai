@@ -83,7 +83,7 @@ class _FabuViewState extends ConsumerState<FabuView>
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('发布成功'),
-            content: const Text('博客已成功发布！'),
+            content: const Text('发布成功！'),
             actions: [
               TextButton(
                 onPressed: () {

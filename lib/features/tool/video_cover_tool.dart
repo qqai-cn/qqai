@@ -43,6 +43,35 @@ const double qqaiVideoCoverCanvasHeight = 800;
 
 const double qqaiVideoCoverAspectRatio = qqaiVideoCoverCanvasWidth / 500;
 
+bool qqaiVideoIsPortrait(double aspectRatio) => aspectRatio < 1.0;
+
+bool qqaiVideoCoverStyleIsLandscape(int styleId) => styleId == 1 || styleId == 2;
+
+bool qqaiVideoCoverStyleIsPortrait(int styleId) => styleId == 3 || styleId == 4;
+
+bool qqaiVideoCoverStyleMatchesAspectRatio(int styleId, double aspectRatio) {
+  return qqaiVideoIsPortrait(aspectRatio)
+      ? qqaiVideoCoverStyleIsPortrait(styleId)
+      : qqaiVideoCoverStyleIsLandscape(styleId);
+}
+
+List<QqaiVideoCoverStyle> qqaiVideoCoverStylesForAspectRatio(double aspectRatio) {
+  return qqaiVideoCoverStyles
+      .where((style) => qqaiVideoCoverStyleMatchesAspectRatio(style.id, aspectRatio))
+      .toList();
+}
+
+int qqaiDefaultVideoCoverStyleForAspectRatio(double aspectRatio) {
+  return qqaiVideoIsPortrait(aspectRatio) ? 3 : 1;
+}
+
+int normalizeVideoCoverStyleForAspectRatio(int styleId, double aspectRatio) {
+  if (qqaiVideoCoverStyleMatchesAspectRatio(styleId, aspectRatio)) {
+    return styleId;
+  }
+  return qqaiDefaultVideoCoverStyleForAspectRatio(aspectRatio);
+}
+
 Future<Uint8List> generateVideoCoverBytes({
   required String videoPath,
   int timeMs = qqaiVideoCoverTimeMs,
