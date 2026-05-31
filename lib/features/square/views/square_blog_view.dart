@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../providers/auth_providers.dart';
 import '../../../router/app_routes.dart';
 import '../../../util/amap_launcher.dart';
 import '../../../util/format_count.dart';
@@ -14,7 +15,6 @@ import '../../blog/views/blog_video_item_view.dart';
 import '../../my/data/models/area_models.dart';
 import '../data/models/square_model.dart';
 import '../data/repos/square_repo.dart';
-import '../../../providers/auth_providers.dart';
 import '../providers/square_blogs_provider.dart';
 import '../providers/square_detail_provider.dart';
 import 'edit_square_dialog.dart';
@@ -78,17 +78,17 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
       ref.invalidate(squareDetailProvider(squareId));
       if (!mounted) return;
       if (convId == null || convId <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('暂无法进入群聊')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('暂无法进入群聊')));
         return;
       }
       context.push('${Routes.chat}/$convId');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _joiningChat = false);
     }
@@ -162,10 +162,7 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  '暂无作品',
-                  style: TextStyle(color: Colors.black54),
-                ),
+                Text('暂无作品', style: TextStyle(color: Colors.black54)),
                 SizedBox(height: 12),
                 TextButton(
                   onPressed: () => blogsNotifier.refresh(),
@@ -208,10 +205,7 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Center(
-              child: Text(
-                '没有更多了',
-                style: TextStyle(color: Colors.black54),
-              ),
+              child: Text('没有更多了', style: TextStyle(color: Colors.black54)),
             ),
           ),
         ),
@@ -260,7 +254,8 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
               return IconButton(
                 tooltip: '编辑广场',
                 icon: const Icon(Icons.edit_outlined),
-                onPressed: () => showEditSquareDialog(context, ref, square: square),
+                onPressed: () =>
+                    showEditSquareDialog(context, ref, square: square),
               );
             },
             orElse: () => const SizedBox.shrink(),
@@ -329,7 +324,8 @@ class _SquareDetailHeader extends StatelessWidget {
     final desc = square.squareDesc?.trim();
     final areaLabel = formatAddressForDisplay(square.areaName, empty: '');
     final blogCount = square.blogCount;
-    final canChat = square.hasChatConversation == true ||
+    final canChat =
+        square.hasChatConversation == true ||
         (square.chatConversationId != null && square.chatConversationId! > 0);
 
     return Material(
@@ -369,16 +365,27 @@ class _SquareDetailHeader extends StatelessWidget {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        title,
-                        style: Theme.of(context).textTheme.titleMedium,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                          if (desc != null && desc.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              desc,
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleSmall?.copyWith(),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ],
                 ),
-                if (desc != null && desc.isNotEmpty) const SizedBox(height: 8),
-                if (desc != null && desc.isNotEmpty)
-                  Text(desc, style: Theme.of(context).textTheme.bodyMedium),
                 if (areaLabel.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Align(
@@ -399,9 +406,9 @@ class _SquareDetailHeader extends StatelessWidget {
                         areaLabel,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.black54,
-                            ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodySmall?.copyWith(color: Colors.black54),
                       ),
                     ),
                   ),
@@ -410,9 +417,9 @@ class _SquareDetailHeader extends StatelessWidget {
                   const SizedBox(height: 8),
                 Text(
                   '${formatCompactCount(blogCount?.toInt())} 篇公开作品',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.black54,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.black54),
                 ),
                 if (canChat) ...[
                   const SizedBox(height: 12),
@@ -440,18 +447,18 @@ class _SquareDetailHeader extends StatelessWidget {
     );
   }
 
-  Future<void> _openAreaLocation(BuildContext context, SquareItem square) async {
+  Future<void> _openAreaLocation(
+    BuildContext context,
+    SquareItem square,
+  ) async {
     final keyword = square.areaName?.trim();
     if (keyword == null || keyword.isEmpty) return;
 
-    final ok = await openAmapLocation(
-      name: keyword,
-      keyword: keyword,
-    );
+    final ok = await openAmapLocation(name: keyword, keyword: keyword);
     if (!ok && context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('无法打开高德地图')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('无法打开高德地图')));
     }
   }
 }
