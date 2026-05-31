@@ -640,14 +640,10 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
         if (localMessage != null) {
           await _chatController.updateMessage(
             localMessage,
-            _withServerResponse(
-              localMessage,
-              {
-                'id': event.dto.id?.toString() ?? incoming.id,
-                'ts': serverTs,
-              },
-              _cleanMetadata(localMessage.metadata),
-            ),
+            _withServerResponse(localMessage, {
+              'id': event.dto.id?.toString() ?? incoming.id,
+              'ts': serverTs,
+            }, _cleanMetadata(localMessage.metadata)),
           );
           return;
         }
@@ -661,8 +657,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
   Message? _findMessageByClientMessageId(String clientMessageId) {
     for (final message in _chatController.messages) {
-      if (message.metadata?['clientMessageId']?.toString() ==
-          clientMessageId) {
+      if (message.metadata?['clientMessageId']?.toString() == clientMessageId) {
         return message;
       }
     }
@@ -695,16 +690,15 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
   String _encodeSocketExtra(Message message, String clientMessageId) {
     final extra = parseChatMessageExtra(encodeMessageExtra(message));
-    return jsonEncode({
-      ...?extra,
-      'clientMessageId': clientMessageId,
-    });
+    return jsonEncode({...?extra, 'clientMessageId': clientMessageId});
   }
 
   Future<void> _sendMessageBySocket(Message message) async {
     final clientMessageId =
         message.metadata?['clientMessageId']?.toString() ?? message.id;
-    ref.read(globalChatSocketServiceProvider).emitChatMessage(
+    ref
+        .read(globalChatSocketServiceProvider)
+        .emitChatMessage(
           conversationId: widget.conversationId,
           type: _messageType(message),
           content: _messageContent(message),
@@ -726,7 +720,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
     if (mounted) {
       await _chatController.insertMessage(
-        message.copyWith(metadata: {...?originalMetadata, 'sending': true}),
+        message.copyWith(metadata: {...originalMetadata, 'sending': true}),
       );
     }
 

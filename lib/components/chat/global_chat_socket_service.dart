@@ -119,12 +119,16 @@ class GlobalChatSocketService {
     String? content,
     String? extra,
   }) {
-    final event = {
+    final event = <String, dynamic>{
       'conversationId': conversationId,
       'type': type,
-      if (content != null) 'content': content,
-      if (extra != null) 'extra': extra,
     };
+    if (content != null) {
+      event['content'] = content;
+    }
+    if (extra != null) {
+      event['extra'] = extra;
+    }
     if (_status == GlobalSocketStatus.connected && _socket != null) {
       _socket?.emit('infra:send-msg', event);
       return;
