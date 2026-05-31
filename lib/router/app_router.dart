@@ -545,6 +545,7 @@ GoRouter appRouter(Ref ref) {
                     initialMessages: const [],
                     dio: ApiBaseClient.dio,
                     token: auth.token,
+                    enableSocket: true,
                   ),
                 );
               },
@@ -566,8 +567,18 @@ GoRouter appRouter(Ref ref) {
               }
               return AppDeferredWidget(
                 libraryLoader: route_pages.loadLibrary,
-                builder: () =>
-                    route_pages.ChatVideoCallPage(conversationId: id),
+                builder: () {
+                  final auth = ref.watch(authProvider);
+                  final callId = state.uri.queryParameters['callId'];
+                  final caller = state.uri.queryParameters['caller'] != 'false';
+                  return route_pages.ChatVideoCallPage(
+                    conversationId: id,
+                    currentUserId: auth.userId ?? '0',
+                    token: auth.token,
+                    callId: callId,
+                    isCaller: caller,
+                  );
+                },
               );
             },
           ),

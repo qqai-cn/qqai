@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/date_symbol_data_local.dart' as intl;
 import 'package:qqai/router/app_router.dart';
 
+import 'components/chat/global_chat_realtime_scope.dart';
 import 'config/theme/my_theme.dart';
 import 'config/translations/localization_service.dart';
 import 'util/my_shared_pref.dart';
@@ -22,11 +23,7 @@ Future<void> main() async {
   // init shared preference
   await MySharedPref.init();
   // 先上屏再补全 locale 日期符号，避免 initializeDateFormatting 拖住首帧
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
   unawaited(intl.initializeDateFormatting());
 }
 
@@ -74,8 +71,9 @@ class _MyAppState extends ConsumerState<MyApp> {
           title: '千千Ai',
           debugShowCheckedModeBanner: false,
           locale: locale,
-          supportedLocales:
-              LocalizationService.supportedLanguages.values.toSet().toList(),
+          supportedLocales: LocalizationService.supportedLanguages.values
+              .toSet()
+              .toList(),
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
@@ -89,8 +87,10 @@ class _MyAppState extends ConsumerState<MyApp> {
             return Theme(
               data: MyTheme.getThemeData(isLight: themeIsLight),
               child: MediaQuery(
-                data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(1.0)),
-                child: widget!,
+                data: MediaQuery.of(
+                  context,
+                ).copyWith(textScaler: const TextScaler.linear(1.0)),
+                child: GlobalChatRealtimeScope(child: widget!),
               ),
             );
           },

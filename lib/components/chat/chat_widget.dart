@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cross_cache/cross_cache.dart';
 import 'package:dio/dio.dart';
@@ -13,25 +14,23 @@ import 'package:flutter_link_previewer/flutter_link_previewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
 import 'package:flyer_chat_system_message/flyer_chat_system_message.dart';
+import 'package:qqai/components/chat/global_chat_socket_service.dart';
 import 'package:qqai/components/chat/qqai_chat_file_message.dart';
 import 'package:qqai/components/chat/qqai_chat_video_message.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/chat/qqai_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
-import 'package:qqai/components/chat/socketio_service.dart';
-import 'package:qqai/constant/api_constant.dart';
 import 'package:qqai/features/chat/data/chat_message_mapper.dart';
+import 'package:qqai/features/chat/data/chat_message_extra.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:uuid/uuid.dart';
 
-import 'chat_api_service.dart';
 import 'chat_file_download.dart';
 import 'chat_media_helper.dart';
-import 'connection_status.dart';
 import 'create_message.dart';
 import 'widgets/chat_emoji_panel.dart';
 import 'widgets/composer_action_bar.dart';
@@ -44,10 +43,10 @@ class ChatWidget extends ConsumerStatefulWidget {
   final List<Message> initialMessages;
   final Dio dio;
 
-  /// 登录 token，用于 Socket.IO 连接鉴权
+  /// 登录 token，由全局 Socket 服务使用。保留参数兼容现有调用方。
   final String? token;
 
-  /// 是否连接 Socket.IO（默认关闭，仅走 HTTP 收发）
+  /// 是否订阅全局 Socket 消息（连接由 App 登录态统一管理）
   final bool enableSocket;
 
   const ChatWidget({
@@ -68,9 +67,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   final _crossCache = CrossCache();
   final _uuid = const Uuid();
 
-  late final ChatApiService _apiService;
-  SocketioService? _webSocketService;
-  StreamSubscription<WebSocketEvent>? _webSocketSubscription;
+  StreamSubscription<GlobalChatMessageEvent>? _socketMessageSubscription;
   late final ChatController _chatController;
   final _systemUser = const User(id: 'system');
   late final User _meUser;
@@ -94,19 +91,8 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       name: '我',
     );
     _chatController = InMemoryChatController(messages: widget.initialMessages);
-    final repo = ref.read(chatRepoProvider);
-    _apiService = ChatApiService(
-      repo: repo,
-      conversationId: widget.conversationId,
-    );
     if (widget.enableSocket) {
-      _webSocketService = SocketioService(
-        host: ApiConstant.SOCKET_IO_URL,
-        chatId: widget.conversationId.toString(),
-        authorId: widget.currentUserId,
-        token: widget.token,
-      );
-      _connectToWs();
+      _connectToGlobalSocket();
     }
     _composerFocusNode.addListener(_onComposerFocusChange);
     Future.microtask(_loadInitialHistory);
@@ -249,8 +235,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
   @override
   void dispose() {
-    _webSocketSubscription?.cancel();
-    _webSocketService?.dispose();
+    _socketMessageSubscription?.cancel();
     _composerFocusNode.removeListener(_onComposerFocusChange);
     _composerController.dispose();
     _composerFocusNode.dispose();
@@ -508,12 +493,6 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                 ? ChatTheme.dark()
                 : ChatTheme.light(),
           ),
-          if (_webSocketService != null)
-            Positioned(
-              top: 16,
-              left: 16,
-              child: ConnectionStatus(webSocketService: _webSocketService!),
-            ),
         ],
       ),
     );
@@ -643,35 +622,94 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     );
   }
 
-  void _connectToWs() {
-    final ws = _webSocketService;
-    if (ws == null) return;
-    _webSocketSubscription = ws.connect().listen((event) async {
+  void _connectToGlobalSocket() {
+    final socket = ref.read(globalChatSocketServiceProvider);
+    _socketMessageSubscription = socket.messageStream.listen((event) async {
       if (!mounted) return;
-
-      switch (event.type) {
-        case WebSocketEventType.newMessage:
-          final incoming = event.message!;
-          final exists = _chatController.messages.any(
-            (m) => m.id == incoming.id,
+      if (event.dto.conversationId != widget.conversationId) return;
+      final incoming = event.message;
+      final serverTs =
+          event.dto.createTimeParsed?.toUtc().millisecondsSinceEpoch ??
+          DateTime.now().toUtc().millisecondsSinceEpoch;
+      final incomingExtra = parseChatMessageExtra(event.dto.extra);
+      final clientMessageId = incomingExtra?['clientMessageId']?.toString();
+      if (event.dto.senderId?.toString() == widget.currentUserId &&
+          clientMessageId != null &&
+          clientMessageId.isNotEmpty) {
+        final localMessage = _findMessageByClientMessageId(clientMessageId);
+        if (localMessage != null) {
+          await _chatController.updateMessage(
+            localMessage,
+            _withServerResponse(
+              localMessage,
+              {
+                'id': event.dto.id?.toString() ?? incoming.id,
+                'ts': serverTs,
+              },
+              _cleanMetadata(localMessage.metadata),
+            ),
           );
-          if (!exists) {
-            await _chatController.insertMessage(incoming);
-          }
-          break;
-        case WebSocketEventType.deleteMessage:
-          _chatController.removeMessage(event.message!);
-          break;
-        case WebSocketEventType.flush:
-          _chatController.setMessages([]);
-          break;
-        case WebSocketEventType.error:
-          _showInfo('Error: ${event.error}');
-          break;
-        case WebSocketEventType.unknown:
-          break;
+          return;
+        }
+      }
+      final exists = _chatController.messages.any((m) => m.id == incoming.id);
+      if (!exists) {
+        await _chatController.insertMessage(incoming);
       }
     });
+  }
+
+  Message? _findMessageByClientMessageId(String clientMessageId) {
+    for (final message in _chatController.messages) {
+      if (message.metadata?['clientMessageId']?.toString() ==
+          clientMessageId) {
+        return message;
+      }
+    }
+    return null;
+  }
+
+  Map<String, dynamic>? _cleanMetadata(Map<String, dynamic>? metadata) {
+    if (metadata == null) return null;
+    final cleaned = Map<String, dynamic>.from(metadata)
+      ..remove('sending')
+      ..remove('clientMessageId');
+    return cleaned.isEmpty ? null : cleaned;
+  }
+
+  int _messageType(Message message) {
+    if (message is TextMessage) return 1;
+    if (message is ImageMessage) return 2;
+    if (message is FileMessage) return 4;
+    if (message is VideoMessage) return 5;
+    return 1;
+  }
+
+  String? _messageContent(Message message) {
+    if (message is TextMessage) return message.text;
+    if (message is ImageMessage) return message.source;
+    if (message is FileMessage) return message.source;
+    if (message is VideoMessage) return message.source;
+    return null;
+  }
+
+  String _encodeSocketExtra(Message message, String clientMessageId) {
+    final extra = parseChatMessageExtra(encodeMessageExtra(message));
+    return jsonEncode({
+      ...?extra,
+      'clientMessageId': clientMessageId,
+    });
+  }
+
+  Future<void> _sendMessageBySocket(Message message) async {
+    final clientMessageId =
+        message.metadata?['clientMessageId']?.toString() ?? message.id;
+    ref.read(globalChatSocketServiceProvider).emitChatMessage(
+          conversationId: widget.conversationId,
+          type: _messageType(message),
+          content: _messageContent(message),
+          extra: _encodeSocketExtra(message, clientMessageId),
+        );
   }
 
   void _addItem(String? text) async {
@@ -680,7 +718,11 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       widget.dio,
       text: text,
     );
-    final originalMetadata = message.metadata;
+    final clientMessageId = message.id;
+    final originalMetadata = {
+      ...?message.metadata,
+      'clientMessageId': clientMessageId,
+    };
 
     if (mounted) {
       await _chatController.insertMessage(
@@ -689,22 +731,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     }
 
     try {
-      final response = await _apiService.send(message);
-
-      if (mounted) {
-        // Make sure to get the updated message
-        // (width and height might have been set by the image message widget)
-        final currentMessage = _chatController.messages.firstWhere(
-          (element) => element.id == message.id,
-          orElse: () => message,
-        );
-        final nextMessage = _withServerResponse(
-          currentMessage,
-          response,
-          originalMetadata,
-        );
-        await _chatController.updateMessage(currentMessage, nextMessage);
-      }
+      await _sendMessageBySocket(message.copyWith(metadata: originalMetadata));
     } catch (error) {
       debugPrint('Error sending message: $error');
     }
@@ -754,33 +781,17 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     };
   }
 
-  Future<void> _finalizeSentMessage({
-    required Message localMessage,
-    required Map<String, dynamic>? originalMetadata,
-    required Map<String, dynamic> response,
-  }) async {
-    if (!mounted) return;
-    final currentMessage = _chatController.messages.firstWhere(
-      (element) => element.id == localMessage.id,
-      orElse: () => localMessage,
-    );
-    final cleanedMetadata = originalMetadata == null
-        ? null
-        : (Map<String, dynamic>.from(originalMetadata)..remove('sending'));
-    final nextMessage = _withServerResponse(
-      currentMessage,
-      response,
-      cleanedMetadata,
-    );
-    await _chatController.updateMessage(currentMessage, nextMessage);
-  }
-
   Future<void> _sendUploadedMessage({
     required Message localMessage,
     required Future<String> Function() upload,
     required Message Function(String url) onUploaded,
   }) async {
-    final originalMetadata = {...?localMessage.metadata, 'sending': true};
+    final clientMessageId = localMessage.id;
+    final originalMetadata = {
+      ...?localMessage.metadata,
+      'clientMessageId': clientMessageId,
+      'sending': true,
+    };
     await _chatController.insertMessage(
       localMessage.copyWith(metadata: originalMetadata),
     );
@@ -792,11 +803,13 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
         orElse: () => localMessage,
       );
       await _chatController.updateMessage(currentMessage, uploadedMessage);
-      final response = await _apiService.send(uploadedMessage);
-      await _finalizeSentMessage(
-        localMessage: uploadedMessage,
-        originalMetadata: originalMetadata,
-        response: response,
+      await _sendMessageBySocket(
+        uploadedMessage.copyWith(
+          metadata: {
+            ...?uploadedMessage.metadata,
+            'clientMessageId': clientMessageId,
+          },
+        ),
       );
     } catch (error) {
       debugPrint('Error uploading/sending message: $error');
@@ -859,8 +872,12 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                       ? (durationMs / 1000).round()
                       : null;
                   final metadata = <String, dynamic>{
-                    if (durationSec != null) 'duration': durationSec,
-                    if (coverUrl != null) 'coverUrl': coverUrl,
+                    ...durationSec != null
+                        ? {'duration': durationSec}
+                        : const <String, dynamic>{},
+                    ...coverUrl != null
+                        ? {'coverUrl': coverUrl}
+                        : const <String, dynamic>{},
                   };
 
                   final videoMessage = VideoMessage(
@@ -931,7 +948,12 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
   void _startVideoCall() {
     _exitEmojiPanel();
-    context.push('${Routes.chat}/${widget.conversationId}/video-call');
+    final callId =
+        '${widget.conversationId}-${widget.currentUserId}-${DateTime.now().millisecondsSinceEpoch}';
+    context.push(
+      '${Routes.chat}/${widget.conversationId}/video-call'
+      '?callId=$callId&caller=true',
+    );
   }
 
   void _removeItem(Message item) async {
@@ -939,26 +961,5 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     if (_chatController.messages.length == 1) {
       await _chatController.removeMessage(_chatController.messages[0]);
     }
-  }
-
-  Future<void> _showInfo(String message) async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Info'),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 }

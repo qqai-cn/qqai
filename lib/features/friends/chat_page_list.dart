@@ -211,7 +211,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
         border: Border.all(color: Colors.white, width: 2),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFE53935).withOpacity(0.3),
+            color: const Color(0xFFE53935).withValues(alpha: 0.3),
             blurRadius: 4,
             offset: const Offset(0, 1),
           ),
@@ -355,6 +355,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                     initialMessages: const [],
                     dio: ApiBaseClient.dio,
                     token: authState.token,
+                    enableSocket: true,
                   ),
                 );
               },
@@ -402,7 +403,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

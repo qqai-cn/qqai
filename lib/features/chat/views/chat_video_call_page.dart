@@ -3,19 +3,32 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:qqai/components/chat/global_chat_socket_service.dart';
 
-class ChatVideoCallPage extends StatefulWidget {
-  const ChatVideoCallPage({super.key, required this.conversationId});
+class ChatVideoCallPage extends ConsumerStatefulWidget {
+  const ChatVideoCallPage({
+    super.key,
+    required this.conversationId,
+    required this.currentUserId,
+    this.token,
+    this.callId,
+    this.isCaller = true,
+  });
 
   final int conversationId;
+  final String currentUserId;
+  final String? token;
+  final String? callId;
+  final bool isCaller;
 
   @override
-  State<ChatVideoCallPage> createState() => _ChatVideoCallPageState();
+  ConsumerState<ChatVideoCallPage> createState() => _ChatVideoCallPageState();
 }
 
-class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
+class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
   static const _turnHost = '47.94.236.184';
   static const _turnPort = 3478;
   static const _turnCredentialTtl = Duration(hours: 24);
@@ -26,9 +39,11 @@ class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
   final RTCVideoRenderer _localRenderer = RTCVideoRenderer();
   final RTCVideoRenderer _remoteRenderer = RTCVideoRenderer();
 
-  RTCPeerConnection? _localPeer;
-  RTCPeerConnection? _remotePeer;
+  RTCPeerConnection? _peer;
   MediaStream? _localStream;
+  StreamSubscription<GlobalRtcSignalEvent>? _rtcSubscription;
+  late final String _callId;
+  final List<RTCIceCandidate> _pendingCandidates = [];
   Timer? _durationTimer;
   Duration _duration = Duration.zero;
   bool _initializing = true;
@@ -41,6 +56,9 @@ class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
   @override
   void initState() {
     super.initState();
+    _callId =
+        widget.callId ??
+        '${widget.conversationId}-${widget.currentUserId}-${DateTime.now().millisecondsSinceEpoch}';
     _enterCallMode();
     _startCall();
   }
@@ -72,18 +90,17 @@ class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
       _localRenderer.srcObject = stream;
 
       final config = _buildPeerConnectionConfig();
-      final localPeer = await createPeerConnection(config);
-      final remotePeer = await createPeerConnection(config);
-      _localPeer = localPeer;
-      _remotePeer = remotePeer;
+      final peer = await createPeerConnection(config);
+      _peer = peer;
 
-      localPeer.onIceCandidate = (candidate) {
-        remotePeer.addCandidate(candidate);
+      peer.onIceCandidate = (candidate) {
+        _sendSignal('candidate', {
+          'candidate': candidate.candidate,
+          'sdpMid': candidate.sdpMid,
+          'sdpMLineIndex': candidate.sdpMLineIndex,
+        });
       };
-      remotePeer.onIceCandidate = (candidate) {
-        localPeer.addCandidate(candidate);
-      };
-      remotePeer.onTrack = (event) {
+      peer.onTrack = (event) {
         if (event.streams.isNotEmpty) {
           _remoteRenderer.srcObject = event.streams.first;
           if (mounted && !_connected) {
@@ -94,15 +111,10 @@ class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
       };
 
       for (final track in stream.getTracks()) {
-        await localPeer.addTrack(track, stream);
+        await peer.addTrack(track, stream);
       }
 
-      final offer = await localPeer.createOffer();
-      await localPeer.setLocalDescription(offer);
-      await remotePeer.setRemoteDescription(offer);
-      final answer = await remotePeer.createAnswer();
-      await remotePeer.setLocalDescription(answer);
-      await localPeer.setRemoteDescription(answer);
+      _connectSignalStream();
 
       if (mounted) {
         setState(() => _initializing = false);
@@ -115,6 +127,119 @@ class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
         });
       }
     }
+  }
+
+  void _connectSignalStream() {
+    final socket = ref.read(globalChatSocketServiceProvider);
+    _rtcSubscription = socket.rtcSignalStream.listen(_handleRtcSignal);
+    if (widget.isCaller) {
+      _sendSignal('invite', {'media': 'video'});
+    } else {
+      _sendSignal('accept', {'media': 'video'});
+    }
+  }
+
+  Future<void> _handleRtcSignal(GlobalRtcSignalEvent signal) async {
+    if (signal.callId != _callId) return;
+    if (signal.senderId == widget.currentUserId) return;
+    try {
+      switch (signal.signalType) {
+        case 'accept':
+          if (widget.isCaller) {
+            await _createAndSendOffer();
+          }
+          break;
+        case 'offer':
+          await _receiveOffer(signal.payload);
+          break;
+        case 'answer':
+          await _receiveAnswer(signal.payload);
+          break;
+        case 'candidate':
+          await _receiveCandidate(signal.payload);
+          break;
+        case 'hangup':
+          await _disposeCall();
+          if (mounted) Navigator.of(context).pop();
+          break;
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = '视频通话信令处理失败：$e');
+      }
+    }
+  }
+
+  Future<void> _createAndSendOffer() async {
+    final peer = _peer;
+    if (peer == null) return;
+    final offer = await peer.createOffer();
+    await peer.setLocalDescription(offer);
+    _sendSignal('offer', {'type': offer.type, 'sdp': offer.sdp});
+  }
+
+  Future<void> _receiveOffer(Map<String, dynamic> payload) async {
+    final peer = _peer;
+    if (peer == null) return;
+    await peer.setRemoteDescription(
+      RTCSessionDescription(
+        payload['sdp']?.toString(),
+        payload['type']?.toString(),
+      ),
+    );
+    await _flushPendingCandidates();
+    final answer = await peer.createAnswer();
+    await peer.setLocalDescription(answer);
+    _sendSignal('answer', {'type': answer.type, 'sdp': answer.sdp});
+  }
+
+  Future<void> _receiveAnswer(Map<String, dynamic> payload) async {
+    final peer = _peer;
+    if (peer == null) return;
+    await peer.setRemoteDescription(
+      RTCSessionDescription(
+        payload['sdp']?.toString(),
+        payload['type']?.toString(),
+      ),
+    );
+    await _flushPendingCandidates();
+  }
+
+  Future<void> _receiveCandidate(Map<String, dynamic> payload) async {
+    final candidate = RTCIceCandidate(
+      payload['candidate']?.toString(),
+      payload['sdpMid']?.toString(),
+      (payload['sdpMLineIndex'] as num?)?.toInt(),
+    );
+    final peer = _peer;
+    if (peer == null) return;
+    final remoteDescription = await peer.getRemoteDescription();
+    if (remoteDescription == null) {
+      _pendingCandidates.add(candidate);
+      return;
+    }
+    await peer.addCandidate(candidate);
+  }
+
+  Future<void> _flushPendingCandidates() async {
+    final peer = _peer;
+    if (peer == null || _pendingCandidates.isEmpty) return;
+    final candidates = List<RTCIceCandidate>.from(_pendingCandidates);
+    _pendingCandidates.clear();
+    for (final candidate in candidates) {
+      await peer.addCandidate(candidate);
+    }
+  }
+
+  void _sendSignal(String type, Map<String, dynamic> payload) {
+    ref
+        .read(globalChatSocketServiceProvider)
+        .emitRtcSignal(
+          conversationId: widget.conversationId,
+          callId: _callId,
+          signalType: type,
+          payload: payload,
+        );
   }
 
   void _startDurationTimer() {
@@ -191,6 +316,7 @@ class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
   }
 
   Future<void> _hangup() async {
+    _sendSignal('hangup', {});
     await _disposeCall();
     if (mounted) Navigator.of(context).pop();
   }
@@ -200,16 +326,16 @@ class _ChatVideoCallPageState extends State<ChatVideoCallPage> {
     _callDisposed = true;
     _durationTimer?.cancel();
     _durationTimer = null;
-    final localPeer = _localPeer;
-    final remotePeer = _remotePeer;
+    final peer = _peer;
     final stream = _localStream;
-    _localPeer = null;
-    _remotePeer = null;
+    final rtcSubscription = _rtcSubscription;
+    _peer = null;
+    _rtcSubscription = null;
     _localRenderer.srcObject = null;
     _remoteRenderer.srcObject = null;
     _localStream = null;
-    await localPeer?.close();
-    await remotePeer?.close();
+    await rtcSubscription?.cancel();
+    await peer?.close();
     for (final track in stream?.getTracks() ?? <MediaStreamTrack>[]) {
       await track.stop();
     }

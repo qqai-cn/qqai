@@ -4,14 +4,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 /// 主 Shell 底部 Tab 内容区高度（对齐 Material [kBottomNavigationBarHeight] / iOS TabBar ~49pt）。
-const double kMainShellBottomBarHeight = 56;
+const double kMainShellBottomBarHeight = 66;
 
 class AnimatedBottomBar extends StatefulWidget {
   final List<BarItem> barItems;
   final Duration animationDuration;
   final Function onBarTap;
   final BarStyle barStyle;
-  late  int selectedBarIndex;
+  late int selectedBarIndex;
 
   AnimatedBottomBar({
     required this.barItems,
@@ -27,15 +27,17 @@ class AnimatedBottomBar extends StatefulWidget {
 
 class _AnimatedBottomBarState extends State<AnimatedBottomBar>
     with TickerProviderStateMixin {
-
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: kMainShellBottomBarHeight,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: _buildBarItems(),
+      child: Padding(
+        padding: .only(top: 5),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _buildBarItems(),
+        ),
       ),
     );
   }
