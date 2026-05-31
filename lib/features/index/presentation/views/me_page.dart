@@ -17,10 +17,9 @@ class MePage extends ConsumerWidget {
     final meState = ref.watch(meProvider);
     final isWideScreen = MediaQuery.sizeOf(context).width > 800;
     return Scaffold(
-      extendBodyBehindAppBar: true,
       appBar: getAppbar2(context, ref, isWideScreen),
       drawer: isWideScreen ? null : const DrawerPage(),
-      body: Center(child: MyView()),
+      body: const MyView(),
     );
   }
 
@@ -30,19 +29,19 @@ class MePage extends ConsumerWidget {
     bool isWideScreen,
   ) {
     return AppBar(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
       elevation: 0,
       leadingWidth: 132,
       leading: BrandDrawerLeading(isWideScreen: isWideScreen),
       automaticallyImplyLeading: false,
-      // title: animatedTitle(context),
       actions: [
         IconButton(
-          icon: const Icon(Icons.add_circle_sharp, color: Colors.white),
+          icon: Icon(Icons.add_circle_sharp, color: Colors.grey[800]),
           onPressed: () => context.push(Routes.publishZuoPinPageUrl),
         ),
         IconButton(
-          icon: const Icon(Icons.search, color: Colors.white),
+          icon: Icon(Icons.search, color: Colors.grey[800]),
           onPressed: () => context.push(Routes.searchPage),
         ),
       ],

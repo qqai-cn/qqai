@@ -43,8 +43,6 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
   static const String _placeholderCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
 
-  final ScrollController _scrollController = ScrollController();
-
   List<BlogItem> _items = [];
   bool _loading = false;
   bool _loadingMore = false;
@@ -55,17 +53,9 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     if (widget.tabIndex == widget.currentIndex) {
       scheduleMicrotask(_loadFirstPage);
     }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -107,13 +97,14 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
     return repo.getMyWorksPage(pageNo, pageSize: _pageSize);
   }
 
-  void _onScroll() {
-    if (!_hasMore || _loadingMore || _loading) return;
-    if (!_scrollController.hasClients) return;
-    final pos = _scrollController.position;
-    if (pos.pixels >= pos.maxScrollExtent - 320) {
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (!_hasMore || _loadingMore || _loading) return false;
+    final metrics = notification.metrics;
+    if (metrics.maxScrollExtent > 0 &&
+        metrics.pixels >= metrics.maxScrollExtent - 320) {
       unawaited(_loadMore());
     }
+    return false;
   }
 
   Future<void> _loadFirstPage() async {
@@ -175,7 +166,6 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
 
     if (_loading && _items.isEmpty) {
       return CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -190,7 +180,6 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
 
     if (_error != null && _items.isEmpty) {
       return CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -223,7 +212,6 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
 
     if (_items.isEmpty) {
       return CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -245,12 +233,13 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadFirstPage,
-      child: CustomScrollView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScrollNotification,
+      child: RefreshIndicator(
+        onRefresh: _loadFirstPage,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
           ),
@@ -340,7 +329,8 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
                 child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
               ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -135,6 +135,34 @@ class _PortraitCommentPanelState extends State<_PortraitCommentPanel> {
   }
 }
 
+/// 视频/图片详情等内容区顶部的圆形半透明图标按钮。
+class MediaDetailOverlayIconButton extends StatelessWidget {
+  const MediaDetailOverlayIconButton({
+    super.key,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  static Widget buildIcon(IconData icon) {
+    return Icon(
+      icon,
+      color: Colors.white.withValues(alpha: 0.5),
+      size: 50,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: buildIcon(icon),
+    );
+  }
+}
+
 class _BackButtonOverlay extends StatelessWidget {
   const _BackButtonOverlay();
 
@@ -162,13 +190,9 @@ class _BackButtonOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return MediaDetailOverlayIconButton(
+      icon: Icons.arrow_circle_left,
       onPressed: () => _handleBack(context),
-      icon: Icon(
-        Icons.arrow_circle_left,
-        color: Colors.white.withValues(alpha: 0.5),
-        size: 50,
-      ),
     );
   }
 }

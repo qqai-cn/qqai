@@ -34,8 +34,6 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
   static const String _placeholderCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
 
-  final ScrollController _scrollController = ScrollController();
-
   List<BlogShopProductResp> _items = [];
   bool _loading = false;
   bool _loadingMore = false;
@@ -46,17 +44,9 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     if (widget.tabIndex == widget.currentIndex) {
       scheduleMicrotask(_loadFirstPage);
     }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -82,13 +72,14 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
 
   bool get _isSelf => widget.userId == null;
 
-  void _onScroll() {
-    if (!_hasMore || _loadingMore || _loading) return;
-    if (!_scrollController.hasClients) return;
-    final pos = _scrollController.position;
-    if (pos.pixels >= pos.maxScrollExtent - 400) {
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (!_hasMore || _loadingMore || _loading) return false;
+    final metrics = notification.metrics;
+    if (metrics.maxScrollExtent > 0 &&
+        metrics.pixels >= metrics.maxScrollExtent - 400) {
       unawaited(_loadMore());
     }
+    return false;
   }
 
   Future<void> _loadFirstPage() async {
@@ -305,7 +296,6 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
     Widget body;
     if (_loading && _items.isEmpty) {
       body = CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -318,7 +308,6 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
       );
     } else if (_error != null && _items.isEmpty) {
       body = CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -339,7 +328,6 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
       );
     } else if (_items.isEmpty) {
       body = CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -356,12 +344,13 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
         ],
       );
     } else {
-      body = RefreshIndicator(
-        onRefresh: _loadFirstPage,
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
+      body = NotificationListener<ScrollNotification>(
+        onNotification: _onScrollNotification,
+        child: RefreshIndicator(
+          onRefresh: _loadFirstPage,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
             SliverOverlapInjector(
               handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
             ),
@@ -463,7 +452,8 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
                   child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       );
     }

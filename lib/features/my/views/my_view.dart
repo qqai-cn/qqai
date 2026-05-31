@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/profile/profile_banner_overlay_buttons.dart';
 import 'package:qqai/components/label.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/constant.dart';
@@ -152,6 +153,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     final ctrl = TextEditingController(text: initial);
     final ok = await showDialog<bool>(
       context: context,
+      useRootNavigator: true,
       builder: (ctx) => AlertDialog(
         title: const Text('修改备注'),
         content: TextField(
@@ -204,6 +206,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     if (userId == null) return;
     final ok = await showDialog<bool>(
       context: context,
+      useRootNavigator: true,
       builder: (ctx) => AlertDialog(
         title: const Text('删除好友'),
         content: const Text('确定删除该好友？删除后将无法恢复。'),
@@ -225,12 +228,15 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
       ref.read(friendRemarkCacheProvider.notifier).setRemark(userId, '');
       ref.invalidate(friendListGroupedProvider);
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('已删除好友')));
-      if (context.canPop()) {
-        context.pop();
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('已删除好友')),
+        );
+        if (context.canPop()) {
+          context.pop();
+        }
+      });
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -272,6 +278,54 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     }
     if (_isSelf) return '我的主页';
     return '用户 ${widget.userId}';
+  }
+
+  Future<void> _showOtherUserActionMenu(BuildContext anchorContext) async {
+    final renderBox = anchorContext.findRenderObject() as RenderBox?;
+    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    if (renderBox == null || !renderBox.hasSize || overlayBox == null) return;
+
+    final topLeft = renderBox.localToGlobal(Offset.zero, ancestor: overlayBox);
+    final bottomRight = renderBox.localToGlobal(
+      renderBox.size.bottomRight(Offset.zero),
+      ancestor: overlayBox,
+    );
+    final position = RelativeRect.fromRect(
+      Rect.fromPoints(topLeft, bottomRight),
+      Offset.zero & overlayBox.size,
+    );
+
+    final value = await showMenu<String>(
+      context: context,
+      position: position,
+      items: [
+        const PopupMenuItem(value: 'remark', child: Text('修改备注')),
+        PopupMenuItem(
+          value: 'delete',
+          child: Text(
+            '删除好友',
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
+        ),
+      ],
+    );
+    if (!mounted || value == null) return;
+
+    await Future<void>.delayed(Duration.zero);
+    if (!mounted) return;
+
+    switch (value) {
+      case 'remark':
+        await _showEditRemarkDialog();
+      case 'delete':
+        await _confirmDeleteFriend();
+    }
+  }
+
+  Widget _buildOtherUserMoreMenu(BuildContext anchorContext) {
+    return ProfileBannerOverlayMoreButton(
+      onPressed: () => _showOtherUserActionMenu(anchorContext),
+    );
   }
 
   Widget _buildActionButton() {
@@ -338,6 +392,18 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
         : '这个人很懒，还没有写签名。';
     final targetUserId = widget.userId;
 
+    final isWideScreen = MediaQuery.sizeOf(context).width > 800;
+    final showBackButton = !_isSelf && widget.showLeadingBack;
+    final showMoreButton =
+        !_isSelf && (widget.showLeadingBack || isWideScreen);
+    final useBannerOverlayNav = showBackButton || showMoreButton;
+    const toolbarHeight = 0.0;
+    const tabBarHeight = kTextTabBarHeight;
+    const bannerHeight = 180.0;
+    const infoHeight = 220.0;
+    final expandedHeight =
+        bannerHeight + infoHeight + toolbarHeight + tabBarHeight;
+
     return NestedScrollView(
       controller: _scrollviewController,
       headerSliverBuilder: (context, boxIsScrolled) {
@@ -346,109 +412,122 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
             sliver: SliverAppBar(
               pinned: true,
-              floating: true,
+              floating: false,
+              primary: false,
+              toolbarHeight: toolbarHeight,
               elevation: 0.5,
               forceElevated: true,
-              expandedHeight: 400,
-              automaticallyImplyLeading: widget.showLeadingBack,
-              leading: widget.showLeadingBack
-                  ? IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: () => context.pop(),
-                    )
-                  : null,
+              expandedHeight: expandedHeight,
+              automaticallyImplyLeading: false,
               backgroundColor: Colors.white,
-              actions: _isSelf
-                  ? null
-                  : [
-                      PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_horiz),
-                        onSelected: (value) {
-                          if (value == 'remark') {
-                            _showEditRemarkDialog();
-                          } else if (value == 'delete') {
-                            _confirmDeleteFriend();
-                          }
-                        },
-                        itemBuilder: (context) => [
-                          const PopupMenuItem(
-                            value: 'remark',
-                            child: Text('修改备注'),
+              flexibleSpace: FlexibleSpaceBar(
+                collapseMode: CollapseMode.pin,
+                background: Column(
+                  children: [
+                    SizedBox(
+                      height: bannerHeight,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: CachedNetworkImageProvider(bannerUrl),
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                           ),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Text(
-                              '删除好友',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.error,
+                          if (useBannerOverlayNav)
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              child: SafeArea(
+                                bottom: false,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (showBackButton)
+                                      ProfileBannerOverlayBackButton(
+                                        onPressed: () => context.pop(),
+                                      )
+                                    else
+                                      const SizedBox(width: 48),
+                                    if (showMoreButton)
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(right: 4),
+                                        child: Builder(
+                                          builder: (menuContext) =>
+                                              _buildOtherUserMoreMenu(
+                                                menuContext,
+                                              ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          Center(
+                            child: Container(
+                              color: Colors.transparent,
+                              height: 0.2.sh - 50,
+                              child: Row(
+                                children: <Widget>[
+                                  const SizedBox(width: 20),
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage:
+                                        avatarUrl != null &&
+                                            avatarUrl.isNotEmpty
+                                        ? CachedNetworkImageProvider(
+                                            avatarUrl,
+                                          )
+                                        : const AssetImage(_defaultAvatar),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        const Spacer(),
+                                        SelectableText(
+                                          displayName,
+                                          style: context.typo.pageTitle
+                                              .copyWith(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                          maxLines: 1,
+                                        ),
+                                        if (subtitle.isNotEmpty)
+                                          SelectableText(
+                                            subtitle,
+                                            style: context.typo.cardSubtitle
+                                                .copyWith(
+                                                  color: Colors.white,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                            maxLines: 1,
+                                          ),
+                                        const Spacer(),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
                         ],
                       ),
-                    ],
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin,
-                background: Column(
-                  children: [
-                    Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: CachedNetworkImageProvider(bannerUrl),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      child: Center(
-                        child: Container(
-                          color: Colors.transparent,
-                          height: 0.2.sh - 50,
-                          child: Row(
-                            children: <Widget>[
-                              const SizedBox(width: 20),
-                              CircleAvatar(
-                                radius: 50,
-                                backgroundImage:
-                                    avatarUrl != null && avatarUrl.isNotEmpty
-                                    ? CachedNetworkImageProvider(avatarUrl)
-                                    : const AssetImage(_defaultAvatar),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: <Widget>[
-                                    const Spacer(),
-                                    SelectableText(
-                                      displayName,
-                                      style: context.typo.pageTitle.copyWith(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      maxLines: 1,
-                                    ),
-                                    if (subtitle.isNotEmpty)
-                                      SelectableText(
-                                        subtitle,
-                                        style: context.typo.cardSubtitle
-                                            .copyWith(
-                                              color: Colors.white,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                        maxLines: 1,
-                                      ),
-                                    const Spacer(),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
                     ),
                     Container(
-                      height: 220,
+                      height: infoHeight,
                       color: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.all(10),

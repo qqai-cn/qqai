@@ -33,8 +33,6 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
   static const String _placeholderCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
 
-  final ScrollController _scrollController = ScrollController();
-
   List<BlogCollectionResp> _items = [];
   bool _loading = false;
   bool _loadingMore = false;
@@ -45,17 +43,9 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     if (widget.tabIndex == widget.currentIndex) {
       scheduleMicrotask(_loadFirstPage);
     }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -81,13 +71,14 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
 
   bool get _isSelf => widget.userId == null;
 
-  void _onScroll() {
-    if (!_hasMore || _loadingMore || _loading) return;
-    if (!_scrollController.hasClients) return;
-    final pos = _scrollController.position;
-    if (pos.pixels >= pos.maxScrollExtent - 320) {
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (!_hasMore || _loadingMore || _loading) return false;
+    final metrics = notification.metrics;
+    if (metrics.maxScrollExtent > 0 &&
+        metrics.pixels >= metrics.maxScrollExtent - 320) {
       unawaited(_loadMore());
     }
+    return false;
   }
 
   Future<void> _loadFirstPage() async {
@@ -150,12 +141,13 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
   }
 
   Widget _buildCollectionGrid(bool isWideScreen) {
-    return RefreshIndicator(
-      onRefresh: _loadFirstPage,
-      child: CustomScrollView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: [
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScrollNotification,
+      child: RefreshIndicator(
+        onRefresh: _loadFirstPage,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
           ),
@@ -250,6 +242,7 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
               ),
             ),
         ],
+        ),
       ),
     );
   }
@@ -268,7 +261,6 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
     Widget body;
     if (_loading && _items.isEmpty) {
       body = CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -281,7 +273,6 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
       );
     } else if (_error != null && _items.isEmpty) {
       body = CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -309,7 +300,6 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
       );
     } else if (_items.isEmpty) {
       body = CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),

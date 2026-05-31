@@ -38,8 +38,6 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
   static const int _kCategory = 8;
   static const double _minColumnWidth = 400;
 
-  final ScrollController _scrollController = ScrollController();
-
   List<BlogItem> _items = [];
   bool _loading = false;
   bool _loadingMore = false;
@@ -50,17 +48,9 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
     if (widget.tabIndex == widget.currentIndex) {
       scheduleMicrotask(_loadFirstPage);
     }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -102,13 +92,14 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     );
   }
 
-  void _onScroll() {
-    if (!_hasMore || _loadingMore || _loading) return;
-    if (!_scrollController.hasClients) return;
-    final pos = _scrollController.position;
-    if (pos.pixels >= pos.maxScrollExtent - 480) {
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (!_hasMore || _loadingMore || _loading) return false;
+    final metrics = notification.metrics;
+    if (metrics.maxScrollExtent > 0 &&
+        metrics.pixels >= metrics.maxScrollExtent - 480) {
       unawaited(_loadMore());
     }
+    return false;
   }
 
   Future<void> _loadFirstPage() async {
@@ -253,7 +244,6 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
 
     if (_loading && _items.isEmpty) {
       return CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -268,7 +258,6 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
 
     if (_error != null && _items.isEmpty) {
       return CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -294,7 +283,6 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
 
     if (_items.isEmpty) {
       return CustomScrollView(
-        controller: _scrollController,
         slivers: [
           SliverOverlapInjector(
             handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
@@ -307,12 +295,14 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadFirstPage,
-      child: CustomScrollView(
-        controller: _scrollController,
-        physics: const AlwaysScrollableScrollPhysics(),
-        slivers: _buildTimelineSlivers(context),
+    return NotificationListener<ScrollNotification>(
+      onNotification: _onScrollNotification,
+      child: RefreshIndicator(
+        onRefresh: _loadFirstPage,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: _buildTimelineSlivers(context),
+        ),
       ),
     );
   }
