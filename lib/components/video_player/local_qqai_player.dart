@@ -205,7 +205,10 @@ class _LocalVideoAspectRatioBoxState extends State<LocalVideoAspectRatioBox> {
   @override
   void initState() {
     super.initState();
-    _loadAspectRatio();
+    _aspectRatio = peekLocalVideoAspectRatio(widget.file.path);
+    if (_aspectRatio == null) {
+      _loadAspectRatio();
+    }
   }
 
   @override
@@ -213,28 +216,22 @@ class _LocalVideoAspectRatioBoxState extends State<LocalVideoAspectRatioBox> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.file.path != widget.file.path ||
         oldWidget.fallbackAspectRatio != widget.fallbackAspectRatio) {
-      _aspectRatio = null;
-      _loadAspectRatio();
+      _aspectRatio = peekLocalVideoAspectRatio(widget.file.path);
+      if (_aspectRatio == null) {
+        _loadAspectRatio();
+      }
     }
   }
 
   Future<void> _loadAspectRatio() async {
     final version = ++_loadVersion;
-    final controller = createVideoControllerFromXFile(widget.file);
-    try {
-      await controller.initialize();
-      if (!mounted || version != _loadVersion) return;
-      setState(() {
-        _aspectRatio = effectiveVideoAspectRatio(
-          controller.value,
-          widget.fallbackAspectRatio,
-        );
-      });
-    } catch (_) {
-      // Keep the fallback ratio if metadata cannot be loaded.
-    } finally {
-      await controller.dispose();
-    }
+    final aspectRatio = await resolveLocalVideoAspectRatio(
+      widget.file,
+      fallbackAspectRatio: widget.fallbackAspectRatio,
+    );
+    if (!mounted || version != _loadVersion) return;
+    if (_aspectRatio == aspectRatio) return;
+    setState(() => _aspectRatio = aspectRatio);
   }
 
   @override
@@ -259,4 +256,68 @@ VideoPlayerController createVideoControllerFromXFile(XFile file) {
     return VideoPlayerController.networkUrl(uri ?? Uri.parse(path));
   }
   return VideoPlayerController.file(File(uri?.toFilePath() ?? path));
+}
+
+class LocalVideoMetadata {
+  const LocalVideoMetadata({
+    required this.aspectRatio,
+    required this.durationMs,
+  });
+
+  final double aspectRatio;
+  final int durationMs;
+}
+
+final Map<String, double> _localVideoAspectRatioCache = {};
+
+double? peekLocalVideoAspectRatio(String path) =>
+    _localVideoAspectRatioCache[path];
+
+Future<double> resolveLocalVideoAspectRatio(
+  XFile file, {
+  double fallbackAspectRatio = 15 / 9,
+}) async {
+  final cached = _localVideoAspectRatioCache[file.path];
+  if (cached != null) return cached;
+
+  final metadata = await resolveLocalVideoMetadata(
+    file,
+    fallbackAspectRatio: fallbackAspectRatio,
+  );
+  return metadata.aspectRatio;
+}
+
+Future<LocalVideoMetadata> resolveLocalVideoMetadata(
+  XFile file, {
+  double fallbackAspectRatio = 15 / 9,
+}) async {
+  final controller = createVideoControllerFromXFile(file);
+  try {
+    await controller.initialize();
+    final aspectRatio = effectiveVideoAspectRatio(
+      controller.value,
+      fallbackAspectRatio,
+    );
+    _localVideoAspectRatioCache[file.path] = aspectRatio;
+    return LocalVideoMetadata(
+      aspectRatio: aspectRatio,
+      durationMs: controller.value.duration.inMilliseconds,
+    );
+  } catch (_) {
+    _localVideoAspectRatioCache[file.path] = fallbackAspectRatio;
+    return LocalVideoMetadata(
+      aspectRatio: fallbackAspectRatio,
+      durationMs: 0,
+    );
+  } finally {
+    await controller.dispose();
+  }
+}
+
+void clearLocalVideoAspectRatioCache([String? path]) {
+  if (path == null) {
+    _localVideoAspectRatioCache.clear();
+    return;
+  }
+  _localVideoAspectRatioCache.remove(path);
 }

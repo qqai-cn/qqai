@@ -43,6 +43,37 @@ const double qqaiVideoCoverCanvasHeight = 800;
 
 const double qqaiVideoCoverAspectRatio = qqaiVideoCoverCanvasWidth / 500;
 
+const int qqaiStyledCoverW = 400;
+const int qqaiStyledCoverH = 500;
+const int qqaiCoverGap = 4;
+
+const int qqaiCoverMainH = 205;
+const int qqaiCoverSepH = 4;
+const int qqaiCoverReflH = 40;
+const int qqaiCoverGridTop = qqaiCoverMainH + qqaiCoverSepH + qqaiCoverReflH;
+
+const int qqaiCoverStyle1Row1H =
+    (qqaiStyledCoverH - qqaiCoverGridTop - qqaiCoverGap) ~/ 2;
+const int qqaiCoverStyle1ColW = (qqaiStyledCoverW - qqaiCoverGap) ~/ 2;
+
+const int qqaiCoverStyle2RowH =
+    (qqaiStyledCoverH - qqaiCoverGridTop - 2 * qqaiCoverGap) ~/ 3;
+
+const int qqaiCoverStyle4RowH = (qqaiStyledCoverH - qqaiCoverGap) ~/ 2;
+
+const List<int> qqaiCoverThreeColWidths = [131, 131, 130];
+
+int qqaiCoverStyle1Row2H() =>
+    qqaiStyledCoverH - qqaiCoverGridTop - qqaiCoverGap - qqaiCoverStyle1Row1H;
+
+int qqaiCoverThreeColX(int col) {
+  var x = 0;
+  for (var i = 0; i < col; i++) {
+    x += qqaiCoverThreeColWidths[i] + qqaiCoverGap;
+  }
+  return x;
+}
+
 bool qqaiVideoIsPortrait(double aspectRatio) => aspectRatio < 1.0;
 
 bool qqaiVideoCoverStyleIsLandscape(int styleId) => styleId == 1 || styleId == 2;
@@ -200,48 +231,94 @@ Uint8List _composeStyledCover(_StyledCoverComposeArgs args) {
   final styleId = args.styleId;
   final canvas = _createCoverCanvas();
   if (styleId == 1) {
-    _drawImageSlot(canvas, frames[0], 17, 16, 367, 205);
-    _drawSeparator(canvas, 17, 221, 367, 4);
-    _drawReflection(canvas, frames[0], 17, 225, 367, 40);
-    _drawImageSlot(canvas, frames[1], 17, 265, 179, 99);
-    _drawImageSlot(canvas, frames[2], 204, 265, 179, 99);
-    _drawImageSlot(canvas, frames[3], 17, 372, 179, 99);
-    _drawImageSlot(canvas, frames[4], 204, 372, 179, 99);
+    _drawImageSlot(canvas, frames[0], 0, 0, qqaiStyledCoverW, qqaiCoverMainH);
+    _drawSeparator(canvas, 0, qqaiCoverMainH, qqaiStyledCoverW, qqaiCoverSepH);
+    _drawReflection(
+      canvas,
+      frames[0],
+      0,
+      qqaiCoverMainH + qqaiCoverSepH,
+      qqaiStyledCoverW,
+      qqaiCoverReflH,
+    );
+    final row2Y = qqaiCoverGridTop + qqaiCoverStyle1Row1H + qqaiCoverGap;
+    _drawImageSlot(
+      canvas,
+      frames[1],
+      0,
+      qqaiCoverGridTop,
+      qqaiCoverStyle1ColW,
+      qqaiCoverStyle1Row1H,
+    );
+    _drawImageSlot(
+      canvas,
+      frames[2],
+      qqaiCoverStyle1ColW + qqaiCoverGap,
+      qqaiCoverGridTop,
+      qqaiCoverStyle1ColW,
+      qqaiCoverStyle1Row1H,
+    );
+    _drawImageSlot(
+      canvas,
+      frames[3],
+      0,
+      row2Y,
+      qqaiCoverStyle1ColW,
+      qqaiCoverStyle1Row2H(),
+    );
+    _drawImageSlot(
+      canvas,
+      frames[4],
+      qqaiCoverStyle1ColW + qqaiCoverGap,
+      row2Y,
+      qqaiCoverStyle1ColW,
+      qqaiCoverStyle1Row2H(),
+    );
   } else if (styleId == 2) {
-    _drawImageSlot(canvas, frames[0], 17, 16, 367, 205);
-    _drawSeparator(canvas, 17, 221, 367, 4);
-    _drawReflection(canvas, frames[0], 17, 225, 367, 40);
+    _drawImageSlot(canvas, frames[0], 0, 0, qqaiStyledCoverW, qqaiCoverMainH);
+    _drawSeparator(canvas, 0, qqaiCoverMainH, qqaiStyledCoverW, qqaiCoverSepH);
+    _drawReflection(
+      canvas,
+      frames[0],
+      0,
+      qqaiCoverMainH + qqaiCoverSepH,
+      qqaiStyledCoverW,
+      qqaiCoverReflH,
+    );
     for (var i = 0; i < 9; i++) {
-      final x = 17 + (i % 3) * 124;
-      final y = 265 + (i ~/ 3) * 72;
-      _drawImageSlot(canvas, frames[i + 1], x, y, 119, 67);
+      final col = i % 3;
+      final row = i ~/ 3;
+      _drawImageSlot(
+        canvas,
+        frames[i + 1],
+        qqaiCoverThreeColX(col),
+        qqaiCoverGridTop + row * (qqaiCoverStyle2RowH + qqaiCoverGap),
+        qqaiCoverThreeColWidths[col],
+        qqaiCoverStyle2RowH,
+      );
     }
   } else if (styleId == 3) {
-    _drawImageSlot(canvas, frames[0], 17, 16, 366, 468);
+    _drawImageSlot(canvas, frames[0], 0, 0, qqaiStyledCoverW, qqaiStyledCoverH);
   } else {
     for (var i = 0; i < 6; i++) {
-      final x = 17 + (i % 3) * 124;
-      final y = i < 3 ? 40 : 255;
-      _drawImageSlot(canvas, frames[i], x, y, 119, 210);
+      final col = i % 3;
+      final row = i ~/ 3;
+      _drawImageSlot(
+        canvas,
+        frames[i],
+        qqaiCoverThreeColX(col),
+        row * (qqaiCoverStyle4RowH + qqaiCoverGap),
+        qqaiCoverThreeColWidths[col],
+        qqaiCoverStyle4RowH,
+      );
     }
   }
   return Uint8List.fromList(img.encodePng(canvas));
 }
 
 img.Image _createCoverCanvas() {
-  final canvas = img.Image(width: 400, height: 500);
-  for (var y = 0; y < canvas.height; y++) {
-    final t = y / (canvas.height - 1);
-    final v = (255 - (85 * t)).round();
-    img.fillRect(
-      canvas,
-      x1: 0,
-      y1: y,
-      x2: canvas.width,
-      y2: y,
-      color: img.ColorRgb8(v, v, v),
-    );
-  }
+  final canvas = img.Image(width: qqaiStyledCoverW, height: qqaiStyledCoverH);
+  img.fill(canvas, color: img.ColorRgb8(255, 255, 255));
   return canvas;
 }
 

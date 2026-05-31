@@ -20,7 +20,6 @@ import '../../../../util/api_base_client.dart';
 import '../../../util/image_bytes_xfile.dart';
 import '../../../components/blog/network_image_carousel_pages.dart';
 import '../../../components/video_player/local_qqai_player.dart';
-import '../../../components/video_player/video_aspect_ratio.dart';
 import '../../data/models/address_entity.dart';
 import '../../tool/video_cover_tool.dart';
 import '../data/repos/fabu_repo.dart';
@@ -342,18 +341,21 @@ class FabuNotifier extends _$FabuNotifier {
   Future<double> _readVideoAspectRatio(
     XFile video, {
     double fallback = 9 / 16,
-  }) async {
-    VideoPlayerController? controller;
-    try {
-      controller = createVideoControllerFromXFile(video);
-      await controller.initialize();
-      return effectiveVideoAspectRatio(controller.value, fallback);
-    } catch (e) {
-      debugPrint('Read video aspect ratio error: $e');
-      return fallback;
-    } finally {
-      await controller?.dispose();
-    }
+  }) {
+    return resolveLocalVideoAspectRatio(
+      video,
+      fallbackAspectRatio: fallback,
+    );
+  }
+
+  Future<LocalVideoMetadata> _readVideoMetadata(
+    XFile video, {
+    double fallbackAspectRatio = 9 / 16,
+  }) {
+    return resolveLocalVideoMetadata(
+      video,
+      fallbackAspectRatio: fallbackAspectRatio,
+    );
   }
 
   void _syncCoverStyleForAspectRatio(double aspectRatio) {
@@ -368,20 +370,6 @@ class FabuNotifier extends _$FabuNotifier {
     );
   }
 
-  Future<void> _prepareVideoCoverDefaults(XFile video) async {
-    final results = await Future.wait([
-      _videoDurationMs(video),
-      _readVideoAspectRatio(video),
-    ]);
-    if (state.videoFiles.isEmpty || state.videoFiles.first.path != video.path) {
-      return;
-    }
-    _cachedVideoPath = video.path;
-    _cachedVideoDurationMs = results[0] as int;
-    _cachedVideoAspectRatio = results[1] as double;
-    _syncCoverStyleForAspectRatio(_cachedVideoAspectRatio!);
-  }
-
   void clearList(XFile file) {
     final newFiles = List<XFile>.from(state.files)..remove(file);
     state = state.copyWith(
@@ -393,7 +381,11 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   void clearVideo() {
+    final path = state.videoFiles.isEmpty ? null : state.videoFiles.first.path;
     _resetVideoDurationCache();
+    if (path != null) {
+      clearLocalVideoAspectRatioCache(path);
+    }
     _coverPreviewGeneration++;
     state = state.copyWith(
       files: [],
@@ -456,8 +448,16 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   Future<void> addVideoFiles(List<XFile> videoFiles) async {
+    if (videoFiles.isEmpty) return;
     _resetVideoDurationCache();
     _coverPreviewGeneration++;
+    final video = videoFiles.first;
+
+    final metadata = await _readVideoMetadata(video);
+    _cachedVideoPath = video.path;
+    _cachedVideoAspectRatio = metadata.aspectRatio;
+    _cachedVideoDurationMs = metadata.durationMs;
+
     final newVideoFiles = List<XFile>.from(videoFiles);
     state = state.copyWith(
       files: newVideoFiles,
@@ -469,9 +469,7 @@ class FabuNotifier extends _$FabuNotifier {
       uploadedCoverUrl: null,
       isCoverPreviewing: false,
     );
-    if (newVideoFiles.isNotEmpty) {
-      unawaited(_prepareVideoCoverDefaults(newVideoFiles.first));
-    }
+    _syncCoverStyleForAspectRatio(metadata.aspectRatio);
   }
 
   void setWhoCanSee(int who) {
