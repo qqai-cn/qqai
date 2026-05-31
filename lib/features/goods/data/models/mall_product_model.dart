@@ -5,6 +5,7 @@ class MallProduct {
     this.introduction,
     this.description,
     this.categoryId,
+    this.serviceMemberUserId,
     this.picUrl,
     this.sliderPicUrls = const [],
     this.specType,
@@ -21,6 +22,7 @@ class MallProduct {
   final String? introduction;
   final String? description;
   final int? categoryId;
+  final int? serviceMemberUserId;
   final String? picUrl;
   final List<String> sliderPicUrls;
   final bool? specType;
@@ -44,6 +46,7 @@ class MallProduct {
       introduction: json['introduction'] as String?,
       description: json['description'] as String?,
       categoryId: (json['categoryId'] as num?)?.toInt(),
+      serviceMemberUserId: (json['serviceMemberUserId'] as num?)?.toInt(),
       picUrl: json['picUrl'] as String?,
       sliderPicUrls: (json['sliderPicUrls'] as List<dynamic>? ?? const [])
           .whereType<String>()

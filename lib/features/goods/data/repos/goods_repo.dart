@@ -5,6 +5,7 @@ import '../../../../constant/api_constant.dart';
 import '../../../../util/api_base_client.dart';
 import '../models/goods_model.dart';
 import '../models/mall_product_model.dart';
+import '../models/trade_models.dart';
 
 // Repo Provider（按 blog 的格式：Provider 放在 repo 文件里）
 final goodsRepoProvider = Provider<IGoodsRepo>((ref) => GoodsRepo());
@@ -20,6 +21,27 @@ abstract class IGoodsRepo {
 
   /// 记录商品浏览（足迹，需登录）。
   Future<void> recordProductBrowse(int spuId);
+
+  /// 是否已收藏该商品（需登录）。
+  Future<bool> isProductFavorite(int spuId);
+
+  /// 收藏商品（需登录）。
+  Future<void> favoriteProduct(int spuId);
+
+  /// 取消收藏商品（需登录）。
+  Future<void> unfavoriteProduct(int spuId);
+
+  /// 切换收藏状态，返回切换后是否已收藏。
+  Future<bool> toggleProductFavorite(
+    int spuId, {
+    required bool currentlyCollected,
+  });
+
+  /// 商品收藏分页（需登录）。
+  Future<BrowseHistoryPageData> getProductFavoritePage(
+    int pageNo, {
+    int pageSize = 20,
+  });
 
   Future<List<GoodsModel>> getAllGoodss();
   Future<GoodsModel?> getGoodsById(String id);
@@ -93,6 +115,87 @@ class GoodsRepo implements IGoodsRepo {
     if (data is Map<String, dynamic>) {
       _ensureEnvelope(data);
     }
+  }
+
+  bool _parseBooleanData(dynamic raw, {String errorHint = '操作失败'}) {
+    if (raw is! Map<String, dynamic>) {
+      throw '$errorHint：返回格式错误';
+    }
+    _ensureEnvelope(raw);
+    return raw['data'] == true;
+  }
+
+  @override
+  Future<bool> isProductFavorite(int spuId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCT_FAVORITE_EXISTS,
+      RequestType.get,
+      queryParameters: {'spuId': spuId},
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '收藏状态接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    return data['data'] == true;
+  }
+
+  @override
+  Future<void> favoriteProduct(int spuId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCT_FAVORITE_CREATE,
+      RequestType.post,
+      data: {'spuId': spuId},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      _ensureEnvelope(data);
+    }
+  }
+
+  @override
+  Future<void> unfavoriteProduct(int spuId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCT_FAVORITE_DELETE,
+      RequestType.delete,
+      data: {'spuId': spuId},
+    );
+    _parseBooleanData(response.data, errorHint: '取消收藏失败');
+  }
+
+  @override
+  Future<bool> toggleProductFavorite(
+    int spuId, {
+    required bool currentlyCollected,
+  }) async {
+    if (currentlyCollected) {
+      await unfavoriteProduct(spuId);
+      return false;
+    }
+    await favoriteProduct(spuId);
+    return true;
+  }
+
+  @override
+  Future<BrowseHistoryPageData> getProductFavoritePage(
+    int pageNo, {
+    int pageSize = 20,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCT_FAVORITE_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '商品收藏接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BrowseHistoryPageData(list: [], total: 0);
+    }
+    return BrowseHistoryPageData.fromJson(inner);
   }
 
   @override

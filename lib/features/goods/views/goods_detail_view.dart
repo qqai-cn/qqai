@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../providers/auth_providers.dart';
+import '../../../router/app_routes.dart';
 import '../../../util/media_url.dart';
 import '../data/product_browse_record.dart';
 import '../data/models/mall_product_model.dart';
@@ -11,6 +14,7 @@ import '../models/goods_comment_item.dart';
 import '../providers/cart_session.dart';
 import '../providers/goods_comments.dart';
 import '../widgets/coupon_claim_entry.dart';
+import '../../chat/utils/open_member_conversation_chat.dart';
 import '../widgets/goods_comment_submit_sheet.dart';
 import '../widgets/goods_page_layout.dart';
 
@@ -79,6 +83,9 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
   int _currentImageIndex = 0;
   int? _selectedSkuIndex;
   int _selectedQty = 1;
+  bool _collected = false;
+  bool _collectLoading = false;
+  bool _serviceLoading = false;
 
   MallProduct get _product => widget.product;
 
@@ -155,9 +162,79 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => recordProductBrowseSilently(ref, _product.id),
-    );
+    Future.microtask(() {
+      recordProductBrowseSilently(ref, _product.id);
+      _loadFavoriteStatus();
+    });
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    final spuId = _product.id;
+    if (spuId == null) return;
+    if (!ref.read(authProvider).isAuthenticated) return;
+    try {
+      final collected =
+          await ref.read(goodsRepoProvider).isProductFavorite(spuId);
+      if (!mounted) return;
+      setState(() => _collected = collected);
+    } catch (_) {
+      // 静默失败，不影响详情页展示
+    }
+  }
+
+  Future<void> _openCustomerService() async {
+    if (_serviceLoading) return;
+    final memberUserId = _product.serviceMemberUserId;
+    if (memberUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('该商品分类暂未绑定客服会员')),
+      );
+      return;
+    }
+    setState(() => _serviceLoading = true);
+    try {
+      await openMemberConversationChat(context, ref, memberUserId);
+    } finally {
+      if (mounted) {
+        setState(() => _serviceLoading = false);
+      }
+    }
+  }
+
+  Future<void> _toggleCollect() async {
+    if (_collectLoading) return;
+    if (!ref.read(authProvider).isAuthenticated) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('请先登录')),
+      );
+      context.push(Routes.login);
+      return;
+    }
+    final spuId = _product.id;
+    if (spuId == null) return;
+
+    setState(() => _collectLoading = true);
+    try {
+      final nowCollected = await ref.read(goodsRepoProvider).toggleProductFavorite(
+            spuId,
+            currentlyCollected: _collected,
+          );
+      if (!mounted) return;
+      setState(() => _collected = nowCollected);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(nowCollected ? '已收藏' : '已取消收藏')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('操作失败：$e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _collectLoading = false);
+      }
+    }
   }
 
   @override
@@ -345,6 +422,11 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
         ],
       ),
       bottomBar: _BottomActionBar(
+        collected: _collected,
+        collectLoading: _collectLoading,
+        serviceLoading: _serviceLoading,
+        onCollect: _toggleCollect,
+        onCustomerService: _openCustomerService,
         onCart: context.pushGoodsCart,
         onAddToCart: () => _openSkuSheet(buyAfterConfirm: false),
         onBuyNow: () => _openSkuSheet(buyAfterConfirm: true),
@@ -1482,11 +1564,21 @@ class _DetailTextCard extends StatelessWidget {
 
 class _BottomActionBar extends StatelessWidget {
   const _BottomActionBar({
+    required this.onCollect,
+    required this.collected,
+    required this.collectLoading,
+    required this.serviceLoading,
+    required this.onCustomerService,
     required this.onCart,
     required this.onAddToCart,
     required this.onBuyNow,
   });
 
+  final VoidCallback onCollect;
+  final bool collected;
+  final bool collectLoading;
+  final bool serviceLoading;
+  final VoidCallback onCustomerService;
   final VoidCallback onCart;
   final VoidCallback onAddToCart;
   final VoidCallback onBuyNow;
@@ -1509,14 +1601,15 @@ class _BottomActionBar extends StatelessWidget {
         child: Row(
           children: [
             _BottomIconButton(
-              icon: Icons.star_border_rounded,
+              icon: collected ? Icons.star_rounded : Icons.star_border_rounded,
               label: '收藏',
-              onTap: () {},
+              iconColor: collected ? const Color(0xFFFFA000) : null,
+              onTap: collectLoading ? () {} : onCollect,
             ),
             _BottomIconButton(
               icon: Icons.headset_mic_outlined,
               label: '客服',
-              onTap: () {},
+              onTap: serviceLoading ? () {} : onCustomerService,
             ),
             _BottomIconButton(
               icon: Icons.shopping_cart_outlined,
@@ -1557,11 +1650,13 @@ class _BottomIconButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
+    this.iconColor,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final Color? iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -1573,7 +1668,11 @@ class _BottomIconButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 22, color: const Color(0xFF3B3B3B)),
+            Icon(
+              icon,
+              size: 22,
+              color: iconColor ?? const Color(0xFF3B3B3B),
+            ),
             const SizedBox(height: 3),
             Text(
               label,

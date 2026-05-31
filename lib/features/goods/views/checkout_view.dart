@@ -4,10 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
 
+import '../../my/data/models/member_address_models.dart';
+import '../../my/data/repos/member_address_repo.dart';
 import '../goods_tab_navigator.dart';
 import '../models/cart_line.dart';
 import '../providers/cart_session.dart';
 import '../theme/goods_page_style.dart';
+import '../widgets/checkout_address_picker_sheet.dart';
 
 /// 确认订单
 class CheckoutView extends ConsumerStatefulWidget {
@@ -20,15 +23,52 @@ class CheckoutView extends ConsumerStatefulWidget {
 }
 
 class _CheckoutViewState extends ConsumerState<CheckoutView> {
-  final _addressController = TextEditingController(
-    text: '北京市朝阳区某某街道 1 号楼（示例地址）',
-  );
-  final _nameController = TextEditingController(text: '张三');
-  final _phoneController = TextEditingController(text: '13800138000');
+  final _addressController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  MemberAddress? _selectedAddress;
   int _payIndex = 0;
   bool _submitting = false;
   static const _freight = 6.0;
   static const _payLabels = ['微信支付', '支付宝', '货到付款（示例）'];
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_loadDefaultAddress);
+  }
+
+  Future<void> _loadDefaultAddress() async {
+    try {
+      final list = await ref.read(memberAddressRepoProvider).getList();
+      if (!mounted || list.isEmpty) return;
+      final defaultAddr = list.firstWhere(
+        (a) => a.defaultStatus,
+        orElse: () => list.first,
+      );
+      _applyAddress(defaultAddr);
+      setState(() => _selectedAddress = defaultAddr);
+    } catch (_) {
+      // 未登录或无地址时允许手动填写
+    }
+  }
+
+  void _applyAddress(MemberAddress address) {
+    _nameController.text = address.name?.trim() ?? '';
+    _phoneController.text = address.mobile?.trim() ?? '';
+    _addressController.text = address.fullAddress;
+  }
+
+  Future<void> _pickAddress() async {
+    final picked = await showCheckoutAddressPickerSheet(
+      context,
+      ref,
+      selected: _selectedAddress,
+    );
+    if (picked == null || !mounted) return;
+    _applyAddress(picked);
+    setState(() => _selectedAddress = picked);
+  }
 
   @override
   void dispose() {
@@ -96,6 +136,8 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
               nameController: _nameController,
               phoneController: _phoneController,
               addressController: _addressController,
+              selectedAddress: _selectedAddress,
+              onPickAddress: _pickAddress,
               payIndex: _payIndex,
               payLabels: _payLabels,
               goodsTotal: _goodsTotal,
@@ -110,6 +152,8 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
               nameController: _nameController,
               phoneController: _phoneController,
               addressController: _addressController,
+              selectedAddress: _selectedAddress,
+              onPickAddress: _pickAddress,
               payIndex: _payIndex,
               payLabels: _payLabels,
               goodsTotal: _goodsTotal,
@@ -136,6 +180,8 @@ class _WideCheckoutBody extends StatelessWidget {
     required this.nameController,
     required this.phoneController,
     required this.addressController,
+    required this.selectedAddress,
+    required this.onPickAddress,
     required this.payIndex,
     required this.payLabels,
     required this.goodsTotal,
@@ -150,6 +196,8 @@ class _WideCheckoutBody extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController phoneController;
   final TextEditingController addressController;
+  final MemberAddress? selectedAddress;
+  final VoidCallback onPickAddress;
   final int payIndex;
   final List<String> payLabels;
   final double goodsTotal;
@@ -180,6 +228,8 @@ class _WideCheckoutBody extends StatelessWidget {
                   nameController: nameController,
                   phoneController: phoneController,
                   addressController: addressController,
+                  selectedAddress: selectedAddress,
+                  onPickAddress: onPickAddress,
                   payIndex: payIndex,
                   payLabels: payLabels,
                   goodsTotal: goodsTotal,
@@ -215,6 +265,8 @@ class _CheckoutFormContent extends StatelessWidget {
     required this.nameController,
     required this.phoneController,
     required this.addressController,
+    required this.selectedAddress,
+    required this.onPickAddress,
     required this.payIndex,
     required this.payLabels,
     required this.goodsTotal,
@@ -228,6 +280,8 @@ class _CheckoutFormContent extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController phoneController;
   final TextEditingController addressController;
+  final MemberAddress? selectedAddress;
+  final VoidCallback onPickAddress;
   final int payIndex;
   final List<String> payLabels;
   final double goodsTotal;
@@ -246,6 +300,11 @@ class _CheckoutFormContent extends StatelessWidget {
         _GoodsPanel(
           child: Column(
             children: [
+              _CheckoutAddressPickRow(
+                selectedAddress: selectedAddress,
+                onTap: onPickAddress,
+              ),
+              const Divider(height: 1, color: GoodsPageStyle.border),
               _CheckoutTextField(
                 controller: nameController,
                 label: '收货人',
@@ -744,6 +803,70 @@ class _GoodsPanel extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: child,
+    );
+  }
+}
+
+class _CheckoutAddressPickRow extends StatelessWidget {
+  const _CheckoutAddressPickRow({
+    required this.selectedAddress,
+    required this.onTap,
+  });
+
+  final MemberAddress? selectedAddress;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = selectedAddress;
+    final subtitle = selected == null
+        ? '点击从已保存地址中选择'
+        : '${selected.name ?? ''} ${selected.mobile ?? ''}'.trim();
+
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.contact_page_outlined,
+              size: 20,
+              color: GoodsPageStyle.accent,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '从我的地址选择',
+                    style: context.typo.bodyStrong.copyWith(
+                      color: GoodsPageStyle.text,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.caption.copyWith(
+                        color: GoodsPageStyle.sub,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: GoodsPageStyle.sub,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

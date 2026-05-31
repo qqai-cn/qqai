@@ -112,6 +112,14 @@ class ApiConstant {
       '/app-api/product/browse-history/delete';
   static const String MALL_BROWSE_HISTORY_CLEAN =
       '/app-api/product/browse-history/clean';
+  static const String MALL_PRODUCT_FAVORITE_CREATE =
+      '/app-api/product/favorite/create';
+  static const String MALL_PRODUCT_FAVORITE_DELETE =
+      '/app-api/product/favorite/delete';
+  static const String MALL_PRODUCT_FAVORITE_EXISTS =
+      '/app-api/product/favorite/exits';
+  static const String MALL_PRODUCT_FAVORITE_PAGE =
+      '/app-api/product/favorite/page';
 
   /// 商城交易：购物车 / 订单
   static const String TRADE_CART_LIST = '/app-api/trade/cart/list';
