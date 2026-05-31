@@ -2,6 +2,7 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
+import 'package:qqai/components/video_player/shared_video_playback_session.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/config/theme/app_typography.dart';
@@ -46,6 +47,7 @@ class BlogVideoDetailPlayer extends StatefulWidget {
 class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
   late FlickManager flickManager;
   late VideoPlayerController videoController;
+  SharedVideoPlaybackSession? _sharedSession;
   bool _isDisposed = false;
   bool _didNotifyCompleted = false;
 
@@ -54,17 +56,24 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
     super.initState();
     final rawVideo = firstPlayableVideoUrlFromResources(widget.blog.resources);
     final videoUrl = resolveMediaUrl(rawVideo) ?? '';
-    videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+    _sharedSession = videoUrl.isEmpty
+        ? null
+        : acquireSharedVideoPlaybackSession(videoUrl);
+    videoController =
+        _sharedSession?.videoController ??
+        VideoPlayerController.networkUrl(Uri.parse(videoUrl));
     videoController.addListener(_videoListener);
-
-    flickManager = FlickManager(
-      videoPlayerController: videoController,
-      autoPlay: widget.isActive,
-      autoInitialize: true,
-    );
+    flickManager =
+        _sharedSession?.flickManager ??
+        FlickManager(
+          videoPlayerController: videoController,
+          autoPlay: widget.isActive,
+          autoInitialize: true,
+        );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isDisposed && mounted && widget.isActive) {
+        flickManager.flickControlManager?.autoResume();
         _setVolumeIfNeeded();
       }
     });
@@ -127,7 +136,12 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
   void dispose() {
     _isDisposed = true;
     videoController.removeListener(_videoListener);
-    flickManager.dispose();
+    final session = _sharedSession;
+    if (session != null) {
+      session.release();
+    } else {
+      flickManager.dispose();
+    }
     super.dispose();
   }
 
@@ -219,21 +233,6 @@ class _VideoSurfaceHero extends StatelessWidget {
   Widget build(BuildContext context) {
     final heroTag = tag;
     if (heroTag == null || heroTag.isEmpty) return child;
-    return Hero(
-      tag: heroTag,
-      transitionOnUserGestures: true,
-      flightShuttleBuilder: _buildVideoHeroFlight,
-      child: child,
-    );
-  }
-
-  Widget _buildVideoHeroFlight(
-    BuildContext flightContext,
-    Animation<double> animation,
-    HeroFlightDirection flightDirection,
-    BuildContext fromHeroContext,
-    BuildContext toHeroContext,
-  ) {
-    return const VideoLoadingPlaceholder(showPoster: false);
+    return Hero(tag: heroTag, transitionOnUserGestures: true, child: child);
   }
 }

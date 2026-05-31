@@ -41,6 +41,7 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           videoId: widget.videoId,
           fallbackAspectRatio: widget.fallbackAspectRatio,
           showLoadingPoster: false,
+          sharedPlaybackKey: widget.url,
         ),
       ),
     );

@@ -82,12 +82,7 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
       final heroTag = widget.playerHeroTag;
       if (heroTag == null || heroTag.isEmpty) return slot;
 
-      return Hero(
-        tag: heroTag,
-        transitionOnUserGestures: true,
-        flightShuttleBuilder: _buildVideoHeroFlight,
-        child: slot,
-      );
+      return Hero(tag: heroTag, transitionOnUserGestures: true, child: slot);
     }
 
     return VisibilityDetector(
@@ -100,15 +95,5 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
               builder: (context, aspectRatio) => buildSlot(aspectRatio),
             ),
     );
-  }
-
-  Widget _buildVideoHeroFlight(
-    BuildContext flightContext,
-    Animation<double> animation,
-    HeroFlightDirection flightDirection,
-    BuildContext fromHeroContext,
-    BuildContext toHeroContext,
-  ) {
-    return const VideoLoadingPlaceholder(showPoster: false);
   }
 }

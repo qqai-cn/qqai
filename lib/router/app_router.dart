@@ -12,6 +12,8 @@ import '../../features/meleft/mycollect_page.dart' deferred as my_collect;
 import '../../features/watchvideo/play_video_page.dart' deferred as play_video;
 import '../cache/deferred_widget.dart';
 import '../components/imgpreview/preview_img.dart';
+import '../components/blog/network_image_carousel_pages.dart';
+import '../components/video_player/qqai_player.dart';
 import '../components/video_player/video_loading_placeholder.dart';
 import '../features/blog/data/blog_route_extra.dart';
 import '../features/blog/views/blog_detail_video_toolbar.dart';
@@ -26,6 +28,7 @@ import '../features/index/presentation/views/video_page.dart';
 import '../features/index/presentation/widgets/lazy_shell_tab.dart';
 import '../providers/auth_providers.dart';
 import '../util/api_base_client.dart';
+import '../util/media_url.dart';
 import 'app_routes.dart';
 import 'deferred_route_pages.dart' deferred as route_pages;
 
@@ -447,6 +450,7 @@ GoRouter appRouter(Ref ref) {
             libraryLoader: route_pages.loadLibrary,
             placeholder: _DeferredVideoDetailPlaceholder(
               mediaHeroTag: detailExtra.mediaHeroTag,
+              videoUrl: _detailVideoUrl(detailExtra.blogItem.resources),
             ),
             builder: () => route_pages.BlogVideoDetailView(
               blogItem: detailExtra.blogItem,
@@ -467,6 +471,7 @@ GoRouter appRouter(Ref ref) {
             libraryLoader: route_pages.loadLibrary,
             placeholder: _DeferredVideoDetailPlaceholder(
               mediaHeroTag: detailExtra.mediaHeroTag,
+              videoUrl: _detailVideoUrl(detailExtra.blogItem.resources),
             ),
             builder: () => route_pages.VideoDetailView(
               blogItem: detailExtra.blogItem,
@@ -749,9 +754,10 @@ GoRouter appRouter(Ref ref) {
 }
 
 class _DeferredVideoDetailPlaceholder extends ConsumerWidget {
-  const _DeferredVideoDetailPlaceholder({this.mediaHeroTag});
+  const _DeferredVideoDetailPlaceholder({this.mediaHeroTag, this.videoUrl});
 
   final String? mediaHeroTag;
+  final String? videoUrl;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -770,7 +776,12 @@ class _DeferredVideoDetailPlaceholder extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(child: _DeferredVideoHero(mediaHeroTag: mediaHeroTag)),
+          Expanded(
+            child: _DeferredVideoHero(
+              mediaHeroTag: mediaHeroTag,
+              videoUrl: videoUrl,
+            ),
+          ),
           SizedBox(height: toolbarHeight),
         ],
       ),
@@ -804,32 +815,32 @@ class _DeferredVideoDetailPlaceholder extends ConsumerWidget {
 }
 
 class _DeferredVideoHero extends StatelessWidget {
-  const _DeferredVideoHero({this.mediaHeroTag});
+  const _DeferredVideoHero({this.mediaHeroTag, this.videoUrl});
 
   final String? mediaHeroTag;
+  final String? videoUrl;
 
   @override
   Widget build(BuildContext context) {
     final heroTag = mediaHeroTag;
-    const child = VideoLoadingPlaceholder(showPoster: false);
+    final url = videoUrl;
+    final child = url == null || url.isEmpty
+        ? const VideoLoadingPlaceholder(showPoster: false)
+        : QqaiPlayer(
+            controls: const SizedBox.shrink(),
+            url: url,
+            autoPlay: true,
+            showLoadingPoster: false,
+            sharedPlaybackKey: url,
+          );
     if (heroTag == null || heroTag.isEmpty) return child;
-    return Hero(
-      tag: heroTag,
-      transitionOnUserGestures: true,
-      flightShuttleBuilder: _buildVideoHeroFlight,
-      child: child,
-    );
+    return Hero(tag: heroTag, transitionOnUserGestures: true, child: child);
   }
+}
 
-  Widget _buildVideoHeroFlight(
-    BuildContext flightContext,
-    Animation<double> animation,
-    HeroFlightDirection flightDirection,
-    BuildContext fromHeroContext,
-    BuildContext toHeroContext,
-  ) {
-    return const VideoLoadingPlaceholder(showPoster: false);
-  }
+String? _detailVideoUrl(String? resources) {
+  final rawVideo = firstPlayableVideoUrlFromResources(resources);
+  return resolveMediaUrl(rawVideo);
 }
 
 // 辅助函数：检查路由是否需要认证
