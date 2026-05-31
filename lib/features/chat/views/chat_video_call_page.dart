@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -51,6 +52,7 @@ class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
   bool _micEnabled = true;
   bool _cameraEnabled = true;
   bool _callDisposed = false;
+  bool _acceptedBeforePeerReady = false;
   String? _error;
 
   @override
@@ -60,6 +62,7 @@ class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
         widget.callId ??
         '${widget.conversationId}-${widget.currentUserId}-${DateTime.now().millisecondsSinceEpoch}';
     _enterCallMode();
+    _connectSignalStream();
     _startCall();
   }
 
@@ -114,10 +117,14 @@ class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
         await peer.addTrack(track, stream);
       }
 
-      _connectSignalStream();
-
       if (mounted) {
         setState(() => _initializing = false);
+      }
+      if (widget.isCaller && _acceptedBeforePeerReady) {
+        _acceptedBeforePeerReady = false;
+        await _createAndSendOffer();
+      } else if (!widget.isCaller) {
+        _sendSignal('accept', {'media': 'video'});
       }
     } catch (e) {
       if (mounted) {
@@ -134,8 +141,6 @@ class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
     _rtcSubscription = socket.rtcSignalStream.listen(_handleRtcSignal);
     if (widget.isCaller) {
       _sendSignal('invite', {'media': 'video'});
-    } else {
-      _sendSignal('accept', {'media': 'video'});
     }
   }
 
@@ -146,6 +151,10 @@ class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
       switch (signal.signalType) {
         case 'accept':
           if (widget.isCaller) {
+            if (_peer == null) {
+              _acceptedBeforePeerReady = true;
+              return;
+            }
             await _createAndSendOffer();
           }
           break;
@@ -315,11 +324,17 @@ class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
     }
   }
 
-  Future<void> _hangup() async {
-    _sendSignal('hangup', {});
-    await _disposeCall();
-    if (mounted) Navigator.of(context).pop();
+  Future<void> _leaveCall({required bool popRoute}) async {
+    if (!_callDisposed) {
+      _sendSignal('hangup', {});
+      await _disposeCall();
+    }
+    if (popRoute && mounted && Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    }
   }
+
+  Future<void> _hangup() => _leaveCall(popRoute: true);
 
   Future<void> _disposeCall() async {
     if (_callDisposed) return;
@@ -355,7 +370,8 @@ class _ChatVideoCallPageState extends ConsumerState<ChatVideoCallPage> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _hangup();
+        // Web 手势返回时 GoRouter 已随 browser history 退栈，勿再 pop。
+        unawaited(_leaveCall(popRoute: !didPop && !kIsWeb));
       },
       child: Scaffold(
         backgroundColor: Colors.black,

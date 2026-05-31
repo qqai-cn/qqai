@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../router/app_routes.dart';
+import '../../util/web_history_helper.dart';
 import '../goods/theme/jd_goods_theme.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -123,7 +125,12 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     final q = _controller.text.trim();
     if (q.isEmpty) return;
     FocusScope.of(context).unfocus();
+    final wideSplit = _isWideSplit(MediaQuery.sizeOf(context).width);
     setState(() => _showResult = true);
+    // Web 窄屏：结果层占一条 history，手势返回只关结果，不会连退搜索页。
+    if (kIsWeb && !wideSplit) {
+      pushBrowserHistoryOverlay();
+    }
   }
 
   void _fillQuery(String q) {
@@ -174,9 +181,8 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     return PopScope(
       canPop: !guardResultView,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && guardResultView) {
-          setState(() => _showResult = false);
-        }
+        if (didPop) return;
+        _handleBack();
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF7F7F7),

@@ -28,6 +28,8 @@ import 'deferred_route_pages.dart' deferred as route_pages;
 
 part 'app_router.g.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 /// 认证变化时通知 GoRouter 重新执行 [redirect]，**不得**为此重建 [GoRouter]，
 /// 否则新实例会回到 [Routes.HOME]，发布页等栈会丢失（例如 401 刷新失败后像「跳回首页」）。
 final class _AuthRefreshListenable extends ChangeNotifier {
@@ -45,6 +47,7 @@ GoRouter appRouter(Ref ref) {
   ref.onDispose(authRefresh.dispose);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: Routes.HOME,
     refreshListenable: authRefresh,
     // 路由重定向守卫

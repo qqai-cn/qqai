@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../components/AnimatedBottomBar.dart';
 import '../../../../components/AnimatedLeftBar.dart';
+import '../../../../features/chat/providers/chat_providers.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/main_shell_tab_reselect_provider.dart';
+import '../../../../providers/auth_providers.dart';
 import '../widgets/lazy_shell_tab.dart';
 
 class HomePage extends ConsumerStatefulWidget {
@@ -35,6 +37,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final homeState = ref.watch(homeProvider);
     final bool isWideScreen = 1.sw > 800;
     final shell = widget.navigationShell;
+    final messageUnreadCount = _messageUnreadCount();
 
     return MainShellIndexScope(
       currentIndex: shell.currentIndex,
@@ -48,6 +51,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 child: AnimatedBottomBar(
                   selectedBarIndex: shell.currentIndex,
                   barItems: HomeNotifier.barItems,
+                  badgeCounts: [0, 0, messageUnreadCount, 0],
                   onBarTap: _onMainTabTap,
                   animationDuration: const Duration(milliseconds: 150),
                   barStyle: const BarStyle(),
@@ -56,6 +60,20 @@ class _HomePageState extends ConsumerState<HomePage> {
             : null,
       ),
     );
+  }
+
+  int _messageUnreadCount() {
+    final auth = ref.watch(authProvider);
+    if (!auth.isAuthenticated) {
+      return 0;
+    }
+    return ref.watch(chatConversationsProvider).maybeWhen(
+          data: (conversations) => conversations.fold<int>(
+            0,
+            (sum, conversation) => sum + (conversation.unreadCount ?? 0),
+          ),
+          orElse: () => 0,
+        );
   }
 
   Widget getWideScreen(HomeState homeState, StatefulNavigationShell shell) {

@@ -2,9 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:qqai/components/chat/global_chat_socket_service.dart';
+import 'package:qqai/features/chat/providers/chat_providers.dart';
 import 'package:qqai/providers/auth_providers.dart';
+import 'package:qqai/router/app_router.dart';
 import 'package:qqai/router/app_routes.dart';
 
 class GlobalChatRealtimeScope extends ConsumerStatefulWidget {
@@ -20,6 +21,7 @@ class GlobalChatRealtimeScope extends ConsumerStatefulWidget {
 class _GlobalChatRealtimeScopeState
     extends ConsumerState<GlobalChatRealtimeScope> {
   StreamSubscription<GlobalRtcSignalEvent>? _rtcSubscription;
+  StreamSubscription<GlobalChatMessageEvent>? _messageSubscription;
   final Set<String> _pendingInviteCallIds = <String>{};
   String? _connectedToken;
 
@@ -28,11 +30,13 @@ class _GlobalChatRealtimeScopeState
     super.initState();
     final socket = ref.read(globalChatSocketServiceProvider);
     _rtcSubscription = socket.rtcSignalStream.listen(_handleRtcSignal);
+    _messageSubscription = socket.messageStream.listen(_handleNewMessage);
   }
 
   @override
   void dispose() {
     _rtcSubscription?.cancel();
+    _messageSubscription?.cancel();
     super.dispose();
   }
 
@@ -62,9 +66,23 @@ class _GlobalChatRealtimeScopeState
     unawaited(_showIncomingVideoCall(signal));
   }
 
+  void _handleNewMessage(GlobalChatMessageEvent event) {
+    if (!mounted) return;
+    final conversationId = event.dto.conversationId;
+    if (conversationId == null) return;
+
+    ref.invalidate(chatConversationsProvider);
+  }
+
   Future<void> _showIncomingVideoCall(GlobalRtcSignalEvent signal) async {
+    final dialogContext = rootNavigatorKey.currentContext;
+    if (dialogContext == null) {
+      _pendingInviteCallIds.remove(signal.callId);
+      return;
+    }
     final accepted = await showDialog<bool>(
-      context: context,
+      context: dialogContext,
+      useRootNavigator: true,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
         title: const Text('视频通话邀请'),
@@ -84,7 +102,7 @@ class _GlobalChatRealtimeScopeState
     _pendingInviteCallIds.remove(signal.callId);
     if (!mounted) return;
     if (accepted == true) {
-      context.push(
+      ref.read(appRouterProvider).push(
         '${Routes.chat}/${signal.conversationId}/video-call'
         '?callId=${signal.callId}&caller=false',
       );

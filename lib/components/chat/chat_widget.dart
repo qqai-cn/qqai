@@ -652,6 +652,9 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       if (!exists) {
         await _chatController.insertMessage(incoming);
       }
+      if (event.dto.senderId?.toString() != widget.currentUserId) {
+        unawaited(_markConversationRead([event.dto]));
+      }
     });
   }
 
