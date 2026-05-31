@@ -31,7 +31,20 @@ abstract class ITradeRepo {
     int pageNo, {
     int pageSize = 10,
     int? status,
+    bool? commentStatus,
   });
+
+  Future<int> createOrderItemComment({
+    required int orderItemId,
+    required String content,
+    required int descriptionScores,
+    required int benefitScores,
+    bool anonymous = false,
+    List<String> picUrls = const [],
+  });
+
+  /// 查找当前用户对该 SPU 可评价的订单项（已完成且未评价）。
+  Future<TradeOrderItem?> findPendingCommentItem(int spuId);
 }
 
 bool _isOkCode(dynamic code) => code == null || code == 0 || code == '0';
@@ -158,9 +171,11 @@ class TradeRepo implements ITradeRepo {
     int pageNo, {
     int pageSize = 10,
     int? status,
+    bool? commentStatus,
   }) async {
     final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (status != null) query['status'] = status;
+    if (commentStatus != null) query['commentStatus'] = commentStatus;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.TRADE_ORDER_PAGE,
       RequestType.get,
@@ -176,5 +191,58 @@ class TradeRepo implements ITradeRepo {
       return const TradeOrderPageData(list: [], total: 0);
     }
     return TradeOrderPageData.fromJson(inner);
+  }
+
+  @override
+  Future<int> createOrderItemComment({
+    required int orderItemId,
+    required String content,
+    required int descriptionScores,
+    required int benefitScores,
+    bool anonymous = false,
+    List<String> picUrls = const [],
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.TRADE_ORDER_ITEM_CREATE_COMMENT,
+      RequestType.post,
+      data: {
+        'orderItemId': orderItemId,
+        'anonymous': anonymous,
+        'descriptionScores': descriptionScores,
+        'benefitScores': benefitScores,
+        'content': content,
+        if (picUrls.isNotEmpty) 'picUrls': picUrls,
+      },
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '提交评价失败';
+    }
+    _ensureEnvelope(data);
+    return (data['data'] as num?)?.toInt() ?? 0;
+  }
+
+  @override
+  Future<TradeOrderItem?> findPendingCommentItem(int spuId) async {
+    const pageSize = 20;
+    var pageNo = 1;
+    while (pageNo <= 5) {
+      final page = await getOrderPage(
+        pageNo,
+        pageSize: pageSize,
+        status: 30,
+        commentStatus: false,
+      );
+      for (final order in page.list) {
+        for (final item in order.items) {
+          if (item.spuId == spuId && item.canComment && item.id != null) {
+            return item;
+          }
+        }
+      }
+      if (page.list.length < pageSize) break;
+      pageNo++;
+    }
+    return null;
   }
 }

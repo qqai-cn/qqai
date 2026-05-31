@@ -10,6 +10,7 @@ import '../../../util/media_url.dart';
 import '../data/models/mall_product_model.dart';
 import '../data/repos/goods_repo.dart';
 import '../providers/goods_mall_tab_reselect_provider.dart';
+import '../widgets/coupon_claim_entry.dart';
 
 class GoodsView extends ConsumerStatefulWidget {
   const GoodsView({super.key});
@@ -309,6 +310,7 @@ class _MallHeader extends StatelessWidget {
               ],
             ),
           ),
+          const CouponClaimEntry(),
         ],
       ),
     );
@@ -397,22 +399,13 @@ class _GoodsCard extends StatelessWidget {
                           ),
                         ),
                         const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
+                        DecoratedBox(
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFF1F2),
                             borderRadius: BorderRadius.circular(999),
                           ),
-                          child: const Text(
-                            '在售',
-                            style: TextStyle(
-                              color: Color(0xFFE11D48),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          child: const CouponClaimEntry(
+                            style: CouponClaimStyle.chip,
                           ),
                         ),
                       ],

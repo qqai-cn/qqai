@@ -41,7 +41,7 @@ final class SquareNotifierProvider
   }
 }
 
-String _$squareNotifierHash() => r'8ba1ad8b7ba397815d5bfd73861ab1d9984495d2';
+String _$squareNotifierHash() => r'98fa6cc8c3274cbcdcf46761b736908b725379a9';
 
 abstract class _$SquareNotifier extends $Notifier<SquareListState> {
   SquareListState build();

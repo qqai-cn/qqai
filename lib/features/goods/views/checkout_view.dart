@@ -165,7 +165,9 @@ class _WideCheckoutBody extends StatelessWidget {
       child: ConstrainedBox(
         constraints: const BoxConstraints(
           maxWidth:
-              GoodsPageStyle.pageMaxWidth + GoodsPageStyle.sidePanelWidth + 32,
+              GoodsPageStyle.pageMaxWidth +
+                  GoodsPageStyle.sidePanelWidth +
+                  GoodsPageStyle.gutter,
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
@@ -187,7 +189,7 @@ class _WideCheckoutBody extends StatelessWidget {
                   showPriceSummary: false,
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: GoodsPageStyle.gutter),
               SizedBox(
                 width: GoodsPageStyle.sidePanelWidth,
                 child: _CheckoutSidePanel(

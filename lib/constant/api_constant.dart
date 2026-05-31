@@ -103,6 +103,7 @@ class ApiConstant {
       '/app-api/blog/qqai/profile/my/shop/products/page';
   static const String MALL_PRODUCTS_PAGE = '/app-api/product/spu/page';
   static const String MALL_PRODUCT_DETAIL = '/app-api/product/spu/get-detail';
+  static const String PRODUCT_COMMENT_PAGE = '/app-api/product/comment/page';
   static String productBrowsePath(int spuId) =>
       '/app-api/product/spu/$spuId/browse';
   static const String MALL_BROWSE_HISTORY_PAGE =
@@ -121,6 +122,8 @@ class ApiConstant {
       '/app-api/trade/cart/update-selected';
   static const String TRADE_CART_DELETE = '/app-api/trade/cart/delete';
   static const String TRADE_ORDER_PAGE = '/app-api/trade/order/page';
+  static const String TRADE_ORDER_ITEM_CREATE_COMMENT =
+      '/app-api/trade/order/item/create-comment';
 
   static const String BLOG_BROWSE_HISTORY_PAGE =
       '/app-api/blog/qqai/browse-history/page';

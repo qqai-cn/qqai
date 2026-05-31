@@ -370,7 +370,7 @@ class _AdSurface extends StatelessWidget {
                         children: [
                           Text('跳过'),
                           SizedBox(width: 4),
-                          Icon(Icons.skip_next_rounded, size: 18),
+                          Icon(Icons.skip_next_rounded, size: 13),
                         ],
                       ),
                     )

@@ -10,7 +10,21 @@ import '../models/cart_line.dart';
 import '../models/goods_comment_item.dart';
 import '../providers/cart_session.dart';
 import '../providers/goods_comments.dart';
-import '../theme/goods_page_style.dart';
+import '../widgets/coupon_claim_entry.dart';
+import '../widgets/goods_comment_submit_sheet.dart';
+import '../widgets/goods_page_layout.dart';
+
+String goodsRecentPraiseText(List<GoodsCommentItem> comments) {
+  final now = DateTime.now();
+  final recent = comments.where((item) {
+    final age = now.difference(item.createdAt);
+    return age.inDays < 7;
+  }).toList();
+  if (recent.isEmpty) return '近7天好评率100%';
+  final goodCount = recent.where((item) => item.stars >= 4).length;
+  final rate = ((goodCount / recent.length) * 100).round();
+  return '近7天好评率$rate%';
+}
 
 class GoodsDetailView extends ConsumerWidget {
   const GoodsDetailView({super.key, required this.goodsId});
@@ -135,17 +149,8 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     return '单规格商品';
   }
 
-  String _recentPraiseText(List<GoodsCommentItem> comments) {
-    final now = DateTime.now();
-    final recent = comments.where((item) {
-      final age = now.difference(item.createdAt);
-      return age.inDays < 7;
-    }).toList();
-    if (recent.isEmpty) return '近7天好评率100%';
-    final goodCount = recent.where((item) => item.stars >= 4).length;
-    final rate = ((goodCount / recent.length) * 100).round();
-    return '近7天好评率$rate%';
-  }
+  String _recentPraiseText(List<GoodsCommentItem> comments) =>
+      goodsRecentPraiseText(comments);
 
   @override
   void initState() {
@@ -254,108 +259,92 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final comments = ref.watch(goodsCommentsProvider('${_product.id}'));
-    final recentPraiseText = _recentPraiseText(comments);
+    final commentsAsync = ref.watch(goodsCommentsProvider('${_product.id}'));
+    final goodsId = '${_product.id}';
     final detailText = [_introduction, _plainText(_product.description)]
         .where((item) => item.trim().isNotEmpty)
         .join('\n\n');
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF4F4F4),
-      body: Stack(
+    return GoodsPageScaffold(
+      topBar: Row(
         children: [
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: GoodsPageStyle.pageMaxWidth,
-              ),
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: _buildGallery(),
+          GoodsBackButton(onTap: () => Navigator.of(context).maybePop()),
+          const SizedBox(width: 8),
+          GoodsTopRoundButton(icon: Icons.menu_rounded, onTap: () {}),
+        ],
+      ),
+      main: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _buildGallery()),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
+              child: Column(
+                children: [
+                  _PriceCard(
+                    price: _price,
+                    marketPrice: _marketPrice,
+                    salesCount: _product.salesCount ?? 0,
+                    title: _title,
+                    subtitle:
+                        _introduction.isEmpty ? '暂无商品简介' : _introduction,
                   ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 16),
-                      child: Column(
-                        children: [
-                          _PriceCard(
-                            price: _price,
-                            marketPrice: _marketPrice,
-                            salesCount: _product.salesCount ?? 0,
-                            title: _title,
-                            subtitle: _introduction.isEmpty ? '暂无商品简介' : _introduction,
+                  const SizedBox(height: 8),
+                  _hasMultipleSpecs
+                      ? _CellCard(
+                          title: '选择',
+                          content: _specText,
+                          onTap: () => _openSkuSheet(
+                            buyAfterConfirm: false,
+                            triggerActionWhenNoSku: false,
                           ),
-                          const SizedBox(height: 8),
-                          _hasMultipleSpecs
-                              ? _CellCard(
-                                  title: '选择',
-                                  content: _specText,
-                                  onTap: () => _openSkuSheet(
-                                    buyAfterConfirm: false,
-                                    triggerActionWhenNoSku: false,
-                                  ),
-                                )
-                              : _SingleSpecCard(
-                                  weightText: _formatMeasureValue(
-                                    _singleSpecSku?.weight,
-                                    'kg',
-                                  ),
-                                  volumeText: _formatMeasureValue(
-                                    _singleSpecSku?.volume,
-                                    'm3',
-                                  ),
-                                ),
-                          const SizedBox(height: 8),
-                          _CommentsCard(
-                            comments: comments,
-                            recentPraiseText: recentPraiseText,
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => _GoodsCommentsPage(
-                                    comments: comments,
-                                    recentPraiseText: recentPraiseText,
-                                  ),
-                                ),
-                              );
-                            },
+                        )
+                      : _SingleSpecCard(
+                          weightText: _formatMeasureValue(
+                            _singleSpecSku?.weight,
+                            'kg',
                           ),
-                          const SizedBox(height: 8),
-                          const _PromoBar(),
-                          const SizedBox(height: 8),
-                          _DetailTextCard(detailText: detailText),
-                          SizedBox(
-                            height: 90 + MediaQuery.viewPaddingOf(context).bottom,
+                          volumeText: _formatMeasureValue(
+                            _singleSpecSku?.volume,
+                            'm3',
                           ),
-                        ],
-                      ),
+                        ),
+                  const SizedBox(height: 8),
+                  commentsAsync.when(
+                    data: (state) => _CommentsCard(
+                      comments: state.items,
+                      recentPraiseText: _recentPraiseText(state.items),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) => _GoodsCommentsPage(
+                              goodsId: goodsId,
+                            ),
+                          ),
+                        );
+                      },
                     ),
+                    loading: () => const _CommentsCardLoading(),
+                    error: (error, _) => _CommentsCardError(
+                      message: error.toString(),
+                      onRetry: () =>
+                          ref.invalidate(goodsCommentsProvider(goodsId)),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  const _PromoBar(),
+                  const SizedBox(height: 8),
+                  _DetailTextCard(detailText: detailText),
+                  SizedBox(
+                    height: 90 + MediaQuery.viewPaddingOf(context).bottom,
                   ),
                 ],
               ),
             ),
           ),
-          Positioned(
-            top: MediaQuery.paddingOf(context).top + 8,
-            left: 12,
-            right: 12,
-            child: Row(
-              children: [
-                _BackIconButton(
-                  onTap: () => Navigator.of(context).maybePop(),
-                ),
-                const SizedBox(width: 8),
-                _TopRoundButton(
-                  icon: Icons.menu_rounded,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
         ],
       ),
-      bottomNavigationBar: _BottomActionBar(
+      bottomBar: _BottomActionBar(
         onCart: context.pushGoodsCart,
         onAddToCart: () => _openSkuSheet(buyAfterConfirm: false),
         onBuyNow: () => _openSkuSheet(buyAfterConfirm: true),
@@ -365,154 +354,91 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
 
   Widget _buildGallery() {
     final galleryUrls = _galleryUrls;
-    final topInset = MediaQuery.paddingOf(context).top;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final galleryHeight = screenWidth < 600 ? 360.0 : 420.0;
 
-    return Container(
-      color: const Color(0xFFF7F7F7),
-      child: Column(
-        children: [
-          SizedBox(height: topInset + 6),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(18),
-                ),
-              ),
-              child: SizedBox(
-                height: galleryHeight,
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.white,
-                              const Color(0xFFF7F7F7),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (galleryUrls.isEmpty)
-                      const Center(
-                        child: Icon(
-                          Icons.shopping_bag_outlined,
-                          size: 64,
-                          color: Color(0xFF9CA3AF),
-                        ),
-                      )
-                    else
-                      PageView.builder(
-                        controller: _pageController,
-                        itemCount: galleryUrls.length,
-                        onPageChanged: (index) {
-                          if (!mounted) return;
-                          setState(() => _currentImageIndex = index);
-                        },
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(10, 8, 10, 18),
-                            child: Image.network(
-                              galleryUrls[index],
-                              fit: BoxFit.contain,
-                              errorBuilder: (_, _, _) => const Center(
-                                child: Icon(
-                                  Icons.broken_image_outlined,
-                                  size: 64,
-                                  color: Color(0xFF9CA3AF),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    if (galleryUrls.length > 1)
-                      Positioned(
-                        right: 14,
-                        bottom: 12,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.32),
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          child: Text(
-                            '${_currentImageIndex + 1} / ${galleryUrls.length}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+    return GoodsPageTopSection(
+      sectionColor: const Color(0xFFF7F7F7),
+      padding: EdgeInsets.zero,
+      borderRadius: const BorderRadius.vertical(
+        bottom: Radius.circular(18),
+      ),
+      child: SizedBox(
+        height: galleryHeight,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white,
+                      const Color(0xFFF7F7F7),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopRoundButton extends StatelessWidget {
-  const _TopRoundButton({required this.icon, required this.onTap});
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.96),
-      borderRadius: BorderRadius.circular(15),
-      elevation: 2,
-      shadowColor: const Color(0x16000000),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: onTap,
-        child: SizedBox(
-          width: 38,
-          height: 32,
-          child: Icon(icon, size: 19, color: const Color(0xFF202124)),
+            if (galleryUrls.isEmpty)
+              const Center(
+                child: Icon(
+                  Icons.shopping_bag_outlined,
+                  size: 64,
+                  color: Color(0xFF9CA3AF),
+                ),
+              )
+            else
+              PageView.builder(
+                controller: _pageController,
+                itemCount: galleryUrls.length,
+                onPageChanged: (index) {
+                  if (!mounted) return;
+                  setState(() => _currentImageIndex = index);
+                },
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 8, 10, 18),
+                    child: Image.network(
+                      galleryUrls[index],
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const Center(
+                        child: Icon(
+                          Icons.broken_image_outlined,
+                          size: 64,
+                          color: Color(0xFF9CA3AF),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            if (galleryUrls.length > 1)
+              Positioned(
+                right: 14,
+                bottom: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.32),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${_currentImageIndex + 1} / ${galleryUrls.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
-      ),
-    );
-  }
-}
-
-class _BackIconButton extends StatelessWidget {
-  const _BackIconButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onTap,
-      icon: const Icon(
-        Icons.arrow_back_ios_new_rounded,
-        size: 22,
-        color: GoodsPageStyle.text,
-      ),
-      style: IconButton.styleFrom(
-        foregroundColor: GoodsPageStyle.text,
-        padding: EdgeInsets.zero,
-        minimumSize: const Size(40, 40),
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
     );
   }
@@ -600,25 +526,7 @@ class _PriceCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '领券',
-                        style: TextStyle(
-                          color: Color(0xFFE85B43),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      SizedBox(width: 1),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        color: Color(0xFFE85B43),
-                        size: 18,
-                      ),
-                    ],
-                  ),
+                  const CouponClaimEntry(),
                 ],
               ),
             ],
@@ -817,6 +725,75 @@ class _SpecMetricItem extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _CommentsCardLoading extends StatelessWidget {
+  const _CommentsCardLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const _CommentsCardShell(
+      child: Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CommentsCardError extends StatelessWidget {
+  const _CommentsCardError({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return _CommentsCardShell(
+      child: Column(
+        children: [
+          Text(
+            message,
+            style: const TextStyle(color: Color(0xFF999999), fontSize: 13),
+          ),
+          const SizedBox(height: 8),
+          TextButton(onPressed: onRetry, child: const Text('重新加载')),
+        ],
+      ),
+    );
+  }
+}
+
+class _CommentsCardShell extends StatelessWidget {
+  const _CommentsCardShell({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.025),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
     );
   }
 }
@@ -1031,16 +1008,39 @@ class _CommentsCard extends StatelessWidget {
   }
 }
 
-class _GoodsCommentsPage extends StatelessWidget {
-  const _GoodsCommentsPage({
-    required this.comments,
-    required this.recentPraiseText,
-  });
+class _GoodsCommentsPage extends ConsumerWidget {
+  const _GoodsCommentsPage({required this.goodsId});
 
-  final List<GoodsCommentItem> comments;
-  final String recentPraiseText;
+  final String goodsId;
 
-  String _formatTime(DateTime t) {
+  Widget _buildTitleBar(BuildContext context, WidgetRef ref) {
+    return Row(
+      children: [
+        GoodsBackButton(onTap: () => Navigator.of(context).maybePop()),
+        const Expanded(
+          child: Text(
+            '评价',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFF202124),
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        GoodsTopRoundButton(
+          icon: Icons.edit_outlined,
+          onTap: () => showGoodsCommentSubmitSheet(
+            context,
+            ref,
+            goodsId: goodsId,
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _formatTime(DateTime t) {
     final now = DateTime.now();
     final d = now.difference(t);
     if (d.inDays >= 7) {
@@ -1052,262 +1052,296 @@ class _GoodsCommentsPage extends StatelessWidget {
     return '刚刚';
   }
 
-  String _summaryText() {
-    if (comments.isEmpty) return '暂无近期评价总结';
+  static String _summaryText(
+    List<GoodsCommentItem> comments,
+    String recentPraiseText,
+  ) {
+    if (comments.isEmpty) return '暂无评价，购买完成后欢迎发表真实评价';
     final highRated = comments.where((item) => item.stars >= 4).toList();
-    if (highRated.isEmpty) return '近7天评价较少，欢迎成为首批高质量评价用户';
+    if (highRated.isEmpty) return '评价较少，欢迎成为首批评价用户';
     return '• 近期买家普遍认可商品体验\n• $recentPraiseText，整体满意度较高\n• 多数用户反馈性价比和使用体验不错';
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
-      appBar: AppBar(title: const Text('评价')),
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-            child: Wrap(
-              spacing: 10,
-              runSpacing: 10,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final commentsAsync = ref.watch(goodsCommentsProvider(goodsId));
+
+    return GoodsPageScaffold(
+      main: commentsAsync.when(
+        loading: () => GoodsPageMainColumn(
+          header: _buildTitleBar(context, ref),
+          body: const Expanded(
+            child: Center(child: CircularProgressIndicator()),
+          ),
+        ),
+        error: (error, _) => GoodsPageMainColumn(
+          header: _buildTitleBar(context, ref),
+          body: Expanded(
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(error.toString()),
+                  const SizedBox(height: 12),
+                  FilledButton(
+                    onPressed: () =>
+                        ref.invalidate(goodsCommentsProvider(goodsId)),
+                    child: const Text('重试'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        data: (state) {
+          final comments = state.items;
+          final recentPraiseText = goodsRecentPraiseText(comments);
+          return GoodsPageMainColumn(
+            header: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _CommentFilterChip(
-                  text: '全部 ${comments.isEmpty ? 0 : comments.length}',
-                  active: true,
-                ),
-                _CommentFilterChip(text: recentPraiseText),
-                _CommentFilterChip(
-                  text: '有图/视频 ${comments.where((item) => item.helpfulCount > 10).length}',
-                ),
-                _CommentFilterChip(
-                  text: 'PLUS ${comments.where((item) => item.isPlusMember).length}',
+                _buildTitleBar(context, ref),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _CommentFilterChip(
+                      text: '全部 ${state.total}',
+                      active: state.filterType == 0,
+                      onTap: () => ref
+                          .read(goodsCommentsProvider(goodsId).notifier)
+                          .setFilterType(0),
+                    ),
+                    _CommentFilterChip(
+                      text: '好评 ${state.goodCount}',
+                      active: state.filterType == 1,
+                      onTap: () => ref
+                          .read(goodsCommentsProvider(goodsId).notifier)
+                          .setFilterType(1),
+                    ),
+                    _CommentFilterChip(
+                      text: '中评',
+                      active: state.filterType == 2,
+                      onTap: () => ref
+                          .read(goodsCommentsProvider(goodsId).notifier)
+                          .setFilterType(2),
+                    ),
+                    _CommentFilterChip(
+                      text: '差评',
+                      active: state.filterType == 3,
+                      onTap: () => ref
+                          .read(goodsCommentsProvider(goodsId).notifier)
+                          .setFilterType(3),
+                    ),
+                    _CommentFilterChip(
+                      text: '有图 ${state.imageCount}',
+                      active: false,
+                    ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Expanded(
-            child: comments.isEmpty
-                ? const Center(child: Text('暂无评价'))
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 18),
-                    itemCount: comments.length + 2,
-                    separatorBuilder: (_, _) => const SizedBox(height: 10),
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return Container(
-                          padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF5F4FF),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _summaryText(),
-                                style: const TextStyle(
-                                  color: Color(0xFF596172),
-                                  fontSize: 14,
-                                  height: 1.75,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                '总结自近期发布的真实买家评价',
-                                style: TextStyle(
-                                  color: Color(0xFF9AA0AE),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      if (index == 1) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 2),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.verified_outlined,
-                                size: 18,
-                                color: Color(0xFFB4B8C2),
-                              ),
-                              SizedBox(width: 6),
-                              Expanded(
-                                child: Text(
-                                  '鼓励真实、有用的评价',
-                                  style: TextStyle(
-                                    color: Color(0xFF9AA0AE),
-                                    fontSize: 13.5,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '最新',
-                                style: TextStyle(
-                                  color: Color(0xFF4B4F58),
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(width: 10),
-                              Text(
-                                '当前商品',
-                                style: TextStyle(
-                                  color: Color(0xFF4B4F58),
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                      final item = comments[index - 2];
-                      return Container(
-                        padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  width: 38,
-                                  height: 38,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF3F3F3),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: const Icon(
-                                    Icons.person_rounded,
-                                    color: Color(0xFF8D8D8D),
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        item.author,
-                                        style: const TextStyle(
-                                          color: Color(0xFF202124),
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          if (item.isPlusMember)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 6,
-                                                vertical: 1,
-                                              ),
-                                              margin: const EdgeInsets.only(right: 6),
-                                              decoration: BoxDecoration(
-                                                color: const Color(0xFF6F4D2C),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: const Text(
-                                                'PLUS',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontSize: 10,
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ),
-                                          ...List.generate(
-                                            5,
-                                            (starIndex) => Icon(
-                                              starIndex < item.stars
-                                                  ? Icons.star_rounded
-                                                  : Icons.star_border_rounded,
-                                              size: 17,
-                                              color: const Color(0xFFFFC54D),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  _formatTime(item.createdAt),
-                                  style: const TextStyle(
-                                    color: Color(0xFF9A9A9A),
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if ((item.skuLabel ?? '').trim().isNotEmpty) ...[
-                              const SizedBox(height: 10),
-                              Text(
-                                item.skuLabel!.trim(),
-                                style: const TextStyle(
-                                  color: Color(0xFF969696),
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 12),
-                            Text(
-                              item.content,
-                              style: const TextStyle(
-                                color: Color(0xFF242424),
-                                fontSize: 15,
-                                height: 1.7,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.thumb_up_alt_outlined,
-                                  size: 20,
-                                  color: Color(0xFF8B8B8B),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${item.helpfulCount}',
-                                  style: const TextStyle(
-                                    color: Color(0xFF8B8B8B),
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                const SizedBox(width: 20),
-                                const Icon(
-                                  Icons.chat_bubble_outline_rounded,
-                                  size: 20,
-                                  color: Color(0xFF8B8B8B),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text(
-                                  '评论',
-                                  style: TextStyle(
-                                    color: Color(0xFF8B8B8B),
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ],
-                            ),
+            body: Expanded(
+              child: RefreshIndicator(
+                  onRefresh: () => ref
+                      .read(goodsCommentsProvider(goodsId).notifier)
+                      .refresh(),
+                  child: comments.isEmpty
+                      ? ListView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          children: const [
+                            SizedBox(height: 120),
+                            Center(child: Text('暂无评价')),
                           ],
+                        )
+                      : ListView.separated(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.fromLTRB(8, 10, 8, 18),
+                          itemCount: comments.length + 1,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            if (index == 0) {
+                              return Container(
+                                padding: const EdgeInsets.fromLTRB(
+                                  14,
+                                  14,
+                                  14,
+                                  14,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F4FF),
+                                  borderRadius: BorderRadius.circular(14),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _summaryText(
+                                        comments,
+                                        recentPraiseText,
+                                      ),
+                                      style: const TextStyle(
+                                        color: Color(0xFF596172),
+                                        fontSize: 14,
+                                        height: 1.75,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      '共 ${state.total} 条真实买家评价',
+                                      style: const TextStyle(
+                                        color: Color(0xFF9AA0AE),
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+                            final item = comments[index - 1];
+                            return _GoodsCommentListTile(
+                              item: item,
+                              timeLabel: _formatTime(item.createdAt),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _GoodsCommentListTile extends StatelessWidget {
+  const _GoodsCommentListTile({
+    required this.item,
+    required this.timeLabel,
+  });
+
+  final GoodsCommentItem item;
+  final String timeLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 19,
+                backgroundColor: const Color(0xFFF3F3F3),
+                backgroundImage: (item.avatarUrl ?? '').isNotEmpty
+                    ? NetworkImage(item.avatarUrl!)
+                    : null,
+                child: (item.avatarUrl ?? '').isEmpty
+                    ? const Icon(Icons.person_rounded, color: Color(0xFF8D8D8D))
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.author,
+                      style: const TextStyle(
+                        color: Color(0xFF202124),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: List.generate(
+                        5,
+                        (starIndex) => Icon(
+                          starIndex < item.stars
+                              ? Icons.star_rounded
+                              : Icons.star_border_rounded,
+                          size: 17,
+                          color: const Color(0xFFFFC54D),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                timeLabel,
+                style: const TextStyle(color: Color(0xFF9A9A9A), fontSize: 12),
+              ),
+            ],
           ),
+          if ((item.skuLabel ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Text(
+              item.skuLabel!.trim(),
+              style: const TextStyle(color: Color(0xFF969696), fontSize: 13),
+            ),
+          ],
+          const SizedBox(height: 12),
+          Text(
+            item.content,
+            style: const TextStyle(
+              color: Color(0xFF242424),
+              fontSize: 15,
+              height: 1.7,
+            ),
+          ),
+          if (item.picUrls.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: item.picUrls
+                  .take(3)
+                  .map(
+                    (url) => ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        resolveMediaUrl(url) ?? url,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => const SizedBox(
+                          width: 72,
+                          height: 72,
+                          child: ColoredBox(color: Color(0xFFF0F0F0)),
+                        ),
+                      ),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
+          if ((item.replyContent ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F8F8),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                '商家回复：${item.replyContent!.trim()}',
+                style: const TextStyle(color: Color(0xFF666666), fontSize: 13),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -1315,25 +1349,34 @@ class _GoodsCommentsPage extends StatelessWidget {
 }
 
 class _CommentFilterChip extends StatelessWidget {
-  const _CommentFilterChip({required this.text, this.active = false});
+  const _CommentFilterChip({
+    required this.text,
+    this.active = false,
+    this.onTap,
+  });
 
   final String text;
   final bool active;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: active ? const Color(0xFFFFF2E5) : const Color(0xFFF2F4F8),
+    return Material(
+      color: active ? const Color(0xFFFFF2E5) : const Color(0xFFF2F4F8),
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: active ? const Color(0xFFA46C2B) : const Color(0xFF4F5561),
-          fontSize: 14,
-          fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: active ? const Color(0xFFA46C2B) : const Color(0xFF4F5561),
+              fontSize: 14,
+              fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
         ),
       ),
     );

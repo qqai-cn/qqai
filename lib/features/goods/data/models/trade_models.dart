@@ -214,30 +214,41 @@ class TradeCartListData {
 class TradeOrderItem {
   const TradeOrderItem({
     this.id,
+    this.orderId,
     this.spuId,
     this.spuName,
     this.picUrl,
     this.count,
     this.payPrice,
+    this.commentStatus,
+    this.skuLabel,
   });
 
   final int? id;
+  final int? orderId;
   final int? spuId;
   final String? spuName;
   final String? picUrl;
   final int? count;
   final int? payPrice;
+  final bool? commentStatus;
+  final String? skuLabel;
 
   double get payPriceYuan => (payPrice ?? 0) / 100.0;
+
+  bool get canComment => commentStatus != true;
 
   factory TradeOrderItem.fromJson(Map<String, dynamic> json) {
     return TradeOrderItem(
       id: (json['id'] as num?)?.toInt(),
+      orderId: (json['orderId'] as num?)?.toInt(),
       spuId: (json['spuId'] as num?)?.toInt(),
       spuName: json['spuName'] as String?,
       picUrl: json['picUrl'] as String?,
       count: (json['count'] as num?)?.toInt(),
       payPrice: (json['payPrice'] as num?)?.toInt(),
+      commentStatus: json['commentStatus'] as bool?,
+      skuLabel: _skuLabelFromProperties(json['properties']),
     );
   }
 }
@@ -309,6 +320,18 @@ String tradeOrderStatusLabel(int? status) {
     40 => '已取消',
     _ => '未知状态',
   };
+}
+
+String? _skuLabelFromProperties(dynamic raw) {
+  if (raw is! List<dynamic> || raw.isEmpty) return null;
+  final parts = raw
+      .whereType<Map<String, dynamic>>()
+      .map((e) => e['valueName']?.toString())
+      .whereType<String>()
+      .where((e) => e.isNotEmpty)
+      .toList();
+  if (parts.isEmpty) return null;
+  return parts.join(' / ');
 }
 
 DateTime? _parseDateTime(dynamic raw) {

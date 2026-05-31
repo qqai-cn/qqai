@@ -11,5 +11,6 @@ abstract final class GoodsPageStyle {
   static const imageBg = Color(0xFFF3F5F8);
   static const pageMaxWidth = 880.0;
   static const sidePanelWidth = 300.0;
+  static const gutter = 16.0;
   static const wideBreakpoint = 900.0;
 }

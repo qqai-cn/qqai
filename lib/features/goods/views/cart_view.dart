@@ -171,7 +171,9 @@ class _WideCartBody extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: GoodsPageStyle.pageMaxWidth + GoodsPageStyle.sidePanelWidth + 32,
+          maxWidth: GoodsPageStyle.pageMaxWidth +
+              GoodsPageStyle.sidePanelWidth +
+              GoodsPageStyle.gutter,
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
@@ -201,7 +203,7 @@ class _WideCartBody extends StatelessWidget {
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: GoodsPageStyle.gutter),
               SizedBox(
                 width: GoodsPageStyle.sidePanelWidth,
                 child: _CartSummaryPanel(
