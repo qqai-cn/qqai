@@ -13,9 +13,11 @@ import '../../features/watchvideo/play_video_page.dart' deferred as play_video;
 import '../cache/deferred_widget.dart';
 import '../components/imgpreview/preview_img.dart';
 import '../components/blog/network_image_carousel_pages.dart';
+import '../components/qq_network_image.dart';
 import '../components/video_player/qqai_player.dart';
 import '../components/video_player/video_loading_placeholder.dart';
 import '../features/blog/data/blog_route_extra.dart';
+import '../features/blog/data/models/blog_page_model.dart';
 import '../features/blog/views/blog_detail_video_toolbar.dart';
 import '../features/comment/providers/comment_providers.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
@@ -431,6 +433,10 @@ GoRouter appRouter(Ref ref) {
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
+            placeholder: _DeferredImageDetailPlaceholder(
+              mediaHeroTag: detailExtra.mediaHeroTag,
+              imageUrl: _detailImageUrl(detailExtra.blogItem),
+            ),
             builder: () => route_pages.BlogImgDetailView(
               blogItem: detailExtra.blogItem,
               mediaHeroTag: detailExtra.mediaHeroTag,
@@ -451,6 +457,7 @@ GoRouter appRouter(Ref ref) {
             placeholder: _DeferredVideoDetailPlaceholder(
               mediaHeroTag: detailExtra.mediaHeroTag,
               videoUrl: _detailVideoUrl(detailExtra.blogItem.resources),
+              posterUrl: _detailPosterUrl(detailExtra.blogItem),
             ),
             builder: () => route_pages.BlogVideoDetailView(
               blogItem: detailExtra.blogItem,
@@ -472,6 +479,7 @@ GoRouter appRouter(Ref ref) {
             placeholder: _DeferredVideoDetailPlaceholder(
               mediaHeroTag: detailExtra.mediaHeroTag,
               videoUrl: _detailVideoUrl(detailExtra.blogItem.resources),
+              posterUrl: _detailPosterUrl(detailExtra.blogItem),
             ),
             builder: () => route_pages.VideoDetailView(
               blogItem: detailExtra.blogItem,
@@ -754,10 +762,15 @@ GoRouter appRouter(Ref ref) {
 }
 
 class _DeferredVideoDetailPlaceholder extends ConsumerWidget {
-  const _DeferredVideoDetailPlaceholder({this.mediaHeroTag, this.videoUrl});
+  const _DeferredVideoDetailPlaceholder({
+    this.mediaHeroTag,
+    this.videoUrl,
+    this.posterUrl,
+  });
 
   final String? mediaHeroTag;
   final String? videoUrl;
+  final String? posterUrl;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -780,6 +793,7 @@ class _DeferredVideoDetailPlaceholder extends ConsumerWidget {
             child: _DeferredVideoHero(
               mediaHeroTag: mediaHeroTag,
               videoUrl: videoUrl,
+              posterUrl: posterUrl,
             ),
           ),
           SizedBox(height: toolbarHeight),
@@ -814,23 +828,102 @@ class _DeferredVideoDetailPlaceholder extends ConsumerWidget {
   }
 }
 
+class _DeferredImageDetailPlaceholder extends ConsumerWidget {
+  const _DeferredImageDetailPlaceholder({this.mediaHeroTag, this.imageUrl});
+
+  final String? mediaHeroTag;
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final size = MediaQuery.sizeOf(context);
+    final isWideScreen = size.width > 900;
+    final providerShowCommentPanel = ref.watch(
+      commentProvider.select((state) => state.showComment),
+    );
+    final showCommentPanel = providerShowCommentPanel || isWideScreen;
+    final mediaContent = ColoredBox(
+      color: Colors.black,
+      child: Center(
+        child: _DeferredImageHero(
+          mediaHeroTag: mediaHeroTag,
+          imageUrl: imageUrl,
+        ),
+      ),
+    );
+
+    return Scaffold(
+      body: isWideScreen
+          ? Row(
+              children: [
+                Expanded(child: mediaContent),
+                if (showCommentPanel)
+                  const SizedBox(
+                    width: 350,
+                    child: ColoredBox(color: Color(0xFF111111)),
+                  ),
+              ],
+            )
+          : Column(
+              children: [
+                Expanded(child: mediaContent),
+                if (showCommentPanel)
+                  SizedBox(
+                    width: size.width,
+                    height: size.height * 0.6,
+                    child: const ColoredBox(color: Color(0xFF111111)),
+                  ),
+              ],
+            ),
+    );
+  }
+}
+
+class _DeferredImageHero extends StatelessWidget {
+  const _DeferredImageHero({this.mediaHeroTag, this.imageUrl});
+
+  final String? mediaHeroTag;
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final url = imageUrl;
+    final child = url == null || url.isEmpty
+        ? const ColoredBox(color: Colors.black)
+        : Container(
+            margin: const EdgeInsets.only(top: 10, bottom: 10),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
+            child: QqNetworkImage(
+              url: url,
+              fit: BoxFit.cover,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          );
+    final heroTag = mediaHeroTag;
+    if (heroTag == null || heroTag.isEmpty) return child;
+    return Hero(tag: heroTag, transitionOnUserGestures: true, child: child);
+  }
+}
+
 class _DeferredVideoHero extends StatelessWidget {
-  const _DeferredVideoHero({this.mediaHeroTag, this.videoUrl});
+  const _DeferredVideoHero({this.mediaHeroTag, this.videoUrl, this.posterUrl});
 
   final String? mediaHeroTag;
   final String? videoUrl;
+  final String? posterUrl;
 
   @override
   Widget build(BuildContext context) {
     final heroTag = mediaHeroTag;
     final url = videoUrl;
     final child = url == null || url.isEmpty
-        ? const VideoLoadingPlaceholder(showPoster: false)
+        ? VideoLoadingPlaceholder(imageUrl: posterUrl, showPoster: true)
         : QqaiPlayer(
             controls: const SizedBox.shrink(),
+            image: posterUrl,
             url: url,
             autoPlay: true,
-            showLoadingPoster: false,
+            showLoadingPoster: true,
             sharedPlaybackKey: url,
           );
     if (heroTag == null || heroTag.isEmpty) return child;
@@ -841,6 +934,18 @@ class _DeferredVideoHero extends StatelessWidget {
 String? _detailVideoUrl(String? resources) {
   final rawVideo = firstPlayableVideoUrlFromResources(resources);
   return resolveMediaUrl(rawVideo);
+}
+
+String? _detailPosterUrl(BlogItem blog) {
+  return resolveMediaUrl(resolveBlogCoverUrl(blog));
+}
+
+String? _detailImageUrl(BlogItem blog) {
+  final images = parseCommaSeparatedUrls(blog.resources);
+  if (images.isNotEmpty) {
+    return resolveMediaUrl(images.first);
+  }
+  return _detailPosterUrl(blog);
 }
 
 // 辅助函数：检查路由是否需要认证

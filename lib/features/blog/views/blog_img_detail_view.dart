@@ -29,6 +29,7 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
       CarouselSliderController();
   int _current = 0;
   late final BlogDetailCommentSidePanelLifecycle _commentSidePanel;
+  bool _wideCommentPanelClosed = false;
 
   @override
   void initState() {
@@ -52,6 +53,9 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
     final commentNotifier = ref.read(commentProvider.notifier);
 
     final blog = widget.blogItem!;
+    final isWideScreen = 1.sw > 900;
+    final showCommentPanel =
+        commentState.showComment || (isWideScreen && !_wideCommentPanelClosed);
     final hasVideo = blogItemHasVideoResources(blog.resources);
     final showToolbarControlsRow = 1.sw > 800;
     final toolbarHeight = blogDetailVideoToolbarHeight(
@@ -59,9 +63,13 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
     );
 
     return MediaDetailShell(
-      showCommentPanel: commentState.showComment,
+      showCommentPanel: showCommentPanel,
       sidePanelBlog: blog,
-      onCommentClose: commentNotifier.changeShowComment,
+      onCommentClose: () => _toggleCommentPanel(
+        commentNotifier,
+        panelVisible: showCommentPanel,
+        isWideScreen: isWideScreen,
+      ),
       sidePanelInitialTabIndex: commentState.selectedTabIndex,
       sidePanelCollection: commentState.selectedCollection,
       content: hasVideo
@@ -70,12 +78,17 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
               children: [
                 BlogVideoDetailPlayer(
                   blog: blog,
+                  mediaHeroTag: widget.mediaHeroTag,
                   showToolbarControlsRow: showToolbarControlsRow,
                 ),
                 BlogDetailMediaOverlay(
                   blog: blog,
                   bottomInset: toolbarHeight,
-                  onCommentTap: commentNotifier.changeShowComment,
+                  onCommentTap: () => _toggleCommentPanel(
+                    commentNotifier,
+                    panelVisible: showCommentPanel,
+                    isWideScreen: isWideScreen,
+                  ),
                 ),
               ],
             )
@@ -83,14 +96,34 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
               blog,
               commentNotifier,
               mediaHeroTag: widget.mediaHeroTag,
+              panelVisible: showCommentPanel,
+              isWideScreen: isWideScreen,
             ),
     );
+  }
+
+  void _toggleCommentPanel(
+    CommentNotifier notifier, {
+    required bool panelVisible,
+    required bool isWideScreen,
+  }) {
+    final providerVisible = ref.read(commentProvider).showComment;
+    if (panelVisible && !providerVisible && isWideScreen) {
+      setState(() => _wideCommentPanelClosed = true);
+      return;
+    }
+    setState(() {
+      _wideCommentPanelClosed = providerVisible;
+    });
+    notifier.changeShowComment();
   }
 
   Widget _buildImageCarousel(
     BlogItem blog,
     CommentNotifier commentNotifier, {
     String? mediaHeroTag,
+    required bool panelVisible,
+    required bool isWideScreen,
   }) {
     final imageUrls = parseCommaSeparatedUrls(blog.resources);
     final imageWidgets = buildNetworkImageCarouselPages(
@@ -114,7 +147,11 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
         ),
         BlogDetailMediaOverlay(
           blog: blog,
-          onCommentTap: commentNotifier.changeShowComment,
+          onCommentTap: () => _toggleCommentPanel(
+            commentNotifier,
+            panelVisible: panelVisible,
+            isWideScreen: isWideScreen,
+          ),
         ),
         CarouselPageDots(
           itemCount: imageUrls.length,

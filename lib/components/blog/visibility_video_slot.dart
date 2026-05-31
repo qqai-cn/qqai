@@ -75,7 +75,10 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
           fallbackAspectRatio: aspectRatio,
         );
       } else {
-        slotChild = const VideoLoadingPlaceholder(showPoster: false);
+        slotChild = VideoLoadingPlaceholder(
+          imageUrl: widget.imgUrl,
+          showPoster: true,
+        );
       }
 
       final slot = AspectRatio(aspectRatio: aspectRatio, child: slotChild);

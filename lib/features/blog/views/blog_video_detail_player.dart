@@ -154,6 +154,7 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
         child: Text('暂无视频', style: TextStyle(color: Colors.white70)),
       );
     }
+    final poster = resolveMediaUrl(resolveBlogCoverUrl(widget.blog));
 
     return VisibilityDetector(
       key: ObjectKey(flickManager),
@@ -186,15 +187,19 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
                   flickManager: flickManager,
                   flickVideoWithControls: FlickVideoWithControls(
                     videoFit: BoxFit.contain,
-                    playerLoadingFallback: const Positioned.fill(
-                      child: VideoLoadingPlaceholder(showPoster: false),
+                    playerLoadingFallback: Positioned.fill(
+                      child: VideoLoadingPlaceholder(
+                        imageUrl: poster,
+                        showPoster: true,
+                      ),
                     ),
                     controls: const BlogDetailVideoSurfaceControls(),
                   ),
                   flickVideoWithControlsFullscreen: FlickVideoWithControls(
                     videoFit: BoxFit.contain,
-                    playerLoadingFallback: const VideoLoadingPlaceholder(
-                      showPoster: false,
+                    playerLoadingFallback: VideoLoadingPlaceholder(
+                      imageUrl: poster,
+                      showPoster: true,
                       showIndicator: false,
                     ),
                     controls: FlickLandscapeControls(),
