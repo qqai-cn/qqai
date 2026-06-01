@@ -129,6 +129,7 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
     final imageWidgets = buildNetworkImageCarouselPages(
       imageUrls,
       firstHeroTag: mediaHeroTag,
+      fit: BoxFit.contain,
     );
     return Stack(
       children: [

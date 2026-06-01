@@ -895,7 +895,7 @@ class _DeferredImageHero extends StatelessWidget {
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
             child: QqNetworkImage(
               url: url,
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               borderRadius: BorderRadius.circular(8),
             ),
           );

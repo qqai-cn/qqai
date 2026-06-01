@@ -2,13 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "qqai (Chrome, local CanvasKit)",
+      "name": "qqai (Chrome)",
       "request": "launch",
       "type": "dart",
       "program": "lib/main.dart",
       "deviceId": "chrome",
       "toolArgs": [
-        "--no-web-resources-cdn",
         "--web-port=8080",
         "--dart-define=QQAI_TURN_STATIC_AUTH_SECRET=YUhdKLTbPKk2BtYxf8Lu"
       ],

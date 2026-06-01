@@ -88,6 +88,7 @@ String resolveBlogCoverUrl(
 List<Widget> buildNetworkImageCarouselPages(
   List<String> imageUrls, {
   String? firstHeroTag,
+  BoxFit fit = BoxFit.cover,
 }) {
   return imageUrls.asMap().entries.map((entry) {
     final index = entry.key;
@@ -97,7 +98,7 @@ List<Widget> buildNetworkImageCarouselPages(
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(8)),
       child: QqNetworkImage(
         url: url,
-        fit: BoxFit.cover,
+        fit: fit,
         borderRadius: BorderRadius.circular(8),
       ),
     );
