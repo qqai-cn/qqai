@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/color_constant.dart';
 
@@ -33,7 +34,8 @@ class WrapGridCardItem extends StatelessWidget {
   final double itemHeight;
   final double avatarSize;
   final IconData moreIcon;
-  final List<PopupMenuEntry<String>> Function(BuildContext context)? menuEntries;
+  final List<PopupMenuEntry<String>> Function(BuildContext context)?
+  menuEntries;
   final void Function(String value)? onMenuSelected;
 
   @override
@@ -55,8 +57,7 @@ class WrapGridCardItem extends StatelessWidget {
             child: Column(
               children: <Widget>[
                 avatar ??
-                    Image.asset(
-                      'imgs/img_default.png',
+                    DefaultPlaceholderImage(
                       width: avatarSize,
                       height: avatarSize,
                     ),
@@ -122,12 +123,11 @@ class WrapGridCardItem extends StatelessWidget {
                   child: followed
                       ? Text(
                           '已关注',
-                          style: context.typo.button.copyWith(color: Colors.grey),
+                          style: context.typo.button.copyWith(
+                            color: Colors.grey,
+                          ),
                         )
-                      : Text(
-                          '关注',
-                          style: context.typo.button,
-                        ),
+                      : Text('关注', style: context.typo.button),
                 ),
               ),
               PopupMenuButton<String>(

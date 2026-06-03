@@ -469,16 +469,6 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
               color: theme.brightness == Brightness.dark
                   ? ChatColors.dark().surface
                   : ChatColors.light().surface,
-              image: DecorationImage(
-                image: AssetImage('imgs/defbak.png'),
-                repeat: ImageRepeat.repeat,
-                colorFilter: ColorFilter.mode(
-                  theme.brightness == Brightness.dark
-                      ? ChatColors.dark().surfaceContainerLow
-                      : ChatColors.light().surfaceContainerLow,
-                  BlendMode.srcIn,
-                ),
-              ),
             ),
             onAttachmentTap: _handleAttachmentTap,
             onMessageSend: _addItem,

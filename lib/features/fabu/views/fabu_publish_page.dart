@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_selector/file_selector.dart';
@@ -8,8 +9,10 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/components/video_player/local_qqai_player.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../../data/models/address_entity.dart';
+import '../../blog/data/repos/blog_repo.dart';
 import '../../index/presentation/views/filter_page.dart';
 import '../../tool/video_cover_style_preview.dart';
 import '../../tool/video_cover_tool.dart';
@@ -278,62 +281,75 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
   Widget _buildMediaPicker(FabuState state, FabuNotifier notifier) {
     if (state.files.isEmpty) {
-      return Align(
-        alignment: Alignment.centerLeft,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(14),
-          onTap: () => _pickMedia(notifier),
-          child: Container(
-            width: widget.type == FabuPublishType.video ? double.infinity : 132,
-            height: widget.type == FabuPublishType.video ? null : 132,
-            constraints: widget.type == FabuPublishType.video
-                ? BoxConstraints(minHeight: 180.h)
-                : null,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FB),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: InkWell(
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE1E5EB)),
-            ),
-            child: AspectRatio(
-              aspectRatio: widget.type == FabuPublishType.video ? 15 / 9 : 1,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+              onTap: () => _pickMedia(notifier),
+              child: Container(
+                width: widget.type == FabuPublishType.video
+                    ? double.infinity
+                    : 132,
+                height: widget.type == FabuPublishType.video ? null : 132,
+                constraints: widget.type == FabuPublishType.video
+                    ? BoxConstraints(minHeight: 180.h)
+                    : null,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF8F9FB),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFFE1E5EB)),
+                ),
+                child: AspectRatio(
+                  aspectRatio: widget.type == FabuPublishType.video
+                      ? 15 / 9
+                      : 1,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.04),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Icon(
-                        widget.type == FabuPublishType.video
-                            ? Icons.video_call_outlined
-                            : Icons.add_photo_alternate_outlined,
-                        color: const Color(0xFF3578E5),
-                        size: 32,
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Icon(
+                            widget.type == FabuPublishType.video
+                                ? Icons.video_call_outlined
+                                : Icons.add_photo_alternate_outlined,
+                            color: const Color(0xFF3578E5),
+                            size: 32,
+                          ),
+                        ),
                       ),
-                    ),
+                      10.verticalSpace,
+                      Text(
+                        widget.type == FabuPublishType.video
+                            ? '添加视频'
+                            : '添加图片/视频',
+                        style: context.typo.caption.copyWith(
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ],
                   ),
-                  10.verticalSpace,
-                  Text(
-                    widget.type == FabuPublishType.video ? '添加视频' : '添加图片/视频',
-                    style: context.typo.caption.copyWith(
-                      color: const Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+          12.verticalSpace,
+          _buildBackgroundMusicPicker(state, notifier),
+        ],
       );
     }
 
@@ -349,21 +365,118 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
             onRemove: notifier.clearVideo,
           ),
           12.verticalSpace,
+          _buildBackgroundMusicPicker(state, notifier),
+          12.verticalSpace,
           _buildVideoCoverPicker(state, notifier),
         ],
       );
     }
 
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: Wrap(
-        children: state.files.map((file) {
-          return FabuMediaPreviewTile(
-            file: file,
-            isVideo: false,
-            onRemove: () => notifier.clearList(file),
-          );
-        }).toList(),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Wrap(
+            children: state.files.map((file) {
+              return FabuMediaPreviewTile(
+                file: file,
+                isVideo: false,
+                onRemove: () => notifier.clearList(file),
+              );
+            }).toList(),
+          ),
+        ),
+        12.verticalSpace,
+        _buildBackgroundMusicPicker(state, notifier),
+      ],
+    );
+  }
+
+  Widget _buildBackgroundMusicPicker(FabuState state, FabuNotifier notifier) {
+    final hasMusic =
+        state.backgroundMusicFile != null ||
+        (state.uploadedBackgroundMusicUrl?.isNotEmpty == true);
+    final musicName = state.backgroundMusicName?.trim();
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FB),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE1E5EB)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Column(
+          children: [
+            InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: () => _showBackgroundMusicSheet(notifier),
+              child: Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 17,
+                    backgroundColor: Color(0xFFEAF2FF),
+                    child: Icon(
+                      Icons.music_note_outlined,
+                      color: Color(0xFF3578E5),
+                      size: 20,
+                    ),
+                  ),
+                  10.horizontalSpace,
+                  Expanded(
+                    child: Text(
+                      hasMusic && musicName != null && musicName.isNotEmpty
+                          ? musicName
+                          : '选择背景音乐',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.body.copyWith(
+                        color: const Color(0xFF202124),
+                        fontWeight: hasMusic
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  if (hasMusic)
+                    IconButton(
+                      tooltip: '移除背景音乐',
+                      onPressed: notifier.clearBackgroundMusic,
+                      icon: const Icon(Icons.close, size: 18),
+                    )
+                  else
+                    const Icon(Icons.chevron_right, color: Color(0xFF6B7280)),
+                ],
+              ),
+            ),
+            if (widget.type == FabuPublishType.video && hasMusic) ...[
+              const Divider(height: 14, color: Color(0xFFECEEF2)),
+              InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => _showSoundModeSheet(state, notifier),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.volume_up_outlined,
+                      color: Color(0xFF6B7280),
+                      size: 20,
+                    ),
+                    12.horizontalSpace,
+                    Expanded(
+                      child: Text(
+                        state.soundMode == 2 ? '循环播放背景音乐' : '播放视频原声',
+                        style: context.typo.caption.copyWith(
+                          color: const Color(0xFF6B7280),
+                        ),
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right, color: Color(0xFF6B7280)),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -376,7 +489,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final hasManualPreview =
         !styledPreviewActive && (previewBytes != null || coverFile != null);
     final hasDisplay = styledPreviewActive || hasManualPreview;
-    final videoFile = state.videoFiles.isNotEmpty ? state.videoFiles.first : null;
+    final videoFile = state.videoFiles.isNotEmpty
+        ? state.videoFiles.first
+        : null;
 
     if (videoFile == null) {
       return const SizedBox.shrink();
@@ -412,13 +527,18 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     required bool hasManualPreview,
     required bool hasDisplay,
   }) {
-    final availableStyles = qqaiVideoCoverStylesForAspectRatio(videoAspectRatio);
-    if (!availableStyles.any((style) => style.id == state.selectedCoverStyleId)) {
+    final availableStyles = qqaiVideoCoverStylesForAspectRatio(
+      videoAspectRatio,
+    );
+    if (!availableStyles.any(
+      (style) => style.id == state.selectedCoverStyleId,
+    )) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         final current = ref.read(fabuProvider);
-        if (!qqaiVideoCoverStylesForAspectRatio(videoAspectRatio)
-            .any((style) => style.id == current.selectedCoverStyleId)) {
+        if (!qqaiVideoCoverStylesForAspectRatio(
+          videoAspectRatio,
+        ).any((style) => style.id == current.selectedCoverStyleId)) {
           notifier.setCoverStyle(
             qqaiDefaultVideoCoverStyleForAspectRatio(videoAspectRatio),
           );
@@ -718,6 +838,33 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     await notifier.selectVideoCover(file);
   }
 
+  Future<void> _importBackgroundMusic(FabuNotifier notifier) async {
+    const audioGroup = XTypeGroup(
+      label: '背景音乐',
+      extensions: ['mp3', 'm4a', 'aac', 'wav', 'flac', 'ogg'],
+    );
+    final file = await openFile(acceptedTypeGroups: [audioGroup]);
+    if (file == null) return;
+    notifier.selectBackgroundMusic(file);
+  }
+
+  Future<void> _showBackgroundMusicSheet(FabuNotifier notifier) async {
+    final selected = await showModalBottomSheet<BlogBackgroundMusicItem>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _BackgroundMusicSheet(
+        repo: ref.read(blogRepoProvider),
+        onImport: () async => _importBackgroundMusic(notifier),
+      ),
+    );
+    if (selected == null) return;
+    notifier.selectBackgroundMusicFromLibrary(
+      url: selected.musicUrl,
+      name: selected.musicName,
+    );
+  }
+
   void _showMessage(String message) {
     ScaffoldMessenger.of(
       context,
@@ -814,6 +961,43 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     );
     if (result != null) {
       notifier.setCollectionSel(result);
+    }
+  }
+
+  Future<void> _showSoundModeSheet(
+    FabuState state,
+    FabuNotifier notifier,
+  ) async {
+    final selected = await showModalBottomSheet<int>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: const Text('视频原声'),
+                subtitle: const Text('播放视频自带声音'),
+                trailing: state.soundMode == 1
+                    ? const Icon(Icons.check, color: Colors.blue)
+                    : null,
+                onTap: () => Navigator.pop(context, 1),
+              ),
+              ListTile(
+                title: const Text('循环背景音乐'),
+                subtitle: const Text('静音视频原声，播放选择的背景音乐'),
+                trailing: state.soundMode == 2
+                    ? const Icon(Icons.check, color: Colors.blue)
+                    : null,
+                onTap: () => Navigator.pop(context, 2),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (selected != null) {
+      notifier.setSoundMode(selected);
     }
   }
 
@@ -1327,6 +1511,342 @@ class _VideoCoverPlaceholder extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _BackgroundMusicSheet extends StatefulWidget {
+  const _BackgroundMusicSheet({required this.repo, required this.onImport});
+
+  final IBlogRepo repo;
+  final Future<void> Function() onImport;
+
+  @override
+  State<_BackgroundMusicSheet> createState() => _BackgroundMusicSheetState();
+}
+
+class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
+  static const _tabs = [('推荐', 'recommend'), ('热门', 'hot'), ('收藏', 'favorite')];
+
+  final _searchController = TextEditingController();
+  Timer? _searchDebounce;
+  var _tab = 'recommend';
+  var _items = const <BlogBackgroundMusicItem>[];
+  var _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final items = await widget.repo.searchBackgroundMusic(
+        keyword: _searchController.text,
+        tab: _tab,
+        pageSize: 30,
+      );
+      if (!mounted) return;
+      setState(() => _items = items);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _error = e.toString());
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _onSearchChanged(String _) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), _load);
+  }
+
+  Future<void> _importAudio() async {
+    await widget.onImport();
+    if (mounted) Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.58,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        child: Column(
+          children: [
+            8.verticalSpace,
+            Container(
+              width: 42,
+              height: 5,
+              decoration: BoxDecoration(
+                color: const Color(0xFFD6D6D6),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+            14.verticalSpace,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Container(
+                height: 46,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F2F5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: _onSearchChanged,
+                  textInputAction: TextInputAction.search,
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search, color: Color(0xFF8C8F99)),
+                    hintText: '搜索歌名/歌手/歌词/情绪',
+                    hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+            ),
+            14.verticalSpace,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: _tabs
+                          .map(
+                            (tab) => _MusicTabButton(
+                              title: tab.$1,
+                              selected: _tab == tab.$2,
+                              onTap: () {
+                                if (_tab == tab.$2) return;
+                                setState(() => _tab = tab.$2);
+                                _load();
+                              },
+                            ),
+                          )
+                          .toList(),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: _importAudio,
+                    icon: const Icon(Icons.library_music_outlined, size: 18),
+                    label: const Text('导入音频'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFF202124),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(child: _buildBody(context)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    if (_loading) {
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    }
+    if (_error != null) {
+      return Center(
+        child: Text(
+          '背景音乐加载失败',
+          style: context.typo.caption.copyWith(color: const Color(0xFF6B7280)),
+        ),
+      );
+    }
+    if (_items.isEmpty) {
+      return Center(
+        child: Text(
+          '暂无可选背景音乐',
+          style: context.typo.caption.copyWith(color: const Color(0xFF6B7280)),
+        ),
+      );
+    }
+    return ListView.separated(
+      padding: EdgeInsets.fromLTRB(16.w, 4, 16.w, 16),
+      itemCount: _items.length,
+      separatorBuilder: (_, __) =>
+          const Divider(height: 1, indent: 56, color: Color(0xFFECEEF2)),
+      itemBuilder: (context, index) {
+        final item = _items[index];
+        return _BackgroundMusicRow(
+          item: item,
+          selected: index == 0 && _tab == 'recommend',
+          onTap: () => Navigator.pop(context, item),
+        );
+      },
+    );
+  }
+}
+
+class _MusicTabButton extends StatelessWidget {
+  const _MusicTabButton({
+    required this.title,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String title;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: EdgeInsets.only(right: 30.w, bottom: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              title,
+              style: context.typo.body.copyWith(
+                color: const Color(0xFF202124),
+                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              ),
+            ),
+            8.verticalSpace,
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: selected ? 26 : 0,
+              height: 2,
+              decoration: BoxDecoration(
+                color: const Color(0xFF202124),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BackgroundMusicRow extends StatelessWidget {
+  const _BackgroundMusicRow({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final BlogBackgroundMusicItem item;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final coverUrl = resolveMediaUrl(item.coverUrl);
+    final subtitleParts = [
+      if ((item.creatorName ?? '').trim().isNotEmpty) item.creatorName!.trim(),
+      if ((item.durationText ?? '').trim().isNotEmpty)
+        item.durationText!.trim(),
+    ];
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: SizedBox(
+                width: 46,
+                height: 46,
+                child: coverUrl == null
+                    ? const ColoredBox(
+                        color: Color(0xFFEAF2FF),
+                        child: Icon(Icons.music_note, color: Color(0xFFFF2D65)),
+                      )
+                    : Image.network(
+                        coverUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const ColoredBox(
+                          color: Color(0xFFEAF2FF),
+                          child: Icon(
+                            Icons.music_note,
+                            color: Color(0xFFFF2D65),
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            12.horizontalSpace,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.musicName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.typo.body.copyWith(
+                            color: selected
+                                ? const Color(0xFFFF2D65)
+                                : const Color(0xFF202124),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                      if (selected)
+                        const Icon(
+                          Icons.graphic_eq,
+                          color: Color(0xFFFF2D65),
+                          size: 18,
+                        ),
+                    ],
+                  ),
+                  4.verticalSpace,
+                  Text(
+                    subtitleParts.isEmpty ? '视频原声' : subtitleParts.join(' · '),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typo.caption.copyWith(
+                      color: const Color(0xFF8C8F99),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            10.horizontalSpace,
+            IconButton(
+              onPressed: onTap,
+              icon: const Icon(Icons.content_cut, color: Color(0xFF202124)),
+            ),
+            IconButton(
+              onPressed: onTap,
+              icon: Icon(
+                item.favorite ? Icons.star : Icons.star_border,
+                color: const Color(0xFFFFD633),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

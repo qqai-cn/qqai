@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/constant/constant.dart';
 import 'package:qqai/util/api_base_client.dart';
 
 import '../data/models/area_models.dart';
@@ -24,7 +24,6 @@ class MyProfileEditPage extends ConsumerStatefulWidget {
 class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
-  static const String _defaultAvatar = Constant.DEFAULT_USER_AVATAR;
   static const double _contentMaxWidth = 600;
 
   bool _loading = true;
@@ -92,14 +91,15 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     return ((filled / keys.length) * 100).round();
   }
 
-  String get _coverDisplay =>
-      (_coverUrl?.trim().isNotEmpty == true) ? _coverUrl!.trim() : _defaultCover;
+  String get _coverDisplay => (_coverUrl?.trim().isNotEmpty == true)
+      ? _coverUrl!.trim()
+      : _defaultCover;
 
   String _sexLabel(int? sex) => switch (sex) {
-        1 => '男',
-        2 => '女',
-        _ => '未设置',
-      };
+    1 => '男',
+    2 => '女',
+    _ => '未设置',
+  };
 
   String get _addressDisplay => formatAddressForDisplay(_address);
 
@@ -110,7 +110,9 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     String? birthday,
     int? areaId,
   }) async {
-    await ref.read(profileRepoProvider).updateMemberUser(
+    await ref
+        .read(profileRepoProvider)
+        .updateMemberUser(
           MemberUserUpdateReq(
             nickname: nickname ?? _nickname,
             avatar: avatar ?? _avatarUrl,
@@ -121,8 +123,14 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
         );
   }
 
-  Future<void> _persistShop({String? name, String? intro, String? coverUrl}) async {
-    await ref.read(profileRepoProvider).updateMyShop(
+  Future<void> _persistShop({
+    String? name,
+    String? intro,
+    String? coverUrl,
+  }) async {
+    await ref
+        .read(profileRepoProvider)
+        .updateMyShop(
           BlogShopSaveReq(
             name: name ?? _nickname,
             intro: intro ?? _intro,
@@ -137,31 +145,47 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
   }
 
   Future<void> _pickAndUploadCover() async {
-    final file = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final file = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (file == null) return;
     try {
-      final url = await ApiBaseClient.uploadFile(file: file, directory: 'qqai/profile');
+      final url = await ApiBaseClient.uploadFile(
+        file: file,
+        directory: 'qqai/profile',
+      );
       await _persistShop(coverUrl: url);
       setState(() => _coverUrl = url);
       await _refreshHomeProfile();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('封面上传失败: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('封面上传失败: $e')));
       }
     }
   }
 
   Future<void> _pickAndUploadAvatar() async {
-    final file = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    final file = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
     if (file == null) return;
     try {
-      final url = await ApiBaseClient.uploadFile(file: file, directory: 'qqai/profile');
+      final url = await ApiBaseClient.uploadFile(
+        file: file,
+        directory: 'qqai/profile',
+      );
       await _persistMember(avatar: url);
       setState(() => _avatarUrl = url);
       await _refreshHomeProfile();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('头像上传失败: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('头像上传失败: $e')));
       }
     }
   }
@@ -178,8 +202,14 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
           decoration: const InputDecoration(hintText: '请输入昵称'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('保存')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('保存'),
+          ),
         ],
       ),
     );
@@ -203,8 +233,14 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
           decoration: const InputDecoration(hintText: '介绍一下自己吧'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text('保存')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, controller.text.trim()),
+            child: const Text('保存'),
+          ),
         ],
       ),
     );
@@ -221,9 +257,18 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(title: const Text('男'), onTap: () => Navigator.pop(ctx, 1)),
-            ListTile(title: const Text('女'), onTap: () => Navigator.pop(ctx, 2)),
-            ListTile(title: const Text('不展示'), onTap: () => Navigator.pop(ctx, 0)),
+            ListTile(
+              title: const Text('男'),
+              onTap: () => Navigator.pop(ctx, 1),
+            ),
+            ListTile(
+              title: const Text('女'),
+              onTap: () => Navigator.pop(ctx, 2),
+            ),
+            ListTile(
+              title: const Text('不展示'),
+              onTap: () => Navigator.pop(ctx, 0),
+            ),
           ],
         ),
       ),
@@ -262,18 +307,18 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
         final loaded = await ref.read(areaRepoProvider).getTree();
         if (!mounted) return;
         if (loaded.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('地区数据加载失败')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('地区数据加载失败')));
           return;
         }
         ref.invalidate(areaTreeProvider);
         await _openAreaPicker(loaded);
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('地区加载失败: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('地区加载失败: $e')));
         }
       }
       return;
@@ -317,7 +362,10 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                   left: 8,
                   top: MediaQuery.paddingOf(context).top + 4,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: Colors.white,
+                    ),
                     onPressed: () => context.pop(),
                   ),
                 ),
@@ -326,11 +374,21 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                   top: MediaQuery.paddingOf(context).top + 12,
                   child: TextButton.icon(
                     onPressed: _pickAndUploadCover,
-                    icon: const Icon(Icons.photo_camera_outlined, color: Colors.white, size: 18),
-                    label: Text('更换封面', style: context.typo.body.copyWith(color: Colors.white)),
+                    icon: const Icon(
+                      Icons.photo_camera_outlined,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    label: Text(
+                      '更换封面',
+                      style: context.typo.body.copyWith(color: Colors.white),
+                    ),
                     style: TextButton.styleFrom(
                       backgroundColor: Colors.black38,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                     ),
                   ),
                 ),
@@ -351,7 +409,14 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                       radius: avatarRadius - 2,
                       backgroundImage: _avatarUrl?.trim().isNotEmpty == true
                           ? CachedNetworkImageProvider(_avatarUrl!.trim())
-                          : const AssetImage(_defaultAvatar) as ImageProvider,
+                          : null,
+                      child: _avatarUrl?.trim().isNotEmpty == true
+                          ? null
+                          : DefaultAssetImage(
+                              width: (avatarRadius - 2) * 2,
+                              height: (avatarRadius - 2) * 2,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                   Container(
@@ -365,8 +430,17 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.photo_camera_outlined, color: Colors.white, size: 22),
-                        Text('更换头像', style: context.typo.caption.copyWith(color: Colors.white)),
+                        const Icon(
+                          Icons.photo_camera_outlined,
+                          color: Colors.white,
+                          size: 22,
+                        ),
+                        Text(
+                          '更换头像',
+                          style: context.typo.caption.copyWith(
+                            color: Colors.white,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -400,7 +474,8 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (showChevron) Icon(Icons.chevron_right, color: Colors.grey.shade400),
+            if (showChevron)
+              Icon(Icons.chevron_right, color: Colors.grey.shade400),
           ],
         ),
       ),
@@ -429,11 +504,17 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check_circle_outline, size: 16, color: Colors.grey.shade600),
+                      Icon(
+                        Icons.check_circle_outline,
+                        size: 16,
+                        color: Colors.grey.shade600,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '资料完成度 $_completionPercent%',
-                        style: context.typo.caption.copyWith(color: Colors.grey.shade600),
+                        style: context.typo.caption.copyWith(
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -443,13 +524,31 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                 child: ListView(
                   children: [
                     const Divider(height: 1),
-                    _row(label: '名字', value: _nickname?.trim().isNotEmpty == true ? _nickname!.trim() : '未设置', onTap: _editNickname),
+                    _row(
+                      label: '名字',
+                      value: _nickname?.trim().isNotEmpty == true
+                          ? _nickname!.trim()
+                          : '未设置',
+                      onTap: _editNickname,
+                    ),
                     const Divider(height: 1, indent: 16),
-                    _row(label: '简介', value: _intro?.trim().isNotEmpty == true ? _intro!.trim() : '这个人很懒，还没有写签名。', onTap: _editIntro),
+                    _row(
+                      label: '简介',
+                      value: _intro?.trim().isNotEmpty == true
+                          ? _intro!.trim()
+                          : '这个人很懒，还没有写签名。',
+                      onTap: _editIntro,
+                    ),
                     const Divider(height: 1, indent: 16),
                     _row(label: '性别', value: _sexLabel(_sex), onTap: _editSex),
                     const Divider(height: 1, indent: 16),
-                    _row(label: '生日', value: _birthday?.trim().isNotEmpty == true ? _birthday!.trim() : '未设置', onTap: _editBirthday),
+                    _row(
+                      label: '生日',
+                      value: _birthday?.trim().isNotEmpty == true
+                          ? _birthday!.trim()
+                          : '未设置',
+                      onTap: _editBirthday,
+                    ),
                     const Divider(height: 1, indent: 16),
                     _row(
                       label: '所在地',
@@ -462,24 +561,16 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                       value: _qqId?.toString() ?? '',
                       showChevron: false,
                     ),
-                    const Divider(height: 24, thickness: 8, color: Color(0xFFF5F5F5)),
-                    _row(
-                      label: '服务挂件',
-                      value: '团购橱窗、直播预告、公开群',
-                      onTap: () {},
+                    const Divider(
+                      height: 24,
+                      thickness: 8,
+                      color: Color(0xFFF5F5F5),
                     ),
+                    _row(label: '服务挂件', value: '团购橱窗、直播预告、公开群', onTap: () {}),
                     const Divider(height: 1, indent: 16),
-                    _row(
-                      label: '合作设置',
-                      value: '主页展示「找我官方合作」',
-                      onTap: () {},
-                    ),
+                    _row(label: '合作设置', value: '主页展示「找我官方合作」', onTap: () {}),
                     const Divider(height: 1, indent: 16),
-                    _row(
-                      label: '挂件中心',
-                      value: '管理头像挂件',
-                      onTap: () {},
-                    ),
+                    _row(label: '挂件中心', value: '管理头像挂件', onTap: () {}),
                     const SizedBox(height: 32),
                   ],
                 ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/constant/constant.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
@@ -9,7 +10,7 @@ import 'package:qqai/features/video/views/video_item_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 const String _kMeDetailVideoPlaceholderCover =
-    'https://file.qqai.cn/qqai/2025/09/1.webp';
+    Constant.DEFAULT_IMAGE_PLACEHOLDER;
 
 class MeDetailPage extends StatefulWidget {
   final int userId;
@@ -39,7 +40,7 @@ class _MeDetailPage extends State<MeDetailPage>
     _scrollviewController = ScrollController(initialScrollOffset: 0.0);
     _pageController = PageController();
     _pageViews.addAll([
-      'imgs/defbak.png',
+      Constant.DEFAULT_IMAGE_PLACEHOLDER,
       'imgs/defbak1.png',
       'imgs/user_default.png',
     ]);
@@ -110,20 +111,22 @@ class _MeDetailPage extends State<MeDetailPage>
                                       child: SelectableText(
                                         '@Skuu.com',
                                         textAlign: TextAlign.left,
-                                        style: context.typo.cardSubtitle.copyWith(
-                                          color: Colors.grey,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        style: context.typo.cardSubtitle
+                                            .copyWith(
+                                              color: Colors.grey,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                       ),
                                     ),
                                     Expanded(
                                       child: Text(
                                         '关注 32 KW ◉ 活跃 333 KW',
                                         textAlign: TextAlign.left,
-                                        style: context.typo.cardSubtitle.copyWith(
-                                          color: Colors.grey,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                        style: context.typo.cardSubtitle
+                                            .copyWith(
+                                              color: Colors.grey,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                       ),
                                     ),
                                   ],
@@ -156,12 +159,11 @@ class _MeDetailPage extends State<MeDetailPage>
                               child: _care
                                   ? Text(
                                       "已关注",
-                                      style: context.typo.button.copyWith(color: Colors.grey),
+                                      style: context.typo.button.copyWith(
+                                        color: Colors.grey,
+                                      ),
                                     )
-                                  : Text(
-                                      "关注",
-                                      style: context.typo.button,
-                                    ),
+                                  : Text("关注", style: context.typo.button),
                               onPressed: () {
                                 setState(() {
                                   _care = !_care;
@@ -228,7 +230,7 @@ class _MeDetailPage extends State<MeDetailPage>
       },
       itemCount: length,
       itemBuilder: (context, index) {
-        return Image.asset(_pageViews[index], fit: BoxFit.cover);
+        return AssetImageView(_pageViews[index], fit: BoxFit.cover);
       },
     );
   }

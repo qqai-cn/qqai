@@ -12,6 +12,38 @@ import 'package:qqai/features/goods/data/models/trade_models.dart';
 
 final blogRepoProvider = Provider<IBlogRepo>((ref) => BlogRepo());
 
+class BlogBackgroundMusicItem {
+  const BlogBackgroundMusicItem({
+    this.blogId,
+    required this.musicUrl,
+    required this.musicName,
+    this.coverUrl,
+    this.creatorName,
+    this.durationText,
+    this.favorite = false,
+  });
+
+  final int? blogId;
+  final String musicUrl;
+  final String musicName;
+  final String? coverUrl;
+  final String? creatorName;
+  final String? durationText;
+  final bool favorite;
+
+  factory BlogBackgroundMusicItem.fromJson(Map<String, dynamic> json) {
+    return BlogBackgroundMusicItem(
+      blogId: (json['blogId'] as num?)?.toInt(),
+      musicUrl: (json['musicUrl'] ?? '').toString(),
+      musicName: (json['musicName'] ?? '视频原声').toString(),
+      coverUrl: json['coverUrl'] as String?,
+      creatorName: json['creatorName'] as String?,
+      durationText: json['durationText'] as String?,
+      favorite: json['favorite'] == true,
+    );
+  }
+}
+
 abstract class IBlogRepo {
   Future<List<BlogModel>> getAllBlogs();
 
@@ -49,6 +81,13 @@ abstract class IBlogRepo {
   });
 
   Future<void> createBlog(BlogSaveReqVO req, {int? rewardAmount});
+
+  Future<List<BlogBackgroundMusicItem>> searchBackgroundMusic({
+    String? keyword,
+    String tab = 'recommend',
+    int pageNo = 1,
+    int pageSize = 20,
+  });
 
   /// 切换点赞，返回切换后是否已赞。
   Future<bool> toggleBlogLike(int blogId, {required bool currentlyLiked});
@@ -204,6 +243,43 @@ class BlogRepo implements IBlogRepo {
       RequestType.post,
       data: data,
     );
+  }
+
+  @override
+  Future<List<BlogBackgroundMusicItem>> searchBackgroundMusic({
+    String? keyword,
+    String tab = 'recommend',
+    int pageNo = 1,
+    int pageSize = 20,
+  }) async {
+    final query = <String, dynamic>{
+      'pageNo': pageNo,
+      'pageSize': pageSize,
+      'tab': tab,
+    };
+    final trimmedKeyword = keyword?.trim();
+    if (trimmedKeyword != null && trimmedKeyword.isNotEmpty) {
+      query['keyword'] = trimmedKeyword;
+    }
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.BLOG_BACKGROUND_MUSIC_PAGE,
+      RequestType.get,
+      queryParameters: query,
+    );
+    final data = response.data;
+    final payload = data is Map<String, dynamic> ? data['data'] : null;
+    final list = payload is Map<String, dynamic>
+        ? payload['list'] ?? payload['records']
+        : null;
+    if (list is! List) return const [];
+    return list
+        .whereType<Map>()
+        .map(
+          (item) =>
+              BlogBackgroundMusicItem.fromJson(Map<String, dynamic>.from(item)),
+        )
+        .where((item) => item.musicUrl.isNotEmpty)
+        .toList();
   }
 
   @override

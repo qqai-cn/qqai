@@ -4,6 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/components/default_asset_image.dart';
+import 'package:qqai/constant/constant.dart';
 
 import '../data/models/profile_models.dart';
 import '../data/repos/profile_repo.dart';
@@ -30,8 +33,7 @@ class MyVideoListView extends ConsumerStatefulWidget {
 class _MyVideoListViewState extends ConsumerState<MyVideoListView>
     with AutomaticKeepAliveClientMixin {
   static const int _pageSize = 12;
-  static const String _placeholderCover =
-      'https://file.qqai.cn/qqai/2025/09/1.webp';
+  static const String _placeholderCover = Constant.DEFAULT_IMAGE_PLACEHOLDER;
 
   List<BlogCollectionResp> _items = [];
   bool _loading = false;
@@ -148,22 +150,22 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-          SliverOverlapInjector(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-          ),
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isWideScreen ? 4 : 3,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 0.72,
+            SliverOverlapInjector(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isWideScreen ? 4 : 3,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
+                childAspectRatio: 0.72,
+              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
                 final c = _items[index];
                 final cover = (c.coverUrl != null && c.coverUrl!.isNotEmpty)
-                    ? c.coverUrl!
+                    ? normalizeDefaultCoverAsset(c.coverUrl!)
                     : _placeholderCover;
+                final isLocalCover = cover == _placeholderCover;
                 return Material(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -199,14 +201,17 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Expanded(
-                          child: CachedNetworkImage(
-                            imageUrl: cover,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => Image.network(
-                              _placeholderCover,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                          child: isLocalCover
+                              ? AssetImageView(cover, fit: BoxFit.cover)
+                              : CachedNetworkImage(
+                                  imageUrl: cover,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                      AssetImageView(
+                                        _placeholderCover,
+                                        fit: BoxFit.cover,
+                                      ),
+                                ),
                         ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
@@ -230,18 +235,18 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
                     ),
                   ),
                 );
-              },
-              childCount: _items.length,
+              }, childCount: _items.length),
             ),
-          ),
-          if (_loadingMore)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            if (_loadingMore)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
               ),
-            ),
-        ],
+          ],
         ),
       ),
     );
@@ -291,7 +296,10 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
                       style: context.typo.body,
                     ),
                   ),
-                  TextButton(onPressed: _loadFirstPage, child: const Text('重试')),
+                  TextButton(
+                    onPressed: _loadFirstPage,
+                    child: const Text('重试'),
+                  ),
                 ],
               ),
             ),

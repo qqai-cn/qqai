@@ -1,5 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -24,8 +25,7 @@ class DetailControls extends ConsumerStatefulWidget {
   _DetailControls createState() => _DetailControls();
 }
 
-class _DetailControls
-    extends ConsumerState<DetailControls> {
+class _DetailControls extends ConsumerState<DetailControls> {
   _DetailControls({Key? key});
 
   final double iconSize = 30;
@@ -69,7 +69,12 @@ class _DetailControls
                   onTap: () {
                     context.push('${Routes.userDetail}/88/true');
                   },
-                  child: Text('@ 3000万粉丝', style: context.typo.bodyStrong.copyWith(color: Colors.white)),
+                  child: Text(
+                    '@ 3000万粉丝',
+                    style: context.typo.bodyStrong.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 InkWell(
                   onTap: () {
@@ -168,9 +173,7 @@ class _DetailControls
                           child: Padding(
                             child: InkWell(
                               onTap: () {},
-                              child: ClipOval(
-                                child: Image.asset('imgs/defbak.png'),
-                              ),
+                              child: ClipOval(child: DefaultAssetImage()),
                             ),
                             padding: EdgeInsets.all(2),
                           ),
@@ -279,8 +282,7 @@ class _DetailControls
     return ListTile(
       hoverColor: Colors.white,
       focusColor: Colors.white,
-      leading: Image.asset(
-        'imgs/defbak.png',
+      leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE,
         height: Constant.HEAD_IMG_SEZE,
         fit: BoxFit.fill,
@@ -319,7 +321,10 @@ class _DetailControls
             SizedBox(height: 5),
             Text(
               '2022-12-11 10：12',
-              style: context.typo.body.copyWith(color: Colors.grey, fontSize: 15),
+              style: context.typo.body.copyWith(
+                color: Colors.grey,
+                fontSize: 15,
+              ),
             ),
             SizedBox(height: 5),
           ],

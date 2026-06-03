@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../constant/constant.dart';
@@ -11,10 +12,7 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Material",
-      home: CommengSecondItem(),
-    );
+    return MaterialApp(title: "Material", home: CommengSecondItem());
   }
 }
 
@@ -46,22 +44,19 @@ class _CommengSecondItem extends State<CommengSecondItem> {
   Widget build(BuildContext context) {
     return TextButton(
       style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.all(Colors.transparent)),
+        backgroundColor: MaterialStateProperty.all(Colors.transparent),
+      ),
       onPressed: () => {
         showModalBottomSheet(
-            constraints: BoxConstraints(maxHeight: 0.9.sh),
-            context: context,
-            isScrollControlled: true,
-            builder: (BuildContext build) {
-              return ListView(
-                children: [
-                  getRow(1),
-                  getRow(1),
-                  getRow(1),
-                  getRow(1),
-                ],
-              );
-            })
+          constraints: BoxConstraints(maxHeight: 0.9.sh),
+          context: context,
+          isScrollControlled: true,
+          builder: (BuildContext build) {
+            return ListView(
+              children: [getRow(1), getRow(1), getRow(1), getRow(1)],
+            );
+          },
+        ),
       },
       child: Text('查看全部30挑评论'),
     );
@@ -72,8 +67,7 @@ class _CommengSecondItem extends State<CommengSecondItem> {
       hoverColor: Colors.white,
       focusColor: Colors.white,
       titleAlignment: ListTileTitleAlignment.titleHeight,
-      leading: Image.asset(
-        'imgs/defbak.png',
+      leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE.w,
         height: Constant.HEAD_IMG_SEZE.w,
         fit: BoxFit.fill,
@@ -81,58 +75,43 @@ class _CommengSecondItem extends State<CommengSecondItem> {
       title: Container(
         // padding: EdgeInsets.only(top: 10),
         decoration: UnderlineTabIndicator(
-            borderSide: BorderSide(color: Colors.black12)),
+          borderSide: BorderSide(color: Colors.black12),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 InkWell(child: Text('新飞飞')),
-                LevelIcon(
-                  lv: 5,
-                ),
+                LevelIcon(lv: 5),
                 Spacer(),
-                Image.asset(
-                  'imgs/zan.png',
-                  width: 50,
-                  height: 30,
-                ),
+                Image.asset('imgs/zan.png', width: 50, height: 30),
                 Text('212'),
                 PopupMenuButton(
                   tooltip: "",
-                  icon: Icon(
-                    Icons.more_vert,
-                    color: Colors.black54,
-                  ),
+                  icon: Icon(Icons.more_vert, color: Colors.black54),
                   onSelected: (va) {
                     print(va);
                   },
                   itemBuilder: (BuildContext context) {
                     return <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(
-                        value: '0',
-                        child: Text('收藏'),
-                      ),
-                      PopupMenuItem<String>(
-                        value: '1',
-                        child: Text('举报'),
-                      ),
+                      PopupMenuItem<String>(value: '0', child: Text('收藏')),
+                      PopupMenuItem<String>(value: '1', child: Text('举报')),
                     ];
                   },
                 ),
               ],
             ),
             SelectableText(text),
-            SizedBox(
-              height: 5,
-            ),
+            SizedBox(height: 5),
             Text(
               '2022-12-11 10：12',
-              style: context.typo.body.copyWith(color: Colors.grey, fontSize: 15),
+              style: context.typo.body.copyWith(
+                color: Colors.grey,
+                fontSize: 15,
+              ),
             ),
-            SizedBox(
-              height: 5,
-            ),
+            SizedBox(height: 5),
           ],
         ),
       ),

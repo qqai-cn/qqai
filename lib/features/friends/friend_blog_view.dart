@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
@@ -114,8 +115,7 @@ class _TabPageState extends ConsumerState<FriendBlogView>
       hoverColor: Colors.white,
       focusColor: Colors.white,
       titleAlignment: ListTileTitleAlignment.titleHeight,
-      leading: Image.asset(
-        'imgs/defbak.png',
+      leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE.w,
         height: Constant.HEAD_IMG_SEZE.w,
         fit: BoxFit.fill,

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
@@ -77,7 +78,7 @@ class _FlowViewState extends ConsumerState<FlowView>
                 );
               return Padding(
                 padding: EdgeInsets.only(top: 10),
-                child: Image.asset('imgs/defbak.png', fit: BoxFit.fill),
+                child: DefaultPlaceholderImage(fit: BoxFit.fill),
               );
             }, childCount: 5),
           ),

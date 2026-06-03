@@ -1,5 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -7,12 +8,12 @@ import '../../../feed_player/multi_manager/flick_multi_manager.dart';
 import '../../../feed_player/portrait_controls.dart';
 
 class FlickMultiPlayer extends StatefulWidget {
-  const FlickMultiPlayer(
-      {Key? key,
-      required this.url,
-      this.image,
-      required this.flickMultiManager})
-      : super(key: key);
+  const FlickMultiPlayer({
+    Key? key,
+    required this.url,
+    this.image,
+    required this.flickMultiManager,
+  }) : super(key: key);
 
   final String url;
   final String? image;
@@ -31,9 +32,9 @@ class _FlickMultiPlayerState extends State<FlickMultiPlayer> {
       // videoPlayerController:
       //     VideoPlayerController.contentUri(Uri.file(widget.url))
       //       ..setLooping(true),
-      videoPlayerController:
-          VideoPlayerController.networkUrl(Uri.parse(widget.url))
-            ..setLooping(true),
+      videoPlayerController: VideoPlayerController.networkUrl(
+        Uri.parse(widget.url),
+      )..setLooping(true),
       autoPlay: false,
     );
     widget.flickMultiManager.init(flickManager);
@@ -63,10 +64,7 @@ class _FlickMultiPlayerState extends State<FlickMultiPlayer> {
               child: Stack(
                 children: <Widget>[
                   Positioned.fill(
-                    child: Image.asset(
-                      widget.image!,
-                      fit: BoxFit.cover,
-                    ),
+                    child: AssetImageView(widget.image!, fit: BoxFit.cover),
                   ),
 
                   Positioned(
@@ -91,15 +89,10 @@ class _FlickMultiPlayerState extends State<FlickMultiPlayer> {
           ),
           flickVideoWithControlsFullscreen: FlickVideoWithControls(
             playerLoadingFallback: Center(
-                child: Image.network(
-              widget.image!,
-              fit: BoxFit.fitWidth,
-            )),
-            controls: FlickLandscapeControls(),
-            iconThemeData: IconThemeData(
-              size: 40,
-              color: Colors.white,
+              child: AssetImageView(widget.image!, fit: BoxFit.fitWidth),
             ),
+            controls: FlickLandscapeControls(),
+            iconThemeData: IconThemeData(size: 40, color: Colors.white),
             textStyle: TextStyle(fontSize: 16, color: Colors.white),
           ),
         ),

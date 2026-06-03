@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/constant/constant.dart';
 import 'package:qqai/features/my/data/models/profile_models.dart';
 import 'package:qqai/features/my/providers/my_followers_providers.dart';
 import 'package:qqai/features/my/providers/my_follows_providers.dart';
@@ -240,9 +240,9 @@ class _FollowingTab extends ConsumerWidget {
             onAction: () async {
               final err = await notifier.unfollow(member);
               if (err != null && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(err)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(err)));
               }
             },
           );
@@ -296,9 +296,9 @@ class _FollowersTab extends ConsumerWidget {
             onAction: () async {
               final err = await notifier.toggleFollow(member);
               if (err != null && context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(err)),
-                );
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text(err)));
               }
             },
           );
@@ -399,7 +399,8 @@ class _FollowMemberTile extends StatelessWidget {
         radius: 26,
         backgroundImage: avatarUrl != null
             ? CachedNetworkImageProvider(avatarUrl)
-            : const AssetImage(Constant.DEFAULT_USER_AVATAR),
+            : null,
+        child: avatarUrl == null ? const DefaultAssetImage() : null,
       ),
       title: Row(
         children: [

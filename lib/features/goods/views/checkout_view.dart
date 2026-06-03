@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
@@ -214,8 +215,8 @@ class _WideCheckoutBody extends StatelessWidget {
         constraints: const BoxConstraints(
           maxWidth:
               GoodsPageStyle.pageMaxWidth +
-                  GoodsPageStyle.sidePanelWidth +
-                  GoodsPageStyle.gutter,
+              GoodsPageStyle.sidePanelWidth +
+              GoodsPageStyle.gutter,
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 24),
@@ -418,15 +419,9 @@ class _CheckoutSidePanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          _PriceLine(
-            label: '商品合计',
-            value: '¥${goodsTotal.toStringAsFixed(2)}',
-          ),
+          _PriceLine(label: '商品合计', value: '¥${goodsTotal.toStringAsFixed(2)}'),
           const SizedBox(height: 10),
-          _PriceLine(
-            label: '运费',
-            value: '¥${freight.toStringAsFixed(2)}',
-          ),
+          _PriceLine(label: '运费', value: '¥${freight.toStringAsFixed(2)}'),
           const Padding(
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Divider(height: 1, color: GoodsPageStyle.border),
@@ -474,8 +469,9 @@ class _CheckoutSidePanel extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: GoodsPageStyle.accent,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    GoodsPageStyle.sub.withValues(alpha: 0.35),
+                disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                  alpha: 0.35,
+                ),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
@@ -565,8 +561,9 @@ class _CheckoutSubmitBar extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: GoodsPageStyle.accent,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        GoodsPageStyle.sub.withValues(alpha: 0.35),
+                    disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                      alpha: 0.35,
+                    ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(22),
@@ -612,10 +609,7 @@ class _PriceSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Column(
         children: [
-          _PriceLine(
-            label: '商品合计',
-            value: '¥${goodsTotal.toStringAsFixed(2)}',
-          ),
+          _PriceLine(label: '商品合计', value: '¥${goodsTotal.toStringAsFixed(2)}'),
           const SizedBox(height: 10),
           _PriceLine(label: '运费', value: '¥${freight.toStringAsFixed(2)}'),
           const Padding(
@@ -696,7 +690,9 @@ class _CheckoutGoodsRow extends StatelessWidget {
                 const SizedBox(height: 6),
                 Text(
                   '¥${line.price.toStringAsFixed(2)} × ${line.quantity}',
-                  style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+                  style: context.typo.caption.copyWith(
+                    color: GoodsPageStyle.sub,
+                  ),
                 ),
               ],
             ),
@@ -727,7 +723,7 @@ class _CheckoutGoodsRow extends StatelessWidget {
     }
     final asset = line.coverAsset;
     if (asset != null && asset.isNotEmpty) {
-      return Image.asset(
+      return AssetImageView(
         asset,
         width: 72,
         height: 72,

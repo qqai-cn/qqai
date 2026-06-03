@@ -212,7 +212,7 @@ class _ChatWidgetState extends State<ChatWidget> {
         jpgsTypeGroup,
         pngTypeGroup,
       ]);
-      // ByteData catBytes = await rootBundle.load('imgs/defbak.png');
+      // ByteData catBytes = await rootBundle.load('imgs/defbak.svg');
       // ByteData sconeBytes = await rootBundle.load('imgs/defbak1.png');
       final content = [
         Content.multi([

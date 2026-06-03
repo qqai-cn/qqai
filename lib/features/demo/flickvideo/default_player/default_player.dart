@@ -18,8 +18,8 @@ class _DefaultPlayerState extends State<DefaultPlayer> {
   void initState() {
     super.initState();
     flickManager = FlickManager(
-      videoPlayerController: VideoPlayerController.networkUrl(Uri.parse(
-        mockData["items"][0]["trailer_url"]),
+      videoPlayerController: VideoPlayerController.networkUrl(
+        Uri.parse(mockData["items"][0]["trailer_url"]),
         closedCaptionFile: _loadCaptions(),
       ),
     );
@@ -28,10 +28,8 @@ class _DefaultPlayerState extends State<DefaultPlayer> {
   ///If you have subtitle assets
 
   Future<ClosedCaptionFile> _loadCaptions() async {
-    final String fileContents = await DefaultAssetBundle.of(context)
-        .loadString('imgs/defbak.png');
     flickManager.flickControlManager!.toggleSubtitle();
-    return SubRipCaptionFile(fileContents);
+    return SubRipCaptionFile('');
   }
 
   ///If you have subtitle urls

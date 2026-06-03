@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 
 void main() {
   runApp(MyApp());
@@ -7,10 +8,7 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Material",
-      home: NestedScrollViewDemo1(),
-    );
+    return MaterialApp(title: "Material", home: NestedScrollViewDemo1());
   }
 }
 
@@ -47,64 +45,51 @@ class _NestedScrollViewDemo1 extends State<NestedScrollViewDemo1>
     var children = <Widget>[];
     // 生成 6 个 Tab 页
     for (int i = 0; i < 6; ++i) {
-      children.add(Container(
-        height: 300.0,
-        // width: 420,
-        color: Colors.blue,
-        child: Image.asset(
-          "imgs/defbak.png",
-          fit: BoxFit.fitWidth,
+      children.add(
+        Container(
+          height: 300.0,
+          // width: 420,
+          color: Colors.blue,
+          child: DefaultPlaceholderImage(fit: BoxFit.fitWidth),
         ),
-      ));
+      );
     }
     return NestedScrollView(
-        controller: _scrollviewController,
-        headerSliverBuilder: (context, boxIsScrolled) {
-          return [
-            SliverAppBar(
-              pinned: true,
-              floating: true,
-              elevation: 0.5,
-              forceElevated: true,
-              //backgroundColor: Colors.grey,
-              expandedHeight: 300,
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin, //视差效果
-                background: PageView(
-                  children: children,
-                ),
-              ),
-              bottom: TabBar(controller: _tabController, tabs: [
-                Tab(
-                  text: "首页",
-                ),
-                Tab(
-                  text: "消息",
-                ),
-                Tab(
-                  text: "购物",
-                ),
-                Tab(
-                  text: "我的",
-                )
-              ]),
+      controller: _scrollviewController,
+      headerSliverBuilder: (context, boxIsScrolled) {
+        return [
+          SliverAppBar(
+            pinned: true,
+            floating: true,
+            elevation: 0.5,
+            forceElevated: true,
+            //backgroundColor: Colors.grey,
+            expandedHeight: 300,
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.pin, //视差效果
+              background: PageView(children: children),
             ),
-          ];
-        },
-        body: TabBarView(controller: _tabController,
-            children: [
-          Center(
-            child: Text("one"),
+            bottom: TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(text: "首页"),
+                Tab(text: "消息"),
+                Tab(text: "购物"),
+                Tab(text: "我的"),
+              ],
+            ),
           ),
-          Center(
-            child: Text("two"),
-          ),
-          Center(
-            child: Text("three"),
-          ),
-          Center(
-            child: Text("four"),
-          ),
-        ]));
+        ];
+      },
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          Center(child: Text("one")),
+          Center(child: Text("two")),
+          Center(child: Text("three")),
+          Center(child: Text("four")),
+        ],
+      ),
+    );
   }
 }

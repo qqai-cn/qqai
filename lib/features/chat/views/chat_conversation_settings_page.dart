@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/constant.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
@@ -231,11 +232,14 @@ class _ChatConversationSettingsPageState
 
   Widget _buildAvatar(ChatConversationDto conversation) {
     final avatar = conversation.avatar;
-    final image = avatar != null && avatar.isNotEmpty
-        ? CachedNetworkImageProvider(avatar)
-        : const AssetImage(Constant.DEFAULT_USER_AVATAR) as ImageProvider;
+    if (avatar != null && avatar.isNotEmpty) {
+      return CircleAvatar(
+        radius: 36,
+        backgroundImage: CachedNetworkImageProvider(avatar),
+      );
+    }
 
-    return CircleAvatar(radius: 36, backgroundImage: image);
+    return const CircleAvatar(radius: 36, child: DefaultAssetImage());
   }
 
   @override
@@ -508,10 +512,6 @@ class _GroupMemberTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = avatar != null && avatar!.isNotEmpty
-        ? CachedNetworkImageProvider(avatar!)
-        : const AssetImage(Constant.DEFAULT_USER_AVATAR) as ImageProvider;
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -523,17 +523,22 @@ class _GroupMemberTile extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: Image(
-                image: image,
+              child: avatar != null && avatar!.isNotEmpty
+                  ? Image(
+                image: CachedNetworkImageProvider(avatar!),
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,
-                errorBuilder: (_, _, _) => Image.asset(
-                  Constant.DEFAULT_USER_AVATAR,
+                errorBuilder: (_, _, _) => const DefaultAssetImage(
                   width: 40,
                   height: 40,
                   fit: BoxFit.cover,
                 ),
+              )
+                  : const DefaultAssetImage(
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
               ),
             ),
             const SizedBox(height: 4),

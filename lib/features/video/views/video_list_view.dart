@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/constant/constant.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/video/views/video_item_view.dart';
 
 import '../providers/video_film_providers.dart';
 
-const String _defaultVideoCover =
-    'https://file.qqai.cn/qqai/2025/09/1.webp';
+const String _defaultVideoCover = Constant.DEFAULT_IMAGE_PLACEHOLDER;
 
 const Color _filmListBg = Color(0xFF0E0E14);
 const Color _filmListOnBg = Color(0xFFB8B8C4);
@@ -23,9 +23,7 @@ class VideoListView extends ConsumerStatefulWidget {
 class _VideoListViewState extends ConsumerState<VideoListView> {
   List<BlogItem> _gridItems(List<BlogItem> raw) {
     return raw
-        .where(
-          (e) => firstPlayableVideoUrlFromResources(e.resources) != null,
-        )
+        .where((e) => firstPlayableVideoUrlFromResources(e.resources) != null)
         .toList();
   }
 
@@ -77,10 +75,7 @@ class _VideoListViewState extends ConsumerState<VideoListView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
-                    '暂无影视内容',
-                    style: TextStyle(color: _filmListOnBg),
-                  ),
+                  const Text('暂无影视内容', style: TextStyle(color: _filmListOnBg)),
                   const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => filmNotifier.refresh(),
@@ -116,30 +111,27 @@ class _VideoListViewState extends ConsumerState<VideoListView> {
                         final cross = isWideScreen ? 3 : 2;
                         const spacing = 8.0;
                         final maxW = constraints.crossAxisExtent;
-                        final cellW =
-                            (maxW - spacing * (cross - 1)) / cross;
+                        final cellW = (maxW - spacing * (cross - 1)) / cross;
                         final aspect = filmGridChildAspectRatio(cellW);
                         return SliverGrid(
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: cross,
-                            mainAxisSpacing: spacing,
-                            crossAxisSpacing: spacing,
-                            childAspectRatio: aspect,
-                          ),
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final blog = items[index];
-                              return VideoItemView(
-                                key: ValueKey(
-                                  'film_${blog.id ?? index}',
-                                ),
-                                item: blog,
-                                defaultCover: _defaultVideoCover,
-                              );
-                            },
-                            childCount: items.length,
-                          ),
+                                crossAxisCount: cross,
+                                mainAxisSpacing: spacing,
+                                crossAxisSpacing: spacing,
+                                childAspectRatio: aspect,
+                              ),
+                          delegate: SliverChildBuilderDelegate((
+                            context,
+                            index,
+                          ) {
+                            final blog = items[index];
+                            return VideoItemView(
+                              key: ValueKey('film_${blog.id ?? index}'),
+                              item: blog,
+                              defaultCover: _defaultVideoCover,
+                            );
+                          }, childCount: items.length),
                         );
                       },
                     ),

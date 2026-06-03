@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
@@ -32,15 +33,10 @@ class _MyTeamsItem extends State<MyTeamsItem> {
   void initState() {
     super.initState();
     name = "丽泽天地";
-    _items.addAll([
-      '1',
-      '1',
-      '1',
-      '1',
-    ]);
+    _items.addAll(['1', '1', '1', '1']);
 
     _pageViews.addAll([
-      'imgs/defbak.png',
+      Constant.DEFAULT_IMAGE_PLACEHOLDER,
       'imgs/defbak1.png',
       'imgs/user_default.png',
     ]);
@@ -51,11 +47,7 @@ class _MyTeamsItem extends State<MyTeamsItem> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Image.asset(
-          'imgs/img_default.png',
-          width: 60,
-          height: 60,
-        ),
+        leading: Image.asset('imgs/img_default.png', width: 60, height: 60),
         title: Row(
           children: <Widget>[
             Column(
@@ -66,19 +58,14 @@ class _MyTeamsItem extends State<MyTeamsItem> {
                     Text(
                       name,
                       textAlign: TextAlign.left,
-                      style: context.typo.pageTitle.copyWith(color: Colors.white),
+                      style: context.typo.pageTitle.copyWith(
+                        color: Colors.white,
+                      ),
                     ),
-                    Image.asset(
-                      'imgs/img_default.png',
-                      width: 30,
-                      height: 30,
-                    ),
+                    Image.asset('imgs/img_default.png', width: 30, height: 30),
                   ],
                 ),
-                Container(
-                  height: 2,
-                  color: Colors.white,
-                ),
+                Container(height: 2, color: Colors.white),
                 Text(
                   '关注 32 KW $split_o 评分 5.0分',
                   textAlign: TextAlign.left,
@@ -117,15 +104,16 @@ class _MyTeamsItem extends State<MyTeamsItem> {
                 ],
               ),
             ),
-            Container(
-              height: 10.w,
-            ),
+            Container(height: 10.w),
             Expanded(
               flex: 1,
               child: Text(
                 '主要卖一些10元商品：铅笔，橡皮，玩具车，玩家足球，玩偶等，品类多多',
                 maxLines: 4,
-                style: context.typo.body.copyWith(fontSize: 17, color: Colors.blue),
+                style: context.typo.body.copyWith(
+                  fontSize: 17,
+                  color: Colors.blue,
+                ),
               ),
             ),
           ],
@@ -145,10 +133,7 @@ class _MyTeamsItem extends State<MyTeamsItem> {
       },
       itemCount: length,
       itemBuilder: (context, index) {
-        return Image.asset(
-          _pageViews[index],
-          fit: BoxFit.cover,
-        );
+        return AssetImageView(_pageViews[index], fit: BoxFit.cover);
       },
     );
   }

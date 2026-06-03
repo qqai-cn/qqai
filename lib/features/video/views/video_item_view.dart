@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/components/qq_network_image.dart';
 import 'package:qqai/components/video_player/qqai_player.dart';
 import 'package:qqai/features/blog/data/blog_route_extra.dart';
@@ -49,6 +50,16 @@ String _formatFooterTime(String? raw) {
     if (s.length >= 10) return s.substring(0, 10).replaceAll('-', '/');
     return s;
   }
+}
+
+bool _isLocalAssetPath(String value) =>
+    !value.startsWith('http://') &&
+    !value.startsWith('https://') &&
+    !value.startsWith('//');
+
+bool _isSvgPath(String value) {
+  final path = value.toLowerCase().split('?').first.split('#').first;
+  return path.endsWith('.svg');
 }
 
 /// 影视 Tab 网格卡片：圆角封面 + 左下角点赞 + 双行标题 + `@作者 · 日期`。
@@ -176,29 +187,6 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final dpr = MediaQuery.devicePixelRatioOf(context);
-                  final cw = (constraints.maxWidth * dpr).round().clamp(
-                    120,
-                    900,
-                  );
-                  final ch = (constraints.maxHeight * dpr).round().clamp(
-                    80,
-                    600,
-                  );
-                  return QqNetworkImage(
-                    url: cover,
-                    fit: BoxFit.cover,
-                    width: constraints.maxWidth,
-                    height: constraints.maxHeight,
-                    cacheWidth: cw,
-                    cacheHeight: ch,
-                    placeholderColor: const Color(0xFF2A2A36),
-                    errorIconColor: const Color(0xFF6B6B78),
-                  );
-                },
-              ),
               if (_showPreview && videoUrl != null)
                 Positioned.fill(
                   child: IgnorePointer(

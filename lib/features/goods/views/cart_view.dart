@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
@@ -33,9 +34,9 @@ class _CartViewState extends ConsumerState<CartView> {
       await action();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('操作失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('操作失败：$e')));
     }
   }
 
@@ -101,7 +102,8 @@ class _CartViewState extends ConsumerState<CartView> {
               allSelected: allSel,
               selectedTotal: selectedTotal,
               selectedCount: selectedCount,
-              onSelectAll: (v) => _handleCartAction(() => notifier.selectAll(v)),
+              onSelectAll: (v) =>
+                  _handleCartAction(() => notifier.selectAll(v)),
               onCheckout: _goCheckout,
             ),
     );
@@ -130,13 +132,19 @@ class _NarrowCartBody extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: Center(
             child: ConstrainedBox(
-              constraints:
-                  const BoxConstraints(maxWidth: GoodsPageStyle.pageMaxWidth),
+              constraints: const BoxConstraints(
+                maxWidth: GoodsPageStyle.pageMaxWidth,
+              ),
               child: _CartItemCard(
                 line: line,
-                onToggle: (v) => onCartAction(() => notifier.toggleSelect(line, v)),
-                onDec: () => onCartAction(() => notifier.setQty(line, line.quantity - 1)),
-                onInc: () => onCartAction(() => notifier.setQty(line, line.quantity + 1)),
+                onToggle: (v) =>
+                    onCartAction(() => notifier.toggleSelect(line, v)),
+                onDec: () => onCartAction(
+                  () => notifier.setQty(line, line.quantity - 1),
+                ),
+                onInc: () => onCartAction(
+                  () => notifier.setQty(line, line.quantity + 1),
+                ),
                 onDelete: () => onCartAction(() => notifier.remove(line)),
               ),
             ),
@@ -171,7 +179,8 @@ class _WideCartBody extends StatelessWidget {
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(
-          maxWidth: GoodsPageStyle.pageMaxWidth +
+          maxWidth:
+              GoodsPageStyle.pageMaxWidth +
               GoodsPageStyle.sidePanelWidth +
               GoodsPageStyle.gutter,
         ),
@@ -197,7 +206,8 @@ class _WideCartBody extends StatelessWidget {
                         onInc: () => onCartAction(
                           () => notifier.setQty(line, line.quantity + 1),
                         ),
-                        onDelete: () => onCartAction(() => notifier.remove(line)),
+                        onDelete: () =>
+                            onCartAction(() => notifier.remove(line)),
                       ),
                     );
                   },
@@ -247,7 +257,9 @@ class _CartSummaryPanel extends StatelessWidget {
         children: [
           Text(
             '结算明细',
-            style: context.typo.sectionTitle.copyWith(color: GoodsPageStyle.text),
+            style: context.typo.sectionTitle.copyWith(
+              color: GoodsPageStyle.text,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -273,7 +285,9 @@ class _CartSummaryPanel extends StatelessWidget {
               ),
               Text(
                 '$selectedCount 件',
-                style: context.typo.bodyStrong.copyWith(color: GoodsPageStyle.text),
+                style: context.typo.bodyStrong.copyWith(
+                  color: GoodsPageStyle.text,
+                ),
               ),
             ],
           ),
@@ -313,8 +327,9 @@ class _CartSummaryPanel extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: GoodsPageStyle.accent,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor:
-                    GoodsPageStyle.sub.withValues(alpha: 0.35),
+                disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                  alpha: 0.35,
+                ),
                 elevation: 0,
                 minimumSize: const Size(double.infinity, 48),
                 shape: RoundedRectangleBorder(
@@ -350,8 +365,7 @@ class _CartCheckoutBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final checkoutLabel =
-        selectedCount > 0 ? '去结算($selectedCount)' : '去结算';
+    final checkoutLabel = selectedCount > 0 ? '去结算($selectedCount)' : '去结算';
 
     return SafeArea(
       top: false,
@@ -374,12 +388,16 @@ class _CartCheckoutBar extends StatelessWidget {
                   ),
                   Text(
                     '全选',
-                    style: context.typo.body.copyWith(color: GoodsPageStyle.text),
+                    style: context.typo.body.copyWith(
+                      color: GoodsPageStyle.text,
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     '合计：',
-                    style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+                    style: context.typo.caption.copyWith(
+                      color: GoodsPageStyle.sub,
+                    ),
                   ),
                   const Text(
                     '¥',
@@ -421,8 +439,9 @@ class _CartCheckoutBar extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: GoodsPageStyle.accent,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor:
-                        GoodsPageStyle.sub.withValues(alpha: 0.35),
+                    disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                      alpha: 0.35,
+                    ),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(22),
@@ -446,7 +465,9 @@ class _EmptyCart extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: GoodsPageStyle.pageMaxWidth),
+        constraints: const BoxConstraints(
+          maxWidth: GoodsPageStyle.pageMaxWidth,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -466,7 +487,9 @@ class _EmptyCart extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               '购物车空空如也',
-              style: context.typo.sectionTitle.copyWith(color: GoodsPageStyle.text),
+              style: context.typo.sectionTitle.copyWith(
+                color: GoodsPageStyle.text,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
@@ -484,7 +507,10 @@ class _EmptyCart extends StatelessWidget {
                 backgroundColor: GoodsPageStyle.accent,
                 foregroundColor: Colors.white,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 12,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -593,11 +619,7 @@ class _CartItemCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    _QtyStepper(
-                      qty: line.quantity,
-                      onDec: onDec,
-                      onInc: onInc,
-                    ),
+                    _QtyStepper(qty: line.quantity, onDec: onDec, onInc: onInc),
                   ],
                 ),
                 Align(
@@ -629,6 +651,7 @@ class _CartItemCard extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildCover(CartLine line) {
     final url = resolveMediaUrl(line.coverUrl) ?? '';
     if (url.isNotEmpty) {
@@ -641,7 +664,7 @@ class _CartItemCard extends StatelessWidget {
       );
     }
     if (line.coverAsset != null && line.coverAsset!.isNotEmpty) {
-      return Image.asset(
+      return AssetImageView(
         line.coverAsset!,
         width: 88,
         height: 88,
@@ -698,7 +721,9 @@ class _QtyStepper extends StatelessWidget {
         children: [
           InkWell(
             onTap: qty > 1 ? onDec : null,
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+            borderRadius: const BorderRadius.horizontal(
+              left: Radius.circular(8),
+            ),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               child: Icon(Icons.remove, size: 16, color: GoodsPageStyle.text),
@@ -709,13 +734,16 @@ class _QtyStepper extends StatelessWidget {
             alignment: Alignment.center,
             child: Text(
               '$qty',
-              style: context.typo.bodyStrong.copyWith(color: GoodsPageStyle.text),
+              style: context.typo.bodyStrong.copyWith(
+                color: GoodsPageStyle.text,
+              ),
             ),
           ),
           InkWell(
             onTap: onInc,
-            borderRadius:
-                const BorderRadius.horizontal(right: Radius.circular(8)),
+            borderRadius: const BorderRadius.horizontal(
+              right: Radius.circular(8),
+            ),
             child: const Padding(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               child: Icon(Icons.add, size: 16, color: GoodsPageStyle.text),

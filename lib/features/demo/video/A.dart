@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 
 void main() {
   runApp(const MyApp());
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               // 原始图片
-              Image.asset('imgs/defbak.png', width: 200),
+              DefaultPlaceholderImage(width: 200),
 
               // 倒影部分
               Transform(
@@ -33,7 +34,7 @@ class MyApp extends StatelessWidget {
                       ).createShader(bounds);
                     },
                     blendMode: BlendMode.dstIn,
-                    child: Image.asset('imgs/defbak.png', width: 200),
+                    child: DefaultPlaceholderImage(width: 200),
                   ),
                 ),
               ),

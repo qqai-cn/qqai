@@ -4,7 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/constant/constant.dart';
 
 import '../../../../components/blog/network_image_carousel_pages.dart';
 import '../../blog/data/models/blog_page_model.dart';
@@ -13,10 +15,7 @@ import '../../blog/providers/blog_providers.dart';
 import '../data/repos/profile_repo.dart';
 
 /// 「作品」与「喜欢」共用网格，由 [kind] 区分接口。
-enum MyProfileWorkGridKind {
-  works,
-  likes,
-}
+enum MyProfileWorkGridKind { works, likes }
 
 class MyVideoView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -40,8 +39,7 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
     with AutomaticKeepAliveClientMixin {
   static const int _pageSize = 12;
   static const double _gridItemAspectRatio = 2 / 3;
-  static const String _placeholderCover =
-      'https://file.qqai.cn/qqai/2025/09/1.webp';
+  static const String _placeholderCover = Constant.DEFAULT_IMAGE_PLACEHOLDER;
 
   List<BlogItem> _items = [];
   bool _loading = false;
@@ -161,8 +159,7 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
       return const SizedBox.shrink();
     }
     final isWideScreen = 1.sw > 800;
-    final blogNotifier =
-        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
+    final blogNotifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
 
     if (_loading && _items.isEmpty) {
       return CustomScrollView(
@@ -223,8 +220,8 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
                 _isOtherUserLikes
                     ? '喜欢的作品仅本人可见'
                     : widget.kind == MyProfileWorkGridKind.likes
-                        ? '暂无喜欢的作品'
-                        : '暂无作品',
+                    ? '暂无喜欢的作品'
+                    : '暂无作品',
                 style: context.typo.body,
               ),
             ),
@@ -240,30 +237,31 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-          SliverOverlapInjector(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-          ),
-          SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: isWideScreen ? 4 : 3,
-              crossAxisSpacing: 2,
-              mainAxisSpacing: 2,
-              childAspectRatio: _gridItemAspectRatio,
+            SliverOverlapInjector(
+              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
             ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
+            SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: isWideScreen ? 4 : 3,
+                crossAxisSpacing: 2,
+                mainAxisSpacing: 2,
+                childAspectRatio: _gridItemAspectRatio,
+              ),
+              delegate: SliverChildBuilderDelegate((context, index) {
                 final item = _items[index];
-                final cover = resolveBlogCoverUrl(item, fallback: _placeholderCover);
+                final cover = resolveBlogCoverUrl(
+                  item,
+                  fallback: _placeholderCover,
+                );
+                final isLocalCover = cover == _placeholderCover;
                 final isVideo = item.blogType == 2;
                 return LayoutBuilder(
                   builder: (context, constraints) {
                     final width = constraints.maxWidth;
                     final height = constraints.maxHeight;
                     final dpr = MediaQuery.devicePixelRatioOf(context);
-                    final cacheWidth =
-                        (width * dpr).round().clamp(120, 900);
-                    final cacheHeight =
-                        (height * dpr).round().clamp(80, 600);
+                    final cacheWidth = (width * dpr).round().clamp(120, 900);
+                    final cacheHeight = (height * dpr).round().clamp(80, 600);
                     return GestureDetector(
                       onTap: () => blogNotifier.onBlogItemTap(context, item),
                       child: SizedBox(
@@ -274,23 +272,30 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
                           clipBehavior: Clip.hardEdge,
                           children: [
                             Positioned.fill(
-                              child: Image(
-                                image: CachedNetworkImageProvider(
-                                  cover,
-                                  maxWidth: cacheWidth,
-                                  maxHeight: cacheHeight,
-                                ),
-                                fit: BoxFit.cover,
-                                alignment: Alignment.center,
-                                filterQuality: FilterQuality.medium,
-                                gaplessPlayback: true,
-                                errorBuilder: (_, _, _) => Image.network(
-                                  _placeholderCover,
-                                  fit: BoxFit.cover,
-                                  width: width,
-                                  height: height,
-                                ),
-                              ),
+                              child: isLocalCover
+                                  ? AssetImageView(
+                                      cover,
+                                      fit: BoxFit.cover,
+                                      width: width,
+                                      height: height,
+                                    )
+                                  : Image(
+                                      image: CachedNetworkImageProvider(
+                                        cover,
+                                        maxWidth: cacheWidth,
+                                        maxHeight: cacheHeight,
+                                      ),
+                                      fit: BoxFit.cover,
+                                      alignment: Alignment.center,
+                                      filterQuality: FilterQuality.medium,
+                                      gaplessPlayback: true,
+                                      errorBuilder: (_, _, _) => AssetImageView(
+                                        _placeholderCover,
+                                        fit: BoxFit.cover,
+                                        width: width,
+                                        height: height,
+                                      ),
+                                    ),
                             ),
                             if (isVideo)
                               Positioned(
@@ -306,8 +311,9 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
                                     ),
                                     Text(
                                       '${item.zan ?? 0}',
-                                      style: context.typo.label
-                                          .copyWith(color: Colors.white),
+                                      style: context.typo.label.copyWith(
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -318,17 +324,17 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
                     );
                   },
                 );
-              },
-              childCount: _items.length,
+              }, childCount: _items.length),
             ),
-          ),
-          if (_loadingMore)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            if (_loadingMore)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
               ),
-            ),
           ],
         ),
       ),

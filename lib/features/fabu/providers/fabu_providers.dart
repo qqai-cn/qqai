@@ -44,6 +44,10 @@ sealed class FabuState with _$FabuState {
     @Default([]) List<String> uploadedFileUrls,
     @Default([]) List<String> uploadedVideoUrls,
     String? uploadedCoverUrl,
+    XFile? backgroundMusicFile,
+    String? uploadedBackgroundMusicUrl,
+    String? backgroundMusicName,
+    @Default(1) int soundMode,
     @Default(1) int selectedCoverStyleId,
     @Default([]) List<AddressEntity> addressList,
     @Default([]) List<SkuuTopicResVO> topicList,
@@ -253,10 +257,7 @@ class FabuNotifier extends _$FabuNotifier {
 
   Future<void> captureVideoCoverAtTimeMs(XFile video, int timeMs) async {
     _coverPreviewGeneration++;
-    state = state.copyWith(
-      isCoverPreviewing: true,
-      uploadedCoverUrl: null,
-    );
+    state = state.copyWith(isCoverPreviewing: true, uploadedCoverUrl: null);
     try {
       final durationMs = await _videoDurationMs(video);
       final clampedMs = timeMs.clamp(0, math.max(0, durationMs - 1)).toInt();
@@ -314,9 +315,7 @@ class FabuNotifier extends _$FabuNotifier {
       if (uri != null && uri.hasScheme && uri.scheme != 'file') {
         controller = VideoPlayerController.networkUrl(uri);
       } else if (kIsWeb) {
-        controller = VideoPlayerController.networkUrl(
-          uri ?? Uri.parse(path),
-        );
+        controller = VideoPlayerController.networkUrl(uri ?? Uri.parse(path));
       } else {
         controller = VideoPlayerController.file(
           File(uri?.toFilePath() ?? path),
@@ -342,10 +341,7 @@ class FabuNotifier extends _$FabuNotifier {
     XFile video, {
     double fallback = 9 / 16,
   }) {
-    return resolveLocalVideoAspectRatio(
-      video,
-      fallbackAspectRatio: fallback,
-    );
+    return resolveLocalVideoAspectRatio(video, fallbackAspectRatio: fallback);
   }
 
   Future<LocalVideoMetadata> _readVideoMetadata(
@@ -440,10 +436,7 @@ class FabuNotifier extends _$FabuNotifier {
     }
     if (value.isNotEmpty) {
       final newFiles = List<XFile>.from(state.files)..addAll(value);
-      state = state.copyWith(
-        files: newFiles,
-        uploadedFileUrls: [],
-      );
+      state = state.copyWith(files: newFiles, uploadedFileUrls: []);
     }
   }
 
@@ -470,6 +463,45 @@ class FabuNotifier extends _$FabuNotifier {
       isCoverPreviewing: false,
     );
     _syncCoverStyleForAspectRatio(metadata.aspectRatio);
+  }
+
+  void selectBackgroundMusic(XFile file) {
+    final musicName = file.name.trim().isEmpty
+        ? file.path.split('/').last
+        : file.name.trim();
+    state = state.copyWith(
+      backgroundMusicFile: file,
+      uploadedBackgroundMusicUrl: null,
+      backgroundMusicName: musicName,
+      soundMode: 2,
+    );
+  }
+
+  void selectBackgroundMusicFromLibrary({
+    required String url,
+    required String name,
+  }) {
+    if (url.trim().isEmpty) return;
+    state = state.copyWith(
+      backgroundMusicFile: null,
+      uploadedBackgroundMusicUrl: url.trim(),
+      backgroundMusicName: name.trim().isEmpty ? '背景音乐' : name.trim(),
+      soundMode: 2,
+    );
+  }
+
+  void clearBackgroundMusic() {
+    state = state.copyWith(
+      backgroundMusicFile: null,
+      uploadedBackgroundMusicUrl: null,
+      backgroundMusicName: null,
+      soundMode: 1,
+    );
+  }
+
+  void setSoundMode(int mode) {
+    if (mode != 1 && mode != 2) return;
+    state = state.copyWith(soundMode: mode);
   }
 
   void setWhoCanSee(int who) {
@@ -526,6 +558,7 @@ class FabuNotifier extends _$FabuNotifier {
     );
     try {
       final uploadResult = await _uploadPublishResources();
+      var backgroundMusicUrl = await _uploadBackgroundMusicForPublish();
       state = state.copyWith(
         publishProgress: 0.92,
         publishStage: 'AI 正在提交并发布内容...',
@@ -536,6 +569,11 @@ class FabuNotifier extends _$FabuNotifier {
       final blogResources = uploadResult.mediaUrls.isNotEmpty
           ? uploadResult.mediaUrls.join(',')
           : resources;
+      if ((backgroundMusicUrl == null || backgroundMusicUrl.isEmpty) &&
+          blogType == 2 &&
+          uploadResult.mediaUrls.isNotEmpty) {
+        backgroundMusicUrl = uploadResult.mediaUrls.first;
+      }
 
       final selected = state.selAddressEntity;
       final selectedAddress = address ?? selected?.name;
@@ -562,6 +600,15 @@ class FabuNotifier extends _$FabuNotifier {
         videoWidth: videoMetadata?.width,
         videoHeight: videoMetadata?.height,
         videoAspectRatio: videoMetadata?.aspectRatio,
+        backgroundMusicUrl: backgroundMusicUrl,
+        backgroundMusicName:
+            backgroundMusicUrl != null && backgroundMusicUrl.isNotEmpty
+            ? (state.backgroundMusicName ??
+                  (blogTitle.isEmpty ? '视频原声' : blogTitle))
+            : null,
+        soundMode: backgroundMusicUrl != null && backgroundMusicUrl.isNotEmpty
+            ? (blogType == 2 ? state.soundMode : 2)
+            : 1,
         addressId: resolvedAddressId != null && resolvedAddressId != 0
             ? resolvedAddressId
             : null,
@@ -660,9 +707,18 @@ class FabuNotifier extends _$FabuNotifier {
     }
     state = state.copyWith(uploadedFileUrls: imageUrls);
     mediaUrls.addAll(imageUrls);
-    final resolvedCoverUrl = coverUrl ??
-        firstStillImageUrlFromResources(imageUrls.join(','));
+    final resolvedCoverUrl =
+        coverUrl ?? firstStillImageUrlFromResources(imageUrls.join(','));
     return (mediaUrls: mediaUrls, coverUrl: resolvedCoverUrl);
+  }
+
+  Future<String?> _uploadBackgroundMusicForPublish() async {
+    final musicFile = state.backgroundMusicFile;
+    if (musicFile == null) return state.uploadedBackgroundMusicUrl;
+    _updatePublishProgress(0.88, 'AI 正在上传背景音乐...');
+    final url = await ApiBaseClient.uploadFile(file: musicFile);
+    state = state.copyWith(uploadedBackgroundMusicUrl: url);
+    return url;
   }
 
   Future<String?> _uploadVideoCoverFallback() async {
@@ -686,10 +742,7 @@ class FabuNotifier extends _$FabuNotifier {
         final bytes = await _widgetCoverCapture!();
         if (bytes != null && bytes.isNotEmpty) {
           final file = _xFileFromCoverBytes(bytes);
-          state = state.copyWith(
-            coverFile: file,
-            coverPreviewBytes: bytes,
-          );
+          state = state.copyWith(coverFile: file, coverPreviewBytes: bytes);
           return file;
         }
       } catch (e, st) {

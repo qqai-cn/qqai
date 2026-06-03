@@ -11,8 +11,9 @@ SkuuBlogPageEntity $SkuuBlogPageEntityFromJson(Map<String, dynamic> json) {
   if (message != null) {
     skuuBlogPageEntity.message = message;
   }
-  final SkuuBlogPageData? data =
-      jsonConvert.convert<SkuuBlogPageData>(json['data']);
+  final SkuuBlogPageData? data = jsonConvert.convert<SkuuBlogPageData>(
+    json['data'],
+  );
   if (data != null) {
     skuuBlogPageEntity.data = data;
   }
@@ -43,8 +44,11 @@ extension SkuuBlogPageEntityExtension on SkuuBlogPageEntity {
 SkuuBlogPageData $SkuuBlogPageDataFromJson(Map<String, dynamic> json) {
   final SkuuBlogPageData skuuBlogPageData = SkuuBlogPageData();
   final List<SkuuBlogPageDataRecords>? list = (json['list'] as List<dynamic>?)
-      ?.map((e) => jsonConvert.convert<SkuuBlogPageDataRecords>(e)
-          as SkuuBlogPageDataRecords)
+      ?.map(
+        (e) =>
+            jsonConvert.convert<SkuuBlogPageDataRecords>(e)
+                as SkuuBlogPageDataRecords,
+      )
       .toList();
   if (list != null) {
     skuuBlogPageData.list = list;
@@ -61,13 +65,15 @@ SkuuBlogPageData $SkuuBlogPageDataFromJson(Map<String, dynamic> json) {
   if (current != null) {
     skuuBlogPageData.current = current;
   }
-  final List<dynamic>? orders =
-      (json['orders'] as List<dynamic>?)?.map((e) => e).toList();
+  final List<dynamic>? orders = (json['orders'] as List<dynamic>?)
+      ?.map((e) => e)
+      .toList();
   if (orders != null) {
     skuuBlogPageData.orders = orders;
   }
-  final bool? optimizeCountSql =
-      jsonConvert.convert<bool>(json['optimizeCountSql']);
+  final bool? optimizeCountSql = jsonConvert.convert<bool>(
+    json['optimizeCountSql'],
+  );
   if (optimizeCountSql != null) {
     skuuBlogPageData.optimizeCountSql = optimizeCountSql;
   }
@@ -119,7 +125,8 @@ extension SkuuBlogPageDataExtension on SkuuBlogPageData {
 }
 
 SkuuBlogPageDataRecords $SkuuBlogPageDataRecordsFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   final SkuuBlogPageDataRecords skuuBlogPageDataRecords =
       SkuuBlogPageDataRecords();
   final String? id = jsonConvert.convert<String>(json['id']);
@@ -153,6 +160,22 @@ SkuuBlogPageDataRecords $SkuuBlogPageDataRecordsFromJson(
   final String? resources = jsonConvert.convert<String>(json['resources']);
   if (resources != null) {
     skuuBlogPageDataRecords.resources = resources;
+  }
+  final String? backgroundMusicUrl = jsonConvert.convert<String>(
+    json['backgroundMusicUrl'],
+  );
+  if (backgroundMusicUrl != null) {
+    skuuBlogPageDataRecords.backgroundMusicUrl = backgroundMusicUrl;
+  }
+  final String? backgroundMusicName = jsonConvert.convert<String>(
+    json['backgroundMusicName'],
+  );
+  if (backgroundMusicName != null) {
+    skuuBlogPageDataRecords.backgroundMusicName = backgroundMusicName;
+  }
+  final int? soundMode = jsonConvert.convert<int>(json['soundMode']);
+  if (soundMode != null) {
+    skuuBlogPageDataRecords.soundMode = soundMode;
   }
   final int? shareType = jsonConvert.convert<int>(json['shareType']);
   if (shareType != null) {
@@ -190,7 +213,8 @@ SkuuBlogPageDataRecords $SkuuBlogPageDataRecordsFromJson(
 }
 
 Map<String, dynamic> $SkuuBlogPageDataRecordsToJson(
-    SkuuBlogPageDataRecords entity) {
+  SkuuBlogPageDataRecords entity,
+) {
   final Map<String, dynamic> data = <String, dynamic>{};
   data['id'] = entity.id;
   data['squareId'] = entity.squareId;
@@ -200,6 +224,9 @@ Map<String, dynamic> $SkuuBlogPageDataRecordsToJson(
   data['title'] = entity.title;
   data['content'] = entity.content;
   data['resources'] = entity.resources;
+  data['backgroundMusicUrl'] = entity.backgroundMusicUrl;
+  data['backgroundMusicName'] = entity.backgroundMusicName;
+  data['soundMode'] = entity.soundMode;
   data['shareType'] = entity.shareType;
   data['deleted'] = entity.deleted;
   data['care'] = entity.care;

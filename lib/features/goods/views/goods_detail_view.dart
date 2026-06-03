@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/constant/constant.dart';
 
 import '../../../providers/auth_providers.dart';
 import '../../../router/app_routes.dart';
@@ -142,10 +143,10 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     if (value == null) return '--';
     final text = value == value.roundToDouble()
         ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(3).replaceFirst(RegExp(r'0+$'), '').replaceFirst(
-            RegExp(r'\.$'),
-            '',
-          );
+        : value
+              .toStringAsFixed(3)
+              .replaceFirst(RegExp(r'0+$'), '')
+              .replaceFirst(RegExp(r'\.$'), '');
     return '$text $unit';
   }
 
@@ -173,8 +174,9 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     if (spuId == null) return;
     if (!ref.read(authProvider).isAuthenticated) return;
     try {
-      final collected =
-          await ref.read(goodsRepoProvider).isProductFavorite(spuId);
+      final collected = await ref
+          .read(goodsRepoProvider)
+          .isProductFavorite(spuId);
       if (!mounted) return;
       setState(() => _collected = collected);
     } catch (_) {
@@ -186,9 +188,9 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     if (_serviceLoading) return;
     final memberUserId = _product.serviceMemberUserId;
     if (memberUserId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('该商品分类暂未绑定客服会员')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('该商品分类暂未绑定客服会员')));
       return;
     }
     setState(() => _serviceLoading = true);
@@ -205,9 +207,9 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     if (_collectLoading) return;
     if (!ref.read(authProvider).isAuthenticated) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先登录')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('请先登录')));
       context.push(Routes.login);
       return;
     }
@@ -216,20 +218,19 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
 
     setState(() => _collectLoading = true);
     try {
-      final nowCollected = await ref.read(goodsRepoProvider).toggleProductFavorite(
-            spuId,
-            currentlyCollected: _collected,
-          );
+      final nowCollected = await ref
+          .read(goodsRepoProvider)
+          .toggleProductFavorite(spuId, currentlyCollected: _collected);
       if (!mounted) return;
       setState(() => _collected = nowCollected);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(nowCollected ? '已收藏' : '已取消收藏')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(nowCollected ? '已收藏' : '已取消收藏')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('操作失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('操作失败：$e')));
     } finally {
       if (mounted) {
         setState(() => _collectLoading = false);
@@ -247,13 +248,15 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     final sku = _selectedSku ?? _singleSpecSku;
     final skuId = sku?.id;
     if (skuId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('当前商品暂无可购规格')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('当前商品暂无可购规格')));
       return;
     }
     try {
-      await ref.read(cartSessionProvider.notifier).addFromGoods(
+      await ref
+          .read(cartSessionProvider.notifier)
+          .addFromGoods(
             skuId: skuId,
             spuId: _product.id,
             title: sku == null ? _title : '$_title · ${sku.label}',
@@ -262,14 +265,14 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
             addQty: _selectedQty,
           );
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('已加入购物车')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('已加入购物车')));
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('加入购物车失败：$e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('加入购物车失败：$e')));
     }
   }
 
@@ -281,7 +284,7 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
           : _product.id?.toString() ?? '',
       title: sku == null ? _title : '$_title · ${sku.label}',
       price: _price,
-      coverAsset: 'imgs/defbak.png',
+      coverAsset: Constant.DEFAULT_IMAGE_PLACEHOLDER,
       quantity: _selectedQty,
       selected: true,
     );
@@ -295,9 +298,9 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     final skus = _product.skus;
     if (skus.isEmpty) {
       if (!triggerActionWhenNoSku) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('当前商品暂无可选规格')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('当前商品暂无可选规格')));
         return;
       }
       if (buyAfterConfirm) {
@@ -338,9 +341,10 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
   Widget build(BuildContext context) {
     final commentsAsync = ref.watch(goodsCommentsProvider('${_product.id}'));
     final goodsId = '${_product.id}';
-    final detailText = [_introduction, _plainText(_product.description)]
-        .where((item) => item.trim().isNotEmpty)
-        .join('\n\n');
+    final detailText = [
+      _introduction,
+      _plainText(_product.description),
+    ].where((item) => item.trim().isNotEmpty).join('\n\n');
 
     return GoodsPageScaffold(
       topBar: Row(
@@ -363,8 +367,7 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
                     marketPrice: _marketPrice,
                     salesCount: _product.salesCount ?? 0,
                     title: _title,
-                    subtitle:
-                        _introduction.isEmpty ? '暂无商品简介' : _introduction,
+                    subtitle: _introduction.isEmpty ? '暂无商品简介' : _introduction,
                   ),
                   const SizedBox(height: 8),
                   _hasMultipleSpecs
@@ -394,9 +397,8 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute<void>(
-                            builder: (_) => _GoodsCommentsPage(
-                              goodsId: goodsId,
-                            ),
+                            builder: (_) =>
+                                _GoodsCommentsPage(goodsId: goodsId),
                           ),
                         );
                       },
@@ -442,9 +444,7 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     return GoodsPageTopSection(
       sectionColor: const Color(0xFFF7F7F7),
       padding: EdgeInsets.zero,
-      borderRadius: const BorderRadius.vertical(
-        bottom: Radius.circular(18),
-      ),
+      borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
       child: SizedBox(
         height: galleryHeight,
         child: Stack(
@@ -455,10 +455,7 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white,
-                      const Color(0xFFF7F7F7),
-                    ],
+                    colors: [Colors.white, const Color(0xFFF7F7F7)],
                   ),
                 ),
               ),
@@ -640,11 +637,7 @@ class _PriceCard extends StatelessWidget {
 }
 
 class _CellCard extends StatelessWidget {
-  const _CellCard({
-    required this.title,
-    required this.content,
-    this.onTap,
-  });
+  const _CellCard({required this.title, required this.content, this.onTap});
 
   final String title;
   final String content;
@@ -698,10 +691,7 @@ class _CellCard extends StatelessWidget {
 }
 
 class _SingleSpecCard extends StatelessWidget {
-  const _SingleSpecCard({
-    required this.weightText,
-    required this.volumeText,
-  });
+  const _SingleSpecCard({required this.weightText, required this.volumeText});
 
   final String weightText;
   final String volumeText;
@@ -729,10 +719,7 @@ class _SingleSpecCard extends StatelessWidget {
             children: [
               Text(
                 '规格',
-                style: TextStyle(
-                  color: Color(0xFF7D7D7D),
-                  fontSize: 14.5,
-                ),
+                style: TextStyle(color: Color(0xFF7D7D7D), fontSize: 14.5),
               ),
               SizedBox(width: 18),
               Text(
@@ -749,17 +736,11 @@ class _SingleSpecCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _SpecMetricItem(
-                  label: '重量',
-                  value: weightText,
-                ),
+                child: _SpecMetricItem(label: '重量', value: weightText),
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: _SpecMetricItem(
-                  label: '体积',
-                  value: volumeText,
-                ),
+                child: _SpecMetricItem(label: '体积', value: volumeText),
               ),
             ],
           ),
@@ -770,10 +751,7 @@ class _SingleSpecCard extends StatelessWidget {
 }
 
 class _SpecMetricItem extends StatelessWidget {
-  const _SpecMetricItem({
-    required this.label,
-    required this.value,
-  });
+  const _SpecMetricItem({required this.label, required this.value});
 
   final String label;
   final String value;
@@ -791,10 +769,7 @@ class _SpecMetricItem extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF9AA0AE),
-              fontSize: 12.5,
-            ),
+            style: const TextStyle(color: Color(0xFF9AA0AE), fontSize: 12.5),
           ),
           const SizedBox(height: 6),
           Text(
@@ -977,10 +952,7 @@ class _CommentsCard extends StatelessWidget {
               if (comments.isEmpty)
                 const Text(
                   '暂无评价',
-                  style: TextStyle(
-                    color: Color(0xFF999999),
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: Color(0xFF999999), fontSize: 14),
                 )
               else
                 Column(
@@ -1051,7 +1023,9 @@ class _CommentsCard extends StatelessWidget {
                                     color: const Color(0xFFFFC54D),
                                   ),
                                 ),
-                                if ((item.skuLabel ?? '').trim().isNotEmpty) ...[
+                                if ((item.skuLabel ?? '')
+                                    .trim()
+                                    .isNotEmpty) ...[
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
@@ -1112,11 +1086,8 @@ class _GoodsCommentsPage extends ConsumerWidget {
         ),
         GoodsTopRoundButton(
           icon: Icons.edit_outlined,
-          onTap: () => showGoodsCommentSubmitSheet(
-            context,
-            ref,
-            goodsId: goodsId,
-          ),
+          onTap: () =>
+              showGoodsCommentSubmitSheet(context, ref, goodsId: goodsId),
         ),
       ],
     );
@@ -1226,70 +1197,64 @@ class _GoodsCommentsPage extends ConsumerWidget {
             ),
             body: Expanded(
               child: RefreshIndicator(
-                  onRefresh: () => ref
-                      .read(goodsCommentsProvider(goodsId).notifier)
-                      .refresh(),
-                  child: comments.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          children: const [
-                            SizedBox(height: 120),
-                            Center(child: Text('暂无评价')),
-                          ],
-                        )
-                      : ListView.separated(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.fromLTRB(8, 10, 8, 18),
-                          itemCount: comments.length + 1,
-                          separatorBuilder: (_, _) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            if (index == 0) {
-                              return Container(
-                                padding: const EdgeInsets.fromLTRB(
-                                  14,
-                                  14,
-                                  14,
-                                  14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFF5F4FF),
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _summaryText(
-                                        comments,
-                                        recentPraiseText,
-                                      ),
-                                      style: const TextStyle(
-                                        color: Color(0xFF596172),
-                                        fontSize: 14,
-                                        height: 1.75,
-                                      ),
+                onRefresh: () =>
+                    ref.read(goodsCommentsProvider(goodsId).notifier).refresh(),
+                child: comments.isEmpty
+                    ? ListView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        children: const [
+                          SizedBox(height: 120),
+                          Center(child: Text('暂无评价')),
+                        ],
+                      )
+                    : ListView.separated(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(8, 10, 8, 18),
+                        itemCount: comments.length + 1,
+                        separatorBuilder: (_, _) => const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          if (index == 0) {
+                            return Container(
+                              padding: const EdgeInsets.fromLTRB(
+                                14,
+                                14,
+                                14,
+                                14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF5F4FF),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _summaryText(comments, recentPraiseText),
+                                    style: const TextStyle(
+                                      color: Color(0xFF596172),
+                                      fontSize: 14,
+                                      height: 1.75,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      '共 ${state.total} 条真实买家评价',
-                                      style: const TextStyle(
-                                        color: Color(0xFF9AA0AE),
-                                        fontSize: 13,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '共 ${state.total} 条真实买家评价',
+                                    style: const TextStyle(
+                                      color: Color(0xFF9AA0AE),
+                                      fontSize: 13,
                                     ),
-                                  ],
-                                ),
-                              );
-                            }
-                            final item = comments[index - 1];
-                            return _GoodsCommentListTile(
-                              item: item,
-                              timeLabel: _formatTime(item.createdAt),
+                                  ),
+                                ],
+                              ),
                             );
-                          },
-                        ),
+                          }
+                          final item = comments[index - 1];
+                          return _GoodsCommentListTile(
+                            item: item,
+                            timeLabel: _formatTime(item.createdAt),
+                          );
+                        },
+                      ),
               ),
             ),
           );
@@ -1300,10 +1265,7 @@ class _GoodsCommentsPage extends ConsumerWidget {
 }
 
 class _GoodsCommentListTile extends StatelessWidget {
-  const _GoodsCommentListTile({
-    required this.item,
-    required this.timeLabel,
-  });
+  const _GoodsCommentListTile({required this.item, required this.timeLabel});
 
   final GoodsCommentItem item;
   final String timeLabel;
@@ -1668,18 +1630,11 @@ class _BottomIconButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 22,
-              color: iconColor ?? const Color(0xFF3B3B3B),
-            ),
+            Icon(icon, size: 22, color: iconColor ?? const Color(0xFF3B3B3B)),
             const SizedBox(height: 3),
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF3B3B3B),
-                fontSize: 10.5,
-              ),
+              style: const TextStyle(color: Color(0xFF3B3B3B), fontSize: 10.5),
             ),
           ],
         ),

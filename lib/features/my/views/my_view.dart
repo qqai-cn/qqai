@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/profile/profile_banner_overlay_buttons.dart';
 import 'package:qqai/components/label.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/constant/constant.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
 
@@ -45,7 +45,6 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
-  static const String _defaultAvatar = Constant.DEFAULT_USER_AVATAR;
 
   bool get _isSelf => widget.userId == null;
 
@@ -230,9 +229,9 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
       if (!mounted) return;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已删除好友')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('已删除好友')));
         if (context.canPop()) {
           context.pop();
         }
@@ -282,7 +281,8 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
   Future<void> _showOtherUserActionMenu(BuildContext anchorContext) async {
     final renderBox = anchorContext.findRenderObject() as RenderBox?;
-    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    final overlayBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
     if (renderBox == null || !renderBox.hasSize || overlayBox == null) return;
 
     final topLeft = renderBox.localToGlobal(Offset.zero, ancestor: overlayBox);
@@ -394,8 +394,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
     final isWideScreen = MediaQuery.sizeOf(context).width > 800;
     final showBackButton = !_isSelf && widget.showLeadingBack;
-    final showMoreButton =
-        !_isSelf && (widget.showLeadingBack || isWideScreen);
+    final showMoreButton = !_isSelf && (widget.showLeadingBack || isWideScreen);
     final useBannerOverlayNav = showBackButton || showMoreButton;
     const toolbarHeight = 0.0;
     const tabBarHeight = kTextTabBarHeight;
@@ -457,8 +456,9 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                       const SizedBox(width: 48),
                                     if (showMoreButton)
                                       Padding(
-                                        padding:
-                                            const EdgeInsets.only(right: 4),
+                                        padding: const EdgeInsets.only(
+                                          right: 4,
+                                        ),
                                         child: Builder(
                                           builder: (menuContext) =>
                                               _buildOtherUserMoreMenu(
@@ -482,10 +482,13 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                     backgroundImage:
                                         avatarUrl != null &&
                                             avatarUrl.isNotEmpty
-                                        ? CachedNetworkImageProvider(
-                                            avatarUrl,
-                                          )
-                                        : const AssetImage(_defaultAvatar),
+                                        ? CachedNetworkImageProvider(avatarUrl)
+                                        : null,
+                                    child:
+                                        avatarUrl != null &&
+                                            avatarUrl.isNotEmpty
+                                        ? null
+                                        : const DefaultAssetImage(),
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(

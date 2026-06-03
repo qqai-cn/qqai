@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -41,8 +42,7 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
 
   @override
   Widget build(BuildContext context) {
-    final blogNotifier =
-        ref.read(blogProvider(HomeBlogTab.recommend).notifier);
+    final blogNotifier = ref.read(blogProvider(HomeBlogTab.recommend).notifier);
     final isWideScreen = 1.sw > 900;
     final bodyStyle = context.typo.body;
     return Padding(
@@ -166,21 +166,27 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
                       value: '0',
                       child: Text(
                         '收藏',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '1',
                       child: Text(
                         '举报',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                     PopupMenuItem<String>(
                       value: '2',
                       child: Text(
                         '不感兴趣',
-                        style: context.typo.body.copyWith(color: Colors.black54),
+                        style: context.typo.body.copyWith(
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
                   ];
@@ -208,8 +214,7 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
       hoverColor: Colors.white,
       focusColor: Colors.white,
       titleAlignment: ListTileTitleAlignment.titleHeight,
-      leading: Image.asset(
-        'imgs/defbak.png',
+      leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE.w,
         height: Constant.HEAD_IMG_SEZE.w,
         fit: BoxFit.fill,

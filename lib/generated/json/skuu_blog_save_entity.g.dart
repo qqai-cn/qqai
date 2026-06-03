@@ -27,6 +27,22 @@ SkuuBlogSaveEntity $SkuuBlogSaveEntityFromJson(Map<String, dynamic> json) {
   if (resources != null) {
     skuuBlogSaveEntity.resources = resources;
   }
+  final String? backgroundMusicUrl = jsonConvert.convert<String>(
+    json['backgroundMusicUrl'],
+  );
+  if (backgroundMusicUrl != null) {
+    skuuBlogSaveEntity.backgroundMusicUrl = backgroundMusicUrl;
+  }
+  final String? backgroundMusicName = jsonConvert.convert<String>(
+    json['backgroundMusicName'],
+  );
+  if (backgroundMusicName != null) {
+    skuuBlogSaveEntity.backgroundMusicName = backgroundMusicName;
+  }
+  final int? soundMode = jsonConvert.convert<int>(json['soundMode']);
+  if (soundMode != null) {
+    skuuBlogSaveEntity.soundMode = soundMode;
+  }
   final int? shareType = jsonConvert.convert<int>(json['shareType']);
   if (shareType != null) {
     skuuBlogSaveEntity.shareType = shareType;
@@ -50,6 +66,9 @@ Map<String, dynamic> $SkuuBlogSaveEntityToJson(SkuuBlogSaveEntity entity) {
   data['title'] = entity.title;
   data['content'] = entity.content;
   data['resources'] = entity.resources;
+  data['backgroundMusicUrl'] = entity.backgroundMusicUrl;
+  data['backgroundMusicName'] = entity.backgroundMusicName;
+  data['soundMode'] = entity.soundMode;
   data['shareType'] = entity.shareType;
   data['squareId'] = entity.squareId;
   data['topicIds'] = entity.topicIds;
@@ -64,6 +83,9 @@ extension SkuuBlogSaveEntityExtension on SkuuBlogSaveEntity {
     String? title,
     String? content,
     String? resources,
+    String? backgroundMusicUrl,
+    String? backgroundMusicName,
+    int? soundMode,
     int? shareType,
     int? squareId,
     String? topicIds,
@@ -75,6 +97,9 @@ extension SkuuBlogSaveEntityExtension on SkuuBlogSaveEntity {
       ..title = title ?? this.title
       ..content = content ?? this.content
       ..resources = resources ?? this.resources
+      ..backgroundMusicUrl = backgroundMusicUrl ?? this.backgroundMusicUrl
+      ..backgroundMusicName = backgroundMusicName ?? this.backgroundMusicName
+      ..soundMode = soundMode ?? this.soundMode
       ..shareType = shareType ?? this.shareType
       ..squareId = squareId ?? this.squareId
       ..topicIds = topicIds ?? this.topicIds;

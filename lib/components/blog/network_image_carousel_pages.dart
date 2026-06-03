@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/constant/constant.dart';
 
 import '../../features/blog/data/models/blog_page_model.dart';
 import '../qq_network_image.dart';
@@ -31,8 +32,18 @@ bool _looksLikeImageUrl(String u) {
   return lower.endsWith('.jpg') ||
       lower.endsWith('.jpeg') ||
       lower.endsWith('.png') ||
+      lower.endsWith('.svg') ||
       lower.endsWith('.webp') ||
       lower.endsWith('.gif');
+}
+
+String normalizeDefaultCoverAsset(String url) {
+  final trimmed = url.trim();
+  final path = trimmed.toLowerCase().split('?').first.split('#').first;
+  if (path == 'defbak.png' || path.endsWith('/defbak.png')) {
+    return Constant.DEFAULT_IMAGE_PLACEHOLDER;
+  }
+  return trimmed;
 }
 
 /// 从动态 [resources] 中取首条可播放视频 URL（逗号分隔时优先常见视频后缀）。
@@ -57,8 +68,7 @@ String? firstStillImageUrlFromResources(String? raw, {String? fallback}) {
 }
 
 /// 默认视频封面（无封面字段且无 resources 内图片时使用）。
-const String kDefaultBlogVideoCoverUrl =
-    'https://file.qqai.cn/qqai/2025/09/1.webp';
+const String kDefaultBlogVideoCoverUrl = Constant.DEFAULT_IMAGE_PLACEHOLDER;
 
 /// 解析博客封面：优先 [coverUrl]，其次 resources 内图片，最后默认图。
 String resolveBlogCoverUrlFromFields({
@@ -67,9 +77,13 @@ String resolveBlogCoverUrlFromFields({
   String fallback = kDefaultBlogVideoCoverUrl,
 }) {
   final direct = coverUrl?.trim();
-  if (direct != null && direct.isNotEmpty) return direct;
-  return firstStillImageUrlFromResources(resources, fallback: fallback) ??
+  if (direct != null && direct.isNotEmpty) {
+    return normalizeDefaultCoverAsset(direct);
+  }
+  final resolved =
+      firstStillImageUrlFromResources(resources, fallback: fallback) ??
       fallback;
+  return normalizeDefaultCoverAsset(resolved);
 }
 
 /// [BlogItem] 封面解析。

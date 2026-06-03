@@ -1,5 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -61,9 +62,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
     var wid = (180.w > 80 ? 80 : 180.w) / 2;
     return Stack(
       children: [
-        const Positioned.fill(
-          child: BlogDetailVideoSurfaceControls(),
-        ),
+        const Positioned.fill(child: BlogDetailVideoSurfaceControls()),
         Container(
           color: Colors.transparent,
           padding: const EdgeInsets.only(left: 10, top: 10),
@@ -77,9 +76,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Expanded(
-                        child: IgnorePointer(
-                          child: SizedBox.expand(),
-                        ),
+                        child: IgnorePointer(child: SizedBox.expand()),
                       ),
                       InkWell(
                         onTap: () {
@@ -87,8 +84,9 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                         },
                         child: Text(
                           _creatorLabel,
-                          style: context.typo.cardTitle
-                              .copyWith(color: Colors.white),
+                          style: context.typo.cardTitle.copyWith(
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       InkWell(
@@ -106,8 +104,9 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           text: TextSpan(
-                            style: context.typo.cardTitle2
-                                .copyWith(color: Colors.white),
+                            style: context.typo.cardTitle2.copyWith(
+                              color: Colors.white,
+                            ),
                             text: _description,
                           ),
                         ),
@@ -160,9 +159,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                 child: Column(
                   children: [
                     const Expanded(
-                      child: IgnorePointer(
-                        child: SizedBox.expand(),
-                      ),
+                      child: IgnorePointer(child: SizedBox.expand()),
                     ),
                     SizedBox(
                       width: 50,
@@ -183,9 +180,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                                 padding: const EdgeInsets.all(2),
                                 child: InkWell(
                                   onTap: () {},
-                                  child: ClipOval(
-                                    child: Image.asset('imgs/defbak.png'),
-                                  ),
+                                  child: ClipOval(child: DefaultAssetImage()),
                                 ),
                               ),
                             ),
@@ -283,8 +278,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
     return ListTile(
       hoverColor: Colors.white,
       focusColor: Colors.white,
-      leading: Image.asset(
-        'imgs/defbak.png',
+      leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE,
         height: Constant.HEAD_IMG_SEZE,
         fit: BoxFit.fill,

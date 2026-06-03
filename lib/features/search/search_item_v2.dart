@@ -1,5 +1,6 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/config/theme/app_typography.dart';
@@ -62,15 +63,14 @@ class _SearchItemV2 extends State<SearchItemV2>
     var children = <Widget>[];
     // 生成 6 个 Tab 页
     for (int i = 0; i < 6; ++i) {
-      children.add(Container(
-        height: 300.0,
-        // width: 420,
-        color: Colors.blue,
-        child: Image.asset(
-          "imgs/defbak.png",
-          fit: BoxFit.fitWidth,
+      children.add(
+        Container(
+          height: 300.0,
+          // width: 420,
+          color: Colors.blue,
+          child: DefaultPlaceholderImage(fit: BoxFit.fitWidth),
         ),
-      ));
+      );
     }
     return NestedScrollView(
       controller: _scrollviewController,
@@ -92,10 +92,11 @@ class _SearchItemV2 extends State<SearchItemV2>
                       icon: Icon(Icons.delete_forever),
                       onPressed: () async {
                         final result = await showOkCancelAlertDialog(
-                            context: context,
-                            title: "清空搜索历史",
-                            okLabel: "清空",
-                            cancelLabel: "取消");
+                          context: context,
+                          title: "清空搜索历史",
+                          okLabel: "清空",
+                          cancelLabel: "取消",
+                        );
                         print(result.index);
                       },
                     ),
@@ -105,7 +106,8 @@ class _SearchItemV2 extends State<SearchItemV2>
                     runSpacing: 1, // 纵轴（垂直）方向间距
                     alignment: WrapAlignment.start,
                     children: _historys
-                        .map<Widget>((e) => ElevatedButton(
+                        .map<Widget>(
+                          (e) => ElevatedButton(
                             onPressed: () {},
                             child: Text(
                               e,
@@ -113,7 +115,9 @@ class _SearchItemV2 extends State<SearchItemV2>
                                 color: const Color(0xFF7C7070),
                                 fontSize: 10,
                               ),
-                            )))
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                   // ListTile(
@@ -138,7 +142,9 @@ class _SearchItemV2 extends State<SearchItemV2>
             snap: true,
             pinned: true,
             backgroundColor: Colors.white,
-            titleTextStyle: context.typo.sectionTitle.copyWith(color: Colors.amber),
+            titleTextStyle: context.typo.sectionTitle.copyWith(
+              color: Colors.amber,
+            ),
             bottom: TabBar(
               controller: _tabController,
               tabs: _tabs.map((String name) => Tab(text: name)).toList(),
@@ -165,10 +171,11 @@ class _SearchItemV2 extends State<SearchItemV2>
   // 构建固定高度的SliverList，count为列表项属相
   Widget buildSliverList({int count = 5, String name = ""}) {
     return ListView.builder(
-        itemCount: count,
-        itemExtent: 50,
-        itemBuilder: (BuildContext context, int index) {
-          return ListTile(title: Text(name + '$index'));
-        });
+      itemCount: count,
+      itemExtent: 50,
+      itemBuilder: (BuildContext context, int index) {
+        return ListTile(title: Text(name + '$index'));
+      },
+    );
   }
 }
