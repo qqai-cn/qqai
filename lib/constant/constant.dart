@@ -22,8 +22,7 @@ class Constant {
 
   /// C 端用户无头像时的本地占位图
   static const String DEFAULT_USER_AVATAR = 'imgs/touxiang.jpeg';
-  static const String DEFAULT_IMAGE_PLACEHOLDER =
-      'https://file.qqai.cn/20260602/1_1780415094703.svg';
+  static const String DEFAULT_IMAGE_PLACEHOLDER = 'imgs/img_default.png';
   static const Color SELECT_COLOR = Color(0xFFE5E5E5);
   static const Color ICON_COLOR = Color(0xFF1AFA29);
   static const Color ICON_COLOR_DEF = Color(0xFF8A8A8A);
