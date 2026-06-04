@@ -24,6 +24,7 @@ class IndexPage extends ConsumerStatefulWidget {
 class _IndexPageState extends ConsumerState<IndexPage>
     with TickerProviderStateMixin, LazyTabMountMixin {
   late TabController _tabController;
+  int _activeHomeTabIndex = 0;
 
   @override
   void initState() {
@@ -37,20 +38,22 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   void _onTabChanged() {
     onLazyTabChanged(_tabController);
+    if (!_tabController.indexIsChanging) {
+      _activeHomeTabIndex = _tabController.index;
+    }
   }
 
   void _onHomeTabTap(int index) {
     lazyTabMount(index);
-    if (index == _tabController.index) {
+    if (index == _activeHomeTabIndex) {
       _refreshHomeTabAt(index);
+    } else {
+      _activeHomeTabIndex = index;
     }
   }
 
-  Future<void> _refreshRecommendTab() async {
-    if (_tabController.index != 0) {
-      _tabController.animateTo(0);
-    }
-    await homeTabConfigs.first.onReselect?.call(ref);
+  Future<void> _refreshCurrentHomeTab() async {
+    await homeTabConfigs[_tabController.index].onReselect?.call(ref);
   }
 
   Future<void> _refreshHomeTabAt(int index) async {
@@ -68,11 +71,14 @@ class _IndexPageState extends ConsumerState<IndexPage>
   Widget build(BuildContext context) {
     ref.listen(mainShellTabReselectProvider(0), (int? previous, int next) {
       if (previous != null && next > previous) {
-        _refreshRecommendTab();
+        _refreshCurrentHomeTab();
       }
     });
 
-    ref.listen(homeIndexTabNavigateProvider, (HomeIndexTabNavRequest? previous, next) {
+    ref.listen(homeIndexTabNavigateProvider, (
+      HomeIndexTabNavRequest? previous,
+      next,
+    ) {
       if (previous == null || next.nonce <= previous.nonce) return;
       final index = next.tabIndex.clamp(0, HomeNotifier.tabItems.length - 1);
       lazyTabMount(index);
@@ -149,26 +155,23 @@ class _IndexPageState extends ConsumerState<IndexPage>
             height: 40,
             margin: const EdgeInsets.all(10),
             alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            color: isDark ? theme.cardColor : Colors.white,
-          ),
-          child: TextButton.icon(
-            onPressed: null,
-            icon: Icon(
-              Icons.search,
-              color: isDark ? Colors.white70 : null,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: isDark ? theme.cardColor : Colors.white,
             ),
-            label: Text(
-              '网站flutter源码出售，有意联系QQ：807404400',
-              style: TextStyle(
-                color: isDark ? Colors.white70 : null,
-                fontSize: 13,
+            child: TextButton.icon(
+              onPressed: null,
+              icon: Icon(Icons.search, color: isDark ? Colors.white70 : null),
+              label: Text(
+                '网站flutter源码出售，有意联系QQ：807404400',
+                style: TextStyle(
+                  color: isDark ? Colors.white70 : null,
+                  fontSize: 13,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-        ),
         ),
       );
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/responsive_masonry_grid.dart';
+import 'package:qqai/components/refresh_status_badge.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 /// 异步列表 + 瀑布流 + 加载/错误占位 + 下拉刷新 + 上拉加载更多。
@@ -13,6 +14,7 @@ class AsyncMasonryFeed<T> extends StatefulWidget {
   final Future<void> Function()? onRefresh;
   final Future<void> Function()? onLoadMore;
   final bool isLoadingMore;
+  final bool isRefreshing;
   final bool hasMore;
 
   const AsyncMasonryFeed({
@@ -25,6 +27,7 @@ class AsyncMasonryFeed<T> extends StatefulWidget {
     this.onRefresh,
     this.onLoadMore,
     this.isLoadingMore = false,
+    this.isRefreshing = false,
     this.hasMore = true,
   });
 
@@ -35,6 +38,7 @@ class AsyncMasonryFeed<T> extends StatefulWidget {
 class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMoreLocally = false;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
@@ -66,6 +70,30 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
         widget.onLoadMore != null) {
       _isLoadingMoreLocally = true;
       await widget.onLoadMore!();
+    }
+  }
+
+  Future<void> _handleRefresh() async {
+    final onRefresh = widget.onRefresh;
+    if (onRefresh == null || _isRefreshing) {
+      return;
+    }
+
+    setState(() {
+      _isRefreshing = true;
+    });
+
+    try {
+      await Future.wait([
+        onRefresh(),
+        Future<void>.delayed(const Duration(milliseconds: 650)),
+      ]);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRefreshing = false;
+        });
+      }
     }
   }
 
@@ -103,7 +131,31 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
           },
         );
         if (widget.onRefresh != null) {
-          return RefreshIndicator(onRefresh: widget.onRefresh!, child: child);
+          return Stack(
+            children: [
+              RefreshIndicator(
+                onRefresh: _handleRefresh,
+                color: Colors.white,
+                backgroundColor: const Color(0xFFFF8C00),
+                displacement: 54,
+                strokeWidth: 3,
+                child: child,
+              ),
+              Positioned(
+                top: kToolbarHeight,
+                left: 0,
+                right: 0,
+                child: IgnorePointer(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: _isRefreshing || widget.isRefreshing
+                        ? const RefreshStatusBadge()
+                        : const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ],
+          );
         }
         return child;
       },

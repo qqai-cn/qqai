@@ -34,6 +34,7 @@ sealed class BlogState with _$BlogState {
     @Default([]) List<BlogItem> allItems,
     @Default(1) int currentPage,
     @Default(false) bool isLoadingMore,
+    @Default(false) bool isRefreshing,
     @Default(false) bool hasMore,
     String? error,
   }) = _BlogState;
@@ -106,18 +107,24 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   }
 
   Future<void> refresh() async {
+    state = state.copyWith(isRefreshing: true, error: null);
     try {
-      final items = await _fetchPage(1);
+      final results = await Future.wait([
+        _fetchPage(1),
+        Future<void>.delayed(const Duration(milliseconds: 650)),
+      ]);
       if (!ref.mounted) return;
+      final items = results.first as BlogPageModelData;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
         hasMore: (items.list?.length ?? 0) >= _pageSize,
+        isRefreshing: false,
       );
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: e.toString(), isRefreshing: false);
     }
   }
 

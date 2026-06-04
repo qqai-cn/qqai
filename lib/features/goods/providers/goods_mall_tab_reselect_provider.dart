@@ -15,3 +15,16 @@ class GoodsMallTabReselect extends _$GoodsMallTabReselect {
 void bumpGoodsMallTabReselect(WidgetRef ref) {
   ref.read(goodsMallTabReselectProvider.notifier).bump();
 }
+
+/// 商场列表刷新信号：由商场内嵌 Navigator 回到列表后触发，GoodsView 监听后刷新。
+@Riverpod(keepAlive: true)
+class GoodsMallListRefreshSignal extends _$GoodsMallListRefreshSignal {
+  @override
+  int build() => 0;
+
+  void bump() => state++;
+}
+
+void bumpGoodsMallListRefreshSignal(WidgetRef ref) {
+  ref.read(goodsMallListRefreshSignalProvider.notifier).bump();
+}

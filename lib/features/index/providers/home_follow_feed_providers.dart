@@ -70,21 +70,24 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   }
 
   Future<void> refresh() async {
+    state = state.copyWith(isRefreshing: true, error: null);
     try {
-      final items = await _profileRepo.getMyFollowsFeedPage(
-        1,
-        pageSize: _pageSize,
-      );
+      final results = await Future.wait([
+        _profileRepo.getMyFollowsFeedPage(1, pageSize: _pageSize),
+        Future<void>.delayed(const Duration(milliseconds: 650)),
+      ]);
       if (!ref.mounted) return;
+      final items = results.first as BlogPageModelData;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
         currentPage: 1,
         hasMore: (items.list?.length ?? 0) >= _pageSize,
+        isRefreshing: false,
       );
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: e.toString(), isRefreshing: false);
     }
   }
 

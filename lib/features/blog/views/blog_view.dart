@@ -64,6 +64,7 @@ class _BlogViewState extends ConsumerState<BlogView> {
         asyncItems: asyncItems,
         items: blogState.allItems,
         isLoadingMore: blogState.isLoadingMore,
+        isRefreshing: blogState.isRefreshing,
         hasMore: blogState.hasMore,
         onRetry: () {
           if (follow) {

@@ -37,9 +37,9 @@ class _GoodsTabNavigatorState extends ConsumerState<GoodsTabNavigator> {
       final nav = _navigatorKey.currentState;
       if (nav == null) return;
       nav.popUntil(
-        (route) =>
-            route.settings.name == GoodsTabRoutes.list || route.isFirst,
+        (route) => route.settings.name == GoodsTabRoutes.list || route.isFirst,
       );
+      bumpGoodsMallListRefreshSignal(ref);
     });
 
     return Navigator(

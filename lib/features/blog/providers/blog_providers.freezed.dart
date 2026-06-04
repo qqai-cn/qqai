@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 mixin _$BlogState {
 
 // freezed 的 @Default 必须是 const
- AsyncValue<BlogPageModelData> get blogPageData; List<BlogItem> get allItems; int get currentPage; bool get isLoadingMore; bool get hasMore; String? get error;
+ AsyncValue<BlogPageModelData> get blogPageData; List<BlogItem> get allItems; int get currentPage; bool get isLoadingMore; bool get isRefreshing; bool get hasMore; String? get error;
 /// Create a copy of BlogState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -26,16 +26,16 @@ $BlogStateCopyWith<BlogState> get copyWith => _$BlogStateCopyWithImpl<BlogState>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BlogState&&(identical(other.blogPageData, blogPageData) || other.blogPageData == blogPageData)&&const DeepCollectionEquality().equals(other.allItems, allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BlogState&&(identical(other.blogPageData, blogPageData) || other.blogPageData == blogPageData)&&const DeepCollectionEquality().equals(other.allItems, allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.isRefreshing, isRefreshing) || other.isRefreshing == isRefreshing)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,blogPageData,const DeepCollectionEquality().hash(allItems),currentPage,isLoadingMore,hasMore,error);
+int get hashCode => Object.hash(runtimeType,blogPageData,const DeepCollectionEquality().hash(allItems),currentPage,isLoadingMore,isRefreshing,hasMore,error);
 
 @override
 String toString() {
-  return 'BlogState(blogPageData: $blogPageData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, hasMore: $hasMore, error: $error)';
+  return 'BlogState(blogPageData: $blogPageData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, isRefreshing: $isRefreshing, hasMore: $hasMore, error: $error)';
 }
 
 
@@ -46,7 +46,7 @@ abstract mixin class $BlogStateCopyWith<$Res>  {
   factory $BlogStateCopyWith(BlogState value, $Res Function(BlogState) _then) = _$BlogStateCopyWithImpl;
 @useResult
 $Res call({
- AsyncValue<BlogPageModelData> blogPageData, List<BlogItem> allItems, int currentPage, bool isLoadingMore, bool hasMore, String? error
+ AsyncValue<BlogPageModelData> blogPageData, List<BlogItem> allItems, int currentPage, bool isLoadingMore, bool isRefreshing, bool hasMore, String? error
 });
 
 
@@ -63,12 +63,13 @@ class _$BlogStateCopyWithImpl<$Res>
 
 /// Create a copy of BlogState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? blogPageData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? hasMore = null,Object? error = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? blogPageData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? isRefreshing = null,Object? hasMore = null,Object? error = freezed,}) {
   return _then(_self.copyWith(
 blogPageData: null == blogPageData ? _self.blogPageData : blogPageData // ignore: cast_nullable_to_non_nullable
 as AsyncValue<BlogPageModelData>,allItems: null == allItems ? _self.allItems : allItems // ignore: cast_nullable_to_non_nullable
 as List<BlogItem>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,isRefreshing: null == isRefreshing ? _self.isRefreshing : isRefreshing // ignore: cast_nullable_to_non_nullable
 as bool,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,
@@ -153,10 +154,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<BlogPageModelData> blogPageData,  List<BlogItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( AsyncValue<BlogPageModelData> blogPageData,  List<BlogItem> allItems,  int currentPage,  bool isLoadingMore,  bool isRefreshing,  bool hasMore,  String? error)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BlogState() when $default != null:
-return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);case _:
+return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.isRefreshing,_that.hasMore,_that.error);case _:
   return orElse();
 
 }
@@ -174,10 +175,10 @@ return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoad
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<BlogPageModelData> blogPageData,  List<BlogItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( AsyncValue<BlogPageModelData> blogPageData,  List<BlogItem> allItems,  int currentPage,  bool isLoadingMore,  bool isRefreshing,  bool hasMore,  String? error)  $default,) {final _that = this;
 switch (_that) {
 case _BlogState():
-return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);}
+return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.isRefreshing,_that.hasMore,_that.error);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -191,10 +192,10 @@ return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoad
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<BlogPageModelData> blogPageData,  List<BlogItem> allItems,  int currentPage,  bool isLoadingMore,  bool hasMore,  String? error)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( AsyncValue<BlogPageModelData> blogPageData,  List<BlogItem> allItems,  int currentPage,  bool isLoadingMore,  bool isRefreshing,  bool hasMore,  String? error)?  $default,) {final _that = this;
 switch (_that) {
 case _BlogState() when $default != null:
-return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.hasMore,_that.error);case _:
+return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoadingMore,_that.isRefreshing,_that.hasMore,_that.error);case _:
   return null;
 
 }
@@ -206,7 +207,7 @@ return $default(_that.blogPageData,_that.allItems,_that.currentPage,_that.isLoad
 
 
 class _BlogState implements BlogState {
-  const _BlogState({this.blogPageData = const AsyncLoading(), final  List<BlogItem> allItems = const [], this.currentPage = 1, this.isLoadingMore = false, this.hasMore = false, this.error}): _allItems = allItems;
+  const _BlogState({this.blogPageData = const AsyncLoading(), final  List<BlogItem> allItems = const [], this.currentPage = 1, this.isLoadingMore = false, this.isRefreshing = false, this.hasMore = false, this.error}): _allItems = allItems;
   
 
 // freezed 的 @Default 必须是 const
@@ -220,6 +221,7 @@ class _BlogState implements BlogState {
 
 @override@JsonKey() final  int currentPage;
 @override@JsonKey() final  bool isLoadingMore;
+@override@JsonKey() final  bool isRefreshing;
 @override@JsonKey() final  bool hasMore;
 @override final  String? error;
 
@@ -233,16 +235,16 @@ _$BlogStateCopyWith<_BlogState> get copyWith => __$BlogStateCopyWithImpl<_BlogSt
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BlogState&&(identical(other.blogPageData, blogPageData) || other.blogPageData == blogPageData)&&const DeepCollectionEquality().equals(other._allItems, _allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _BlogState&&(identical(other.blogPageData, blogPageData) || other.blogPageData == blogPageData)&&const DeepCollectionEquality().equals(other._allItems, _allItems)&&(identical(other.currentPage, currentPage) || other.currentPage == currentPage)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.isRefreshing, isRefreshing) || other.isRefreshing == isRefreshing)&&(identical(other.hasMore, hasMore) || other.hasMore == hasMore)&&(identical(other.error, error) || other.error == error));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,blogPageData,const DeepCollectionEquality().hash(_allItems),currentPage,isLoadingMore,hasMore,error);
+int get hashCode => Object.hash(runtimeType,blogPageData,const DeepCollectionEquality().hash(_allItems),currentPage,isLoadingMore,isRefreshing,hasMore,error);
 
 @override
 String toString() {
-  return 'BlogState(blogPageData: $blogPageData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, hasMore: $hasMore, error: $error)';
+  return 'BlogState(blogPageData: $blogPageData, allItems: $allItems, currentPage: $currentPage, isLoadingMore: $isLoadingMore, isRefreshing: $isRefreshing, hasMore: $hasMore, error: $error)';
 }
 
 
@@ -253,7 +255,7 @@ abstract mixin class _$BlogStateCopyWith<$Res> implements $BlogStateCopyWith<$Re
   factory _$BlogStateCopyWith(_BlogState value, $Res Function(_BlogState) _then) = __$BlogStateCopyWithImpl;
 @override @useResult
 $Res call({
- AsyncValue<BlogPageModelData> blogPageData, List<BlogItem> allItems, int currentPage, bool isLoadingMore, bool hasMore, String? error
+ AsyncValue<BlogPageModelData> blogPageData, List<BlogItem> allItems, int currentPage, bool isLoadingMore, bool isRefreshing, bool hasMore, String? error
 });
 
 
@@ -270,12 +272,13 @@ class __$BlogStateCopyWithImpl<$Res>
 
 /// Create a copy of BlogState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? blogPageData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? hasMore = null,Object? error = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? blogPageData = null,Object? allItems = null,Object? currentPage = null,Object? isLoadingMore = null,Object? isRefreshing = null,Object? hasMore = null,Object? error = freezed,}) {
   return _then(_BlogState(
 blogPageData: null == blogPageData ? _self.blogPageData : blogPageData // ignore: cast_nullable_to_non_nullable
 as AsyncValue<BlogPageModelData>,allItems: null == allItems ? _self._allItems : allItems // ignore: cast_nullable_to_non_nullable
 as List<BlogItem>,currentPage: null == currentPage ? _self.currentPage : currentPage // ignore: cast_nullable_to_non_nullable
 as int,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,isRefreshing: null == isRefreshing ? _self.isRefreshing : isRefreshing // ignore: cast_nullable_to_non_nullable
 as bool,hasMore: null == hasMore ? _self.hasMore : hasMore // ignore: cast_nullable_to_non_nullable
 as bool,error: freezed == error ? _self.error : error // ignore: cast_nullable_to_non_nullable
 as String?,

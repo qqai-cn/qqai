@@ -15,6 +15,7 @@ sealed class SquareListState with _$SquareListState {
     @Default(1) int currentPage,
     @Default(false) bool hasMore,
     @Default(false) bool isLoadingMore,
+    @Default(false) bool isRefreshing,
     String? error,
   }) = _SquareListState;
 }
@@ -73,23 +74,25 @@ class SquareNotifier extends _$SquareNotifier {
       );
     } catch (e, st) {
       if (!ref.mounted) return;
-      state = state.copyWith(
-        pageData: AsyncError(e, st),
-        error: e.toString(),
-      );
+      state = state.copyWith(pageData: AsyncError(e, st), error: e.toString());
     } finally {
       _loading = false;
     }
   }
 
   Future<void> refresh() async {
+    state = state.copyWith(isRefreshing: true, error: null);
     try {
-      final data = await _repo.getSquarePage(
-        1,
-        pageSize: _pageSize,
-        squareName: _squareNameQuery,
-      );
+      final results = await Future.wait([
+        _repo.getSquarePage(
+          1,
+          pageSize: _pageSize,
+          squareName: _squareNameQuery,
+        ),
+        Future<void>.delayed(const Duration(milliseconds: 650)),
+      ]);
       if (!ref.mounted) return;
+      final data = results.first as SquarePageData;
       final list = data.list ?? [];
       state = state.copyWith(
         pageData: AsyncData(data),
@@ -97,11 +100,12 @@ class SquareNotifier extends _$SquareNotifier {
         currentPage: 1,
         hasMore: _computeHasMore(data, list),
         isLoadingMore: false,
+        isRefreshing: false,
         error: null,
       );
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(error: e.toString());
+      state = state.copyWith(error: e.toString(), isRefreshing: false);
     }
   }
 
@@ -121,9 +125,7 @@ class SquareNotifier extends _$SquareNotifier {
       final total = state.pageData.value?.total ?? data.total;
       final pageData = state.pageData.value ?? data;
       state = state.copyWith(
-        pageData: AsyncData(
-          pageData.copyWith(total: total, list: merged),
-        ),
+        pageData: AsyncData(pageData.copyWith(total: total, list: merged)),
         allItems: merged,
         currentPage: nextPage,
         hasMore: _computeHasMore(
@@ -134,10 +136,7 @@ class SquareNotifier extends _$SquareNotifier {
       );
     } catch (e) {
       if (!ref.mounted) return;
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
 
@@ -162,7 +161,10 @@ class SquareNotifier extends _$SquareNotifier {
       }
     } catch (e) {
       if (!ref.mounted) return;
-      _replaceSquare(squareId, square.copyWith(followedByMe: wasFollowed, followCount: prevCount));
+      _replaceSquare(
+        squareId,
+        square.copyWith(followedByMe: wasFollowed, followCount: prevCount),
+      );
       state = state.copyWith(error: e.toString());
     }
   }

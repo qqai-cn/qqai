@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../goods_tab_navigator.dart';
 import '../../../components/in_page_search_bar.dart';
+import '../../../components/refresh_status_badge.dart';
 import '../../../util/media_url.dart';
 import '../data/models/mall_product_model.dart';
 import '../data/repos/goods_repo.dart';
@@ -31,6 +32,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
   int _total = 0;
   bool _loading = true;
   bool _loadingMore = false;
+  bool _isRefreshing = false;
   bool _searching = false;
   String _keyword = '';
   Object? _error;
@@ -61,33 +63,41 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
     _loadMore();
   }
 
-  Future<void> _refresh() async {
+  Future<void> _refresh({bool showIndicator = false}) async {
     setState(() {
       _loading = true;
+      _isRefreshing = showIndicator;
       _error = null;
       _pageNo = 1;
     });
     try {
-      final page = await ref
-          .read(goodsRepoProvider)
-          .getMallProductsPage(
-            1,
-            pageSize: _pageSize,
-            keyword: _keyword.isEmpty ? null : _keyword,
-          );
+      final results = await Future.wait([
+        ref
+            .read(goodsRepoProvider)
+            .getMallProductsPage(
+              1,
+              pageSize: _pageSize,
+              keyword: _keyword.isEmpty ? null : _keyword,
+            ),
+        if (showIndicator)
+          Future<void>.delayed(const Duration(milliseconds: 650)),
+      ]);
       if (!mounted) return;
+      final page = results.first as MallProductPageData;
       setState(() {
         _items
           ..clear()
           ..addAll(page.list);
         _total = page.total;
         _loading = false;
+        _isRefreshing = false;
       });
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _error = e;
         _loading = false;
+        _isRefreshing = false;
       });
     }
   }
@@ -144,12 +154,12 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
         curve: Curves.easeOut,
       );
     }
-    _refresh();
+    _refresh(showIndicator: true);
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(goodsMallTabReselectProvider, (previous, next) {
+    ref.listen(goodsMallListRefreshSignalProvider, (previous, next) {
       if (previous == null || next <= previous) return;
       _onMallTabReselect();
     });
@@ -164,25 +174,46 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: _pageMaxWidth),
-            child: RefreshIndicator(
-              onRefresh: _refresh,
-              child: CustomScrollView(
-                controller: _scrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: InPageSearchBar(
-                      controller: _searchController,
-                      height: topInset,
-                      hintText: '搜索商品名称',
-                      onQueryChanged: _onSearchQuery,
+            child: Stack(
+              children: [
+                RefreshIndicator(
+                  onRefresh: () => _refresh(showIndicator: true),
+                  color: Colors.white,
+                  backgroundColor: const Color(0xFFFF8C00),
+                  displacement: 54,
+                  strokeWidth: 3,
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: InPageSearchBar(
+                          controller: _searchController,
+                          height: topInset,
+                          hintText: '搜索商品名称',
+                          onQueryChanged: _onSearchQuery,
+                        ),
+                      ),
+                      const SliverToBoxAdapter(child: _MallHeader()),
+                      ..._buildBodySlivers(),
+                      const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: kToolbarHeight,
+                  left: 0,
+                  right: 0,
+                  child: IgnorePointer(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 180),
+                      child: _isRefreshing
+                          ? const RefreshStatusBadge()
+                          : const SizedBox.shrink(),
                     ),
                   ),
-                  const SliverToBoxAdapter(child: _MallHeader()),
-                  ..._buildBodySlivers(),
-                  const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

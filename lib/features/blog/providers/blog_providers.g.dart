@@ -58,7 +58,7 @@ final class BlogNotifierProvider
   }
 }
 
-String _$blogNotifierHash() => r'8b1c285f791fbab755211b6a465718507865baad';
+String _$blogNotifierHash() => r'ab2308e2d7de0b3744d2a580d84c609a3a3878bd';
 
 final class BlogNotifierFamily extends $Family
     with

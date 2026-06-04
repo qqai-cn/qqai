@@ -45,7 +45,7 @@ final class HomeFollowFeedNotifierProvider
 }
 
 String _$homeFollowFeedNotifierHash() =>
-    r'dd6e4bdeac4337d6b5250af34052e6861142fd0f';
+    r'edf2b8c8ed965b3a8323fd80f64648e177f732f7';
 
 /// 首页「关注」Tab：所关注会员的公开作品流。
 

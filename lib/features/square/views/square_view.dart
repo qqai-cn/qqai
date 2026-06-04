@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../components/in_page_search_bar.dart';
+import '../../../components/refresh_status_badge.dart';
 import '../providers/square_providers.dart';
 import 'create_square_dialog.dart';
 import 'square_grid_layout.dart';
@@ -152,7 +153,11 @@ class _SquareViewState extends ConsumerState<SquareView> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.grid_view_rounded, color: Color(0xFF9CA3AF), size: 38),
+              const Icon(
+                Icons.grid_view_rounded,
+                color: Color(0xFF9CA3AF),
+                size: 38,
+              ),
               const SizedBox(height: 12),
               Text(
                 searching ? '未找到相关广场' : '暂无广场',
@@ -266,30 +271,56 @@ class _SquareViewState extends ConsumerState<SquareView> {
             constraints: const BoxConstraints(maxWidth: kSquarePageMaxWidth),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final gridW = (constraints.maxWidth - 28).clamp(1.0, double.infinity);
-                return RefreshIndicator(
-                  onRefresh: notifier.refresh,
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: InPageSearchBar(
-                          height: topInset,
-                          hintText: '搜索广场名称',
-                          onQueryChanged: _onSearchQuery,
+                final gridW = (constraints.maxWidth - 28).clamp(
+                  1.0,
+                  double.infinity,
+                );
+                return Stack(
+                  children: [
+                    RefreshIndicator(
+                      onRefresh: notifier.refresh,
+                      color: Colors.white,
+                      backgroundColor: const Color(0xFFFF8C00),
+                      displacement: 54,
+                      strokeWidth: 3,
+                      child: CustomScrollView(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: InPageSearchBar(
+                              height: topInset,
+                              hintText: '搜索广场名称',
+                              onQueryChanged: _onSearchQuery,
+                            ),
+                          ),
+                          SliverToBoxAdapter(child: _createSquareRow()),
+                          ..._bodySlivers(
+                            gridW: gridW,
+                            squareState: squareState,
+                            notifier: notifier,
+                            searching: _searching,
+                          ),
+                          const SliverPadding(
+                            padding: EdgeInsets.only(bottom: 24),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: kToolbarHeight,
+                      left: 0,
+                      right: 0,
+                      child: IgnorePointer(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          child: squareState.isRefreshing
+                              ? const RefreshStatusBadge()
+                              : const SizedBox.shrink(),
                         ),
                       ),
-                      SliverToBoxAdapter(child: _createSquareRow()),
-                      ..._bodySlivers(
-                        gridW: gridW,
-                        squareState: squareState,
-                        notifier: notifier,
-                        searching: _searching,
-                      ),
-                      const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-                    ],
-                  ),
+                    ),
+                  ],
                 );
               },
             ),

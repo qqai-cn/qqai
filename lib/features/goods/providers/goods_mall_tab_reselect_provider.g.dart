@@ -67,3 +67,64 @@ abstract class _$GoodsMallTabReselect extends $Notifier<int> {
     element.handleValue(ref, created);
   }
 }
+
+/// 商场列表刷新信号：由商场内嵌 Navigator 回到列表后触发，GoodsView 监听后刷新。
+
+@ProviderFor(GoodsMallListRefreshSignal)
+const goodsMallListRefreshSignalProvider =
+    GoodsMallListRefreshSignalProvider._();
+
+/// 商场列表刷新信号：由商场内嵌 Navigator 回到列表后触发，GoodsView 监听后刷新。
+final class GoodsMallListRefreshSignalProvider
+    extends $NotifierProvider<GoodsMallListRefreshSignal, int> {
+  /// 商场列表刷新信号：由商场内嵌 Navigator 回到列表后触发，GoodsView 监听后刷新。
+  const GoodsMallListRefreshSignalProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'goodsMallListRefreshSignalProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$goodsMallListRefreshSignalHash();
+
+  @$internal
+  @override
+  GoodsMallListRefreshSignal create() => GoodsMallListRefreshSignal();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$goodsMallListRefreshSignalHash() =>
+    r'ae8df3e34270a90470dacfaea2e8f495e28700f1';
+
+/// 商场列表刷新信号：由商场内嵌 Navigator 回到列表后触发，GoodsView 监听后刷新。
+
+abstract class _$GoodsMallListRefreshSignal extends $Notifier<int> {
+  int build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final created = build();
+    final ref = this.ref as $Ref<int, int>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<int, int>,
+              int,
+              Object?,
+              Object?
+            >;
+    element.handleValue(ref, created);
+  }
+}
