@@ -8,6 +8,7 @@ import '../../../components/imgpreview/preview_img.dart';
 import '../../../components/video_player/video_ad_overlay.dart';
 import '../../../providers/auth_providers.dart';
 import '../../../router/app_routes.dart';
+import '../../blog/data/blog_feed_state_interactions.dart';
 import '../../blog/data/blog_interaction_patch.dart';
 import '../../blog/data/blog_list_patch.dart';
 import '../../blog/data/blog_route_extra.dart';
@@ -110,6 +111,19 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     }
   }
 
+  void _applyFeedPatch({
+    required List<BlogItem> allItems,
+    required AsyncValue<BlogPageModelData> blogPageData,
+    String? error,
+  }) {
+    if (!ref.mounted) return;
+    state = state.copyWith(
+      allItems: allItems,
+      blogPageData: blogPageData,
+      error: error,
+    );
+  }
+
   @override
   void onBlogItemTap(
     BuildContext context,
@@ -177,29 +191,13 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   }
 
   Future<void> _toggleZan(BlogItem blogItem) async {
-    final id = blogItem.id;
-    if (id == null) return;
-    final wasLiked = blogItem.liked == 1;
-    try {
-      final nowLiked = await _blogRepo.toggleBlogLike(
-        id,
-        currentlyLiked: wasLiked,
-      );
-      final count = blogItem.zan ?? 0;
-      final newCount = nowLiked ? count + 1 : (count > 0 ? count - 1 : 0);
-      final patched = patchBlogFeedLists(
-        state.allItems,
-        state.blogPageData,
-        shouldPatch: (b) => b.id == id,
-        patch: (b) => b.copyWith(liked: nowLiked ? 1 : 0, zan: newCount),
-      );
-      state = state.copyWith(
-        allItems: patched.allItems,
-        blogPageData: patched.blogPageData,
-      );
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-    }
+    await runToggleZanOnFeedState(
+      repo: _blogRepo,
+      allItems: state.allItems,
+      blogPageData: state.blogPageData,
+      blogItem: blogItem,
+      apply: _applyFeedPatch,
+    );
   }
 
   @override
@@ -238,24 +236,13 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
   }
 
   Future<void> _toggleCollect(BlogItem blogItem) async {
-    try {
-      final r = await toggleCollectForFeedLists(
-        state.allItems,
-        state.blogPageData,
-        _blogRepo,
-        blogItem,
-      );
-      if (r.errorMessage != null) {
-        state = state.copyWith(error: r.errorMessage);
-        return;
-      }
-      state = state.copyWith(
-        allItems: r.allItems,
-        blogPageData: r.blogPageData,
-      );
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-    }
+    await runToggleCollectOnFeedState(
+      repo: _blogRepo,
+      allItems: state.allItems,
+      blogPageData: state.blogPageData,
+      blogItem: blogItem,
+      apply: _applyFeedPatch,
+    );
   }
 
   @override

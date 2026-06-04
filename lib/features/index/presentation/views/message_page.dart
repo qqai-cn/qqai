@@ -93,7 +93,9 @@ class _MessagePageState extends ConsumerState<MessagePage>
       drawer: isWideScreen ? null : const DrawerPage(),
       body: TabBarView(
         controller: _tabController,
-        physics: const NeverScrollableScrollPhysics(),
+        physics: isWideScreen
+            ? const NeverScrollableScrollPhysics()
+            : const PageScrollPhysics(),
         children: List.generate(2, _tabBody),
       ),
     );

@@ -146,11 +146,27 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     }
   }
 
+  Widget _buildDailyCard({required Widget child}) {
+    return Card(
+      elevation: 3,
+      shadowColor: Colors.black.withValues(alpha: 0.2),
+      color: const Color(0xFFFFFFFF),
+      surfaceTintColor: Colors.transparent,
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
+
   Widget _buildBlogTile(BlogItem blogItem, double itemHeight) {
     return RepaintBoundary(
       child: blogItem.blogType == 1
-          ? Card(child: MyBlogImgItemView(_kCategory, blogItem))
-          : Card(
+          ? _buildDailyCard(child: MyBlogImgItemView(_kCategory, blogItem))
+          : _buildDailyCard(
               child: SizedBox(
                 height: itemHeight,
                 child: MyBlogVideoItemView(_kCategory, blogItem),

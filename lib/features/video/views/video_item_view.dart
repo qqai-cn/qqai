@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
-import 'package:qqai/components/default_asset_image.dart';
-import 'package:qqai/components/qq_network_image.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/components/video_player/qqai_player.dart';
 import 'package:qqai/features/blog/data/blog_route_extra.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
@@ -50,16 +49,6 @@ String _formatFooterTime(String? raw) {
     if (s.length >= 10) return s.substring(0, 10).replaceAll('-', '/');
     return s;
   }
-}
-
-bool _isLocalAssetPath(String value) =>
-    !value.startsWith('http://') &&
-    !value.startsWith('https://') &&
-    !value.startsWith('//');
-
-bool _isSvgPath(String value) {
-  final path = value.toLowerCase().split('?').first.split('#').first;
-  return path.endsWith('.svg');
 }
 
 /// 影视 Tab 网格卡片：圆角封面 + 左下角点赞 + 双行标题 + `@作者 · 日期`。
@@ -187,6 +176,7 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
           child: Stack(
             fit: StackFit.expand,
             children: [
+              Positioned.fill(child: VideoCoverFit(url: cover)),
               if (_showPreview && videoUrl != null)
                 Positioned.fill(
                   child: IgnorePointer(

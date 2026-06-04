@@ -11,6 +11,7 @@ import '../../../components/video_player/video_ad_overlay.dart';
 import '../../../router/app_routes.dart';
 import '../../my/data/repos/profile_repo.dart';
 import '../data/blog_feed_location.dart';
+import '../data/blog_feed_state_interactions.dart';
 import '../data/blog_interaction_patch.dart';
 import '../data/blog_list_patch.dart';
 import '../data/blog_route_extra.dart';
@@ -140,6 +141,19 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
     }
   }
 
+  void _applyFeedPatch({
+    required List<BlogItem> allItems,
+    required AsyncValue<BlogPageModelData> blogPageData,
+    String? error,
+  }) {
+    if (!ref.mounted) return;
+    state = state.copyWith(
+      allItems: allItems,
+      blogPageData: blogPageData,
+      error: error,
+    );
+  }
+
   Future<void> add(String title) async {
     if (title.trim().isEmpty) return;
     final newItem = BlogModel(
@@ -247,26 +261,13 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   }
 
   Future<void> _toggleZan(BlogItem blogItem) async {
-    final id = blogItem.id;
-    if (id == null) return;
-    final wasLiked = blogItem.liked == 1;
-    try {
-      final nowLiked = await _repo.toggleBlogLike(id, currentlyLiked: wasLiked);
-      final count = blogItem.zan ?? 0;
-      final newCount = nowLiked ? count + 1 : (count > 0 ? count - 1 : 0);
-      final patched = patchBlogFeedLists(
-        state.allItems,
-        state.blogPageData,
-        shouldPatch: (b) => b.id == id,
-        patch: (b) => b.copyWith(liked: nowLiked ? 1 : 0, zan: newCount),
-      );
-      state = state.copyWith(
-        allItems: patched.allItems,
-        blogPageData: patched.blogPageData,
-      );
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-    }
+    await runToggleZanOnFeedState(
+      repo: _repo,
+      allItems: state.allItems,
+      blogPageData: state.blogPageData,
+      blogItem: blogItem,
+      apply: _applyFeedPatch,
+    );
   }
 
   // 关注：POST …/profile/follows/{userId}；取消：DELETE 同路径
@@ -306,24 +307,13 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   }
 
   Future<void> _toggleCollect(BlogItem blogItem) async {
-    try {
-      final r = await toggleCollectForFeedLists(
-        state.allItems,
-        state.blogPageData,
-        _repo,
-        blogItem,
-      );
-      if (r.errorMessage != null) {
-        state = state.copyWith(error: r.errorMessage);
-        return;
-      }
-      state = state.copyWith(
-        allItems: r.allItems,
-        blogPageData: r.blogPageData,
-      );
-    } catch (e) {
-      state = state.copyWith(error: e.toString());
-    }
+    await runToggleCollectOnFeedState(
+      repo: _repo,
+      allItems: state.allItems,
+      blogPageData: state.blogPageData,
+      blogItem: blogItem,
+      apply: _applyFeedPatch,
+    );
   }
 
   @override

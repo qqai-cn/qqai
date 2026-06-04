@@ -103,23 +103,6 @@ BlogItem resolveFeedBlogItem(
       initial,
     );
   }
-  final id = initial.id;
-  if (id != null) {
-    final videoState = ref.watch(videoRecommendProvider);
-    final inVideoRecommend = findBlogInFeed(
-      id: id,
-      allItems: videoState.allItems,
-      blogPageData: videoState.blogPageData,
-    );
-    if (inVideoRecommend != null) return inVideoRecommend;
-    final filmState = ref.watch(videoFilmProvider);
-    final inVideoFilm = findBlogInFeed(
-      id: id,
-      allItems: filmState.allItems,
-      blogPageData: filmState.blogPageData,
-    );
-    if (inVideoFilm != null) return inVideoFilm;
-  }
   final state = ref.watch(blogProvider(feedCategory));
   return _resolveFromState(
     (allItems: state.allItems, blogPageData: state.blogPageData),

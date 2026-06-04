@@ -16,33 +16,53 @@ Future<void> runToggleCollectOnFeedState({
     required List<BlogItem> allItems,
     required AsyncValue<BlogPageModelData> blogPageData,
     String? error,
-  }) apply,
+  })
+  apply,
 }) async {
+  final id = blogItem.id;
+  if (id == null) {
+    apply(allItems: allItems, blogPageData: blogPageData, error: '无法收藏：缺少博客编号');
+    return;
+  }
+  final wasCollected = blogCollectedByMe(blogItem);
+  final optimisticCollected = !wasCollected;
+  final optimisticCount = _nextCount(
+    blogItem.collectCount ?? 0,
+    enabled: optimisticCollected,
+  );
+  final optimistic = patchBlogFeedLists(
+    allItems,
+    blogPageData,
+    shouldPatch: (b) => b.id == id,
+    patch: (b) => b.copyWith(
+      collect: optimisticCollected ? 1 : 0,
+      collectCount: optimisticCount,
+    ),
+  );
+  apply(allItems: optimistic.allItems, blogPageData: optimistic.blogPageData);
   try {
-    final r = await toggleCollectForFeedLists(
-      allItems,
-      blogPageData,
-      repo,
-      blogItem,
+    final confirmedCollected = await repo.toggleBlogFavorite(
+      id,
+      currentlyCollected: wasCollected,
     );
-    if (r.errorMessage != null) {
-      apply(
-        allItems: allItems,
-        blogPageData: blogPageData,
-        error: r.errorMessage,
+    if (confirmedCollected != optimisticCollected) {
+      final confirmedCount = _nextCount(
+        blogItem.collectCount ?? 0,
+        enabled: confirmedCollected,
       );
-      return;
+      final confirmed = patchBlogFeedLists(
+        optimistic.allItems,
+        optimistic.blogPageData,
+        shouldPatch: (b) => b.id == id,
+        patch: (b) => b.copyWith(
+          collect: confirmedCollected ? 1 : 0,
+          collectCount: confirmedCount,
+        ),
+      );
+      apply(allItems: confirmed.allItems, blogPageData: confirmed.blogPageData);
     }
-    apply(
-      allItems: r.allItems,
-      blogPageData: r.blogPageData,
-    );
   } catch (e) {
-    apply(
-      allItems: allItems,
-      blogPageData: blogPageData,
-      error: e.toString(),
-    );
+    apply(allItems: allItems, blogPageData: blogPageData, error: e.toString());
   }
 }
 
@@ -55,32 +75,44 @@ Future<void> runToggleZanOnFeedState({
     required List<BlogItem> allItems,
     required AsyncValue<BlogPageModelData> blogPageData,
     String? error,
-  }) apply,
+  })
+  apply,
 }) async {
   final id = blogItem.id;
   if (id == null) return;
   final wasLiked = blogItem.liked == 1;
+  final optimisticLiked = !wasLiked;
+  final optimisticCount = _nextCount(
+    blogItem.zan ?? 0,
+    enabled: optimisticLiked,
+  );
+  final optimistic = patchBlogFeedLists(
+    allItems,
+    blogPageData,
+    shouldPatch: (b) => b.id == id,
+    patch: (b) =>
+        b.copyWith(liked: optimisticLiked ? 1 : 0, zan: optimisticCount),
+  );
+  apply(allItems: optimistic.allItems, blogPageData: optimistic.blogPageData);
   try {
     final nowLiked = await repo.toggleBlogLike(id, currentlyLiked: wasLiked);
-    final count = blogItem.zan ?? 0;
-    final newCount = nowLiked ? count + 1 : (count > 0 ? count - 1 : 0);
-    final patched = patchBlogFeedLists(
-      allItems,
-      blogPageData,
-      shouldPatch: (b) => b.id == id,
-      patch: (b) => b.copyWith(liked: nowLiked ? 1 : 0, zan: newCount),
-    );
-    apply(
-      allItems: patched.allItems,
-      blogPageData: patched.blogPageData,
-    );
+    if (nowLiked != optimisticLiked) {
+      final confirmedCount = _nextCount(blogItem.zan ?? 0, enabled: nowLiked);
+      final confirmed = patchBlogFeedLists(
+        optimistic.allItems,
+        optimistic.blogPageData,
+        shouldPatch: (b) => b.id == id,
+        patch: (b) => b.copyWith(liked: nowLiked ? 1 : 0, zan: confirmedCount),
+      );
+      apply(allItems: confirmed.allItems, blogPageData: confirmed.blogPageData);
+    }
   } catch (e) {
-    apply(
-      allItems: allItems,
-      blogPageData: blogPageData,
-      error: e.toString(),
-    );
+    apply(allItems: allItems, blogPageData: blogPageData, error: e.toString());
   }
+}
+
+int _nextCount(int count, {required bool enabled}) {
+  return enabled ? count + 1 : (count > 0 ? count - 1 : 0);
 }
 
 Future<void> runToggleCareOnFeedState({
@@ -92,7 +124,8 @@ Future<void> runToggleCareOnFeedState({
     required List<BlogItem> allItems,
     required AsyncValue<BlogPageModelData> blogPageData,
     String? error,
-  }) apply,
+  })
+  apply,
 }) async {
   try {
     final r = await toggleCareForFeedLists(
@@ -109,16 +142,9 @@ Future<void> runToggleCareOnFeedState({
       );
       return;
     }
-    apply(
-      allItems: r.allItems,
-      blogPageData: r.blogPageData,
-    );
+    apply(allItems: r.allItems, blogPageData: r.blogPageData);
   } catch (e) {
-    apply(
-      allItems: allItems,
-      blogPageData: blogPageData,
-      error: e.toString(),
-    );
+    apply(allItems: allItems, blogPageData: blogPageData, error: e.toString());
   }
 }
 
@@ -131,7 +157,8 @@ Future<void> runRecordShareOnFeedState({
     required List<BlogItem> allItems,
     required AsyncValue<BlogPageModelData> blogPageData,
     String? error,
-  }) apply,
+  })
+  apply,
 }) async {
   try {
     final r = await recordShareForFeedLists(
@@ -148,16 +175,9 @@ Future<void> runRecordShareOnFeedState({
       );
       return;
     }
-    apply(
-      allItems: r.allItems,
-      blogPageData: r.blogPageData,
-    );
+    apply(allItems: r.allItems, blogPageData: r.blogPageData);
   } catch (e) {
-    apply(
-      allItems: allItems,
-      blogPageData: blogPageData,
-      error: e.toString(),
-    );
+    apply(allItems: allItems, blogPageData: blogPageData, error: e.toString());
   }
 }
 
@@ -177,9 +197,7 @@ Future<({BlogItem? item, String? error})> toggleCollectStandalone(
       currentlyCollected: wasCollected,
     );
     final count = blogItem.collectCount ?? 0;
-    final newCount = nowCollected
-        ? count + 1
-        : (count > 0 ? count - 1 : 0);
+    final newCount = nowCollected ? count + 1 : (count > 0 ? count - 1 : 0);
     return (
       item: blogItem.copyWith(
         collect: nowCollected ? 1 : 0,
@@ -201,7 +219,8 @@ Future<void> runNotInterestedOnFeedState({
     required List<BlogItem> allItems,
     required AsyncValue<BlogPageModelData> blogPageData,
     String? error,
-  }) apply,
+  })
+  apply,
 }) async {
   try {
     final r = await markNotInterestedForFeedLists(
@@ -218,15 +237,8 @@ Future<void> runNotInterestedOnFeedState({
       );
       return;
     }
-    apply(
-      allItems: r.allItems,
-      blogPageData: r.blogPageData,
-    );
+    apply(allItems: r.allItems, blogPageData: r.blogPageData);
   } catch (e) {
-    apply(
-      allItems: allItems,
-      blogPageData: blogPageData,
-      error: e.toString(),
-    );
+    apply(allItems: allItems, blogPageData: blogPageData, error: e.toString());
   }
 }
