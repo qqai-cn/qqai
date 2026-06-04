@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../../../components/video_player/item_controls.dart';
 import '../../../../components/video_player/qqai_player.dart';
+import '../../../../components/video_player/video_ad_overlay.dart';
 
 class VideoItemPlayer extends StatefulWidget {
   final String url;
   final String imgUrl;
   final int? videoId;
   final double fallbackAspectRatio;
+  final VideoAdPlaybackState? videoAdInitialState;
+  final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
 
   const VideoItemPlayer({
     super.key,
@@ -15,6 +18,8 @@ class VideoItemPlayer extends StatefulWidget {
     required this.imgUrl,
     this.videoId,
     this.fallbackAspectRatio = 15 / 9,
+    this.videoAdInitialState,
+    this.onVideoAdStateChanged,
   });
 
   @override
@@ -42,6 +47,8 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           fallbackAspectRatio: widget.fallbackAspectRatio,
           showLoadingPoster: true,
           sharedPlaybackKey: widget.url,
+          videoAdInitialState: widget.videoAdInitialState,
+          onVideoAdStateChanged: widget.onVideoAdStateChanged,
         ),
       ),
     );

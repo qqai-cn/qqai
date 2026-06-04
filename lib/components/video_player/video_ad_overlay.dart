@@ -23,6 +23,8 @@ class VideoAdOverlay extends StatefulWidget {
     this.videoId,
     this.adTopInset = 12,
     this.adSkipRightInset = 12,
+    this.initialPlaybackState,
+    this.onPlaybackStateChanged,
   });
 
   final Widget child;
@@ -33,6 +35,8 @@ class VideoAdOverlay extends StatefulWidget {
   final int? videoId;
   final double adTopInset;
   final double adSkipRightInset;
+  final VideoAdPlaybackState? initialPlaybackState;
+  final ValueChanged<VideoAdPlaybackState>? onPlaybackStateChanged;
 
   @override
   State<VideoAdOverlay> createState() => _VideoAdOverlayState();
@@ -51,6 +55,7 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
   @override
   void initState() {
     super.initState();
+    _applyInitialPlaybackState(widget.initialPlaybackState);
     widget.videoController.addListener(_handleVideoChanged);
     unawaited(_loadAdConfig());
   }
@@ -68,6 +73,7 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
       _resetAds();
       _configLoaded = false;
       _config = null;
+      _applyInitialPlaybackState(widget.initialPlaybackState);
       unawaited(_loadAdConfig());
     }
   }
@@ -86,6 +92,25 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
     _prerollShown = false;
     _resumeAfterAd = false;
     _secondsLeft = 0;
+    _notifyPlaybackStateChanged();
+  }
+
+  void _applyInitialPlaybackState(VideoAdPlaybackState? state) {
+    if (state == null) return;
+    _shownCuePoints
+      ..clear()
+      ..addAll(state.shownCuePointMs);
+    _adVisible = state.adVisible;
+    _prerollShown = state.prerollShown;
+    _resumeAfterAd = state.resumeAfterAd;
+    _secondsLeft = state.secondsLeft;
+    if (state.config != null) {
+      _config = state.config;
+      _configLoaded = true;
+    }
+    if (_adVisible) {
+      _startAdCountdown();
+    }
   }
 
   Future<void> _loadAdConfig() async {
@@ -101,15 +126,24 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
         _config = config;
         _configLoaded = true;
       });
+      _notifyPlaybackStateChanged();
       _handleVideoChanged();
     } catch (_) {
       if (!mounted) return;
       setState(() => _configLoaded = true);
+      _notifyPlaybackStateChanged();
     }
   }
 
   void _handleVideoChanged() {
-    if (!mounted || !widget.enabled || !_configLoaded || _adVisible) return;
+    if (!mounted || !widget.enabled || !_configLoaded) return;
+    if (_adVisible) {
+      if (widget.videoController.value.isPlaying) {
+        widget.flickManager.flickControlManager?.pause();
+        widget.videoController.pause();
+      }
+      return;
+    }
 
     final config = _config;
     if (config == null || !config.enabled) return;
@@ -120,16 +154,19 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
 
     if (!_prerollShown && config.showPreroll) {
       _prerollShown = true;
+      _notifyPlaybackStateChanged();
       _showAd(config);
       return;
     }
     _prerollShown = true;
+    _notifyPlaybackStateChanged();
 
     for (final cuePoint in config.midrollCuePoints) {
       final cueMs = cuePoint.inMilliseconds;
       if (_shownCuePoints.contains(cueMs)) continue;
       if (value.position >= cuePoint) {
         _shownCuePoints.add(cueMs);
+        _notifyPlaybackStateChanged();
         _showAd(config);
         return;
       }
@@ -146,7 +183,13 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
       _adVisible = true;
       _secondsLeft = config.durationSeconds.clamp(1, 999);
     });
+    _notifyPlaybackStateChanged();
 
+    _startAdCountdown();
+  }
+
+  void _startAdCountdown() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) return;
       if (_secondsLeft <= 1) {
@@ -154,6 +197,7 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
         return;
       }
       setState(() => _secondsLeft -= 1);
+      _notifyPlaybackStateChanged();
     });
   }
 
@@ -161,9 +205,23 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
     _timer?.cancel();
     if (!_adVisible) return;
     setState(() => _adVisible = false);
+    _notifyPlaybackStateChanged();
     if (_resumeAfterAd && mounted) {
       widget.flickManager.flickControlManager?.play();
     }
+  }
+
+  void _notifyPlaybackStateChanged() {
+    widget.onPlaybackStateChanged?.call(
+      VideoAdPlaybackState(
+        shownCuePointMs: Set<int>.unmodifiable(_shownCuePoints),
+        adVisible: _adVisible,
+        prerollShown: _prerollShown,
+        resumeAfterAd: _resumeAfterAd,
+        secondsLeft: _secondsLeft,
+        config: _config,
+      ),
+    );
   }
 
   @override
@@ -219,10 +277,15 @@ class _AdSurface extends StatelessWidget {
   Widget build(BuildContext context) {
     final ad = config;
     final imageUrl = resolveMediaUrl(ad?.imageUrl);
-    final elapsedSeconds = (durationSeconds - secondsLeft).clamp(0, durationSeconds);
+    final elapsedSeconds = (durationSeconds - secondsLeft).clamp(
+      0,
+      durationSeconds,
+    );
     final canSkip = skipAfterSeconds <= 0 || elapsedSeconds >= skipAfterSeconds;
-    final skipWaitLeft =
-        (skipAfterSeconds - elapsedSeconds).clamp(0, skipAfterSeconds);
+    final skipWaitLeft = (skipAfterSeconds - elapsedSeconds).clamp(
+      0,
+      skipAfterSeconds,
+    );
     return Positioned.fill(
       child: ColoredBox(
         color: Colors.black,
@@ -368,7 +431,7 @@ class _AdSurface extends StatelessWidget {
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('跳过',style: TextStyle(fontSize: 13),),
+                          Text('跳过', style: TextStyle(fontSize: 13)),
                           SizedBox(width: 4),
                           Icon(Icons.skip_next_rounded, size: 20),
                         ],
@@ -395,6 +458,54 @@ class _AdSurface extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class VideoAdPlaybackState {
+  const VideoAdPlaybackState({
+    this.shownCuePointMs = const <int>{},
+    this.adVisible = false,
+    this.prerollShown = false,
+    this.resumeAfterAd = false,
+    this.secondsLeft = 0,
+    this.config,
+  });
+
+  final Set<int> shownCuePointMs;
+  final bool adVisible;
+  final bool prerollShown;
+  final bool resumeAfterAd;
+  final int secondsLeft;
+  final VideoAdConfig? config;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'shownCuePointMs': shownCuePointMs.toList(),
+      'adVisible': adVisible,
+      'prerollShown': prerollShown,
+      'resumeAfterAd': resumeAfterAd,
+      'secondsLeft': secondsLeft,
+      if (config != null) 'config': config!.toJson(),
+    };
+  }
+
+  factory VideoAdPlaybackState.fromJson(Map<String, dynamic> json) {
+    final rawCuePoints = json['shownCuePointMs'];
+    return VideoAdPlaybackState(
+      shownCuePointMs: rawCuePoints is Iterable
+          ? rawCuePoints
+                .map((value) => int.tryParse(value.toString()))
+                .whereType<int>()
+                .toSet()
+          : const <int>{},
+      adVisible: json['adVisible'] == true,
+      prerollShown: json['prerollShown'] == true,
+      resumeAfterAd: json['resumeAfterAd'] == true,
+      secondsLeft: VideoAdConfig._parseInt(json['secondsLeft'], fallback: 0),
+      config: json['config'] is Map
+          ? VideoAdConfig.fromJson(Map<String, dynamic>.from(json['config']))
+          : null,
     );
   }
 }
@@ -459,6 +570,22 @@ class VideoAdConfig {
       cuePoints: _parseCuePoints(json['cuePoints']),
       deliveryRatio: _parseInt(json['deliveryRatio'], fallback: 100),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'enabled': enabled,
+      'title': title,
+      'subtitle': subtitle,
+      'imageUrl': imageUrl,
+      'actionUrl': actionUrl,
+      'durationSeconds': durationSeconds,
+      'skipAfterSeconds': skipAfterSeconds,
+      'cuePoints': cuePoints
+          .map((cuePoint) => cuePoint.inSeconds.toString())
+          .join(','),
+      'deliveryRatio': deliveryRatio,
+    };
   }
 
   static int _parseInt(dynamic value, {required int fallback}) {

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../components/imgpreview/preview_img.dart';
+import '../../../components/video_player/video_ad_overlay.dart';
 import '../../../router/app_routes.dart';
 import '../../blog/data/blog_interaction_patch.dart';
 import '../../blog/data/blog_list_patch.dart';
@@ -125,6 +126,7 @@ class SquareBlogsNotifier extends _$SquareBlogsNotifier
     BuildContext context,
     BlogItem blogItem, {
     String? mediaHeroTag,
+    VideoAdPlaybackState? videoAdState,
   }) {
     if (blogItem.blogType == 1) {
       context.push(
@@ -134,7 +136,11 @@ class SquareBlogsNotifier extends _$SquareBlogsNotifier
     } else {
       context.push(
         Routes.blogVideoDetailView,
-        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+        extra: blogDetailRouteExtra(
+          blogItem,
+          mediaHeroTag: mediaHeroTag,
+          videoAdState: videoAdState,
+        ),
       );
     }
   }

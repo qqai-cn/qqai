@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/features/blog/views/blog_video_detail_player.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
@@ -19,12 +20,14 @@ class BlogVideoDetailView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
   final String detailRoute;
   final String? mediaHeroTag;
+  final VideoAdPlaybackState? videoAdInitialState;
 
   const BlogVideoDetailView({
     super.key,
     required this.blogItem,
     this.detailRoute = Routes.blogVideoDetailView,
     this.mediaHeroTag,
+    this.videoAdInitialState,
   });
 
   @override
@@ -36,10 +39,13 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
   bool _openingNextCollectionVideo = false;
   bool _keepCommentPanelStateOnDispose = false;
   bool _wideCommentPanelClosed = false;
+  bool _allowPopWithResult = false;
+  VideoAdPlaybackState? _videoAdState;
 
   @override
   void initState() {
     super.initState();
+    _videoAdState = widget.videoAdInitialState;
     _commentSidePanel = BlogDetailCommentSidePanelLifecycle(
       ref.read(commentProvider.notifier),
     );
@@ -73,13 +79,15 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
       showControlsRow: showToolbarControlsRow,
     );
     return PopScope(
+      canPop: _allowPopWithResult,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop || _keepCommentPanelStateOnDispose) return;
-        ref.read(commentProvider.notifier).dontShowComment();
+        if (didPop || _keepCommentPanelStateOnDispose) return;
+        _popWithVideoAdState();
       },
       child: MediaDetailShell(
         showCommentPanel: showCommentPanel,
         sidePanelBlog: blog,
+        popResultBuilder: () => _videoAdState,
         onCommentClose: () => _toggleCommentPanel(
           commentNotifier,
           panelVisible: showCommentPanel,
@@ -94,6 +102,10 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
             BlogVideoDetailPlayer(
               blog: blog,
               mediaHeroTag: widget.mediaHeroTag,
+              videoAdInitialState: widget.videoAdInitialState,
+              onVideoAdStateChanged: (state) {
+                _videoAdState = state;
+              },
               showToolbarControlsRow: showToolbarControlsRow,
               onCompleted: () => _openNextCollectionVideo(sidePanelCollection),
             ),
@@ -110,6 +122,14 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
         ),
       ),
     );
+  }
+
+  void _popWithVideoAdState() {
+    if (!_keepCommentPanelStateOnDispose) {
+      ref.read(commentProvider.notifier).dontShowComment();
+    }
+    setState(() => _allowPopWithResult = true);
+    context.pop(_videoAdState);
   }
 
   void _toggleCommentPanel(

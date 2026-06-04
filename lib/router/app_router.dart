@@ -462,6 +462,7 @@ GoRouter appRouter(Ref ref) {
             builder: () => route_pages.BlogVideoDetailView(
               blogItem: detailExtra.blogItem,
               mediaHeroTag: detailExtra.mediaHeroTag,
+              videoAdInitialState: detailExtra.videoAdState,
             ),
           );
         },
@@ -484,6 +485,7 @@ GoRouter appRouter(Ref ref) {
             builder: () => route_pages.VideoDetailView(
               blogItem: detailExtra.blogItem,
               mediaHeroTag: detailExtra.mediaHeroTag,
+              videoAdInitialState: detailExtra.videoAdState,
             ),
           );
         },

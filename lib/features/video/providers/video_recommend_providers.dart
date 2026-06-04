@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../components/video_player/video_ad_overlay.dart';
 import '../../blog/data/blog_feed_state_interactions.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/repos/blog_repo.dart';
@@ -185,6 +186,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
     BuildContext context,
     BlogItem blogItem, {
     String? mediaHeroTag,
+    VideoAdPlaybackState? videoAdState,
   }) {}
 
   @override

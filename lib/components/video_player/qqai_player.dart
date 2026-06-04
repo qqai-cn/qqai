@@ -26,6 +26,8 @@ class QqaiPlayer extends StatefulWidget {
     /// 竖滑全屏沉浸场景可设为 [BoxFit.cover]。
     this.videoFit = BoxFit.contain,
     this.fallbackAspectRatio = 15 / 9,
+    this.videoAdInitialState,
+    this.onVideoAdStateChanged,
   });
 
   final String? image;
@@ -38,6 +40,8 @@ class QqaiPlayer extends StatefulWidget {
   final String? sharedPlaybackKey;
   final BoxFit videoFit;
   final double fallbackAspectRatio;
+  final VideoAdPlaybackState? videoAdInitialState;
+  final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
 
   @override
   State<QqaiPlayer> createState() => _QqaiPlayerState();
@@ -208,6 +212,8 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
           videoController: videoController,
           flickManager: flickManager,
           videoId: widget.videoId,
+          initialPlaybackState: widget.videoAdInitialState,
+          onPlaybackStateChanged: widget.onVideoAdStateChanged,
           child: SafeFlickVideoPlayer(
             flickManager: flickManager,
             flickVideoWithControls: FlickVideoWithControls(

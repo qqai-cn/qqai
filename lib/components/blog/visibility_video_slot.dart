@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
+import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:qqai/util/media_url.dart';
@@ -15,6 +16,8 @@ class VisibilityVideoSlot extends StatefulWidget {
   final int? videoId;
   final double? aspectRatio;
   final String? playerHeroTag;
+  final VideoAdPlaybackState? videoAdInitialState;
+  final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
 
   const VisibilityVideoSlot({
     super.key,
@@ -23,6 +26,8 @@ class VisibilityVideoSlot extends StatefulWidget {
     this.videoId,
     this.aspectRatio,
     this.playerHeroTag,
+    this.videoAdInitialState,
+    this.onVideoAdStateChanged,
   });
 
   @override
@@ -73,6 +78,8 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
           imgUrl: widget.imgUrl,
           videoId: widget.videoId,
           fallbackAspectRatio: aspectRatio,
+          videoAdInitialState: widget.videoAdInitialState,
+          onVideoAdStateChanged: widget.onVideoAdStateChanged,
         );
       } else {
         slotChild = VideoLoadingPlaceholder(

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:qqai/components/video_player/video_ad_overlay.dart';
 
 import '../data/models/blog_page_model.dart';
 
@@ -18,6 +19,7 @@ abstract interface class BlogFeedListActions {
     BuildContext context,
     BlogItem blogItem, {
     String? mediaHeroTag,
+    VideoAdPlaybackState? videoAdState,
   });
 
   void onBlogImgItemTap(

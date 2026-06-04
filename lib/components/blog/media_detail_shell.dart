@@ -12,6 +12,7 @@ class MediaDetailShell extends StatelessWidget {
   final bool showCommentPanel;
   final BlogItem? sidePanelBlog;
   final VoidCallback? onCommentClose;
+  final Object? Function()? popResultBuilder;
   final int sidePanelInitialTabIndex;
   final BlogItemCollection? sidePanelCollection;
   final String? sidePanelCollectionVideoDetailRoute;
@@ -22,6 +23,7 @@ class MediaDetailShell extends StatelessWidget {
     required this.showCommentPanel,
     this.sidePanelBlog,
     this.onCommentClose,
+    this.popResultBuilder,
     this.sidePanelInitialTabIndex = 0,
     this.sidePanelCollection,
     this.sidePanelCollectionVideoDetailRoute,
@@ -36,7 +38,10 @@ class MediaDetailShell extends StatelessWidget {
       child: Stack(
         children: [
           content,
-          const Positioned(left: 10, child: _BackButtonOverlay()),
+          Positioned(
+            left: 10,
+            child: _BackButtonOverlay(popResultBuilder: popResultBuilder),
+          ),
         ],
       ),
     );
@@ -147,24 +152,19 @@ class MediaDetailOverlayIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   static Widget buildIcon(IconData icon) {
-    return Icon(
-      icon,
-      color: Colors.white.withValues(alpha: 0.5),
-      size: 50,
-    );
+    return Icon(icon, color: Colors.white.withValues(alpha: 0.5), size: 50);
   }
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      icon: buildIcon(icon),
-    );
+    return IconButton(onPressed: onPressed, icon: buildIcon(icon));
   }
 }
 
 class _BackButtonOverlay extends StatelessWidget {
-  const _BackButtonOverlay();
+  const _BackButtonOverlay({this.popResultBuilder});
+
+  final Object? Function()? popResultBuilder;
 
   static const _stackedDetailRoutes = {
     Routes.blogVideoDetailView,
@@ -174,7 +174,7 @@ class _BackButtonOverlay extends StatelessWidget {
 
   void _handleBack(BuildContext context) {
     if (context.canPop()) {
-      context.pop();
+      context.pop(popResultBuilder?.call());
       var path = GoRouterState.of(context).uri.path;
       while (context.canPop() && _stackedDetailRoutes.contains(path)) {
         context.pop();

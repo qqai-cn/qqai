@@ -25,6 +25,8 @@ class BlogVideoDetailPlayer extends StatefulWidget {
   final double? adTopInset;
   final double? adSkipRightInset;
   final bool isActive;
+  final VideoAdPlaybackState? videoAdInitialState;
+  final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
 
   /// 为 false 时底部工具条仅保留进度条（窄屏推荐流等）。
   final bool showToolbarControlsRow;
@@ -37,6 +39,8 @@ class BlogVideoDetailPlayer extends StatefulWidget {
     this.adTopInset,
     this.adSkipRightInset,
     this.isActive = true,
+    this.videoAdInitialState,
+    this.onVideoAdStateChanged,
     this.showToolbarControlsRow = true,
   });
 
@@ -183,6 +187,8 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
                 adTopInset: widget.adTopInset ?? 12,
                 adSkipRightInset:
                     widget.adSkipRightInset ?? kVideoAdDetailSkipRightInset,
+                initialPlaybackState: widget.videoAdInitialState,
+                onPlaybackStateChanged: widget.onVideoAdStateChanged,
                 child: SafeFlickVideoPlayer(
                   flickManager: flickManager,
                   flickVideoWithControls: FlickVideoWithControls(

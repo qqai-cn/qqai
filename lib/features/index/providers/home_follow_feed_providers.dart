@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../components/imgpreview/preview_img.dart';
+import '../../../components/video_player/video_ad_overlay.dart';
 import '../../../providers/auth_providers.dart';
 import '../../../router/app_routes.dart';
 import '../../blog/data/blog_interaction_patch.dart';
@@ -114,6 +115,7 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     BuildContext context,
     BlogItem blogItem, {
     String? mediaHeroTag,
+    VideoAdPlaybackState? videoAdState,
   }) {
     if (blogItem.blogType == 1) {
       context.push(
@@ -123,7 +125,11 @@ class HomeFollowFeedNotifier extends _$HomeFollowFeedNotifier
     } else {
       context.push(
         Routes.blogVideoDetailView,
-        extra: blogDetailRouteExtra(blogItem, mediaHeroTag: mediaHeroTag),
+        extra: blogDetailRouteExtra(
+          blogItem,
+          mediaHeroTag: mediaHeroTag,
+          videoAdState: videoAdState,
+        ),
       );
     }
   }
