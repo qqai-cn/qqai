@@ -38,7 +38,7 @@ class AsyncMasonryFeed<T> extends StatefulWidget {
 class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMoreLocally = false;
-  bool _isRefreshing = false;
+  bool _hideExternalRefreshStatus = false;
 
   @override
   void initState() {
@@ -75,23 +75,20 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
 
   Future<void> _handleRefresh() async {
     final onRefresh = widget.onRefresh;
-    if (onRefresh == null || _isRefreshing) {
+    if (onRefresh == null || _hideExternalRefreshStatus) {
       return;
     }
 
     setState(() {
-      _isRefreshing = true;
+      _hideExternalRefreshStatus = true;
     });
 
     try {
-      await Future.wait([
-        onRefresh(),
-        Future<void>.delayed(const Duration(milliseconds: 650)),
-      ]);
+      await onRefresh();
     } finally {
       if (mounted) {
         setState(() {
-          _isRefreshing = false;
+          _hideExternalRefreshStatus = false;
         });
       }
     }
@@ -148,7 +145,7 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
                 child: IgnorePointer(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 180),
-                    child: _isRefreshing || widget.isRefreshing
+                    child: widget.isRefreshing && !_hideExternalRefreshStatus
                         ? const RefreshStatusBadge()
                         : const SizedBox.shrink(),
                   ),

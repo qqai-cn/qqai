@@ -177,7 +177,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
             child: Stack(
               children: [
                 RefreshIndicator(
-                  onRefresh: () => _refresh(showIndicator: true),
+                  onRefresh: _refresh,
                   color: Colors.white,
                   backgroundColor: const Color(0xFFFF8C00),
                   displacement: 54,

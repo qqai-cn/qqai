@@ -18,6 +18,7 @@ class SquareView extends ConsumerStatefulWidget {
 class _SquareViewState extends ConsumerState<SquareView> {
   final ScrollController _scrollController = ScrollController();
   bool _loadingMoreGuard = false;
+  bool _hideRefreshStatus = false;
   bool _searching = false;
 
   @override
@@ -47,6 +48,21 @@ class _SquareViewState extends ConsumerState<SquareView> {
     if (position.maxScrollExtent - position.pixels > 200) return;
     _loadingMoreGuard = true;
     ref.read(squareProvider.notifier).loadMore();
+  }
+
+  Future<void> _handlePullRefresh() async {
+    setState(() {
+      _hideRefreshStatus = true;
+    });
+    try {
+      await ref.read(squareProvider.notifier).refresh();
+    } finally {
+      if (mounted) {
+        setState(() {
+          _hideRefreshStatus = false;
+        });
+      }
+    }
   }
 
   Widget _createSquareRow() {
@@ -278,7 +294,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
                 return Stack(
                   children: [
                     RefreshIndicator(
-                      onRefresh: notifier.refresh,
+                      onRefresh: _handlePullRefresh,
                       color: Colors.white,
                       backgroundColor: const Color(0xFFFF8C00),
                       displacement: 54,
@@ -314,7 +330,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
                       child: IgnorePointer(
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 180),
-                          child: squareState.isRefreshing
+                          child: squareState.isRefreshing && !_hideRefreshStatus
                               ? const RefreshStatusBadge()
                               : const SizedBox.shrink(),
                         ),
