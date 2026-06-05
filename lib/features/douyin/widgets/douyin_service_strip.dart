@@ -32,7 +32,7 @@ class DouyinServiceStrip extends StatelessWidget {
       _Entry(
         icon: Icons.history_rounded,
         label: '观看历史',
-        route: Routes.douyinWatchHistory,
+        route: Routes.footprint,
       ),
       _Entry(
         icon: Icons.grid_view_rounded,

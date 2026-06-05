@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../feed_player/multi_manager/flick_multi_manager.dart';
@@ -40,7 +41,7 @@ class ShortVideoPlayerState extends State<ShortVideoPlayer> {
     return VisibilityDetector(
       key: ObjectKey(flickMultiManager),
       onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction == 0 && mounted) {
+        if (safeVisibleFraction(visibility) == 0 && mounted) {
           flickMultiManager.pause();
         }
       },

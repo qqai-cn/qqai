@@ -1,6 +1,7 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/default_asset_image.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -52,7 +53,7 @@ class _FlickMultiPlayerState extends State<FlickMultiPlayer> {
     return VisibilityDetector(
       key: ObjectKey(flickManager),
       onVisibilityChanged: (visiblityInfo) {
-        if (visiblityInfo.visibleFraction > 0.9) {
+        if (safeVisibleFraction(visiblityInfo) > 0.9) {
           widget.flickMultiManager.play(flickManager);
         }
       },

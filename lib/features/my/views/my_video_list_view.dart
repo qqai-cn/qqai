@@ -4,9 +4,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/constant/constant.dart';
+import 'package:qqai/router/app_routes.dart';
 
 import '../data/models/profile_models.dart';
 import '../data/repos/profile_repo.dart';
@@ -172,29 +174,11 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
                   clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: () {
-                      showModalBottomSheet<void>(
-                        context: context,
-                        showDragHandle: true,
-                        builder: (ctx) => Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                c.name ?? '合集',
-                                style: context.typo.sectionTitle,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                c.intro?.isNotEmpty == true
-                                    ? c.intro!
-                                    : '共 ${c.itemCount ?? 0} 个作品',
-                                style: context.typo.body,
-                              ),
-                            ],
-                          ),
-                        ),
+                      final id = c.id;
+                      if (id == null) return;
+                      context.push(
+                        '${Routes.collectionBlogList}?id=$id',
+                        extra: c,
                       );
                     },
                     child: Column(

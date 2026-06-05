@@ -19,6 +19,7 @@ class Routes {
   static const String watchVideo = "/watchs";
   static const String whatArticle = "/look_art";
   static const String squareBlogView = "/square_blog_view";
+  static const String collectionBlogList = "/collection_blog_list";
   static const String blogImgDetailView = "/blog_img_detail_view";
   static const String blogVideoDetailView = "/blog_video_detail_view";
   static const String videoDetailView = "/video_detail_view";

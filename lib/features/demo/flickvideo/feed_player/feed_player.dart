@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../utils/mock_data.dart';
@@ -29,7 +30,7 @@ class _FeedPlayerState extends State<FeedPlayer> {
     return VisibilityDetector(
       key: ObjectKey(flickMultiManager),
       onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction == 0 && this.mounted) {
+        if (safeVisibleFraction(visibility) == 0 && mounted) {
           flickMultiManager.pause();
         }
       },

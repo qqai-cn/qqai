@@ -1,6 +1,7 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/features/demo/flickvideo/animation_player/portrait_video_controls.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -47,9 +48,10 @@ class _AnimationPlayerState extends State<AnimationPlayer> {
     return VisibilityDetector(
       key: ObjectKey(flickManager),
       onVisibilityChanged: (visibility) {
-        if (visibility.visibleFraction == 0 && this.mounted) {
+        final visibleFraction = safeVisibleFraction(visibility);
+        if (visibleFraction == 0 && mounted) {
           flickManager.flickControlManager!.autoPause();
-        } else if (visibility.visibleFraction == 1) {
+        } else if (visibleFraction == 1) {
           flickManager.flickControlManager!.autoResume();
         }
       },

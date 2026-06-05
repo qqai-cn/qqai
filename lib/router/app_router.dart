@@ -22,6 +22,7 @@ import '../features/blog/views/blog_detail_video_toolbar.dart';
 import '../features/comment/providers/comment_providers.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
 import '../features/goods/models/cart_line.dart';
+import '../features/my/data/models/profile_models.dart';
 import '../features/index/presentation/views/home_page.dart';
 import '../features/index/presentation/views/index_page.dart';
 import '../features/index/presentation/views/me_page.dart';
@@ -500,6 +501,28 @@ GoRouter appRouter(Ref ref) {
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
             builder: () => route_pages.SquareBlogView(squareId: squareId),
+          );
+        },
+      ),
+      GoRoute(
+        path: Routes.collectionBlogList,
+        name: 'collectionBlogList',
+        builder: (c, s) {
+          final extra = s.extra;
+          final collection = extra is BlogCollectionResp ? extra : null;
+          final collectionId =
+              collection?.id ??
+              int.tryParse(s.uri.queryParameters['id'] ?? '') ??
+              0;
+          if (collectionId <= 0) {
+            return const Scaffold(body: Center(child: Text('合集数据无效，请返回重试')));
+          }
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.CollectionBlogListPage(
+              collectionId: collectionId,
+              initialCollection: collection,
+            ),
           );
         },
       ),

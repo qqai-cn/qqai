@@ -34,7 +34,7 @@ class DouyinAllFeaturesPage extends StatelessWidget {
             Icons.add_circle_outline,
             Routes.publishZuoPinPageUrl,
           ),
-          _FeatureItem('观看历史', Icons.history, Routes.douyinWatchHistory),
+          _FeatureItem('观看历史', Icons.history, Routes.footprint),
         ],
       ),
       _FeatureGroup(

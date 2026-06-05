@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/blog/video_thumbnail.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
+import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 import '../../../../../constant/constant.dart';
@@ -244,8 +245,9 @@ class _LazyVideoPlaceholderState extends State<_LazyVideoPlaceholder> {
     return VisibilityDetector(
       key: Key('lazy_video_${widget.url.hashCode}'),
       onVisibilityChanged: (info) {
-        if (mounted && info.visibleFraction != _visibleFraction) {
-          setState(() => _visibleFraction = info.visibleFraction);
+        final visibleFraction = safeVisibleFraction(info);
+        if (mounted && visibleFraction != _visibleFraction) {
+          setState(() => _visibleFraction = visibleFraction);
         }
       },
       child: VideoAspectRatioBox(
