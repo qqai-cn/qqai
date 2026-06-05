@@ -19,6 +19,17 @@ bool isPlayableVideoResourceUrl(String u) => _looksLikeVideoUrl(u);
 bool blogItemHasVideoResources(String? raw) =>
     parseCommaSeparatedUrls(raw).any(isPlayableVideoResourceUrl);
 
+/// 从动态 [resources] 中解析全部可播放视频 URL。
+List<String> playableVideoUrlsFromResources(String? raw) {
+  final urls = parseCommaSeparatedUrls(raw);
+  if (urls.isEmpty) {
+    final t = raw?.trim();
+    return (t != null && t.isNotEmpty) ? [t] : [];
+  }
+  final videos = urls.where(_looksLikeVideoUrl).toList();
+  return videos.isNotEmpty ? videos : [urls.first];
+}
+
 bool _looksLikeVideoUrl(String u) {
   final lower = u.toLowerCase();
   return lower.endsWith('.mp4') ||
@@ -48,15 +59,8 @@ String normalizeDefaultCoverAsset(String url) {
 
 /// 从动态 [resources] 中取首条可播放视频 URL（逗号分隔时优先常见视频后缀）。
 String? firstPlayableVideoUrlFromResources(String? raw) {
-  final urls = parseCommaSeparatedUrls(raw);
-  if (urls.isEmpty) {
-    final t = raw?.trim();
-    return (t != null && t.isNotEmpty) ? t : null;
-  }
-  for (final u in urls) {
-    if (_looksLikeVideoUrl(u)) return u;
-  }
-  return urls.first;
+  final urls = playableVideoUrlsFromResources(raw);
+  return urls.isEmpty ? null : urls.first;
 }
 
 /// 封面：优先取图片后缀的 URL，否则 [fallback]。

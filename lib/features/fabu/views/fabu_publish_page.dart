@@ -53,6 +53,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   final _videoPreviewController = LocalQqaiPlayerController();
   bool _showWidgetCoverPreview = false;
   int _coverDurationSeconds = 60;
+  final _videoSegmentsPageController = PageController();
 
   @override
   void initState() {
@@ -84,6 +85,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
       ref.read(fabuProvider.notifier).setWidgetCoverCapture(null);
     }
     _videoPreviewController.detach();
+    _videoSegmentsPageController.dispose();
     _contentController.dispose();
     _titleController.dispose();
     _targetController.dispose();
@@ -354,16 +356,10 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     }
 
     if (state.videoFiles.isNotEmpty) {
-      final videoFile = state.videoFiles.first;
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          FabuMediaPreviewTile(
-            file: videoFile,
-            isVideo: true,
-            videoPlayerController: _videoPreviewController,
-            onRemove: notifier.clearVideo,
-          ),
+          _buildVideoSegmentsPreview(state, notifier),
           12.verticalSpace,
           _buildBackgroundMusicPicker(state, notifier),
           12.verticalSpace,
@@ -389,6 +385,89 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
         ),
         12.verticalSpace,
         _buildBackgroundMusicPicker(state, notifier),
+      ],
+    );
+  }
+
+  Widget _buildVideoSegmentsPreview(FabuState state, FabuNotifier notifier) {
+    final videoFiles = state.videoFiles;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                videoFiles.length > 1
+                    ? '分段视频（${videoFiles.length} 段，可左右滑动预览）'
+                    : '视频预览',
+                style: context.typo.body.copyWith(
+                  color: const Color(0xFF202124),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: () => _pickMedia(notifier),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('继续添加'),
+            ),
+          ],
+        ),
+        8.verticalSpace,
+        SizedBox(
+          width: double.infinity,
+          child: AspectRatio(
+            aspectRatio: 15 / 9,
+            child: PageView.builder(
+              controller: _videoSegmentsPageController,
+              itemCount: videoFiles.length,
+              itemBuilder: (context, index) {
+                final file = videoFiles[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: FabuMediaPreviewTile(
+                          file: file,
+                          isVideo: true,
+                          videoPlayerController: index == 0
+                              ? _videoPreviewController
+                              : null,
+                          onRemove: () => notifier.removeVideoFile(file),
+                        ),
+                      ),
+                      Positioned(
+                        left: 12,
+                        top: 12,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 5,
+                            ),
+                            child: Text(
+                              '${index + 1}/${videoFiles.length}',
+                              style: context.typo.caption.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -889,7 +968,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
     final videoFiles = files.where(_isVideoFile).toList();
     if (videoFiles.isNotEmpty) {
-      await notifier.addVideoFiles([videoFiles.first]);
+      await notifier.addVideoFiles(videoFiles);
       return;
     }
 

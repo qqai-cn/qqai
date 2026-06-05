@@ -465,6 +465,39 @@ class FabuNotifier extends _$FabuNotifier {
     _syncCoverStyleForAspectRatio(metadata.aspectRatio);
   }
 
+  void removeVideoFile(XFile file) {
+    final path = file.path;
+    final newVideoFiles = List<XFile>.from(state.videoFiles)..remove(file);
+    clearLocalVideoAspectRatioCache(path);
+    _resetVideoDurationCache();
+    _coverPreviewGeneration++;
+
+    if (newVideoFiles.isEmpty) {
+      state = state.copyWith(
+        files: [],
+        videoFiles: [],
+        uploadedFileUrls: [],
+        uploadedVideoUrls: [],
+        coverFile: null,
+        coverPreviewBytes: null,
+        uploadedCoverUrl: null,
+        isCoverPreviewing: false,
+      );
+      return;
+    }
+
+    state = state.copyWith(
+      files: newVideoFiles,
+      videoFiles: newVideoFiles,
+      uploadedFileUrls: [],
+      uploadedVideoUrls: [],
+      coverFile: null,
+      coverPreviewBytes: null,
+      uploadedCoverUrl: null,
+      isCoverPreviewing: false,
+    );
+  }
+
   void selectBackgroundMusic(XFile file) {
     final musicName = file.name.trim().isEmpty
         ? file.path.split('/').last

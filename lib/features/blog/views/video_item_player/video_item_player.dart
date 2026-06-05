@@ -11,6 +11,8 @@ class VideoItemPlayer extends StatefulWidget {
   final double fallbackAspectRatio;
   final VideoAdPlaybackState? videoAdInitialState;
   final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
+  final VoidCallback? onCompleted;
+  final bool autoPlay;
 
   const VideoItemPlayer({
     super.key,
@@ -20,6 +22,8 @@ class VideoItemPlayer extends StatefulWidget {
     this.fallbackAspectRatio = 15 / 9,
     this.videoAdInitialState,
     this.onVideoAdStateChanged,
+    this.onCompleted,
+    this.autoPlay = false,
   });
 
   @override
@@ -42,13 +46,14 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           controls: ItemControls(),
           image: widget.imgUrl,
           url: widget.url,
-          autoPlay: false,
+          autoPlay: widget.autoPlay,
           videoId: widget.videoId,
           fallbackAspectRatio: widget.fallbackAspectRatio,
           showLoadingPoster: true,
           sharedPlaybackKey: widget.url,
           videoAdInitialState: widget.videoAdInitialState,
           onVideoAdStateChanged: widget.onVideoAdStateChanged,
+          onCompleted: widget.onCompleted,
         ),
       ),
     );

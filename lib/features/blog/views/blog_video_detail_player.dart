@@ -49,6 +49,165 @@ class BlogVideoDetailPlayer extends StatefulWidget {
 }
 
 class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
+  late final PageController _segmentsPageController;
+  int _segmentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _segmentsPageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _segmentsPageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(BlogVideoDetailPlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.blog.id != widget.blog.id ||
+        oldWidget.blog.resources != widget.blog.resources) {
+      _segmentIndex = 0;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted || !_segmentsPageController.hasClients) return;
+        _segmentsPageController.jumpToPage(0);
+      });
+    }
+  }
+
+  Future<void> _handleSegmentCompleted(int segmentCount) async {
+    final nextIndex = _segmentIndex + 1;
+    if (nextIndex < segmentCount) {
+      await _switchToSegment(nextIndex);
+      return;
+    }
+    widget.onCompleted?.call();
+  }
+
+  Future<void> _switchToSegment(int index) async {
+    if (index == _segmentIndex) return;
+    if (!_segmentsPageController.hasClients) {
+      if (mounted) setState(() => _segmentIndex = index);
+      return;
+    }
+    await _segmentsPageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOut,
+    );
+    if (!mounted) return;
+    if (_segmentIndex != index) {
+      setState(() => _segmentIndex = index);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rawVideos = playableVideoUrlsFromResources(widget.blog.resources);
+    final videoUrls = rawVideos
+        .map(resolveMediaUrl)
+        .whereType<String>()
+        .where((url) => url.isNotEmpty)
+        .toList();
+
+    if (videoUrls.isEmpty) {
+      return const Center(
+        child: Text('暂无视频', style: TextStyle(color: Colors.white70)),
+      );
+    }
+
+    if (videoUrls.length == 1) {
+      return _SingleVideoDetailPlayer(
+        blog: widget.blog,
+        videoUrl: videoUrls.first,
+        mediaHeroTag: widget.mediaHeroTag,
+        onCompleted: widget.onCompleted,
+        adTopInset: widget.adTopInset,
+        adSkipRightInset: widget.adSkipRightInset,
+        isActive: widget.isActive,
+        videoAdInitialState: widget.videoAdInitialState,
+        onVideoAdStateChanged: widget.onVideoAdStateChanged,
+        showToolbarControlsRow: widget.showToolbarControlsRow,
+        segmentCount: 1,
+        segmentIndex: 0,
+      );
+    }
+
+    return Stack(
+      children: [
+        PageView.builder(
+          controller: _segmentsPageController,
+          scrollDirection: Axis.horizontal,
+          itemCount: videoUrls.length,
+          onPageChanged: (index) => setState(() => _segmentIndex = index),
+          itemBuilder: (context, index) {
+            return _SingleVideoDetailPlayer(
+              key: ValueKey('blog_video_segment_${widget.blog.id}_$index'),
+              blog: widget.blog,
+              videoUrl: videoUrls[index],
+              mediaHeroTag: index == 0 ? widget.mediaHeroTag : null,
+              onCompleted: () => _handleSegmentCompleted(videoUrls.length),
+              adTopInset: widget.adTopInset,
+              adSkipRightInset: widget.adSkipRightInset,
+              isActive: widget.isActive && index == _segmentIndex,
+              videoAdInitialState: index == 0
+                  ? widget.videoAdInitialState
+                  : null,
+              onVideoAdStateChanged: index == 0
+                  ? widget.onVideoAdStateChanged
+                  : null,
+              showToolbarControlsRow: widget.showToolbarControlsRow,
+              segmentCount: videoUrls.length,
+              segmentIndex: _segmentIndex,
+              onSegmentSelected: _switchToSegment,
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _SingleVideoDetailPlayer extends StatefulWidget {
+  const _SingleVideoDetailPlayer({
+    super.key,
+    required this.blog,
+    required this.videoUrl,
+    this.mediaHeroTag,
+    this.onCompleted,
+    this.adTopInset,
+    this.adSkipRightInset,
+    this.isActive = true,
+    this.videoAdInitialState,
+    this.onVideoAdStateChanged,
+    this.showToolbarControlsRow = true,
+    this.segmentCount = 0,
+    this.segmentIndex = 0,
+    this.onSegmentSelected,
+  });
+
+  final BlogItem blog;
+  final String videoUrl;
+  final String? mediaHeroTag;
+  final VoidCallback? onCompleted;
+  final double? adTopInset;
+  final double? adSkipRightInset;
+  final bool isActive;
+  final VideoAdPlaybackState? videoAdInitialState;
+  final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
+  final bool showToolbarControlsRow;
+  final int segmentCount;
+  final int segmentIndex;
+  final ValueChanged<int>? onSegmentSelected;
+
+  @override
+  State<_SingleVideoDetailPlayer> createState() =>
+      _SingleVideoDetailPlayerState();
+}
+
+class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   late FlickManager flickManager;
   late VideoPlayerController videoController;
   SharedVideoPlaybackSession? _sharedSession;
@@ -58,8 +217,7 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
   @override
   void initState() {
     super.initState();
-    final rawVideo = firstPlayableVideoUrlFromResources(widget.blog.resources);
-    final videoUrl = resolveMediaUrl(rawVideo) ?? '';
+    final videoUrl = widget.videoUrl;
     _sharedSession = videoUrl.isEmpty
         ? null
         : acquireSharedVideoPlaybackSession(videoUrl);
@@ -84,7 +242,7 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
   }
 
   @override
-  void didUpdateWidget(BlogVideoDetailPlayer oldWidget) {
+  void didUpdateWidget(_SingleVideoDetailPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isActive != widget.isActive) {
       if (widget.isActive) {
@@ -151,9 +309,8 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    final rawVideo = firstPlayableVideoUrlFromResources(widget.blog.resources);
-    final videoUrl = resolveMediaUrl(rawVideo);
-    if (videoUrl == null || videoUrl.isEmpty) {
+    final videoUrl = widget.videoUrl;
+    if (videoUrl.isEmpty) {
       return const Center(
         child: Text('暂无视频', style: TextStyle(color: Colors.white70)),
       );
@@ -226,6 +383,9 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
             flickManager: flickManager,
             child: BlogDetailVideoToolbar(
               showControlsRow: widget.showToolbarControlsRow,
+              segmentCount: widget.segmentCount,
+              segmentIndex: widget.segmentIndex,
+              onSegmentSelected: widget.onSegmentSelected,
             ),
           ),
         ],

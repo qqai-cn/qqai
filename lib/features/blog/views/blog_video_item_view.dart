@@ -55,13 +55,30 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
 
   String text = '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。';
   VideoAdPlaybackState? _videoAdState;
+  int _selectedVideoSegmentIndex = 0;
+  bool _autoPlaySelectedSegment = false;
 
   @override
   void didUpdateWidget(covariant BlogVideoItemView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.blogItem.id != widget.blogItem.id) {
+    if (oldWidget.blogItem.id != widget.blogItem.id ||
+        oldWidget.blogItem.resources != widget.blogItem.resources) {
       _videoAdState = null;
+      _selectedVideoSegmentIndex = 0;
+      _autoPlaySelectedSegment = false;
     }
+  }
+
+  void _playNextSegmentIfAvailable(int segmentCount) {
+    final nextIndex = _selectedVideoSegmentIndex + 1;
+    if (nextIndex >= segmentCount) return;
+    setState(() {
+      _selectedVideoSegmentIndex = nextIndex;
+      _autoPlaySelectedSegment = true;
+      if (nextIndex != 0) {
+        _videoAdState = null;
+      }
+    });
   }
 
   @override
@@ -96,7 +113,15 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     final rewardText = _rewardText(item.content);
     final bodyStyle = context.typo.body;
     final coverUrl = resolveBlogCoverUrl(item);
-    final videoUrl = firstPlayableVideoUrlFromResources(item.resources) ?? '';
+    final videoUrls = playableVideoUrlsFromResources(item.resources);
+    final selectedVideoSegmentIndex =
+        _selectedVideoSegmentIndex >= 0 &&
+            _selectedVideoSegmentIndex < videoUrls.length
+        ? _selectedVideoSegmentIndex
+        : 0;
+    final videoUrl = videoUrls.isEmpty
+        ? ''
+        : videoUrls[selectedVideoSegmentIndex];
     final mediaHeroTag = blogVideoDetailHeroTag(
       widget.category,
       widget.blogItem,
@@ -115,6 +140,8 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
         bodyStyle: bodyStyle,
         coverUrl: coverUrl,
         videoUrl: videoUrl,
+        videoUrls: videoUrls,
+        selectedVideoSegmentIndex: selectedVideoSegmentIndex,
         mediaHeroTag: mediaHeroTag,
         aspectRatio: storedAspectRatio,
       );
@@ -135,6 +162,8 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
           bodyStyle: bodyStyle,
           coverUrl: coverUrl,
           videoUrl: videoUrl,
+          videoUrls: videoUrls,
+          selectedVideoSegmentIndex: selectedVideoSegmentIndex,
           mediaHeroTag: mediaHeroTag,
           aspectRatio: aspectRatio,
         );
@@ -154,6 +183,8 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     required TextStyle bodyStyle,
     required String coverUrl,
     required String videoUrl,
+    required List<String> videoUrls,
+    required int selectedVideoSegmentIndex,
     required String mediaHeroTag,
     required double aspectRatio,
   }) {
@@ -212,17 +243,53 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
               ),
               Expanded(
                 flex: 9,
-                child: VisibilityVideoSlot(
-                  key: Key('blog_video_${widget.blogItem.id}'),
-                  url: videoUrl,
-                  imgUrl: coverUrl,
-                  videoId: widget.blogItem.id,
-                  aspectRatio: aspectRatio,
-                  playerHeroTag: mediaHeroTag,
-                  videoAdInitialState: _videoAdState,
-                  onVideoAdStateChanged: (state) {
-                    _videoAdState = state;
-                  },
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: VisibilityVideoSlot(
+                        key: Key(
+                          'blog_video_${widget.blogItem.id}_$selectedVideoSegmentIndex',
+                        ),
+                        url: videoUrl,
+                        imgUrl: coverUrl,
+                        videoId: widget.blogItem.id,
+                        aspectRatio: aspectRatio,
+                        playerHeroTag: selectedVideoSegmentIndex == 0
+                            ? mediaHeroTag
+                            : null,
+                        videoAdInitialState: selectedVideoSegmentIndex == 0
+                            ? _videoAdState
+                            : null,
+                        onVideoAdStateChanged: selectedVideoSegmentIndex == 0
+                            ? (state) {
+                                _videoAdState = state;
+                              }
+                            : null,
+                        onCompleted: () =>
+                            _playNextSegmentIfAvailable(videoUrls.length),
+                        autoPlay: _autoPlaySelectedSegment,
+                      ),
+                    ),
+                    if (videoUrls.length > 1)
+                      Positioned(
+                        right: 8,
+                        bottom: 8,
+                        child: _VideoSegmentButtons(
+                          count: videoUrls.length,
+                          selectedIndex: selectedVideoSegmentIndex,
+                          onSelected: (index) {
+                            if (index == selectedVideoSegmentIndex) return;
+                            setState(() {
+                              _selectedVideoSegmentIndex = index;
+                              _autoPlaySelectedSegment = false;
+                              if (index != 0) {
+                                _videoAdState = null;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                  ],
                 ),
               ),
               if (widget.category == HomeBlogTab.local &&
@@ -329,6 +396,61 @@ class _RewardAmountText extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _VideoSegmentButtons extends StatelessWidget {
+  const _VideoSegmentButtons({
+    required this.count,
+    required this.selectedIndex,
+    required this.onSelected,
+  });
+
+  final int count;
+  final int selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.38),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+        child: Wrap(
+          spacing: 4,
+          runSpacing: 4,
+          children: List.generate(count, (index) {
+            final selected = index == selectedIndex;
+            return SizedBox(
+              width: 26,
+              height: 26,
+              child: Material(
+                color: selected
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.18),
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: () => onSelected(index),
+                  child: Center(
+                    child: Text(
+                      '${index + 1}',
+                      style: context.typo.caption.copyWith(
+                        color: selected ? Colors.black87 : Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }),
+        ),
+      ),
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
@@ -28,6 +30,7 @@ class QqaiPlayer extends StatefulWidget {
     this.fallbackAspectRatio = 15 / 9,
     this.videoAdInitialState,
     this.onVideoAdStateChanged,
+    this.onCompleted,
   });
 
   final String? image;
@@ -42,6 +45,7 @@ class QqaiPlayer extends StatefulWidget {
   final double fallbackAspectRatio;
   final VideoAdPlaybackState? videoAdInitialState;
   final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
+  final VoidCallback? onCompleted;
 
   @override
   State<QqaiPlayer> createState() => _QqaiPlayerState();
@@ -51,7 +55,10 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
   late FlickManager flickManager;
   late VideoPlayerController videoController;
   SharedVideoPlaybackSession? _sharedSession;
+  Timer? _completionTimer;
   bool _isDisposed = false;
+  bool _didNotifyCompleted = false;
+  bool _didAutoResumeAfterInit = false;
 
   @override
   void initState() {
@@ -60,12 +67,13 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
 
     // 添加监听器，当视频初始化完成后设置音量
     videoController.addListener(_videoListener);
+    _startCompletionPolling();
 
     // 使用 postFrameCallback 延迟设置音量，确保 FlickManager 完全初始化
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isDisposed && mounted && widget.isActive) {
         if (widget.autoPlay) {
-          flickManager.flickControlManager?.autoResume();
+          _startAutoPlayback();
         }
         _setVolumeIfNeeded();
       }
@@ -81,12 +89,16 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
       _detachPlayback();
       _attachPlayback();
       videoController.addListener(_videoListener);
+      _didNotifyCompleted = false;
+      _didAutoResumeAfterInit = false;
+      _startCompletionPolling();
     }
-    if (oldWidget.isActive != widget.isActive) {
+    if (oldWidget.isActive != widget.isActive ||
+        oldWidget.autoPlay != widget.autoPlay) {
       if (widget.isActive && widget.autoPlay) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!_isDisposed && mounted && widget.isActive) {
-            flickManager.flickControlManager?.autoResume();
+            _startAutoPlayback();
             _setVolumeIfNeeded();
           }
         });
@@ -115,6 +127,8 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
   }
 
   void _detachPlayback() {
+    _completionTimer?.cancel();
+    _completionTimer = null;
     final session = _sharedSession;
     if (session != null) {
       session.release();
@@ -133,7 +147,62 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
       if (videoController.value.volume == 0.0) {
         _setVolumeIfNeeded();
       }
+      final value = videoController.value;
+      if (!_didAutoResumeAfterInit && widget.autoPlay && value.isInitialized) {
+        _didAutoResumeAfterInit = true;
+        _startAutoPlayback();
+      }
+      _checkCompleted(value);
     }
+  }
+
+  void _startAutoPlayback() {
+    if (_isDisposed || !mounted || !widget.isActive || !widget.autoPlay) return;
+    if (videoController.value.isInitialized &&
+        videoController.value.position >= videoController.value.duration &&
+        videoController.value.duration > Duration.zero) {
+      videoController.seekTo(Duration.zero);
+    }
+    _setVolumeIfNeeded();
+    flickManager.flickControlManager?.play();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_isDisposed || !mounted || !widget.isActive || !widget.autoPlay) {
+        return;
+      }
+      flickManager.flickControlManager?.play();
+    });
+    Timer(const Duration(milliseconds: 200), () {
+      if (_isDisposed || !mounted || !widget.isActive || !widget.autoPlay) {
+        return;
+      }
+      if (videoController.value.isInitialized &&
+          !videoController.value.isPlaying) {
+        flickManager.flickControlManager?.play();
+      }
+    });
+  }
+
+  void _startCompletionPolling() {
+    _completionTimer?.cancel();
+    if (widget.onCompleted == null) return;
+    _completionTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
+      if (_isDisposed || !mounted || !widget.isActive) return;
+      final value = videoController.value;
+      if (!value.isInitialized) return;
+      _checkCompleted(value);
+    });
+  }
+
+  void _checkCompleted(VideoPlayerValue value) {
+    if (_didNotifyCompleted || widget.onCompleted == null) return;
+    final duration = value.duration;
+    final nearEnd =
+        duration > Duration.zero &&
+        value.position >= duration - const Duration(milliseconds: 700);
+    final flickEnded = flickManager.flickVideoManager?.isVideoEnded == true;
+    if (!value.isCompleted && !flickEnded && !nearEnd) return;
+    _didNotifyCompleted = true;
+    widget.onCompleted?.call();
   }
 
   void _setVolumeIfNeeded() {
@@ -159,6 +228,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     _isDisposed = true;
     // 移除监听器
     videoController.removeListener(_videoListener);
+    _completionTimer?.cancel();
     _detachPlayback();
     super.dispose();
   }

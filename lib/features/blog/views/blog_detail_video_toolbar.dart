@@ -10,8 +10,15 @@ const double kBlogDetailVideoToolbarProgressOnlyHeight = 37;
 
 double blogDetailVideoToolbarHeight({bool showControlsRow = true}) =>
     showControlsRow
-        ? kBlogDetailVideoToolbarHeight
-        : kBlogDetailVideoToolbarProgressOnlyHeight;
+    ? kBlogDetailVideoToolbarHeight
+    : kBlogDetailVideoToolbarProgressOnlyHeight;
+
+double blogDetailVideoToolbarHeightForSegments({
+  bool showControlsRow = true,
+  int segmentCount = 0,
+}) =>
+    blogDetailVideoToolbarHeight(showControlsRow: showControlsRow) +
+    (segmentCount > 1 && !showControlsRow ? 9 : 0);
 
 /// 仅博客详情页：播放器下方的进度条与播放控制（白色、常显）。
 class BlogDetailVideoToolbar extends StatelessWidget {
@@ -20,6 +27,9 @@ class BlogDetailVideoToolbar extends StatelessWidget {
     this.iconSize = 30,
     this.fontSize = 14,
     this.showControlsRow = true,
+    this.segmentCount = 0,
+    this.segmentIndex = 0,
+    this.onSegmentSelected,
   });
 
   final double iconSize;
@@ -27,6 +37,15 @@ class BlogDetailVideoToolbar extends StatelessWidget {
 
   /// 为 false 时仅显示进度条（窄屏推荐流等场景）。
   final bool showControlsRow;
+
+  /// 分段视频总段数；大于 1 时在工具栏内显示分段进度条。
+  final int segmentCount;
+
+  /// 当前分段下标。
+  final int segmentIndex;
+
+  /// 点击分段进度条时切换到对应分段。
+  final ValueChanged<int>? onSegmentSelected;
 
   static const _controlColor = Colors.white;
 
@@ -70,17 +89,85 @@ class BlogDetailVideoToolbar extends StatelessWidget {
                       fontSize: fontSize,
                     ),
                   ),
-                  FlickTotalDuration(
-                    fontSize: fontSize,
-                    color: _controlColor,
-                  ),
-                  const Spacer(),
+                  FlickTotalDuration(fontSize: fontSize, color: _controlColor),
+                  if (segmentCount > 1)
+                    Expanded(
+                      child: Center(
+                        child: _ToolbarSegmentProgressRow(
+                          count: segmentCount,
+                          selectedIndex: segmentIndex,
+                          onSelected: onSegmentSelected,
+                        ),
+                      ),
+                    )
+                  else
+                    const Spacer(),
                   FlickFullScreenToggle(size: iconSize, color: _controlColor),
                 ],
+              ),
+            ] else if (segmentCount > 1) ...[
+              const SizedBox(height: 6),
+              Center(
+                child: _ToolbarSegmentProgressRow(
+                  count: segmentCount,
+                  selectedIndex: segmentIndex,
+                  onSelected: onSegmentSelected,
+                ),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ToolbarSegmentProgressRow extends StatelessWidget {
+  const _ToolbarSegmentProgressRow({
+    required this.count,
+    required this.selectedIndex,
+    this.onSelected,
+  });
+
+  final int count;
+  final int selectedIndex;
+  final ValueChanged<int>? onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final maxWidth = MediaQuery.sizeOf(context).width - 48;
+    final width = (count * 34.0 + (count - 1) * 5).clamp(
+      64.0,
+      maxWidth.clamp(64.0, 180.0),
+    );
+    return SizedBox(
+      width: width,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(count, (index) {
+          final selected = index == selectedIndex;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: index == count - 1 ? 0 : 5),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(999),
+                onTap: onSelected == null ? null : () => onSelected!(index),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Container(
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? Colors.white
+                          : Colors.white.withValues(alpha: 0.35),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        }),
       ),
     );
   }

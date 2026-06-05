@@ -18,6 +18,8 @@ class VisibilityVideoSlot extends StatefulWidget {
   final String? playerHeroTag;
   final VideoAdPlaybackState? videoAdInitialState;
   final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
+  final VoidCallback? onCompleted;
+  final bool autoPlay;
 
   const VisibilityVideoSlot({
     super.key,
@@ -28,6 +30,8 @@ class VisibilityVideoSlot extends StatefulWidget {
     this.playerHeroTag,
     this.videoAdInitialState,
     this.onVideoAdStateChanged,
+    this.onCompleted,
+    this.autoPlay = false,
   });
 
   @override
@@ -40,6 +44,22 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
 
   Timer? _mountTimer;
   bool _shouldMountPlayer = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _shouldMountPlayer = widget.autoPlay;
+  }
+
+  @override
+  void didUpdateWidget(VisibilityVideoSlot oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!oldWidget.autoPlay && widget.autoPlay && !_shouldMountPlayer) {
+      _mountTimer?.cancel();
+      _mountTimer = null;
+      setState(() => _shouldMountPlayer = true);
+    }
+  }
 
   @override
   void dispose() {
@@ -80,6 +100,8 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
           fallbackAspectRatio: aspectRatio,
           videoAdInitialState: widget.videoAdInitialState,
           onVideoAdStateChanged: widget.onVideoAdStateChanged,
+          onCompleted: widget.onCompleted,
+          autoPlay: widget.autoPlay,
         );
       } else {
         slotChild = VideoLoadingPlaceholder(
