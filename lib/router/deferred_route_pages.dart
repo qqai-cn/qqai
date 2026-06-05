@@ -8,6 +8,7 @@ export '../features/blog/views/blog_img_detail_view.dart';
 export '../features/blog/views/blog_video_detail_view.dart';
 export '../features/chat/views/chat_conversation_settings_page.dart';
 export '../features/chat/views/chat_video_call_page.dart';
+export '../features/feedback/views/feedback_page.dart';
 export '../features/my/views/footprint_page.dart';
 export '../features/my/views/collection_blog_list_page.dart';
 export '../features/member_center/views/member_center_page.dart';

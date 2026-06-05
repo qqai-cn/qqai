@@ -86,6 +86,7 @@ class ApiConstant {
   static const String MEMBER_ADDRESS_CREATE = '/app-api/member/address/create';
   static const String MEMBER_ADDRESS_UPDATE = '/app-api/member/address/update';
   static const String MEMBER_ADDRESS_DELETE = '/app-api/member/address/delete';
+  static const String MEMBER_FEEDBACK_CREATE = '/app-api/member/feedback/create';
   static const String SYSTEM_AREA_TREE = '/app-api/system/area/tree';
 
   /// 个人中心 / 我的（QQAI blog profile）

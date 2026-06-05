@@ -134,6 +134,14 @@ GoRouter appRouter(Ref ref) {
         ),
       ),
       GoRoute(
+        path: Routes.feedback,
+        name: 'feedback',
+        builder: (context, state) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.FeedbackPage(),
+        ),
+      ),
+      GoRoute(
         path: Routes.memberCenter,
         name: 'memberCenter',
         builder: (context, state) => AppDeferredWidget(

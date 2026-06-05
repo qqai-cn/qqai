@@ -14,6 +14,7 @@ class Routes {
   static const String care = "/cares";
   static const String collect = "/collects";
   static const String footprint = "/footprint";
+  static const String feedback = "/feedback";
   static const String memberCenter = "/member_center";
   static const String memberCenterDetail = "/member_center/detail";
   static const String watchVideo = "/watchs";

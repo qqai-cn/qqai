@@ -158,6 +158,19 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
           ),
           ListTile(
             leading: SvgPicture.asset(
+              imgPath + 'fankui.svg',
+              width: 35,
+              height: 35,
+              fit: BoxFit.fill,
+            ),
+            title: const Text('问题反馈'),
+            onTap: () {
+              Navigator.of(context).pop();
+              context.push(Routes.feedback);
+            },
+          ),
+          ListTile(
+            leading: SvgPicture.asset(
               imgPath + 'version.svg',
               width: 35,
               height: 35,
