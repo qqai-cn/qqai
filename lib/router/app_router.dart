@@ -280,7 +280,7 @@ GoRouter appRouter(Ref ref) {
           libraryLoader: route_pages.loadLibrary,
           builder: () => Scaffold(
             appBar: AppBar(title: const Text('商品')),
-            body: route_pages.GoodsView(),
+            body: route_pages.GoodsView(reserveHomeTabTopInset: false),
           ),
         ),
       ),

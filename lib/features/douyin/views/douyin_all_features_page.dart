@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../router/app_routes.dart';
@@ -9,6 +8,8 @@ import 'package:qqai/config/theme/app_typography.dart';
 /// 全部功能：宫格跳转站内能力
 class DouyinAllFeaturesPage extends StatelessWidget {
   const DouyinAllFeaturesPage({super.key});
+
+  static const _contentMaxWidth = 640.0;
 
   @override
   Widget build(BuildContext context) {
@@ -72,31 +73,32 @@ class DouyinAllFeaturesPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         title: Text(
           '全部功能',
-          style: context.typo.sectionTitle.copyWith(
-            fontSize: 17.sp,
-            fontWeight: FontWeight.w600,
-          ),
+          style: context.typo.appBarTitle.copyWith(color: DouyinTheme.text),
         ),
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(16.w, 8.h, 16.w, 24.h),
-        children: [
-          for (final g in groups) ...[
-            Padding(
-              padding: EdgeInsets.only(bottom: 8.h),
-              child: Text(
-                g.title,
-                style: context.typo.caption.copyWith(
-                  color: DouyinTheme.sub,
-                  fontSize: 13.sp,
-                  fontWeight: FontWeight.w500,
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: _contentMaxWidth),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            children: [
+              for (final g in groups) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    g.title,
+                    style: context.typo.caption.copyWith(
+                      color: DouyinTheme.sub,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            _FeatureGrid(items: g.items),
-            SizedBox(height: 20.h),
-          ],
-        ],
+                _FeatureGrid(items: g.items),
+                const SizedBox(height: 20),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -122,42 +124,57 @@ class _FeatureGrid extends StatelessWidget {
 
   final List<_FeatureItem> items;
 
+  static const _minCellWidth = 84.0;
+  static const _maxColumns = 5;
+
+  int _columnsForWidth(double width) {
+    return (width / _minCellWidth).floor().clamp(3, _maxColumns);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 4,
-      mainAxisSpacing: 12.h,
-      crossAxisSpacing: 8.w,
-      childAspectRatio: 0.85,
-      children: [
-        for (final item in items)
-          Material(
-            color: DouyinTheme.card,
-            borderRadius: BorderRadius.circular(12.r),
-            child: InkWell(
-              onTap: () => context.push(item.route),
-              borderRadius: BorderRadius.circular(12.r),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(item.icon, color: DouyinTheme.text, size: 26.sp),
-                  SizedBox(height: 8.h),
-                  Text(
-                    item.label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.typo.caption.copyWith(
-                      color: DouyinTheme.sub,
-                      fontSize: 11.sp,
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = _columnsForWidth(constraints.maxWidth);
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: cols,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 8,
+          childAspectRatio: 0.92,
+          children: [
+            for (final item in items)
+              Material(
+                color: DouyinTheme.card,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () => context.push(item.route),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(item.icon, color: DouyinTheme.text, size: 26),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Text(
+                          item.label,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: context.typo.label.copyWith(
+                            color: DouyinTheme.sub,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-      ],
+          ],
+        );
+      },
     );
   }
 }

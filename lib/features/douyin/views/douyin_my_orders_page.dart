@@ -48,10 +48,7 @@ class _DouyinMyOrdersPageState extends ConsumerState<DouyinMyOrdersPage>
         scrolledUnderElevation: 0,
         title: Text(
           '我的订单',
-          style: context.typo.sectionTitle.copyWith(
-            fontSize: 17.sp,
-            fontWeight: FontWeight.w600,
-          ),
+          style: context.typo.appBarTitle.copyWith(color: DouyinTheme.text),
         ),
         actions: [
           IconButton(
@@ -65,6 +62,11 @@ class _DouyinMyOrdersPageState extends ConsumerState<DouyinMyOrdersPage>
           indicatorColor: DouyinTheme.accent,
           labelColor: DouyinTheme.text,
           unselectedLabelColor: DouyinTheme.sub,
+          labelStyle: context.typo.tab.copyWith(color: DouyinTheme.text),
+          unselectedLabelStyle: context.typo.tab.copyWith(
+            color: DouyinTheme.sub,
+            fontWeight: FontWeight.w400,
+          ),
           tabs: [for (final t in _tabs) Tab(text: t.label)],
         ),
       ),
@@ -195,13 +197,12 @@ class _OrderListTabState extends ConsumerState<_OrderListTab>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.receipt_long_outlined,
-                  size: 64.sp, color: DouyinTheme.sub),
+                  size: 64, color: DouyinTheme.sub),
               SizedBox(height: 16.h),
               Text(
                 '暂无${widget.tab.label}订单',
                 style: context.typo.bodyStrong.copyWith(
                   color: DouyinTheme.text,
-                  fontSize: 16.sp,
                 ),
               ),
               SizedBox(height: 8.h),
@@ -210,7 +211,6 @@ class _OrderListTabState extends ConsumerState<_OrderListTab>
                 textAlign: TextAlign.center,
                 style: context.typo.caption.copyWith(
                   color: DouyinTheme.sub,
-                  fontSize: 13.sp,
                 ),
               ),
               SizedBox(height: 24.h),
@@ -225,7 +225,10 @@ class _OrderListTabState extends ConsumerState<_OrderListTab>
                   ),
                 ),
                 onPressed: () => context.push(Routes.goodsPageUrl),
-                child: const Text('去逛逛'),
+                child: Text(
+                  '去逛逛',
+                  style: context.typo.button.copyWith(color: Colors.white),
+                ),
               ),
             ],
           ),
@@ -294,7 +297,6 @@ class _OrderCard extends StatelessWidget {
                   order.statusLabel,
                   style: context.typo.bodyStrong.copyWith(
                     color: DouyinTheme.accent,
-                    fontSize: 13.sp,
                   ),
                 ),
               ],
@@ -331,7 +333,6 @@ class _OrderCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: context.typo.body.copyWith(
                           color: DouyinTheme.text,
-                          fontSize: 14.sp,
                         ),
                       ),
                       SizedBox(height: 6.h),
@@ -339,7 +340,6 @@ class _OrderCard extends StatelessWidget {
                         _formatTime(order.createTime),
                         style: context.typo.caption.copyWith(
                           color: DouyinTheme.sub,
-                          fontSize: 12.sp,
                         ),
                       ),
                     ],
@@ -357,9 +357,8 @@ class _OrderCard extends StatelessWidget {
                 ),
                 Text(
                   '¥${order.payPriceYuan.toStringAsFixed(2)}',
-                  style: context.typo.bodyStrong.copyWith(
+                  style: context.typo.price.copyWith(
                     color: DouyinTheme.text,
-                    fontSize: 16.sp,
                   ),
                 ),
               ],

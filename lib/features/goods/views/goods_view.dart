@@ -13,8 +13,14 @@ import '../data/repos/goods_repo.dart';
 import '../providers/goods_mall_tab_reselect_provider.dart';
 import '../widgets/coupon_claim_entry.dart';
 
+bool _isWideMallLayout(BuildContext context) =>
+    MediaQuery.sizeOf(context).width >= 800;
+
 class GoodsView extends ConsumerStatefulWidget {
-  const GoodsView({super.key});
+  const GoodsView({super.key, this.reserveHomeTabTopInset = true});
+
+  /// 首页 Tab 内嵌时为透明 AppBar 预留顶部空隙；独立路由页应设为 false。
+  final bool reserveHomeTabTopInset;
 
   @override
   ConsumerState<GoodsView> createState() => _GoodsViewState();
@@ -164,7 +170,10 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
       _onMallTabReselect();
     });
 
-    final topInset = InPageSearchBar.homeTabTopInset(context);
+    final topInset = widget.reserveHomeTabTopInset
+        ? InPageSearchBar.homeTabTopInset(context)
+        : 8.0;
+    final refreshBadgeTop = widget.reserveHomeTabTopInset ? kToolbarHeight : 8.0;
 
     return MediaQuery.removePadding(
       context: context,
@@ -195,13 +204,13 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
                         ),
                       ),
                       const SliverToBoxAdapter(child: _MallHeader()),
-                      ..._buildBodySlivers(),
+                      ..._buildBodySlivers(context),
                       const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
                     ],
                   ),
                 ),
                 Positioned(
-                  top: kToolbarHeight,
+                  top: refreshBadgeTop,
                   left: 0,
                   right: 0,
                   child: IgnorePointer(
@@ -221,7 +230,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
     );
   }
 
-  List<Widget> _buildBodySlivers() {
+  List<Widget> _buildBodySlivers(BuildContext context) {
     if (_loading && _items.isEmpty) {
       return const [
         SliverFillRemaining(
@@ -246,6 +255,33 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
         ),
       ];
     }
+
+    void onItemTap(MallProduct item) {
+      final id = item.id;
+      if (id != null) {
+        context.pushGoodsDetail('$id');
+      }
+    }
+
+    if (!_isWideMallLayout(context)) {
+      return [
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          sliver: SliverList.separated(
+            itemCount: _items.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              return _MallHorizontalCard(
+                item: _items[index],
+                onTap: () => onItemTap(_items[index]),
+              );
+            },
+          ),
+        ),
+        if (_loadingMore) _loadingMoreSliver(),
+      ];
+    }
+
     return [
       SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -261,26 +297,24 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
                 return _GoodsCard(
                   item: item,
                   index: index,
-                  onTap: () {
-                    final id = item.id;
-                    if (id != null) {
-                      context.pushGoodsDetail('$id');
-                    }
-                  },
+                  onTap: () => onItemTap(item),
                 );
               },
             );
           },
         ),
       ),
-      if (_loadingMore)
-        const SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.all(18),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        ),
+      if (_loadingMore) _loadingMoreSliver(),
     ];
+  }
+
+  Widget _loadingMoreSliver() {
+    return const SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.all(18),
+        child: Center(child: CircularProgressIndicator()),
+      ),
+    );
   }
 }
 
@@ -343,6 +377,110 @@ class _MallHeader extends StatelessWidget {
           ),
           const CouponClaimEntry(),
         ],
+      ),
+    );
+  }
+}
+
+/// 窄屏横向列表卡片，布局对齐「我的 - 团购带货」。
+class _MallHorizontalCard extends StatelessWidget {
+  const _MallHorizontalCard({required this.item, required this.onTap});
+
+  final MallProduct item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final coverUrl = resolveMediaUrl(item.coverUrl);
+    final name = item.name?.trim().isNotEmpty == true
+        ? item.name!.trim()
+        : '商品';
+    final sales = item.salesCount ?? 0;
+
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFECEEF2)),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: SizedBox(
+                    width: 88,
+                    height: 88,
+                    child: coverUrl == null
+                        ? const _GoodsImageFallback()
+                        : CachedNetworkImage(
+                            imageUrl: coverUrl,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, _, _) =>
+                                const _GoodsImageFallback(),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF1F2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          sales > 0 ? '$sales 已售' : '精选',
+                          style: const TextStyle(
+                            color: Color(0xFFE11D48),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        name,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFF202124),
+                          fontSize: 15,
+                          height: 1.25,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '¥${item.priceYuan.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          color: Color(0xFFE11D48),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: Colors.grey.shade500),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
