@@ -17,6 +17,22 @@ abstract class IGoodsRepo {
     String? keyword,
   });
 
+  /// 我发布的商品分页（含上架与下架，需登录）。
+  Future<MallProductPageData> getMyProductsPage(
+    int pageNo, {
+    int pageSize = 20,
+  });
+
+  /// 他人店铺在售商品分页。
+  Future<MallProductPageData> getUserProductsPage(
+    int userId,
+    int pageNo, {
+    int pageSize = 20,
+  });
+
+  /// 更新我发布商品的上架状态（0 下架，1 上架，需登录）。
+  Future<void> updateMyProductStatus(int spuId, int status);
+
   Future<MallProduct?> getMallProduct(int id);
 
   /// 记录商品浏览（足迹，需登录）。
@@ -86,6 +102,64 @@ class GoodsRepo implements IGoodsRepo {
       return const MallProductPageData(list: [], total: 0);
     }
     return MallProductPageData.fromJson(inner);
+  }
+
+  @override
+  Future<MallProductPageData> getMyProductsPage(
+    int pageNo, {
+    int pageSize = 20,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCT_MY_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '我的商品接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const MallProductPageData(list: [], total: 0);
+    }
+    return MallProductPageData.fromJson(inner);
+  }
+
+  @override
+  Future<MallProductPageData> getUserProductsPage(
+    int userId,
+    int pageNo, {
+    int pageSize = 20,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.mallProductUserPagePath(userId),
+      RequestType.get,
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '店铺商品接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const MallProductPageData(list: [], total: 0);
+    }
+    return MallProductPageData.fromJson(inner);
+  }
+
+  @override
+  Future<void> updateMyProductStatus(int spuId, int status) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.MALL_PRODUCT_UPDATE_STATUS,
+      RequestType.put,
+      data: {'id': spuId, 'status': status},
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      _ensureEnvelope(data);
+    }
   }
 
   @override

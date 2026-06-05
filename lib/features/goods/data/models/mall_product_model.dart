@@ -13,6 +13,7 @@ class MallProduct {
     this.marketPrice,
     this.stock,
     this.salesCount,
+    this.status,
     this.deliveryTypes = const [],
     this.skus = const [],
   });
@@ -30,6 +31,7 @@ class MallProduct {
   final int? marketPrice;
   final int? stock;
   final int? salesCount;
+  final int? status;
   final List<int> deliveryTypes;
   final List<MallProductSku> skus;
 
@@ -56,6 +58,7 @@ class MallProduct {
       marketPrice: (json['marketPrice'] as num?)?.toInt(),
       stock: (json['stock'] as num?)?.toInt(),
       salesCount: (json['salesCount'] as num?)?.toInt(),
+      status: (json['status'] as num?)?.toInt(),
       deliveryTypes: (json['deliveryTypes'] as List<dynamic>? ?? const [])
           .whereType<num>()
           .map((e) => e.toInt())

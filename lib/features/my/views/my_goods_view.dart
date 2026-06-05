@@ -4,14 +4,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
 
-import '../data/models/profile_models.dart';
-import '../data/repos/profile_repo.dart';
-import '../providers/my_shop_profile.dart';
+import '../../goods/data/models/mall_product_model.dart';
+import '../../goods/data/repos/goods_repo.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/media_url.dart';
 
-/// 「店铺」Tab：我的商品分页，支持删除与新建。
+/// 「店铺」Tab：我发布的商城商品，支持上架/下架。
 class MyGoodsView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex;
@@ -34,12 +35,13 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
   static const String _placeholderCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
 
-  List<BlogShopProductResp> _items = [];
+  List<MallProduct> _items = [];
   bool _loading = false;
   bool _loadingMore = false;
   bool _hasMore = true;
   int _page = 1;
   Object? _error;
+  final Set<int> _statusUpdatingIds = {};
 
   @override
   void initState() {
@@ -89,16 +91,16 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
       _error = null;
     });
     try {
-      final repo = ref.read(profileRepoProvider);
+      final repo = ref.read(goodsRepoProvider);
       final userId = widget.userId;
       final data = userId != null
-          ? await repo.getUserShopProductsPage(userId, 1, pageSize: _pageSize)
-          : await repo.getMyShopProductsPage(1, pageSize: _pageSize);
+          ? await repo.getUserProductsPage(userId, 1, pageSize: _pageSize)
+          : await repo.getMyProductsPage(1, pageSize: _pageSize);
       if (!mounted) return;
       setState(() {
-        _items = List.from(data.list ?? []);
+        _items = List.from(data.list);
         _page = 1;
-        _hasMore = (data.list?.length ?? 0) >= _pageSize;
+        _hasMore = data.list.length >= _pageSize;
         _loading = false;
       });
     } catch (e) {
@@ -114,13 +116,13 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
     if (_loadingMore || !_hasMore) return;
     setState(() => _loadingMore = true);
     try {
-      final repo = ref.read(profileRepoProvider);
+      final repo = ref.read(goodsRepoProvider);
       final next = _page + 1;
       final userId = widget.userId;
       final data = userId != null
-          ? await repo.getUserShopProductsPage(userId, next, pageSize: _pageSize)
-          : await repo.getMyShopProductsPage(next, pageSize: _pageSize);
-      final add = data.list ?? [];
+          ? await repo.getUserProductsPage(userId, next, pageSize: _pageSize)
+          : await repo.getMyProductsPage(next, pageSize: _pageSize);
+      final add = data.list;
       if (!mounted) return;
       setState(() {
         _items = [..._items, ...add];
@@ -134,152 +136,70 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
     }
   }
 
-  Future<void> _confirmDelete(BlogShopProductResp p) async {
-    final id = p.id;
-    if (id == null) return;
+  Future<void> _toggleShelfStatus(MallProduct product) async {
+    final id = product.id;
+    if (id == null || _statusUpdatingIds.contains(id)) return;
+    final onShelf = product.status == 1;
+    final nextStatus = onShelf ? 0 : 1;
+    final actionLabel = onShelf ? '下架' : '上架';
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('删除商品'),
-        content: Text('确定删除「${p.name ?? ''}」吗？'),
+        title: Text('$actionLabel商品'),
+        content: Text('确定${actionLabel}「${product.name ?? ''}」吗？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('删除')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: Text(actionLabel)),
         ],
       ),
     );
     if (ok != true || !mounted) return;
+    setState(() => _statusUpdatingIds.add(id));
     try {
-      await ref.read(profileRepoProvider).deleteShopProduct(id);
-      ref.invalidate(myShopProfileProvider);
+      await ref.read(goodsRepoProvider).updateMyProductStatus(id, nextStatus);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('已删除')));
-      await _loadFirstPage();
+      setState(() {
+        _statusUpdatingIds.remove(id);
+        final index = _items.indexWhere((item) => item.id == id);
+        if (index >= 0) {
+          final old = _items[index];
+          _items[index] = MallProduct(
+            id: old.id,
+            name: old.name,
+            introduction: old.introduction,
+            description: old.description,
+            categoryId: old.categoryId,
+            serviceMemberUserId: old.serviceMemberUserId,
+            picUrl: old.picUrl,
+            sliderPicUrls: old.sliderPicUrls,
+            specType: old.specType,
+            price: old.price,
+            marketPrice: old.marketPrice,
+            stock: old.stock,
+            salesCount: old.salesCount,
+            status: nextStatus,
+            deliveryTypes: old.deliveryTypes,
+            skus: old.skus,
+          );
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('已$actionLabel')),
+      );
     } catch (e) {
       if (!mounted) return;
+      setState(() => _statusUpdatingIds.remove(id));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('删除失败: $e')),
+        SnackBar(content: Text('$actionLabel失败: $e')),
       );
     }
   }
 
-  Future<void> _openCreateDialog() async {
-    final nameCtrl = TextEditingController();
-    final priceCtrl = TextEditingController();
-    final coverCtrl = TextEditingController();
-    final linkCtrl = TextEditingController();
-    try {
-      var status = 1;
-      final submitted = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setLocal) => AlertDialog(
-            title: const Text('新建商品'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    controller: nameCtrl,
-                    decoration: const InputDecoration(labelText: '名称 *'),
-                  ),
-                  TextField(
-                    controller: priceCtrl,
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: '售价（元）*',
-                      hintText: '如 9.9',
-                    ),
-                  ),
-                  TextField(
-                    controller: coverCtrl,
-                    decoration: const InputDecoration(labelText: '封面 URL（可选）'),
-                  ),
-                  TextField(
-                    controller: linkCtrl,
-                    decoration: const InputDecoration(labelText: '外链（可选）'),
-                  ),
-                  Row(
-                    children: [
-                      const Text('上架'),
-                      Switch(
-                        value: status == 1,
-                        onChanged: (v) => setLocal(() => status = v ? 1 : 0),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('取消'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('创建'),
-              ),
-            ],
-          ),
-        ),
-      );
-      if (submitted != true || !mounted) return;
-      final name = nameCtrl.text.trim();
-      final yuan = double.tryParse(priceCtrl.text.trim());
-      if (name.isEmpty || yuan == null || yuan < 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('请填写名称和有效价格')),
-        );
-        return;
-      }
-      final fen = (yuan * 100).round();
-      try {
-        await ref.read(profileRepoProvider).createShopProduct(
-              BlogShopProductSaveReq(
-                name: name,
-                price: fen,
-                status: status,
-                coverUrl: coverCtrl.text.trim().isEmpty
-                    ? null
-                    : coverCtrl.text.trim(),
-                externalUrl: linkCtrl.text.trim().isEmpty
-                    ? null
-                    : linkCtrl.text.trim(),
-              ),
-            );
-        ref.invalidate(myShopProfileProvider);
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('已创建')),
-        );
-        await _loadFirstPage();
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建失败: $e')),
-        );
-      }
-    } finally {
-      nameCtrl.dispose();
-      priceCtrl.dispose();
-      coverCtrl.dispose();
-      linkCtrl.dispose();
-    }
-  }
-
-  Future<void> _openProduct(BlogShopProductResp p) async {
-    final url = p.externalUrl?.trim();
-    if (url == null || url.isEmpty) return;
-    final uri = Uri.tryParse(url);
-    if (uri == null) return;
-    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
-    if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('无法打开链接')),
-      );
-    }
+  void _openProduct(MallProduct product) {
+    final id = product.id;
+    if (id == null) return;
+    if (!_isSelf && product.status != 1) return;
+    context.push('${Routes.goodsDetailPageUrl}/$id');
   }
 
   @override
@@ -336,7 +256,7 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
             hasScrollBody: false,
             child: Center(
               child: Text(
-                _isSelf ? '暂无商品，点击右下角添加' : '暂无商品',
+                _isSelf ? '暂无发布的商品' : '暂无商品',
                 style: context.typo.body,
               ),
             ),
@@ -351,127 +271,140 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             slivers: [
-            SliverOverlapInjector(
-              handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            ),
-            SliverGrid(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isWideScreen ? 4 : 3,
-                crossAxisSpacing: 2,
-                mainAxisSpacing: 2,
-                childAspectRatio: 2 / 3,
+              SliverOverlapInjector(
+                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
               ),
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final p = _items[index];
-                  final cover = (p.coverUrl != null && p.coverUrl!.isNotEmpty)
-                      ? p.coverUrl!
-                      : _placeholderCover;
-                  final yuan = (p.price ?? 0) / 100.0;
-                  final onShelf = p.status == 1;
-                  return Material(
-                    color: Colors.white,
-                    child: InkWell(
-                      onTap: () => _openProduct(p),
-                      onLongPress: _isSelf ? () => _confirmDelete(p) : null,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                CachedNetworkImage(
-                                  imageUrl: cover,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (_, __, ___) => Image.network(
-                                    _placeholderCover,
+              SliverGrid(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isWideScreen ? 4 : 3,
+                  crossAxisSpacing: 2,
+                  mainAxisSpacing: 2,
+                  childAspectRatio: 2 / 3,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final product = _items[index];
+                    final cover = resolveMediaUrl(product.coverUrl) ??
+                        _placeholderCover;
+                    final yuan = product.priceYuan;
+                    final onShelf = product.status == 1;
+                    final updating = product.id != null &&
+                        _statusUpdatingIds.contains(product.id);
+                    return Material(
+                      color: Colors.white,
+                      child: InkWell(
+                        onTap: () => _openProduct(product),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: cover,
                                     fit: BoxFit.cover,
-                                  ),
-                                ),
-                                if (_isSelf)
-                                  Positioned(
-                                    top: 6,
-                                    right: 6,
-                                    child: IconButton(
-                                      style: IconButton.styleFrom(
-                                        backgroundColor: Colors.black45,
-                                        foregroundColor: Colors.white,
-                                      ),
-                                      icon: const Icon(Icons.delete_outline, size: 20),
-                                      onPressed: () => _confirmDelete(p),
+                                    errorWidget: (_, __, ___) => Image.network(
+                                      _placeholderCover,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 8.w, top: 6, right: 8),
-                            child: Text(
-                              p.name ?? '',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: context.typo.cardTitle.copyWith(
-                                fontWeight: FontWeight.normal,
+                                  if (!onShelf)
+                                    Container(
+                                      color: Colors.black26,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        '已下架',
+                                        style: context.typo.bodyStrong.copyWith(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                ],
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 8.w, top: 4, bottom: 6),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '¥${yuan.toStringAsFixed(yuan == yuan.roundToDouble() ? 0 : 2)}',
-                                  style: context.typo.bodyStrong.copyWith(
-                                    color: Colors.red,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            Padding(
+                              padding: EdgeInsets.only(left: 8.w, top: 6, right: 8),
+                              child: Text(
+                                product.name ?? '',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.typo.cardTitle.copyWith(
+                                  fontWeight: FontWeight.normal,
                                 ),
-                                const Spacer(),
-                                Text(
-                                  onShelf ? '上架' : '下架',
-                                  style: context.typo.caption.copyWith(
-                                    color: onShelf ? Colors.green : Colors.grey,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding: EdgeInsets.only(left: 8.w, top: 4, bottom: 6, right: 8),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    '¥${yuan.toStringAsFixed(yuan == yuan.roundToDouble() ? 0 : 2)}',
+                                    style: context.typo.bodyStrong.copyWith(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  if (_isSelf)
+                                    TextButton(
+                                      onPressed: updating
+                                          ? null
+                                          : () => _toggleShelfStatus(product),
+                                      style: TextButton.styleFrom(
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        padding: EdgeInsets.zero,
+                                      ),
+                                      child: updating
+                                          ? SizedBox(
+                                              width: 14,
+                                              height: 14,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Theme.of(context).colorScheme.primary,
+                                              ),
+                                            )
+                                          : Text(
+                                              onShelf ? '下架' : '上架',
+                                              style: context.typo.caption.copyWith(
+                                                color: onShelf
+                                                    ? Colors.orange
+                                                    : Colors.green,
+                                              ),
+                                            ),
+                                    )
+                                  else
+                                    Text(
+                                      onShelf ? '在售' : '下架',
+                                      style: context.typo.caption.copyWith(
+                                        color: onShelf ? Colors.green : Colors.grey,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                },
-                childCount: _items.length,
-              ),
-            ),
-            if (_loadingMore)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                    );
+                  },
+                  childCount: _items.length,
                 ),
               ),
+              if (_loadingMore)
+                const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  ),
+                ),
             ],
           ),
         ),
       );
     }
 
-    if (!_isSelf) return body;
-
-    return Stack(
-      children: [
-        body,
-        Positioned(
-          right: 16,
-          bottom: 24,
-          child: FloatingActionButton(
-            onPressed: _openCreateDialog,
-            child: const Icon(Icons.add),
-          ),
-        ),
-      ],
-    );
+    return body;
   }
 }

@@ -105,6 +105,11 @@ class ApiConstant {
   static const String PROFILE_MY_SHOP_PRODUCTS_PAGE =
       '/app-api/blog/qqai/profile/my/shop/products/page';
   static const String MALL_PRODUCTS_PAGE = '/app-api/product/spu/page';
+  static const String MALL_PRODUCT_MY_PAGE = '/app-api/product/spu/my/page';
+  static String mallProductUserPagePath(int userId) =>
+      '/app-api/product/spu/user/$userId/page';
+  static const String MALL_PRODUCT_UPDATE_STATUS =
+      '/app-api/product/spu/update-status';
   static const String MALL_PRODUCT_DETAIL = '/app-api/product/spu/get-detail';
   static const String PRODUCT_COMMENT_PAGE = '/app-api/product/comment/page';
   static String productBrowsePath(int spuId) =>
