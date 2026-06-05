@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,7 @@ import 'package:qqai/features/blog/views/blog_detail_video_toolbar.dart';
 
 import 'package:qqai/features/blog/data/blog_browse_record.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
+import 'package:video_player/video_player.dart';
 import '../../comment/providers/comment_providers.dart';
 import 'blog_detail_comment_side_panel.dart';
 
@@ -24,26 +27,61 @@ class BlogImgDetailView extends ConsumerStatefulWidget {
   ConsumerState<BlogImgDetailView> createState() => _BlogImgDetailView();
 }
 
-class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
+class _BlogImgDetailView extends ConsumerState<BlogImgDetailView>
+    with WidgetsBindingObserver {
   final CarouselSliderController carouselSliderController =
       CarouselSliderController();
   int _current = 0;
   late final BlogDetailCommentSidePanelLifecycle _commentSidePanel;
   bool _wideCommentPanelClosed = false;
+  VideoPlayerController? _backgroundMusicController;
+  String? _backgroundMusicUrl;
+  bool _resumeBackgroundMusicOnForeground = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _commentSidePanel = BlogDetailCommentSidePanelLifecycle(
       ref.read(commentProvider.notifier),
     );
     _commentSidePanel.bind();
     recordBlogBrowseSilently(ref, widget.blogItem?.id);
+    unawaited(_syncBackgroundMusic(widget.blogItem));
+  }
+
+  @override
+  void didUpdateWidget(BlogImgDetailView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.blogItem != widget.blogItem) {
+      unawaited(_syncBackgroundMusic(widget.blogItem));
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final controller = _backgroundMusicController;
+    if (controller == null) return;
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.detached ||
+        state == AppLifecycleState.hidden) {
+      _resumeBackgroundMusicOnForeground = controller.value.isPlaying;
+      unawaited(controller.pause());
+      return;
+    }
+    if (state == AppLifecycleState.resumed &&
+        _resumeBackgroundMusicOnForeground) {
+      _resumeBackgroundMusicOnForeground = false;
+      unawaited(controller.play());
+    }
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _commentSidePanel.unbind();
+    unawaited(_disposeBackgroundMusic());
     super.dispose();
   }
 
@@ -161,5 +199,53 @@ class _BlogImgDetailView extends ConsumerState<BlogImgDetailView> {
         ),
       ],
     );
+  }
+
+  Future<void> _syncBackgroundMusic(BlogItem? blog) async {
+    final url = _imageBackgroundMusicUrl(blog);
+    if (url == _backgroundMusicUrl) return;
+
+    await _disposeBackgroundMusic();
+    _backgroundMusicUrl = url;
+    if (url == null) return;
+
+    final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+    _backgroundMusicController = controller;
+    try {
+      await controller.initialize();
+      await controller.setLooping(true);
+      if (!mounted || _backgroundMusicController != controller) {
+        await controller.dispose();
+        return;
+      }
+      await controller.play();
+    } catch (_) {
+      if (_backgroundMusicController == controller) {
+        _backgroundMusicController = null;
+        _backgroundMusicUrl = null;
+      }
+      await controller.dispose();
+    }
+  }
+
+  Future<void> _disposeBackgroundMusic() async {
+    final controller = _backgroundMusicController;
+    _backgroundMusicController = null;
+    _backgroundMusicUrl = null;
+    _resumeBackgroundMusicOnForeground = false;
+    if (controller == null) return;
+    await controller.pause();
+    await controller.dispose();
+  }
+
+  String? _imageBackgroundMusicUrl(BlogItem? blog) {
+    if (blog == null || blog.blogType != 1 || blog.soundMode != 2) {
+      return null;
+    }
+    final url = blog.backgroundMusicUrl?.trim();
+    if (url == null || url.isEmpty) {
+      return null;
+    }
+    return url;
   }
 }
