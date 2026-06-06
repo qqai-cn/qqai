@@ -1,10 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
+import '../../components/in_page_search_bar.dart';
 import '../../components/tool_item.dart';
 import '../../router/app_routes.dart';
 import '../data/models/tool_item_bean.dart';
@@ -19,9 +21,6 @@ class ToolPage extends StatefulWidget {
 class _ToolPage extends State<ToolPage> {
   List<ToolItemBean> showToolItemBeans = [];
   List<ToolItemBean> allToolItemBeans = [];
-
-  int colCount = 2;
-  double aspectRatio = 2;
 
   @override
   void initState() {
@@ -152,89 +151,65 @@ class _ToolPage extends State<ToolPage> {
     showToolItemBeans = allToolItemBeans;
   }
 
+  void _onSearchQuery(String query) {
+    setState(() {
+      showToolItemBeans = query.isEmpty
+          ? allToolItemBeans
+          : filter(allToolItemBeans, query);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    setState(() {
-      colCount = (1.sw / 300).truncate();
-      aspectRatio = (1.sw / colCount / 50).toDouble();
-    });
+    final topInset = InPageSearchBar.homeTabTopInset(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Container(
-          width: 0.8.sw,
-          height: 40,
-          margin: EdgeInsets.only(top: 10.0, bottom: 10.0, right: 10.w),
-          alignment: Alignment.centerLeft,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            color: AppActionColors.surface(context),
-            border: Border.all(color: GoodsPageStyle.border(context)),
-          ),
-          child: TextField(
-            style: TextStyle(color: AppActionColors.strong(context)),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: '快速搜索',
-              hintStyle: TextStyle(color: AppActionColors.subtle(context)),
-              prefixIcon: Icon(
-                Icons.search,
-                color: AppActionColors.subtle(context),
-              ),
-            ),
-            onChanged: (t) {
-              if (t.isNotEmpty) {
-                setState(() {
-                  showToolItemBeans = filter(allToolItemBeans, t);
-                });
-              } else {
-                setState(() {
-                  showToolItemBeans = allToolItemBeans;
-                });
-              }
-            },
-          ),
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      child: ColoredBox(
+        color: GoodsPageStyle.pageBg(context),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final colCount = math.max(1, (constraints.maxWidth / 300).truncate());
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: InPageSearchBar(
+                    height: topInset,
+                    hintText: '快速搜索',
+                    onQueryChanged: _onSearchQuery,
+                  ),
+                ),
+                SliverMasonryGrid.count(
+                  crossAxisCount: colCount,
+                  mainAxisSpacing: 1.w,
+                  crossAxisSpacing: 1.w,
+                  childCount: showToolItemBeans.length,
+                  itemBuilder: (context, index) {
+                    return InkWell(
+                      onTap: () {
+                        context.push(showToolItemBeans[index].clickUrl);
+                      },
+                      child: SizedBox(
+                        height: 122,
+                        child: ToolItem(showToolItemBeans[index]),
+                      ),
+                    );
+                  },
+                ),
+                const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+              ],
+            );
+          },
         ),
-      ),
-      backgroundColor: GoodsPageStyle.pageBg(context),
-      body: MasonryGridView.count(
-        crossAxisCount: colCount,
-        mainAxisSpacing: 1.w,
-        crossAxisSpacing: 1.w,
-        itemCount: showToolItemBeans.length,
-        itemBuilder: (context, index) {
-          return InkWell(
-            child: SizedBox(
-              height: 122,
-              child: ToolItem(showToolItemBeans[index]),
-            ),
-            // onHover: (a) {},
-            onTap: () {
-              context.push(showToolItemBeans[index].clickUrl);
-            },
-          );
-        },
       ),
     );
   }
 
-  int getColCount() {
-    double len = MediaQuery.of(context).size.width;
-    int count = (len / 300).truncate();
-    return count;
-  }
-
   List<ToolItemBean> filter(List<ToolItemBean> items, String name) {
-    List<ToolItemBean> fil = [];
-    for (var value in items) {
-      if (value.indexLetter.contains(name)) {
-        fil.add(value);
-      }
-    }
-    return fil;
+    final keyword = name.toLowerCase();
+    return items
+        .where((value) => value.indexLetter.toLowerCase().contains(keyword))
+        .toList();
   }
 }

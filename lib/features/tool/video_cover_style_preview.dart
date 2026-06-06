@@ -4,7 +4,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:get_thumbnail_video/index.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 import 'video_cover_sampling.dart';
 import 'video_cover_thumbnail.dart';
@@ -122,12 +124,13 @@ Widget _coverThumbSlot(
 ) {
   if (image != null) return image;
   return ColoredBox(
-    color: Colors.blueAccent,
-    child: IconButton(
-      onPressed: () {},
-      icon: Text(
+    color: GoodsPageStyle.imageBg(context),
+    child: Center(
+      child: Text(
         '添加到此$label',
-        style: context.typo.body.copyWith(color: Colors.white),
+        style: context.typo.body.copyWith(
+          color: GoodsPageStyle.sub(context),
+        ),
       ),
     ),
   );

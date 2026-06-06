@@ -3,7 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/util/web_blob_helpers.dart';
 
 /// 在线图片格式转换
@@ -210,29 +212,20 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
     downloadUint8ListAsFile(bytes, name);
   }
 
+  bool _isLight(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.light;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
+    final pageBg = GoodsPageStyle.pageBg(context);
 
     return Scaffold(
+      backgroundColor: pageBg,
       extendBodyBehindAppBar: false,
       appBar: AppBar(
         title: const Text('图片格式转换'),
         centerTitle: true,
-        // elevation: 0,
-        // flexibleSpace: Container(
-        //   decoration: const BoxDecoration(
-        //     gradient: LinearGradient(
-        //       colors: [_teal, _tealLight],
-        //       begin: Alignment.centerLeft,
-        //       end: Alignment.centerRight,
-        //     ),
-        //   ),
-        // ),
-        // backgroundColor: Colors.transparent,
-        // foregroundColor: Colors.white,
-        // iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
         width: double.infinity,
@@ -241,8 +234,8 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              _teal.withValues(alpha: 0.08),
-              cs.surface,
+              _teal.withValues(alpha: _isLight(context) ? 0.08 : 0.18),
+              pageBg,
             ],
           ),
         ),
@@ -288,11 +281,13 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
     const formats = ['.jpg', '.jpeg', '.gif', '.png', '.bmp', '.webp'];
     return Card(
       elevation: 0,
-      color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.65),
+      color: _isLight(context)
+          ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.65)
+          : GoodsPageStyle.cardBg(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: _teal.withValues(alpha: 0.15),
+          color: _teal.withValues(alpha: _isLight(context) ? 0.15 : 0.35),
         ),
       ),
       child: Padding(
@@ -308,7 +303,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                   '支持格式',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
+                    color: GoodsPageStyle.text(context),
                   ),
                 ),
               ],
@@ -317,7 +312,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
             Text(
               '在线图片格式转换支持以下格式互转：',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.75),
+                color: GoodsPageStyle.sub(context),
                 height: 1.35,
               ),
             ),
@@ -330,16 +325,20 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                     (f) => Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: GoodsPageStyle.imageBg(context),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: _teal.withValues(alpha: 0.35)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _teal.withValues(alpha: 0.06),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        border: Border.all(
+                          color: _teal.withValues(alpha: _isLight(context) ? 0.35 : 0.5),
+                        ),
+                        boxShadow: _isLight(context)
+                            ? [
+                                BoxShadow(
+                                  color: _teal.withValues(alpha: 0.06),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
                       ),
                       child: Text(
                         f,
@@ -376,18 +375,24 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
 
     final formatField = DropdownButtonFormField<String>(
       value: _targetExt,
+      dropdownColor: GoodsPageStyle.cardBg(context),
+      style: TextStyle(color: GoodsPageStyle.text(context)),
       decoration: InputDecoration(
         filled: true,
-        fillColor: theme.colorScheme.surface,
+        fillColor: GoodsPageStyle.imageBg(context),
         hintText: '选择要转换的格式',
+        hintStyle: TextStyle(color: AppActionColors.subtle(context)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.45)),
+          borderSide: BorderSide(color: GoodsPageStyle.border(context)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _tealLight, width: 2),
+          borderSide: BorderSide(
+            color: _isLight(context) ? _tealLight : _teal,
+            width: 2,
+          ),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
@@ -406,13 +411,14 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
     final filePreview = InputDecorator(
       decoration: InputDecoration(
         filled: true,
-        fillColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        fillColor: GoodsPageStyle.imageBg(context),
         labelText: '待转图片',
+        labelStyle: TextStyle(color: GoodsPageStyle.sub(context)),
         floatingLabelBehavior: FloatingLabelBehavior.always,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: theme.colorScheme.outline.withValues(alpha: 0.35)),
+          borderSide: BorderSide(color: GoodsPageStyle.border(context)),
         ),
         contentPadding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       ),
@@ -422,8 +428,8 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
         overflow: TextOverflow.ellipsis,
         style: theme.textTheme.bodyLarge?.copyWith(
           color: _rawBytes == null
-              ? theme.colorScheme.onSurfaceVariant
-              : theme.colorScheme.onSurface,
+              ? GoodsPageStyle.sub(context)
+              : GoodsPageStyle.text(context),
         ),
       ),
     );
@@ -452,9 +458,15 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
     );
 
     return Card(
-      elevation: 2,
-      shadowColor: _teal.withValues(alpha: 0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: _isLight(context) ? 2 : 0,
+      color: GoodsPageStyle.cardBg(context),
+      shadowColor: GoodsPageStyle.cardShadow(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: _isLight(context)
+            ? BorderSide.none
+            : BorderSide(color: GoodsPageStyle.border(context)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -476,6 +488,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                     '转换操作',
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
+                      color: GoodsPageStyle.text(context),
                     ),
                   ),
                 ),
@@ -485,7 +498,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
             Text(
               '转换图片',
               style: theme.textTheme.labelLarge?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                color: GoodsPageStyle.sub(context),
               ),
             ),
             const SizedBox(height: 8),
@@ -520,10 +533,10 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
     ];
     return Card(
       elevation: 0,
-      color: theme.colorScheme.surface,
+      color: GoodsPageStyle.cardBg(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6)),
+        side: BorderSide(color: GoodsPageStyle.border(context)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(20),
@@ -536,7 +549,10 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                 const SizedBox(width: 8),
                 Text(
                   '使用步骤',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: GoodsPageStyle.text(context),
+                  ),
                 ),
               ],
             ),
@@ -564,7 +580,10 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                     Expanded(
                       child: Text(
                         steps[i],
-                        style: theme.textTheme.bodyLarge?.copyWith(height: 1.45),
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          height: 1.45,
+                          color: GoodsPageStyle.text(context),
+                        ),
                       ),
                     ),
                   ],
@@ -593,7 +612,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                     text: TextSpan(
                       style: theme.textTheme.bodyLarge?.copyWith(
                         height: 1.45,
-                        color: theme.colorScheme.onSurface,
+                        color: GoodsPageStyle.text(context),
                       ),
                       children: [
                         TextSpan(text: '点击图片预览，或使用'),
@@ -617,15 +636,18 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
   Widget _propertyCard(ThemeData theme) {
     final headerStyle = theme.textTheme.labelLarge?.copyWith(
       fontWeight: FontWeight.w700,
-      color: theme.colorScheme.onSurface,
+      color: GoodsPageStyle.text(context),
     );
-    final cellStyle = theme.textTheme.bodyMedium?.copyWith(height: 1.35);
-    final muted = theme.colorScheme.onSurface.withValues(alpha: 0.55);
+    final cellStyle = theme.textTheme.bodyMedium?.copyWith(
+      height: 1.35,
+      color: GoodsPageStyle.text(context),
+    );
+    final muted = GoodsPageStyle.sub(context);
 
     Widget headerCell(String t) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        color: _teal.withValues(alpha: 0.1),
+        color: _teal.withValues(alpha: _isLight(context) ? 0.1 : 0.22),
         alignment: Alignment.centerLeft,
         child: Text(t, style: headerStyle),
       );
@@ -669,10 +691,10 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
 
     return Card(
       elevation: 0,
-      color: theme.colorScheme.surface,
+      color: GoodsPageStyle.cardBg(context),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.6)),
+        side: BorderSide(color: GoodsPageStyle.border(context)),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -686,7 +708,10 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                 const SizedBox(width: 8),
                 Text(
                   '图片属性',
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: GoodsPageStyle.text(context),
+                  ),
                 ),
               ],
             ),
@@ -699,13 +724,15 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
               2: FlexColumnWidth(1.4),
             },
             border: TableBorder(
-              horizontalInside: BorderSide(color: theme.dividerColor.withValues(alpha: 0.2)),
-              top: BorderSide(color: theme.dividerColor.withValues(alpha: 0.25)),
-              bottom: BorderSide(color: theme.dividerColor.withValues(alpha: 0.25)),
+              horizontalInside: BorderSide(color: GoodsPageStyle.border(context)),
+              top: BorderSide(color: GoodsPageStyle.border(context)),
+              bottom: BorderSide(color: GoodsPageStyle.border(context)),
             ),
             children: [
               TableRow(
-                decoration: BoxDecoration(color: _teal.withValues(alpha: 0.06)),
+                decoration: BoxDecoration(
+                  color: _teal.withValues(alpha: _isLight(context) ? 0.06 : 0.16),
+                ),
                 children: [
                   headerCell('属性'),
                   headerCell('值'),
@@ -734,9 +761,15 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
 
   Widget _resultCard(ThemeData theme) {
     return Card(
-      elevation: 2,
-      shadowColor: _teal.withValues(alpha: 0.18),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: _isLight(context) ? 2 : 0,
+      color: GoodsPageStyle.cardBg(context),
+      shadowColor: GoodsPageStyle.cardShadow(context),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: _isLight(context)
+            ? BorderSide.none
+            : BorderSide(color: GoodsPageStyle.border(context)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -749,7 +782,10 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                 Expanded(
                   child: Text(
                     '转换结果',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: GoodsPageStyle.text(context),
+                    ),
                   ),
                 ),
                 if (_convertedFileName != null)
@@ -759,7 +795,7 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                        color: GoodsPageStyle.sub(context),
                       ),
                       textAlign: TextAlign.end,
                     ),
@@ -770,12 +806,12 @@ class _ImageFormatConvertPageState extends State<ImageFormatConvertPage> {
             Text(
               '点击下方图片或按钮即可下载',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: GoodsPageStyle.sub(context),
               ),
             ),
             const SizedBox(height: 14),
             Material(
-              color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+              color: GoodsPageStyle.imageBg(context),
               borderRadius: BorderRadius.circular(16),
               clipBehavior: Clip.antiAlias,
               child: InkWell(

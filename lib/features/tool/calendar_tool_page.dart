@@ -10,6 +10,7 @@ import 'package:lunar/calendar/util/HolidayUtil.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/api_constant.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CalendarToolPage extends StatefulWidget {
@@ -28,7 +29,6 @@ class _CalendarToolPage extends State<CalendarToolPage>
   late TabController _tabController;
   late ScrollController _scrollviewController;
   final _tabs = <String>['今日热榜', '往日', '农历', '阳历', '佛历', '道历'];
-  final _tabViews = [];
   List<dynamic> hot = [];
 
   @override
@@ -39,12 +39,6 @@ class _CalendarToolPage extends State<CalendarToolPage>
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
     _scrollviewController = ScrollController(initialScrollOffset: 0.0);
-    _tabViews.add(getHot());
-    _tabViews.add(getHistory());
-    _tabViews.add(getYinLi());
-    _tabViews.add(getYangLi());
-    _tabViews.add(getFoLi());
-    _tabViews.add(getDaoLi());
   }
 
   @override
@@ -54,11 +48,68 @@ class _CalendarToolPage extends State<CalendarToolPage>
     _scrollviewController.dispose();
   }
 
+  bool _isLight(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.light;
+
+  ButtonStyle _labelButtonStyle(BuildContext context) {
+    return ElevatedButton.styleFrom(
+      backgroundColor:
+          _isLight(context) ? Colors.blue : const Color(0xFF3578E5),
+      foregroundColor: Colors.white,
+    );
+  }
+
+  Color _calendarAccent(BuildContext context) =>
+      _isLight(context) ? Colors.amber.shade900 : Colors.amber.shade300;
+
+  Color _calendarDayText(BuildContext context) =>
+      _isLight(context) ? Colors.amber : Colors.amber.shade200;
+
+  Color _holidayRestBg(BuildContext context) => _isLight(context)
+      ? (Colors.red[50] ?? Colors.red.shade50)
+      : Colors.red.withValues(alpha: 0.22);
+
+  TextStyle _mutedBodyText(BuildContext context) =>
+      context.typo.body.copyWith(color: AppActionColors.muted(context));
+
+  Widget _buildTabContent(int index) {
+    switch (index) {
+      case 0:
+        return getHot();
+      case 1:
+        return getHistory();
+      case 2:
+        return getYinLi();
+      case 3:
+        return getYangLi();
+      case 4:
+        return getFoLi();
+      case 5:
+        return getDaoLi();
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final tabActiveColor =
+        _isLight(context) ? Colors.green.shade700 : Colors.lightGreen;
+    return Theme(
+      data: Theme.of(context).copyWith(
+        listTileTheme: ListTileThemeData(
+          titleTextStyle: context.typo.bodyStrong.copyWith(
+            color: AppActionColors.strong(context),
+          ),
+          subtitleTextStyle: context.typo.caption.copyWith(
+            color: AppActionColors.muted(context),
+          ),
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: GoodsPageStyle.pageBg(context),
         appBar: AppBar(
-          title: Text("万年历"),
+          title: const Text('万年历'),
         ),
         body: NestedScrollView(
           controller: _scrollviewController,
@@ -81,14 +132,15 @@ class _CalendarToolPage extends State<CalendarToolPage>
                   ),
                 ),
                 titleTextStyle: context.typo.sectionTitle.copyWith(
-                  color: Colors.amber,
+                  color: _calendarAccent(context),
                 ),
                 bottom: TabBar(
                   controller: _tabController,
                   isScrollable: true,
                   tabs: _tabs.map((String name) => Tab(text: name)).toList(),
-                  labelColor: Colors.green,
+                  labelColor: tabActiveColor,
                   unselectedLabelColor: AppActionColors.muted(context),
+                  indicatorColor: tabActiveColor,
                   indicatorSize: TabBarIndicatorSize.label,
                 ),
               ),
@@ -96,16 +148,15 @@ class _CalendarToolPage extends State<CalendarToolPage>
           },
           body: TabBarView(
             controller: _tabController,
-            physics: NeverScrollableScrollPhysics(),
-            children: _tabs.map((String name) {
-              return Builder(
-                builder: (BuildContext context) {
-                  return _tabViews[_tabController.index];
-                },
-              );
-            }).toList(),
+            physics: const NeverScrollableScrollPhysics(),
+            children: List.generate(
+              _tabs.length,
+              (index) => _buildTabContent(index),
+            ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 
   FutureBuilder getHistory() {
@@ -123,11 +174,11 @@ class _CalendarToolPage extends State<CalendarToolPage>
           Response response = snapshot.data;
           //发生错误
           if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
+            return Text(snapshot.error.toString(), style: _mutedBodyText(context));
           }
           Map<String, dynamic> json = response.data;
           if (json["data"] == null) {
-            return Text('无数据');
+            return Text('无数据', style: _mutedBodyText(context));
           }
           Map<String, dynamic> data = json["data"];
           List<dynamic> items = data["items"];
@@ -142,9 +193,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
               //   width: 50,
               // ),
               leading: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white),
+                style: _labelButtonStyle(context),
                 onPressed: () {
                   launchUrl(Uri.parse(url));
                 },
@@ -187,11 +236,11 @@ class _CalendarToolPage extends State<CalendarToolPage>
           Response response = snapshot.data;
           //发生错误
           if (snapshot.hasError) {
-            return Text(snapshot.error.toString());
+            return Text(snapshot.error.toString(), style: _mutedBodyText(context));
           }
           Map<String, dynamic> json = response.data;
           if (json["data"] == null) {
-            return Text('无数据');
+            return Text('无数据', style: _mutedBodyText(context));
           }
           Map<String, dynamic> data = json["data"];
           List<dynamic> items = data["items"];
@@ -207,9 +256,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
               //   width: 50,
               // ),
               leading: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white),
+                style: _labelButtonStyle(context),
                 onPressed: () {
                   launchUrl(Uri.parse(url));
                 },
@@ -243,8 +290,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     List<ListTile> list = [];
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('总览:'),
       ),
@@ -252,8 +298,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('道历:'),
       ),
@@ -272,8 +317,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     }
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('节日:'),
       ),
@@ -281,8 +325,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('三会日:'),
       ),
@@ -290,8 +333,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('三元日:'),
       ),
@@ -299,8 +341,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('八节日:'),
       ),
@@ -308,8 +349,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('五腊日:'),
       ),
@@ -317,8 +357,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('八会日:'),
       ),
@@ -326,8 +365,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('天赦日:'),
       ),
@@ -338,8 +376,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     var anwu = d.isDayAnWu() ? '是' : '否';
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('戊日（禁忌日）:'),
       ),
@@ -367,8 +404,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     List<ListTile> list = [];
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('总览:'),
       ),
@@ -376,8 +412,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('阳历:'),
       ),
@@ -391,8 +426,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('是否闰年:'),
       ),
@@ -407,8 +441,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     }
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('节日:'),
       ),
@@ -416,8 +449,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('星座:'),
       ),
@@ -446,8 +478,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     List<ListTile> list = [];
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('总览:'),
       ),
@@ -455,8 +486,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('佛历:'),
       ),
@@ -474,8 +504,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     }
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('因果犯忌:'),
       ),
@@ -489,8 +518,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     }
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('佛历纪念日:'),
       ),
@@ -498,8 +526,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('月斋:'),
       ),
@@ -507,8 +534,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('十斋日:'),
       ),
@@ -516,8 +542,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('六斋日:'),
       ),
@@ -525,8 +550,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('朔望斋:'),
       ),
@@ -534,8 +558,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('观音斋:'),
       ),
@@ -543,8 +566,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('杨公忌:'),
       ),
@@ -559,8 +581,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     var zheng = d.getZheng();
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('二十七宿:'),
       ),
@@ -595,8 +616,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     List<ListTile> list = [];
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('总览:'),
       ),
@@ -604,8 +624,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('农历:'),
       ),
@@ -626,8 +645,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ;
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('传统节日:'),
       ),
@@ -635,8 +653,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('生肖:'),
       ),
@@ -656,8 +673,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     }
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('每日宜忌:'),
       ),
@@ -666,8 +682,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('彭祖百忌:'),
       ),
@@ -678,8 +693,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     var jieqi = lunarDate.getJieQi();
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('节气:'),
       ),
@@ -690,8 +704,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     var dizhi = lunarDate.getYearZhiByLiChun();
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('干支(立春开始算):'),
       ),
@@ -699,8 +712,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('禄:'),
       ),
@@ -713,8 +725,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     var song = lunarDate.getXiuSong();
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('二十八宿:'),
       ),
@@ -723,8 +734,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('七曜:'),
       ),
@@ -732,8 +742,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('四宫:'),
       ),
@@ -741,8 +750,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('四神兽:'),
       ),
@@ -751,8 +759,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
 
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('吉神方位:'),
       ),
@@ -783,8 +790,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('胎神方位:'),
       ),
@@ -797,8 +803,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
 
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('太岁方位:'),
       ),
@@ -819,8 +824,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('冲煞:'),
       ),
@@ -832,8 +836,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('纳音五行:'),
       ),
@@ -848,8 +851,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
     ));
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('十二天神:'),
       ),
@@ -881,8 +883,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
 
     list.add(ListTile(
       leading: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue, foregroundColor: Colors.white),
+        style: _labelButtonStyle(context),
         onPressed: () {},
         child: Text('八字:'),
       ),
@@ -919,7 +920,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
 
   Widget _buildCalendarView() {
     final config = CalendarDatePicker2Config(
-      selectedDayHighlightColor: Colors.amber[900],
+      selectedDayHighlightColor: _calendarAccent(context),
       weekdayLabels: ['日', '一', '二', '三', '四', '五', '六'],
       weekdayLabelTextStyle: context.typo.label.copyWith(
         color: AppActionColors.strong(context),
@@ -929,29 +930,47 @@ class _CalendarToolPage extends State<CalendarToolPage>
       firstDayOfWeek: 1,
       controlsHeight: 50,
       centerAlignModePicker: true,
+      lastMonthIcon: Icon(
+        Icons.chevron_left,
+        color: AppActionColors.foreground(context),
+      ),
+      nextMonthIcon: Icon(
+        Icons.chevron_right,
+        color: AppActionColors.foreground(context),
+      ),
       customModePickerIcon: IconButton(
         onPressed: () async {
           final selectedDate = await showDatePicker(
-              context: context,
-              firstDate: DateTime(1000),
-              currentDate: selectDate,
-              lastDate: DateTime(2222));
+            context: context,
+            firstDate: DateTime(1000),
+            currentDate: selectDate,
+            lastDate: DateTime(2222),
+          );
+          if (selectedDate == null || !mounted) return;
           setState(() {
-            selectDate = selectedDate!;
+            selectDate = selectedDate;
           });
         },
         icon: Icon(
           Icons.calendar_month,
-          color: Colors.lightBlue,
+          color: Theme.of(context).colorScheme.primary,
         ),
       ),
       controlsTextStyle: context.typo.sectionTitle.copyWith(
-        color: Colors.black,
+        color: AppActionColors.strong(context),
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
       dayTextStyle: context.typo.bodyStrong.copyWith(
-        color: Colors.amber,
+        color: _calendarDayText(context),
+        fontWeight: FontWeight.bold,
+      ),
+      selectedDayTextStyle: context.typo.bodyStrong.copyWith(
+        color: _isLight(context) ? Colors.white : Colors.black87,
+        fontWeight: FontWeight.bold,
+      ),
+      todayTextStyle: context.typo.bodyStrong.copyWith(
+        color: Theme.of(context).colorScheme.primary,
         fontWeight: FontWeight.bold,
       ),
       disabledDayTextStyle: context.typo.caption.copyWith(
@@ -979,16 +998,9 @@ class _CalendarToolPage extends State<CalendarToolPage>
       config: config,
       value: [selectDate],
       onValueChanged: (dates) {
-        setState(() {
-          selectDate = dates[0]!;
-          _tabViews.clear();
-          _tabViews.add(getHot());
-          _tabViews.add(getHistory());
-          _tabViews.add(getYinLi());
-          _tabViews.add(getYangLi());
-          _tabViews.add(getFoLi());
-          _tabViews.add(getDaoLi());
-        });
+        final next = dates.firstOrNull;
+        if (next == null) return;
+        setState(() => selectDate = next);
       },
     );
   }
@@ -1034,7 +1046,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
       // decoration: decoration,
       decoration: (work == "休")
           ? BoxDecoration(
-              color: Colors.red[50],
+              color: _holidayRestBg(context),
               shape: BoxShape.circle,
             )
           : (work == "班")
@@ -1061,7 +1073,11 @@ class _CalendarToolPage extends State<CalendarToolPage>
                     style: context.typo.caption.copyWith(
                       fontSize: 8,
                       fontWeight: FontWeight.bold,
-                      color: ifWork ? Colors.red : Colors.lightGreen,
+                      color: ifWork
+                          ? Colors.redAccent
+                          : (_isLight(context)
+                              ? Colors.lightGreen
+                              : Colors.lightGreenAccent),
                     ),
                   ),
                 )

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
-/// 嵌入首页 Tab 内容区顶部（AppBar 下方空隙）的搜索条。
+/// 首页 Tab（商场 / 广场 / 工具等）内容区顶部的统一搜索条，渲染在透明 AppBar 下方。
 class InPageSearchBar extends StatefulWidget {
   const InPageSearchBar({
     super.key,
@@ -86,6 +86,10 @@ class _InPageSearchBarState extends State<InPageSearchBar> {
           padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
           child: TextField(
             controller: _controller,
+            style: TextStyle(
+              color: AppActionColors.strong(context),
+              fontSize: 14,
+            ),
             textInputAction: TextInputAction.search,
             onSubmitted: (value) {
               _debounce?.cancel();

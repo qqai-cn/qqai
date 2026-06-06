@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get_thumbnail_video/index.dart';
 import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 class LocalThumbnailRequest {
   const LocalThumbnailRequest({
@@ -134,14 +135,19 @@ class _GenThumbnailImageState extends State<GenThumbnailImage> {
         } else if (snapshot.hasError) {
           return Container(
             padding: const EdgeInsets.all(8),
-            color: Colors.red,
-            child: const Text('生成失败'),
+            color: Colors.red.withValues(alpha: 0.85),
+            child: const Text(
+              '生成失败',
+              style: TextStyle(color: Colors.white),
+            ),
           );
         } else {
           return Center(
             child: Text(
               '加载中...',
-              style: context.typo.body.copyWith(color: Colors.white),
+              style: context.typo.body.copyWith(
+                color: GoodsPageStyle.sub(context),
+              ),
             ),
           );
         }

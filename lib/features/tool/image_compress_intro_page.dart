@@ -3,7 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/util/web_blob_helpers.dart';
 
 /// 图片压缩页（真实可用版）
@@ -17,8 +19,6 @@ class ImageCompressIntroPage extends StatefulWidget {
 class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
   static const _highlightRed = Color(0xFFE85A4F);
   static const _brandBlue = Color(0xFF27A9E1);
-  static const _lineColor = Color(0xFFE8E8E8);
-  static const _softText = Color(0xFF555555);
   static const _maxFiles = 10;
   static const _maxBytes = 4 * 1024 * 1024;
 
@@ -28,12 +28,22 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
   bool _busy = false;
   String? _status;
 
+  Color _lineColor(BuildContext context) => GoodsPageStyle.border(context);
+  Color _cardBg(BuildContext context) => GoodsPageStyle.cardBg(context);
+  Color _softText(BuildContext context) => GoodsPageStyle.sub(context);
+  Color _introBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFFAFAFA)
+        : GoodsPageStyle.imageBg(context);
+  }
+
   int get _totalBefore => _items.fold(0, (sum, e) => sum + e.originalBytes.length);
   int get _totalAfter => _items.fold(0, (sum, e) => sum + e.compressedBytes.length);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         title: const Text('在线图片压缩'),
         centerTitle: true,
@@ -250,8 +260,8 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
   Widget _introCard() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFAFAFA),
-        border: Border.all(color: _lineColor),
+        color: _introBg(context),
+        border: Border.all(color: _lineColor(context)),
       ),
       padding: const EdgeInsets.all(14),
       child: Column(
@@ -268,7 +278,7 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
           Text(
             '在线批量图片质量压缩最多支持10张打包压缩下载，超过10张图片不支持压缩打包下载，但是是免费的哦。',
             style: context.typo.body.copyWith(
-              color: _softText,
+              color: _softText(context),
               fontSize: 15,
               height: 1.5,
             ),
@@ -277,7 +287,7 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
           Text(
             '如果是压缩率是 0% 的话，属于复杂类型图片，目前不支持压缩，一般是一些剪切图之类。',
             style: context.typo.body.copyWith(
-              color: _softText,
+              color: _softText(context),
               fontSize: 15,
               height: 1.5,
             ),
@@ -298,7 +308,7 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
                 child: Text(
                   '大于5张图可以批量下载，工具30分钟后请刷新页面再使用。',
                   style: context.typo.body.copyWith(
-                    color: _softText,
+                    color: _softText(context),
                     fontSize: 15,
                     height: 1.5,
                   ),
@@ -315,8 +325,8 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
   Widget _uploadCard() {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFFCFCFC),
-        border: Border.all(color: _lineColor),
+        color: _cardBg(context),
+        border: Border.all(color: _lineColor(context)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 22),
       child: Column(
@@ -341,7 +351,10 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
           const SizedBox(height: 10),
           Text(
             '选择或者拖动上传，支持4MB以内，每次支持10张图片。当前压缩质量：$_quality',
-            style: context.typo.body.copyWith(color: _softText, fontSize: 14),
+            style: context.typo.body.copyWith(
+              color: _softText(context),
+              fontSize: 14,
+            ),
           ),
           const SizedBox(height: 8),
           Slider(
@@ -378,12 +391,17 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        border: Border.all(color: _lineColor),
-        color: Colors.white,
+        border: Border.all(color: _lineColor(context)),
+        color: _cardBg(context),
       ),
       child: Row(
         children: [
-          Expanded(child: Text('共 ${_items.length} 张，压缩前 ${_humanSize(before)}')),
+          Expanded(
+            child: Text(
+              '共 ${_items.length} 张，压缩前 ${_humanSize(before)}',
+              style: TextStyle(color: GoodsPageStyle.text(context)),
+            ),
+          ),
           Expanded(
             child: Text(
               '压缩后 ${_humanSize(after)}，减少 ${ratio.toStringAsFixed(1)}%',
@@ -403,8 +421,8 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
   Widget _resultListCard() {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: _lineColor),
-        color: const Color(0xFFFEFEFE),
+        border: Border.all(color: _lineColor(context)),
+        color: _introBg(context),
       ),
       padding: const EdgeInsets.all(12),
       child: Column(
@@ -414,9 +432,9 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  border: Border.all(color: const Color(0xFFEDEDED)),
+                  border: Border.all(color: _lineColor(context)),
                   borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
+                  color: _cardBg(context),
                 ),
                 child: Row(
                   children: [
@@ -438,7 +456,9 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
                             e.originalName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: context.typo.bodyStrong,
+                            style: context.typo.bodyStrong.copyWith(
+                              color: GoodsPageStyle.text(context),
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
@@ -447,7 +467,7 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
                             style: context.typo.caption.copyWith(
                               color: e.compressedBytes.length < e.originalBytes.length
                                   ? _highlightRed
-                                  : _softText,
+                                  : _softText(context),
                             ),
                           ),
                         ],
@@ -486,14 +506,16 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
                   children: [
                     const Padding(
                       padding: EdgeInsets.only(top: 8),
-                      child: Icon(Icons.circle, size: 6, color: Color(0xFF9A9A9A)),
+                      child: Icon(Icons.circle, size: 6),
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         text,
                         style: context.typo.body.copyWith(
-                          color: text.startsWith('PS：') ? _highlightRed : _softText,
+                          color: text.startsWith('PS：')
+                              ? _highlightRed
+                              : _softText(context),
                           fontSize: 14.5,
                           height: 1.55,
                         ),
@@ -539,17 +561,17 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
   Widget _sectionTitle(String title) {
     return Row(
       children: [
-        Expanded(child: Container(height: 1, color: _lineColor)),
+        Expanded(child: Container(height: 1, color: _lineColor(context))),
         const SizedBox(width: 10),
         Text(
           title,
           style: context.typo.sectionTitle.copyWith(
             fontSize: 15,
-            color: const Color(0xFF4C4C4C),
+            color: GoodsPageStyle.text(context),
           ),
         ),
         const SizedBox(width: 10),
-        Expanded(child: Container(height: 1, color: _lineColor)),
+        Expanded(child: Container(height: 1, color: _lineColor(context))),
       ],
     );
   }
@@ -587,7 +609,7 @@ class _ImageCompressIntroPageState extends State<ImageCompressIntroPage> {
     return RichText(
       text: TextSpan(
         style: context.typo.body.copyWith(
-          color: _softText,
+          color: _softText(context),
           fontSize: 15,
           height: 1.5,
         ),
@@ -638,14 +660,14 @@ class _CompareItem extends StatelessWidget {
           aspectRatio: 16 / 9,
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFFEDE8E3),
-              border: Border.all(color: const Color(0xFFD8D3CC)),
+              color: GoodsPageStyle.imageBg(context),
+              border: Border.all(color: GoodsPageStyle.border(context)),
             ),
             child: bytes == null
-                ? const Center(
+                ? Center(
                     child: Icon(
                       Icons.image_outlined,
-                      color: Color(0xFF9B948A),
+                      color: GoodsPageStyle.sub(context),
                       size: 44,
                     ),
                   )
@@ -656,7 +678,9 @@ class _CompareItem extends StatelessWidget {
         Text(
           '$title  $size',
           style: context.typo.bodyStrong.copyWith(
-            color: size == '7KB' ? const Color(0xFFE85A4F) : const Color(0xFF5A5A5A),
+            color: title == '压缩后'
+                ? const Color(0xFFE85A4F)
+                : GoodsPageStyle.text(context),
             fontSize: 14,
           ),
         ),

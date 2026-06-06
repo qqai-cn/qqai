@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:video_player/video_player.dart';
 
 class CustomVideoProgressBar extends StatefulWidget {
@@ -75,14 +77,18 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
         // ),
         // 进度条
 
-        Text(formatDuration((_progress / 1000).toInt()) +
-            '/' +
-            formatDuration((duration / 1000).toInt())),
+        Text(
+          formatDuration((_progress / 1000).toInt()) +
+              '/' +
+              formatDuration((duration / 1000).toInt()),
+          style: TextStyle(color: GoodsPageStyle.text(context)),
+        ),
         Slider(
           value: _progress.clamp(0.0, duration),
           min: 0.0,
           max: duration,
-          inactiveColor: Colors.grey,
+          inactiveColor: AppActionColors.borderSubtle(context),
+          activeColor: Theme.of(context).colorScheme.primary,
           onChangeStart: _onDragStart,
           onChanged: (value) {
             setState(() {

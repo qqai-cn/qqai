@@ -2,7 +2,9 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/util/web_blob_helpers.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -78,9 +80,10 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
 
   @override
   Widget build(BuildContext context) {
-    final border = Border.all(color: const Color(0xFFDADADA));
+    final borderColor = GoodsPageStyle.border(context);
 
     return Scaffold(
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         title: const Text('二维码生成'),
         centerTitle: true,
@@ -89,8 +92,8 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
         padding: const EdgeInsets.all(16),
         child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFFCFCFC),
-            border: border,
+            color: GoodsPageStyle.cardBg(context),
+            border: Border.all(color: borderColor),
           ),
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -101,7 +104,7 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
                 return Column(
                   children: [
                     left,
-                    Divider(height: 1, color: border.top.color),
+                    Divider(height: 1, color: borderColor),
                     right,
                   ],
                 );
@@ -110,7 +113,7 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(child: left),
-                  Container(width: 1, height: 620, color: border.top.color),
+                  Container(width: 1, height: 620, color: borderColor),
                   SizedBox(width: 460, child: right),
                 ],
               );
@@ -133,6 +136,7 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
             style: context.typo.sectionTitle.copyWith(
               fontSize: 32 / 2,
               fontWeight: FontWeight.w600,
+              color: GoodsPageStyle.text(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -141,18 +145,29 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
             maxLength: _maxLen,
             minLines: 4,
             maxLines: 4,
+            style: TextStyle(color: AppActionColors.strong(context)),
             decoration: InputDecoration(
               hintText: '请输入内容，支持文本、网址和电子邮箱，限300个字。',
               counterText: '',
-              border: const OutlineInputBorder(),
+              border: OutlineInputBorder(
+                borderSide: BorderSide(color: GoodsPageStyle.border(context)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: GoodsPageStyle.border(context)),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF3578E5)),
+              ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: GoodsPageStyle.imageBg(context),
             ),
             onChanged: (_) => setState(() {}),
           ),
           Text(
             '已输入数字：$count/$_maxLen',
-            style: context.typo.caption.copyWith(color: const Color(0xFF999999)),
+            style: context.typo.caption.copyWith(
+              color: GoodsPageStyle.sub(context),
+            ),
           ),
           const SizedBox(height: 14),
           Align(
@@ -175,7 +190,7 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
             '3.右侧菜单可以美化二维码，包括样式切换等。\n'
             '4.对自己理想的二维码点击“保存二维码”即可下载二维码到您本地。',
             style: context.typo.body.copyWith(
-              color: const Color(0xFF4C4C4C),
+              color: GoodsPageStyle.sub(context),
               height: 1.6,
               fontSize: 15,
             ),
@@ -212,7 +227,7 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
             ),
           ),
           const SizedBox(height: 12),
-          Container(height: 1, color: const Color(0xFFDADADA)),
+          Container(height: 1, color: GoodsPageStyle.border(context)),
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -226,8 +241,8 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFFDADADA)),
-              color: Colors.white,
+              border: Border.all(color: GoodsPageStyle.border(context)),
+              color: GoodsPageStyle.imageBg(context),
             ),
             padding: const EdgeInsets.all(10),
             child: Column(
@@ -236,19 +251,25 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
                 Text(
                   '颜色设置  嵌入Logo  嵌入文字  图案样式  其它设置',
                   style: context.typo.caption.copyWith(
-                    color: const Color(0xFF6B6B6B),
+                    color: GoodsPageStyle.sub(context),
                     fontSize: 13,
                   ),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 Text(
                   '前景色  黑色       背景色  白色',
-                  style: context.typo.caption.copyWith(fontSize: 13),
+                  style: context.typo.caption.copyWith(
+                    fontSize: 13,
+                    color: GoodsPageStyle.text(context),
+                  ),
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
                   '渐变色  关闭       渐变方式  反斜线',
-                  style: context.typo.caption.copyWith(fontSize: 13),
+                  style: context.typo.caption.copyWith(
+                    fontSize: 13,
+                    color: GoodsPageStyle.text(context),
+                  ),
                 ),
               ],
             ),
@@ -295,7 +316,9 @@ class _QrCodeToolPageState extends State<QrCodeToolPage> {
       child: Text(
         text,
         style: context.typo.body.copyWith(
-          color: active ? const Color(0xFF3F7EDB) : const Color(0xFF666666),
+          color: active
+              ? const Color(0xFF3F7EDB)
+              : GoodsPageStyle.sub(context),
           fontWeight: active ? FontWeight.w700 : FontWeight.w500,
           decoration: active ? TextDecoration.underline : TextDecoration.none,
           decorationColor: const Color(0xFF3F7EDB),

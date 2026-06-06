@@ -13,6 +13,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/util/web_blob_helpers.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
@@ -142,10 +143,10 @@ class _ThumbnailPage extends State<ThumbnailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         title: const Text('封面生成器'),
         centerTitle: true,
-        // centerTitle: false,
       ),
       body: AnimatedBuilder(
         animation: toolController,
@@ -168,9 +169,10 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                       child: Text(
                         '使用教程',
                         style: context.typo.link.copyWith(
-                          color: Colors.blue,
-                          decoration: TextDecoration.underline, // 添加下划线
-                          decorationColor: Colors.blue,
+                          color: Theme.of(context).colorScheme.primary,
+                          decoration: TextDecoration.underline,
+                          decorationColor:
+                              Theme.of(context).colorScheme.primary,
                         ),
                       ),
                     ),
@@ -186,7 +188,7 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                         // height: 500,
                         // color: Colors.amber,
                         decoration: BoxDecoration(
-                          // color: Colors.grey,
+                          color: GoodsPageStyle.cardBg(context),
                           border: Border.all(
                             color: AppActionColors.borderSubtle(context),
                             width: 2,
@@ -210,11 +212,14 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                   child: InkWell(
                                     onTap: _pickVideo,
                                     child: Container(
-                                      color: AppActionColors.borderSubtle(
-                                        context,
-                                      ),
+                                      color: GoodsPageStyle.imageBg(context),
                                       alignment: Alignment.center,
-                                      child: Text('请先选择视频（点击选择）'),
+                                      child: Text(
+                                        '请先选择视频（点击选择）',
+                                        style: context.typo.body.copyWith(
+                                          color: GoodsPageStyle.sub(context),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -323,7 +328,16 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                               ],
                             ),
                             Container(height: 10),
-                            Row(children: [Text("添加到：")]),
+                            Row(
+                              children: [
+                                Text(
+                                  '添加到：',
+                                  style: TextStyle(
+                                    color: GoodsPageStyle.text(context),
+                                  ),
+                                ),
+                              ],
+                            ),
                             Container(height: 10),
                             getRows(toolController.curStyle),
                           ],
