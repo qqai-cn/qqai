@@ -27,6 +27,8 @@ sealed class BlogSaveReqVO with _$BlogSaveReqVO {
     double? longitude,
     int? shareType,
     List<int>? collectionIds,
+    Map<int, int>? collectionEpisodes,
+    List<int>? shopProductIds,
   }) = _BlogSaveReqVO;
 
   factory BlogSaveReqVO.fromJson(Map<String, dynamic> json) =>

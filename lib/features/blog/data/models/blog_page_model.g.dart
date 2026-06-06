@@ -48,6 +48,9 @@ _BlogItem _$BlogItemFromJson(Map<String, dynamic> json) => _BlogItem(
   collections: (json['collections'] as List<dynamic>?)
       ?.map((e) => BlogItemCollection.fromJson(e as Map<String, dynamic>))
       .toList(),
+  shopProducts: (json['shopProducts'] as List<dynamic>?)
+      ?.map((e) => BlogItemShopProduct.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$BlogItemToJson(_BlogItem instance) => <String, dynamic>{
@@ -90,6 +93,7 @@ Map<String, dynamic> _$BlogItemToJson(_BlogItem instance) => <String, dynamic>{
   'liked': instance.liked,
   'collect': instance.collect,
   'collections': instance.collections,
+  'shopProducts': instance.shopProducts,
 };
 
 _BlogPageModelData _$BlogPageModelDataFromJson(Map<String, dynamic> json) =>

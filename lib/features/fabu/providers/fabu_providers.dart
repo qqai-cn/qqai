@@ -27,6 +27,8 @@ import '../data/models/fabu_model.dart';
 import '../data/models/topic_model.dart';
 import '../../blog/data/models/blog_save_req_vo.dart';
 import '../../blog/data/repos/blog_repo.dart';
+import '../../goods/data/models/mall_product_model.dart';
+import '../../my/data/models/profile_models.dart';
 
 part 'fabu_providers.freezed.dart';
 
@@ -57,6 +59,9 @@ sealed class FabuState with _$FabuState {
     @Default(0) int aixinType,
     @Default({}) Map<int, String> huatiSel,
     @Default({}) Map<int, String> collectionSel,
+    int? collectionItemCount,
+    int? collectionEpisode,
+    @Default([]) List<MallProduct> shopProducts,
     String? error,
     @Default(false) bool isLoading,
     @Default(false) bool isUploading,
@@ -546,7 +551,50 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   void setCollectionSel(Map<int, String> collections) {
-    state = state.copyWith(collectionSel: collections);
+    state = state.copyWith(
+      collectionSel: collections,
+      collectionItemCount: null,
+      collectionEpisode: null,
+    );
+  }
+
+  void setCollection(BlogCollectionResp collection) {
+    final id = collection.id;
+    if (id == null) return;
+    final count = collection.itemCount ?? 0;
+    state = state.copyWith(
+      collectionSel: {id: collection.name ?? '合集'},
+      collectionItemCount: count,
+      collectionEpisode: count + 1,
+    );
+  }
+
+  void setCollectionEpisode(int episode) {
+    state = state.copyWith(collectionEpisode: episode);
+  }
+
+  void clearCollection() {
+    state = state.copyWith(
+      collectionSel: {},
+      collectionItemCount: null,
+      collectionEpisode: null,
+    );
+  }
+
+  void setShopProducts(List<MallProduct> products) {
+    state = state.copyWith(shopProducts: products);
+  }
+
+  void removeShopProduct(int productId) {
+    state = state.copyWith(
+      shopProducts: state.shopProducts
+          .where((product) => product.id != productId)
+          .toList(),
+    );
+  }
+
+  void clearShopProducts() {
+    state = state.copyWith(shopProducts: []);
   }
 
   void setAddress(AddressEntity addressEntity) {
@@ -617,6 +665,20 @@ class FabuNotifier extends _$FabuNotifier {
       final collectionIds = blogType == 2 && state.collectionSel.isNotEmpty
           ? state.collectionSel.keys.toList()
           : null;
+      Map<int, int>? collectionEpisodes;
+      if (collectionIds != null &&
+          collectionIds.isNotEmpty &&
+          state.collectionEpisode != null) {
+        collectionEpisodes = {
+          for (final id in collectionIds) id: state.collectionEpisode!,
+        };
+      }
+      final shopProductIds = state.shopProducts.isEmpty
+          ? null
+          : state.shopProducts
+              .map((product) => product.id)
+              .whereType<int>()
+              .toList();
       final videoMetadata = blogType == 2 && state.videoFiles.isNotEmpty
           ? await _readVideoMetadata(state.videoFiles.first)
           : null;
@@ -652,6 +714,8 @@ class FabuNotifier extends _$FabuNotifier {
         longitude: withLocation ? selected.longitude : null,
         shareType: shareType,
         collectionIds: collectionIds,
+        collectionEpisodes: collectionEpisodes,
+        shopProductIds: shopProductIds,
       );
       await blogRepo.createBlog(
         req,

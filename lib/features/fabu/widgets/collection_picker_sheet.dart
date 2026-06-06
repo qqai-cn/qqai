@@ -4,12 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/fabu/theme/fabu_publish_theme.dart';
 import 'package:qqai/util/api_error_message.dart';
 
 import '../../my/data/models/profile_models.dart';
 import '../../my/data/repos/profile_repo.dart';
 
-/// 发布视频时选择本人合集（多选）。
+/// 发布视频时选择单个合集。
+Future<BlogCollectionResp?> showSingleCollectionPickerSheet(
+  BuildContext context, {
+  int? initialCollectionId,
+}) {
+  return showModalBottomSheet<BlogCollectionResp>(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    backgroundColor: AppActionColors.surface(context),
+    builder: (ctx) => _SingleCollectionPickerSheet(
+      initialCollectionId: initialCollectionId,
+    ),
+  );
+}
+
+/// 发布视频时选择本人合集（多选，保留兼容）。
 Future<Map<int, String>?> showCollectionPickerSheet(
   BuildContext context, {
   required Map<int, String> initialSelection,
@@ -18,8 +35,169 @@ Future<Map<int, String>?> showCollectionPickerSheet(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
+    backgroundColor: AppActionColors.surface(context),
     builder: (ctx) => _CollectionPickerSheet(initialSelection: initialSelection),
   );
+}
+
+class _SingleCollectionPickerSheet extends ConsumerStatefulWidget {
+  const _SingleCollectionPickerSheet({this.initialCollectionId});
+
+  final int? initialCollectionId;
+
+  @override
+  ConsumerState<_SingleCollectionPickerSheet> createState() =>
+      _SingleCollectionPickerSheetState();
+}
+
+class _SingleCollectionPickerSheetState
+    extends ConsumerState<_SingleCollectionPickerSheet> {
+  BlogCollectionResp? _selected;
+  List<BlogCollectionResp> _collections = [];
+  bool _loading = true;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    scheduleMicrotask(_loadCollections);
+  }
+
+  Future<void> _loadCollections() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final data = await ref
+          .read(profileRepoProvider)
+          .getMyCollectionsPage(1, pageSize: 100);
+      if (!mounted) return;
+      final list = data.list ?? [];
+      BlogCollectionResp? initial;
+      final initialId = widget.initialCollectionId;
+      if (initialId != null) {
+        for (final item in list) {
+          if (item.id == initialId) {
+            initial = item;
+            break;
+          }
+        }
+      }
+      setState(() {
+        _collections = list;
+        _selected = initial;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottom = MediaQuery.paddingOf(context).bottom;
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16, 0, 16, bottom + 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              '选择合集',
+              style: context.typo.sectionTitle.copyWith(
+                color: FabuPublishTheme.text(context),
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '选择后可在下方指定第几集',
+              style: context.typo.caption.copyWith(
+                color: AppActionColors.muted(context),
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (_loading)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 32),
+                child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+              )
+            else if (_error != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Column(
+                  children: [
+                    Text(ApiErrorMessage.userMessage(_error!), style: context.typo.body),
+                    TextButton(onPressed: _loadCollections, child: const Text('重试')),
+                  ],
+                ),
+              )
+            else if (_collections.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: Text(
+                  '暂无合集，可先在「我的-合集」中创建',
+                  textAlign: TextAlign.center,
+                  style: context.typo.body.copyWith(
+                    color: AppActionColors.muted(context),
+                  ),
+                ),
+              )
+            else
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.45,
+                ),
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: _collections.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (context, index) {
+                    final item = _collections[index];
+                    final selected = _selected?.id == item.id;
+                    final count = item.itemCount ?? 0;
+                    return ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: Icon(
+                        selected
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_off,
+                        color: selected
+                            ? FabuPublishTheme.accent
+                            : AppActionColors.subtle(context),
+                      ),
+                      title: Text(
+                        item.name ?? '合集',
+                        style: TextStyle(color: FabuPublishTheme.text(context)),
+                      ),
+                      subtitle: Text(
+                        item.intro?.isNotEmpty == true
+                            ? item.intro!
+                            : '共$count个作品',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: Text(
+                        '共$count个作品',
+                        style: context.typo.caption.copyWith(
+                          color: AppActionColors.muted(context),
+                        ),
+                      ),
+                      onTap: () => Navigator.pop(context, item),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _CollectionPickerSheet extends ConsumerStatefulWidget {
@@ -90,7 +268,12 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('选择合集', style: context.typo.sectionTitle),
+            Text(
+              '选择合集',
+              style: context.typo.sectionTitle.copyWith(
+                color: FabuPublishTheme.text(context),
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               '可选多个，发布后将加入对应合集',
@@ -145,10 +328,13 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
                             ? Icons.check_circle
                             : Icons.radio_button_unchecked,
                         color: selected
-                            ? const Color(0xFF3578E5)
+                            ? FabuPublishTheme.accent
                             : AppActionColors.subtle(context),
                       ),
-                      title: Text(item.name ?? '合集'),
+                      title: Text(
+                        item.name ?? '合集',
+                        style: TextStyle(color: FabuPublishTheme.text(context)),
+                      ),
                       subtitle: Text(
                         item.intro?.isNotEmpty == true
                             ? item.intro!
@@ -173,12 +359,7 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
                 const SizedBox(width: 12),
                 Expanded(
                   child: FilledButton(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFF3578E5),
-                      disabledBackgroundColor:
-                          AppActionColors.borderSubtle(context),
-                      disabledForegroundColor: AppActionColors.subtle(context),
-                    ),
+                    style: FabuPublishTheme.publishButtonStyle(context),
                     onPressed: () => Navigator.pop(context, _selected),
                     child: Text(
                       _selected.isEmpty ? '确定' : '确定 (${_selected.length})',

@@ -9,17 +9,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/components/video_player/local_qqai_player.dart';
 import 'package:qqai/util/media_url.dart';
 
 import '../../data/models/address_entity.dart';
 import '../../blog/data/repos/blog_repo.dart';
-import '../../index/presentation/views/filter_page.dart';
 import '../../tool/video_cover_style_preview.dart';
 import '../../tool/video_cover_tool.dart';
 import '../providers/fabu_providers.dart';
+import '../theme/fabu_publish_theme.dart';
 import '../widgets/collection_picker_sheet.dart';
+import '../widgets/fabu_web_publish_widgets.dart';
+import '../widgets/shop_product_picker_sheet.dart';
+import '../../goods/data/models/mall_product_model.dart';
+import '../data/models/topic_model.dart';
 import 'fabu_media_preview_tile.dart';
 
 enum FabuPublishType {
@@ -31,36 +34,6 @@ enum FabuPublishType {
 
   final String title;
   final bool allowImages;
-}
-
-abstract final class _FabuPublishColors {
-  static Color panelBg(BuildContext context) => GoodsPageStyle.imageBg(context);
-
-  static Color border(BuildContext context) => GoodsPageStyle.border(context);
-
-  static Color text(BuildContext context) => GoodsPageStyle.text(context);
-
-  static Color accentTintBg(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.light
-        ? const Color(0xFFEAF2FF)
-        : const Color(0xFF3578E5).withValues(alpha: 0.18);
-  }
-
-  static double cardShadowAlpha(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.light ? 0.05 : 0.35;
-  }
-
-  static Color rewardSelectedBg(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.light
-        ? const Color(0xFFFFF3D7)
-        : const Color(0xFFFFC54D).withValues(alpha: 0.18);
-  }
-
-  static Color dragHandle(BuildContext context) {
-    return Theme.of(context).brightness == Brightness.light
-        ? const Color(0xFFD6D6D6)
-        : Colors.white.withValues(alpha: 0.24);
-  }
 }
 
 class FabuPublishPage extends ConsumerStatefulWidget {
@@ -79,6 +52,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   late final IBlogRepo _blogRepo;
 
   final _contentController = TextEditingController();
+  final _contentFocusNode = FocusNode();
   final _titleController = TextEditingController();
   final _targetController = TextEditingController();
   int? _rewardAmountCents;
@@ -121,6 +95,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     }
     _videoPreviewController.detach();
     _videoSegmentsPageController.dispose();
+    _contentFocusNode.dispose();
     _contentController.dispose();
     _titleController.dispose();
     _targetController.dispose();
@@ -152,151 +127,250 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   Widget build(BuildContext context) {
     final fabuState = ref.watch(fabuProvider);
     final fabuNotifier = ref.read(fabuProvider.notifier);
+    return _buildPublishLayout(fabuState, fabuNotifier);
+  }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 720),
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              color: AppActionColors.surface(context),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: _FabuPublishColors.border(context)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(
-                    alpha: _FabuPublishColors.cardShadowAlpha(context),
-                  ),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+  Widget _buildPublishLayout(FabuState state, FabuNotifier notifier) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final hPad = constraints.maxWidth >= 960 ? 24.0 : 14.0;
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(hPad, 20, hPad, 32),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ..._buildInputFields(fabuState, fabuNotifier),
-                  14.verticalSpace,
-                  _buildMediaPicker(fabuState, fabuNotifier),
-                  16.verticalSpace,
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: _FabuPublishColors.panelBg(context),
-                        border: Border.all(color: _FabuPublishColors.border(context)),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Column(
-                        children: [
-                          _ActionRow(
-                            icon: Icons.add_location_alt_outlined,
-                            title: fabuState.selAddressEntity?.name ?? '所在位置',
-                            trailing: fabuState.isLoadingGPS
-                                ? const SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Icon(Icons.chevron_right),
-                            onTap: fabuState.isLoadingGPS
-                                ? null
-                                : () => _showAddressSheet(
-                                    fabuState,
-                                    fabuNotifier,
-                                  ),
-                          ),
-                          _ActionRow(
-                            icon: Icons.tag_outlined,
-                            title: fabuState.huatiSel.isEmpty
-                                ? '话题'
-                                : fabuState.huatiSel.values.join('、'),
-                            onTap: () =>
-                                _showTopicSheet(fabuState, fabuNotifier),
-                          ),
-                          if (widget.type == FabuPublishType.video)
-                            _ActionRow(
-                              icon: Icons.collections_bookmark_outlined,
-                              title: fabuState.collectionSel.isEmpty
-                                  ? '合集'
-                                  : fabuState.collectionSel.values.join('、'),
-                              onTap: () => _showCollectionSheet(fabuNotifier),
-                            ),
-                          _ActionRow(
-                            icon: Icons.person_outline,
-                            title: fabuState.whoCanSeeSel == null
-                                ? '公开'
-                                : fabuState.whoCanSee[fabuState.whoCanSeeSel!],
-                            showDivider: false,
-                            onTap: () =>
-                                _showVisibilitySheet(fabuState, fabuNotifier),
-                          ),
-                        ],
-                      ),
+                  FabuWebSectionCard(
+                    title: '基础信息',
+                    child: _buildWebBasicSection(state, notifier),
+                  ),
+                  const SizedBox(height: 16),
+                  FabuWebSectionCard(
+                    title: '扩展信息',
+                    child: _buildWebExtendedSection(state, notifier),
+                  ),
+                  if (widget.type != FabuPublishType.help) ...[
+                    const SizedBox(height: 16),
+                    FabuWebSectionCard(
+                      title: '团购带货',
+                      child: _buildGroupBuySection(state, notifier),
                     ),
+                  ],
+                  const SizedBox(height: 16),
+                  FabuWebSectionCard(
+                    title: '发布设置',
+                    child: _buildWebPublishSettings(state, notifier),
                   ),
                 ],
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  List<Widget> _buildInputFields(FabuState state, FabuNotifier notifier) {
-    final fields = <Widget>[];
+  void _insertIntoContent(String text) {
+    final controller = _contentController;
+    final value = controller.value;
+    final content = value.text;
+    final start = value.selection.start >= 0 ? value.selection.start : content.length;
+    final end = value.selection.end >= 0 ? value.selection.end : content.length;
+    final updated = content.replaceRange(start, end, text);
+    controller.value = TextEditingValue(
+      text: updated,
+      selection: TextSelection.collapsed(offset: start + text.length),
+    );
+    _contentFocusNode.requestFocus();
+    _syncContent();
+  }
 
-    switch (widget.type) {
-      case FabuPublishType.dynamic:
-        fields.add(
-          _TextBox(
-            controller: _contentController,
-            hintText: '这一刻的想法...',
-            minLines: 5,
-            maxLines: 10,
+  Future<void> _showTopicSheet(FabuState state, FabuNotifier notifier) async {
+    _insertIntoContent('#');
+
+    final topic = await showModalBottomSheet<SkuuTopicResVO>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _TopicPickerSheet(topics: state.topicList),
+    );
+
+    if (!mounted || topic == null) return;
+    _appendTopicToContent(topic, notifier);
+  }
+
+  void _onMentionFriendTap() {
+    _insertIntoContent('@');
+  }
+
+  void _appendTopicToContent(SkuuTopicResVO topic, FabuNotifier notifier) {
+    final name = topic.topicName?.trim() ?? '';
+    final id = topic.id;
+    if (name.isEmpty || id == null) return;
+
+    _insertIntoContent('$name ');
+    final current = ref.read(fabuProvider);
+    final next = Map<int, String>.from(current.huatiSel)..[id] = name;
+    notifier.setHuati(next);
+  }
+
+  Widget _buildWebBasicSection(FabuState state, FabuNotifier notifier) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '作品描述',
+          style: context.typo.body.copyWith(
+            color: FabuPublishTheme.text(context),
+            fontWeight: FontWeight.w600,
           ),
-        );
-      case FabuPublishType.video:
-        fields.addAll([
-          _TextBox(
-            controller: _titleController,
-            hintText: '标题',
-            minLines: 1,
-            maxLines: 1,
-            maxLength: 80,
+        ),
+        const SizedBox(height: 12),
+        ..._buildInputFields(state, notifier),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _WebTagButton(
+              label: '# 添加话题',
+              onTap: () => _showTopicSheet(state, notifier),
+            ),
+            const SizedBox(width: 12),
+            _WebTagButton(
+              label: '@ 好友',
+              onTap: _onMentionFriendTap,
+            ),
+          ],
+        ),
+        if (state.topicList.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _buildRecommendedTopics(state, notifier),
+        ],
+        if (widget.type == FabuPublishType.video ||
+            widget.type.allowImages) ...[
+          const SizedBox(height: 20),
+          _buildMediaPicker(state, notifier),
+        ],
+        if (widget.type == FabuPublishType.video) ...[
+          const SizedBox(height: 16),
+          _buildWebCollectionRow(state, notifier),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildRecommendedTopics(FabuState state, FabuNotifier notifier) {
+    final topics = state.topicList.take(8).toList();
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: [
+        for (final topic in topics)
+          if (topic.id != null && (topic.topicName ?? '').isNotEmpty)
+            ActionChip(
+              label: Text('#${topic.topicName}'),
+              backgroundColor: FabuPublishTheme.panelBg(context),
+              side: BorderSide(color: FabuPublishTheme.border(context)),
+              labelStyle: context.typo.caption.copyWith(
+                color: FabuPublishTheme.chipLabel(context),
+              ),
+              onPressed: () {
+                final name = topic.topicName!.trim();
+                _insertIntoContent('#$name ');
+                final id = topic.id!;
+                final next = Map<int, String>.from(state.huatiSel)..[id] = name;
+                notifier.setHuati(next);
+              },
+            ),
+        if (state.topicList.length > 8)
+          ActionChip(
+            label: Text('+${state.topicList.length - 8}'),
+            backgroundColor: FabuPublishTheme.panelBg(context),
+            side: BorderSide(color: FabuPublishTheme.border(context)),
+            labelStyle: context.typo.caption.copyWith(
+              color: FabuPublishTheme.chipLabel(context),
+            ),
+            onPressed: () => _showTopicSheet(state, notifier),
           ),
-          8.verticalSpace,
-          _TextBox(
-            controller: _contentController,
-            hintText: '描述一下这个视频...',
-            minLines: 4,
-            maxLines: 8,
-          ),
-        ]);
-      case FabuPublishType.help:
-        fields.addAll([
-          _TextBox(
-            controller: _contentController,
-            hintText: '说说你需要什么帮助...',
-            minLines: 4,
-            maxLines: 8,
-          ),
-          8.verticalSpace,
-          _TextBox(
-            controller: _targetController,
-            hintText: '求助目标',
-            minLines: 1,
-            maxLines: 1,
-            maxLength: 80,
-          ),
-          12.verticalSpace,
+      ],
+    );
+  }
+
+  Widget _buildWebCollectionRow(FabuState state, FabuNotifier notifier) {
+    final hasCollection = state.collectionSel.isNotEmpty;
+    final collectionName = hasCollection
+        ? state.collectionSel.values.first
+        : null;
+    final itemCount = state.collectionItemCount ?? 0;
+    final episode = state.collectionEpisode;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Text(
+                '添加合集',
+                style: context.typo.body.copyWith(
+                  color: FabuPublishTheme.text(context),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _CollectionSelectField(
+                    label: collectionName ?? '请选择合集',
+                    trailing: hasCollection ? '共$itemCount个作品' : null,
+                    onTap: () => _showCollectionSheet(notifier),
+                  ),
+                  if (hasCollection) ...[
+                    const SizedBox(height: 10),
+                    _CollectionSelectField(
+                      label: episode != null ? '第$episode集' : '请选择集数',
+                      highlighted: true,
+                      onTap: () => _showEpisodeSheet(state, notifier),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _showEpisodeSheet(FabuState state, FabuNotifier notifier) async {
+    if (state.collectionSel.isEmpty) return;
+    final itemCount = state.collectionItemCount ?? 0;
+    final maxEpisode = itemCount + 1;
+    final selected = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _EpisodePickerSheet(
+        maxEpisode: maxEpisode,
+        selectedEpisode: state.collectionEpisode,
+      ),
+    );
+    if (selected != null && mounted) {
+      notifier.setCollectionEpisode(selected);
+    }
+  }
+
+  Widget _buildWebExtendedSection(FabuState state, FabuNotifier notifier) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (widget.type == FabuPublishType.help) ...[
           _RewardSelector(
             options: _rewardOptions,
             selectedAmountCents: _rewardAmountCents,
@@ -311,13 +385,171 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
             },
             onCustomSelected: _showCustomRewardDialog,
           ),
+          const SizedBox(height: 8),
+        ],
+        Text(
+          '添加标签',
+          style: context.typo.body.copyWith(
+            color: FabuPublishTheme.text(context),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _WebDropdownField(
+                label: state.selAddressEntity?.name ?? '位置',
+                onTap: state.isLoadingGPS
+                    ? null
+                    : () => _showAddressSheet(state, notifier),
+                trailing: state.isLoadingGPS
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : null,
+              ),
+            ),
+            if (widget.type == FabuPublishType.video) ...[
+              const SizedBox(width: 12),
+              Expanded(
+                child: _WebDropdownField(
+                  label: state.soundMode == 2 ? '循环背景音乐' : '视频原声',
+                  onTap: () => _showSoundModeSheet(state, notifier),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGroupBuySection(FabuState state, FabuNotifier notifier) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '挂载商品后，观众可在作品中查看并购买',
+          style: context.typo.caption.copyWith(
+            color: AppActionColors.muted(context),
+          ),
+        ),
+        const SizedBox(height: 12),
+        _CollectionSelectField(
+          label: state.shopProducts.isEmpty
+              ? '添加商品'
+              : '已选 ${state.shopProducts.length} 件商品',
+          onTap: () => _showShopProductSheet(state, notifier),
+        ),
+        if (state.shopProducts.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          ...state.shopProducts.map(
+            (product) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _SelectedShopProductTile(
+                product: product,
+                onRemove: () {
+                  final id = product.id;
+                  if (id != null) notifier.removeShopProduct(id);
+                },
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Future<void> _showShopProductSheet(
+    FabuState state,
+    FabuNotifier notifier,
+  ) async {
+    final selected = await showShopProductPickerSheet(
+      context,
+      initialSelection: state.shopProducts,
+    );
+    if (selected != null && mounted) {
+      notifier.setShopProducts(selected);
+    }
+  }
+
+  Widget _buildWebPublishSettings(FabuState state, FabuNotifier notifier) {
+    return FabuWebSettingRow(
+      label: '谁可以看',
+      showDivider: false,
+      child: FabuWebRadioGroup(
+        options: state.whoCanSee.take(3).toList(),
+        selectedIndex: state.whoCanSeeSel ?? 0,
+        onChanged: notifier.setWhoCanSee,
+      ),
+    );
+  }
+
+  List<Widget> _buildInputFields(FabuState state, FabuNotifier notifier) {
+    final fields = <Widget>[];
+
+    switch (widget.type) {
+      case FabuPublishType.video:
+        fields.addAll([
+          _WebInlineField(
+            controller: _titleController,
+            hintText: '填写标题，为作品获得更多流量',
+            maxLength: 30,
+            maxLines: 1,
+          ),
+          const SizedBox(height: 8),
+          _WebInlineField(
+            controller: _contentController,
+            hintText: '添加作品简介',
+            maxLines: 5,
+            focusNode: _contentFocusNode,
+          ),
         ]);
+      case FabuPublishType.help:
+        fields.addAll([
+          _WebInlineField(
+            controller: _contentController,
+            hintText: '说说你需要什么帮助...',
+            maxLines: 5,
+            focusNode: _contentFocusNode,
+          ),
+          const SizedBox(height: 8),
+          _WebInlineField(
+            controller: _targetController,
+            hintText: '求助目标',
+            maxLength: 80,
+            maxLines: 1,
+          ),
+        ]);
+      case FabuPublishType.dynamic:
+        fields.add(
+          _WebInlineField(
+            controller: _contentController,
+            hintText: '这一刻的想法...',
+            maxLines: 6,
+            focusNode: _contentFocusNode,
+          ),
+        );
     }
 
     return fields;
   }
 
   Widget _buildMediaPicker(FabuState state, FabuNotifier notifier) {
+    if (state.videoFiles.isNotEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildVideoSegmentsPreview(state, notifier),
+          12.verticalSpace,
+          _buildVideoCoverPicker(state, notifier),
+        ],
+      );
+    }
+
     if (state.files.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,9 +568,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     ? BoxConstraints(minHeight: 180.h)
                     : null,
                 decoration: BoxDecoration(
-                  color: _FabuPublishColors.panelBg(context),
+                  color: FabuPublishTheme.panelBg(context),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: _FabuPublishColors.border(context)),
+                  border: Border.all(color: FabuPublishTheme.border(context)),
                 ),
                 child: AspectRatio(
                   aspectRatio: widget.type == FabuPublishType.video
@@ -354,7 +586,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withValues(
-                                alpha: _FabuPublishColors.cardShadowAlpha(context),
+                                alpha: FabuPublishTheme.cardShadowAlpha(context),
                               ),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
@@ -367,7 +599,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                             widget.type == FabuPublishType.video
                                 ? Icons.video_call_outlined
                                 : Icons.add_photo_alternate_outlined,
-                            color: const Color(0xFF3578E5),
+                            color: FabuPublishTheme.infoBlue(context),
                             size: 32,
                           ),
                         ),
@@ -388,20 +620,6 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
             ),
           ),
           12.verticalSpace,
-          _buildBackgroundMusicPicker(state, notifier),
-        ],
-      );
-    }
-
-    if (state.videoFiles.isNotEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildVideoSegmentsPreview(state, notifier),
-          12.verticalSpace,
-          _buildBackgroundMusicPicker(state, notifier),
-          12.verticalSpace,
-          _buildVideoCoverPicker(state, notifier),
         ],
       );
     }
@@ -421,9 +639,30 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
             }).toList(),
           ),
         ),
-        12.verticalSpace,
-        _buildBackgroundMusicPicker(state, notifier),
       ],
+    );
+  }
+
+  Widget _buildVideoMusicButton(FabuState state, FabuNotifier notifier) {
+    final hasMusic =
+        state.backgroundMusicFile != null ||
+        (state.uploadedBackgroundMusicUrl?.isNotEmpty == true);
+    final musicName = state.backgroundMusicName?.trim();
+    final label = hasMusic && musicName != null && musicName.isNotEmpty
+        ? musicName
+        : '选择背景音乐';
+
+    return TextButton.icon(
+      onPressed: () => _showBackgroundMusicSheet(notifier),
+      icon: Icon(Icons.music_note_outlined, size: 18, color: FabuPublishTheme.infoBlue(context)),
+      label: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      style: TextButton.styleFrom(
+        foregroundColor: FabuPublishTheme.infoBlue(context),
+      ),
     );
   }
 
@@ -440,15 +679,19 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     ? '分段视频（${videoFiles.length} 段，可左右滑动预览）'
                     : '视频预览',
                 style: context.typo.body.copyWith(
-                  color: _FabuPublishColors.text(context),
+                  color: FabuPublishTheme.text(context),
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
+            _buildVideoMusicButton(state, notifier),
             TextButton.icon(
               onPressed: () => _pickMedia(notifier),
-              icon: const Icon(Icons.add, size: 18),
+              icon: Icon(Icons.add, size: 18, color: FabuPublishTheme.infoBlue(context)),
               label: const Text('继续添加'),
+              style: TextButton.styleFrom(
+                foregroundColor: FabuPublishTheme.infoBlue(context),
+              ),
             ),
           ],
         ),
@@ -507,97 +750,6 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildBackgroundMusicPicker(FabuState state, FabuNotifier notifier) {
-    final hasMusic =
-        state.backgroundMusicFile != null ||
-        (state.uploadedBackgroundMusicUrl?.isNotEmpty == true);
-    final musicName = state.backgroundMusicName?.trim();
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: _FabuPublishColors.panelBg(context),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _FabuPublishColors.border(context)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Column(
-          children: [
-            InkWell(
-              borderRadius: BorderRadius.circular(12),
-              onTap: () => _showBackgroundMusicSheet(notifier),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 17,
-                    backgroundColor: _FabuPublishColors.accentTintBg(context),
-                    child: const Icon(
-                      Icons.music_note_outlined,
-                      color: Color(0xFF3578E5),
-                      size: 20,
-                    ),
-                  ),
-                  10.horizontalSpace,
-                  Expanded(
-                    child: Text(
-                      hasMusic && musicName != null && musicName.isNotEmpty
-                          ? musicName
-                          : '选择背景音乐',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.typo.body.copyWith(
-                        color: _FabuPublishColors.text(context),
-                        fontWeight: hasMusic
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  if (hasMusic)
-                    IconButton(
-                      tooltip: '移除背景音乐',
-                      onPressed: notifier.clearBackgroundMusic,
-                      icon: const Icon(Icons.close, size: 18),
-                    )
-                  else
-                    Icon(Icons.chevron_right, color: AppActionColors.muted(context)),
-                ],
-              ),
-            ),
-            if (widget.type == FabuPublishType.video && hasMusic) ...[
-              Divider(
-                height: 14,
-                color: _FabuPublishColors.border(context),
-              ),
-              InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () => _showSoundModeSheet(state, notifier),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.volume_up_outlined,
-                      color: AppActionColors.muted(context),
-                      size: 20,
-                    ),
-                    12.horizontalSpace,
-                    Expanded(
-                      child: Text(
-                        state.soundMode == 2 ? '循环播放背景音乐' : '播放视频原声',
-                        style: context.typo.caption.copyWith(
-                          color: AppActionColors.muted(context),
-                        ),
-                      ),
-                    ),
-                    Icon(Icons.chevron_right, color: AppActionColors.muted(context)),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 
@@ -669,9 +821,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: _FabuPublishColors.panelBg(context),
+        color: FabuPublishTheme.panelBg(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: _FabuPublishColors.border(context)),
+        border: Border.all(color: FabuPublishTheme.border(context)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -687,7 +839,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       Text(
                         hasDisplay ? '视频封面预览' : '视频封面',
                         style: context.typo.body.copyWith(
-                          color: _FabuPublishColors.text(context),
+                          color: FabuPublishTheme.text(context),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -733,6 +885,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                 return ChoiceChip(
                   label: Text(style.label),
                   selected: selected,
+                  backgroundColor: FabuPublishTheme.coverStyleChipBg(context),
                   onSelected: (_) {
                     notifier.setCoverStyle(style.id);
                     if (_showWidgetCoverPreview) {
@@ -741,16 +894,17 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       });
                     }
                   },
-                  selectedColor: _FabuPublishColors.accentTintBg(context),
+                  selectedColor: FabuPublishTheme.accentTintBg(context),
                   side: BorderSide(
                     color: selected
-                        ? const Color(0xFF3578E5)
-                        : _FabuPublishColors.border(context),
+                        ? FabuPublishTheme.infoBlue(context)
+                        : FabuPublishTheme.border(context),
                   ),
                   labelStyle: context.typo.caption.copyWith(
-                    color: selected
-                        ? const Color(0xFF3578E5)
-                        : AppActionColors.muted(context),
+                    color: FabuPublishTheme.coverStyleChipLabel(
+                      context,
+                      selected: selected,
+                    ),
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 );
@@ -763,6 +917,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               children: [
                 OutlinedButton.icon(
                   onPressed: () => _pickVideoCover(notifier),
+                  style: FabuPublishTheme.coverActionButtonStyle(context),
                   icon: const Icon(Icons.upload_file_outlined, size: 18),
                   label: const Text('选择封面'),
                 ),
@@ -770,11 +925,13 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                   onPressed: state.isCoverPreviewing
                       ? null
                       : () => _useCurrentVideoFrameAsCover(notifier),
+                  style: FabuPublishTheme.coverActionButtonStyle(context),
                   icon: const Icon(Icons.movie_creation_outlined, size: 18),
                   label: const Text('使用当前帧'),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => _refreshCoverPreview(notifier),
+                  style: FabuPublishTheme.coverActionButtonStyle(context),
                   icon: const Icon(Icons.video_settings_outlined, size: 18),
                   label: const Text('生成预览'),
                 ),
@@ -1045,14 +1202,23 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
     final selectedAddress = await showModalBottomSheet<AddressEntity>(
       context: context,
+      backgroundColor: AppActionColors.surface(context),
       builder: (context) {
         return ListView.builder(
           itemCount: currentState.addressList.length,
           itemBuilder: (context, index) {
             final address = currentState.addressList[index];
             return ListTile(
-              title: Text(address.name),
-              subtitle: address.detail.isNotEmpty ? Text(address.detail) : null,
+              title: Text(
+                address.name,
+                style: TextStyle(color: FabuPublishTheme.text(context)),
+              ),
+              subtitle: address.detail.isNotEmpty
+                  ? Text(
+                      address.detail,
+                      style: TextStyle(color: AppActionColors.muted(context)),
+                    )
+                  : null,
               onTap: () => Navigator.pop(context, address),
             );
           },
@@ -1065,24 +1231,16 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     }
   }
 
-  Future<void> _showTopicSheet(FabuState state, FabuNotifier notifier) async {
-    final result = await showModalBottomSheet<Map<int, String>>(
-      context: context,
-      builder: (context) => FilterPage(state.huatiSel, state.topicList),
-    );
-    if (result != null) {
-      notifier.setHuati(result);
-    }
-  }
-
   Future<void> _showCollectionSheet(FabuNotifier notifier) async {
     final state = ref.read(fabuProvider);
-    final result = await showCollectionPickerSheet(
+    final initialId =
+        state.collectionSel.isEmpty ? null : state.collectionSel.keys.first;
+    final selected = await showSingleCollectionPickerSheet(
       context,
-      initialSelection: state.collectionSel,
+      initialCollectionId: initialId,
     );
-    if (result != null) {
-      notifier.setCollectionSel(result);
+    if (selected != null) {
+      notifier.setCollection(selected);
     }
   }
 
@@ -1092,24 +1250,37 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   ) async {
     final selected = await showModalBottomSheet<int>(
       context: context,
+      backgroundColor: AppActionColors.surface(context),
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                title: const Text('视频原声'),
-                subtitle: const Text('播放视频自带声音'),
+                title: Text(
+                  '视频原声',
+                  style: TextStyle(color: FabuPublishTheme.text(context)),
+                ),
+                subtitle: Text(
+                  '播放视频自带声音',
+                  style: TextStyle(color: AppActionColors.muted(context)),
+                ),
                 trailing: state.soundMode == 1
-                    ? const Icon(Icons.check, color: Colors.blue)
+                    ? Icon(Icons.check, color: FabuPublishTheme.infoBlue(context))
                     : null,
                 onTap: () => Navigator.pop(context, 1),
               ),
               ListTile(
-                title: const Text('循环背景音乐'),
-                subtitle: const Text('静音视频原声，播放选择的背景音乐'),
+                title: Text(
+                  '循环背景音乐',
+                  style: TextStyle(color: FabuPublishTheme.text(context)),
+                ),
+                subtitle: Text(
+                  '静音视频原声，播放选择的背景音乐',
+                  style: TextStyle(color: AppActionColors.muted(context)),
+                ),
                 trailing: state.soundMode == 2
-                    ? const Icon(Icons.check, color: Colors.blue)
+                    ? Icon(Icons.check, color: FabuPublishTheme.infoBlue(context))
                     : null,
                 onTap: () => Navigator.pop(context, 2),
               ),
@@ -1123,32 +1294,6 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
       if (!context.mounted) return;
       notifier.setSoundMode(selected);
     });
-  }
-
-  Future<void> _showVisibilitySheet(
-    FabuState state,
-    FabuNotifier notifier,
-  ) async {
-    final selected = await showModalBottomSheet<int>(
-      context: context,
-      builder: (context) {
-        return ListView.builder(
-          itemCount: state.whoCanSee.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              title: Text(state.whoCanSee[index]),
-              trailing: state.whoCanSeeSel == index
-                  ? const Icon(Icons.check, color: Colors.blue)
-                  : null,
-              onTap: () => Navigator.pop(context, index),
-            );
-          },
-        );
-      },
-    );
-    if (selected != null) {
-      notifier.setWhoCanSee(selected);
-    }
   }
 
   Future<void> _showCustomRewardDialog() async {
@@ -1230,7 +1375,7 @@ class _RewardSelector extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border(
-          top: BorderSide(color: _FabuPublishColors.border(context)),
+          top: BorderSide(color: FabuPublishTheme.border(context)),
         ),
       ),
       child: Padding(
@@ -1240,20 +1385,20 @@ class _RewardSelector extends StatelessWidget {
           children: [
             Row(
               children: [
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 12,
-                  backgroundColor: Color(0xFFFFD31A),
+                  backgroundColor: FabuPublishTheme.rewardBadgeBg,
                   child: Icon(
                     Icons.workspace_premium,
                     size: 15,
-                    color: Colors.white,
+                    color: FabuPublishTheme.onAccent(context),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Text(
                   '悬赏金额',
                   style: context.typo.sectionTitle.copyWith(
-                    color: _FabuPublishColors.text(context),
+                    color: FabuPublishTheme.text(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1274,7 +1419,7 @@ class _RewardSelector extends StatelessWidget {
                 Text(
                   _formatYuan(balanceCents),
                   style: context.typo.body.copyWith(
-                    color: const Color(0xFFFF8A00),
+                    color: FabuPublishTheme.balanceAmount(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1610,7 +1755,7 @@ class _VideoCoverPlaceholder extends StatelessWidget {
           colors: isLight
               ? const [Color(0xFFECEFF3), Color(0xFFD7DCE3)]
               : [
-                  _FabuPublishColors.panelBg(context),
+                  FabuPublishTheme.panelBg(context),
                   AppActionColors.surface(context),
                 ],
         ),
@@ -1736,7 +1881,7 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
               width: 42,
               height: 5,
               decoration: BoxDecoration(
-                color: _FabuPublishColors.dragHandle(context),
+                color: FabuPublishTheme.dragHandle(context),
                 borderRadius: BorderRadius.circular(99),
               ),
             ),
@@ -1746,14 +1891,14 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
               child: Container(
                 height: 46,
                 decoration: BoxDecoration(
-                  color: _FabuPublishColors.panelBg(context),
+                  color: FabuPublishTheme.panelBg(context),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: _onSearchChanged,
                   textInputAction: TextInputAction.search,
-                  style: TextStyle(color: _FabuPublishColors.text(context)),
+                  style: TextStyle(color: FabuPublishTheme.text(context)),
                   decoration: InputDecoration(
                     prefixIcon: Icon(
                       Icons.search,
@@ -1775,14 +1920,16 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
                     child: Row(
                       children: _tabs
                           .map(
-                            (tab) => _MusicTabButton(
-                              title: tab.$1,
-                              selected: _tab == tab.$2,
-                              onTap: () {
-                                if (_tab == tab.$2) return;
-                                setState(() => _tab = tab.$2);
-                                _load();
-                              },
+                            (tab) => Expanded(
+                              child: _MusicTabButton(
+                                title: tab.$1,
+                                selected: _tab == tab.$2,
+                                onTap: () {
+                                  if (_tab == tab.$2) return;
+                                  setState(() => _tab = tab.$2);
+                                  _load();
+                                },
+                              ),
                             ),
                           )
                           .toList(),
@@ -1791,10 +1938,13 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
                   TextButton.icon(
                     onPressed: _importAudio,
                     icon: const Icon(Icons.library_music_outlined, size: 18),
-                    label: const Text('导入音频'),
+                    label: const Text('导入'),
                     style: TextButton.styleFrom(
-                      foregroundColor: _FabuPublishColors.text(context),
-                      padding: EdgeInsets.zero,
+                      foregroundColor: FabuPublishTheme.text(context),
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      visualDensity: VisualDensity.compact,
                     ),
                   ),
                 ],
@@ -1833,7 +1983,7 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
       separatorBuilder: (_, __) => Divider(
         height: 1,
         indent: 56,
-        color: _FabuPublishColors.border(context),
+        color: FabuPublishTheme.border(context),
       ),
       itemBuilder: (context, index) {
         final item = _items[index];
@@ -1863,15 +2013,18 @@ class _MusicTabButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: EdgeInsets.only(right: 30.w, bottom: 8),
+        padding: const EdgeInsets.only(bottom: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: context.typo.body.copyWith(
                 color: selected
-                    ? _FabuPublishColors.text(context)
+                    ? FabuPublishTheme.text(context)
                     : AppActionColors.muted(context),
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
@@ -1883,7 +2036,7 @@ class _MusicTabButton extends StatelessWidget {
               height: 2,
               decoration: BoxDecoration(
                 color: selected
-                    ? _FabuPublishColors.text(context)
+                    ? FabuPublishTheme.text(context)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(99),
               ),
@@ -1927,20 +2080,20 @@ class _BackgroundMusicRow extends StatelessWidget {
                 height: 46,
                 child: coverUrl == null
                     ? ColoredBox(
-                        color: _FabuPublishColors.accentTintBg(context),
-                        child: const Icon(
+                        color: FabuPublishTheme.accentTintBg(context),
+                        child: Icon(
                           Icons.music_note,
-                          color: Color(0xFFFF2D65),
+                          color: FabuPublishTheme.accent,
                         ),
                       )
                     : Image.network(
                         coverUrl,
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => ColoredBox(
-                          color: _FabuPublishColors.accentTintBg(context),
-                          child: const Icon(
+                          color: FabuPublishTheme.accentTintBg(context),
+                          child: Icon(
                             Icons.music_note,
-                            color: Color(0xFFFF2D65),
+                            color: FabuPublishTheme.accent,
                           ),
                         ),
                       ),
@@ -1960,16 +2113,16 @@ class _BackgroundMusicRow extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: context.typo.body.copyWith(
                             color: selected
-                                ? const Color(0xFFFF2D65)
-                                : _FabuPublishColors.text(context),
+                                ? FabuPublishTheme.accent
+                                : FabuPublishTheme.text(context),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
                       if (selected)
-                        const Icon(
+                        Icon(
                           Icons.graphic_eq,
-                          color: Color(0xFFFF2D65),
+                          color: FabuPublishTheme.accent,
                           size: 18,
                         ),
                     ],
@@ -1991,14 +2144,14 @@ class _BackgroundMusicRow extends StatelessWidget {
               onPressed: onTap,
               icon: Icon(
                 Icons.content_cut,
-                color: _FabuPublishColors.text(context),
+                color: FabuPublishTheme.text(context),
               ),
             ),
             IconButton(
               onPressed: onTap,
               icon: Icon(
                 item.favorite ? Icons.star : Icons.star_border,
-                color: const Color(0xFFFFD633),
+                color: FabuPublishTheme.starYellow,
               ),
             ),
           ],
@@ -2065,8 +2218,6 @@ class _RewardOptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const selectedBorder = Color(0xFFFFC54D);
-
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
@@ -2076,18 +2227,18 @@ class _RewardOptionButton extends StatelessWidget {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: selected
-              ? _FabuPublishColors.rewardSelectedBg(context)
-              : _FabuPublishColors.panelBg(context),
+              ? FabuPublishTheme.rewardSelectedBg(context)
+              : FabuPublishTheme.panelBg(context),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected ? selectedBorder : Colors.transparent,
+            color: selected ? FabuPublishTheme.rewardBorder : Colors.transparent,
           ),
         ),
         child: Text(
           label,
           style: context.typo.body.copyWith(
             color: selected
-                ? const Color(0xFFE58A00)
+                ? FabuPublishTheme.rewardTextSelected(context)
                 : AppActionColors.subtle(context),
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
@@ -2097,122 +2248,465 @@ class _RewardOptionButton extends StatelessWidget {
   }
 }
 
-class _TextBox extends StatelessWidget {
-  const _TextBox({
-    required this.controller,
-    required this.hintText,
-    required this.minLines,
-    required this.maxLines,
-    this.maxLength = 1000,
+class _SelectedShopProductTile extends StatelessWidget {
+  const _SelectedShopProductTile({
+    required this.product,
+    required this.onRemove,
   });
 
-  final TextEditingController controller;
-  final String hintText;
-  final int minLines;
-  final int maxLines;
-  final int maxLength;
+  final MallProduct product;
+  final VoidCallback onRemove;
+
+  String _formatPrice(int? cents) {
+    if (cents == null) return '';
+    final yuan = cents / 100;
+    if (cents % 100 == 0) return '¥${yuan.toStringAsFixed(0)}';
+    return '¥${yuan.toStringAsFixed(2)}';
+  }
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      minLines: minLines,
-      maxLines: maxLines,
-      maxLength: maxLength,
-      style: context.typo.inputText.copyWith(
-        color: _FabuPublishColors.text(context),
+    final coverUrl = resolveMediaUrl(product.picUrl);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: FabuPublishTheme.panelBg(context),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: FabuPublishTheme.border(context)),
       ),
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: _FabuPublishColors.panelBg(context),
-        hintText: hintText,
-        hintStyle: context.typo.inputHint.copyWith(
-          color: AppActionColors.subtle(context),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: SizedBox(
+                width: 44,
+                height: 44,
+                child: coverUrl == null
+                    ? ColoredBox(
+                        color: AppActionColors.surface(context),
+                        child: Icon(
+                          Icons.shopping_bag_outlined,
+                          color: AppActionColors.muted(context),
+                        ),
+                      )
+                    : Image.network(
+                        coverUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => ColoredBox(
+                          color: AppActionColors.surface(context),
+                          child: Icon(
+                            Icons.shopping_bag_outlined,
+                            color: AppActionColors.muted(context),
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name ?? '商品',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: context.typo.body.copyWith(
+                      color: FabuPublishTheme.text(context),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _formatPrice(product.price),
+                    style: context.typo.caption.copyWith(
+                      color: FabuPublishTheme.accent,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: onRemove,
+              icon: Icon(
+                Icons.close,
+                size: 18,
+                color: AppActionColors.muted(context),
+              ),
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            ),
+          ],
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: _FabuPublishColors.border(context)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFF3578E5), width: 1.2),
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
       ),
     );
   }
 }
 
-class _ActionRow extends StatelessWidget {
-  const _ActionRow({
-    required this.icon,
-    required this.title,
-    required this.onTap,
-    this.trailing = const Icon(Icons.chevron_right),
-    this.showDivider = true,
+class _WebInlineField extends StatelessWidget {
+  const _WebInlineField({
+    required this.controller,
+    required this.hintText,
+    this.maxLines = 1,
+    this.maxLength,
+    this.focusNode,
   });
 
-  final IconData icon;
-  final String title;
-  final VoidCallback? onTap;
-  final Widget trailing;
-  final bool showDivider;
+  final TextEditingController controller;
+  final String hintText;
+  final int maxLines;
+  final int? maxLength;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 58),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          decoration: BoxDecoration(
-            border: showDivider
-                ? Border(
-                    bottom: BorderSide(color: _FabuPublishColors.border(context)),
-                  )
-                : null,
-          ),
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      maxLines: maxLines,
+      minLines: maxLines == 1 ? 1 : 3,
+      maxLength: maxLength,
+      style: context.typo.inputText.copyWith(
+        color: FabuPublishTheme.text(context),
+      ),
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: context.typo.inputHint.copyWith(
+          color: AppActionColors.subtle(context),
+        ),
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        border: const UnderlineInputBorder(),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: FabuPublishTheme.border(context)),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: FabuPublishTheme.accent, width: 1.2),
+        ),
+        counterStyle: context.typo.caption.copyWith(
+          color: AppActionColors.subtle(context),
+        ),
+      ),
+    );
+  }
+}
+
+class _WebTagButton extends StatelessWidget {
+  const _WebTagButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        foregroundColor: AppActionColors.muted(context),
+        side: BorderSide(color: FabuPublishTheme.border(context)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      ),
+      child: Text(label, style: context.typo.caption),
+    );
+  }
+}
+
+class _WebDropdownField extends StatelessWidget {
+  const _WebDropdownField({
+    required this.label,
+    required this.onTap,
+    this.trailing,
+  });
+
+  final String label;
+  final VoidCallback? onTap;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: FabuPublishTheme.panelBg(context),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: FabuPublishTheme.border(context)),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           child: Row(
             children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: AppActionColors.surface(context),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  color: AppActionColors.muted(context),
-                  size: 20,
-                ),
-              ),
-              12.horizontalSpace,
               Expanded(
                 child: Text(
-                  title,
+                  label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: context.typo.body.copyWith(
-                    color: _FabuPublishColors.text(context),
+                    color: AppActionColors.subtle(context),
                   ),
                 ),
               ),
-              IconTheme(
-                data: IconThemeData(
-                  color: AppActionColors.muted(context),
-                  size: 22,
+              trailing ??
+                  Icon(
+                    Icons.keyboard_arrow_down,
+                    color: AppActionColors.muted(context),
+                  ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TopicPickerSheet extends StatelessWidget {
+  const _TopicPickerSheet({required this.topics});
+
+  final List<SkuuTopicResVO> topics;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height * 0.52;
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: AppActionColors.surface(context),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 42,
+              height: 5,
+              decoration: BoxDecoration(
+                color: FabuPublishTheme.dragHandle(context),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  Text(
+                    '选择话题',
+                    style: context.typo.sectionTitle.copyWith(
+                      color: FabuPublishTheme.text(context),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: FabuPublishTheme.border(context)),
+            Expanded(
+              child: topics.isEmpty
+                  ? Center(
+                      child: Text(
+                        '暂无话题',
+                        style: context.typo.body.copyWith(
+                          color: AppActionColors.muted(context),
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      itemCount: topics.length,
+                      separatorBuilder: (_, __) => Divider(
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                        color: FabuPublishTheme.border(context),
+                      ),
+                      itemBuilder: (context, index) {
+                        final topic = topics[index];
+                        final name = topic.topicName?.trim() ?? '';
+                        if (name.isEmpty) return const SizedBox.shrink();
+                        return ListTile(
+                          title: Text(
+                            '#$name',
+                            style: context.typo.body.copyWith(
+                              color: FabuPublishTheme.text(context),
+                            ),
+                          ),
+                          trailing: Icon(
+                            Icons.chevron_right,
+                            color: AppActionColors.muted(context),
+                          ),
+                          onTap: () => Navigator.pop(context, topic),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CollectionSelectField extends StatelessWidget {
+  const _CollectionSelectField({
+    required this.label,
+    required this.onTap,
+    this.trailing,
+    this.highlighted = false,
+  });
+
+  final String label;
+  final VoidCallback onTap;
+  final String? trailing;
+  final bool highlighted;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPlaceholder = label == '请选择合集' || label == '请选择集数';
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: FabuPublishTheme.panelBg(context),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: highlighted
+                ? FabuPublishTheme.accent
+                : FabuPublishTheme.border(context),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.typo.body.copyWith(
+                    color: isPlaceholder
+                        ? AppActionColors.subtle(context)
+                        : FabuPublishTheme.text(context),
+                  ),
                 ),
-                child: trailing,
+              ),
+              if (trailing != null) ...[
+                Text(
+                  trailing!,
+                  style: context.typo.caption.copyWith(
+                    color: AppActionColors.muted(context),
+                  ),
+                ),
+                const SizedBox(width: 4),
+              ],
+              Icon(
+                Icons.keyboard_arrow_down,
+                color: AppActionColors.muted(context),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EpisodePickerSheet extends StatelessWidget {
+  const _EpisodePickerSheet({
+    required this.maxEpisode,
+    this.selectedEpisode,
+  });
+
+  final int maxEpisode;
+  final int? selectedEpisode;
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.sizeOf(context).height * 0.45;
+    return SafeArea(
+      top: false,
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: AppActionColors.surface(context),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 42,
+              height: 5,
+              decoration: BoxDecoration(
+                color: FabuPublishTheme.dragHandle(context),
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              child: Row(
+                children: [
+                  Text(
+                    '选择集数',
+                    style: context.typo.sectionTitle.copyWith(
+                      color: FabuPublishTheme.text(context),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: FabuPublishTheme.border(context)),
+            Expanded(
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                itemCount: maxEpisode,
+                separatorBuilder: (_, __) => Divider(
+                  height: 1,
+                  indent: 20,
+                  endIndent: 20,
+                  color: FabuPublishTheme.border(context),
+                ),
+                itemBuilder: (context, index) {
+                  final episode = index + 1;
+                  final selected = selectedEpisode == episode;
+                  return ListTile(
+                    title: Text(
+                      '第$episode集',
+                      style: context.typo.body.copyWith(
+                        color: selected
+                            ? FabuPublishTheme.accent
+                            : FabuPublishTheme.text(context),
+                        fontWeight:
+                            selected ? FontWeight.w700 : FontWeight.w400,
+                      ),
+                    ),
+                    trailing: selected
+                        ? Icon(Icons.check, color: FabuPublishTheme.accent)
+                        : null,
+                    onTap: () => Navigator.pop(context, episode),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );

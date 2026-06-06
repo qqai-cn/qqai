@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/fabu/theme/fabu_publish_theme.dart';
 import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -127,51 +128,14 @@ class _FabuViewState extends ConsumerState<FabuView>
       appBar: AppBar(
         backgroundColor: AppActionColors.surface(context),
         surfaceTintColor: AppActionColors.surface(context),
+        foregroundColor: AppActionColors.onSurface(context),
+        iconTheme: IconThemeData(color: AppActionColors.onSurface(context)),
         elevation: 0,
-        title: Text(
-          '发布',
-          style: TextStyle(
-            color: AppActionColors.strong(context),
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: FilledButton(
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(72, 36),
-                padding: const EdgeInsets.symmetric(horizontal: 18),
-                backgroundColor: const Color(0xFF3578E5),
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: AppActionColors.borderSubtle(context),
-                disabledForegroundColor: AppActionColors.subtle(context),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-              ),
-              onPressed: fabuState.isLoading || fabuState.isCoverPreviewing
-                  ? null
-                  : _publish,
-              child: fabuState.isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Text(
-                      '发布',
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-            ),
-          ),
-        ],
-        bottom: QqTabBarBottom(
+        centerTitle: true,
+        titleSpacing: 0,
+        title: QqTabBar(
           controller: _tabController,
+          shrinkWrap: true,
           items: _tabTypes
               .map(
                 (type) => QqTabItem(
@@ -181,6 +145,40 @@ class _FabuViewState extends ConsumerState<FabuView>
               )
               .toList(),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: FilledButton(
+              style: FabuPublishTheme.publishButtonStyle(context).copyWith(
+                minimumSize: const WidgetStatePropertyAll(Size(72, 36)),
+                padding: const WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: 18),
+                ),
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+              onPressed: fabuState.isLoading || fabuState.isCoverPreviewing
+                  ? null
+                  : _publish,
+              child: fabuState.isLoading
+                  ? SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: FabuPublishTheme.onAccent(context),
+                      ),
+                    )
+                  : const Text(
+                      '发布',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+            ),
+          ),
+        ],
       ),
       body: Stack(
         children: [

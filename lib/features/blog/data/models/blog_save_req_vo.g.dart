@@ -31,6 +31,11 @@ _BlogSaveReqVO _$BlogSaveReqVOFromJson(Map<String, dynamic> json) =>
       collectionIds: (json['collectionIds'] as List<dynamic>?)
           ?.map((e) => (e as num).toInt())
           .toList(),
+      collectionEpisodes: (json['collectionEpisodes'] as Map<String, dynamic>?)
+          ?.map((k, e) => MapEntry(int.parse(k), (e as num).toInt())),
+      shopProductIds: (json['shopProductIds'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList(),
     );
 
 Map<String, dynamic> _$BlogSaveReqVOToJson(_BlogSaveReqVO instance) =>
@@ -56,4 +61,8 @@ Map<String, dynamic> _$BlogSaveReqVOToJson(_BlogSaveReqVO instance) =>
       'longitude': instance.longitude,
       'shareType': instance.shareType,
       'collectionIds': instance.collectionIds,
+      'collectionEpisodes': instance.collectionEpisodes?.map(
+        (k, e) => MapEntry(k.toString(), e),
+      ),
+      'shopProductIds': instance.shopProductIds,
     };

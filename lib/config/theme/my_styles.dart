@@ -189,13 +189,21 @@ class MyStyles {
       backgroundColor: isLightTheme
           ? LightThemeColors.chipBackground
           : DarkThemeColors.chipBackground,
-      brightness: Brightness.light,
+      brightness: isLightTheme ? Brightness.light : Brightness.dark,
       labelStyle: getChipTextStyle(isLightTheme: isLightTheme),
       secondaryLabelStyle: getChipTextStyle(isLightTheme: isLightTheme),
-      selectedColor: Colors.black,
-      disabledColor: Colors.green,
+      selectedColor: isLightTheme
+          ? const Color(0xFFE5E7EB)
+          : const Color(0xFF525252),
+      disabledColor: isLightTheme
+          ? const Color(0xFFF0F0F0)
+          : const Color(0xFF353535),
       padding: const EdgeInsets.all(5),
-      secondarySelectedColor: Colors.purple,
+      side: BorderSide(
+        color: isLightTheme
+            ? const Color(0xFFECEEF2)
+            : Colors.white.withValues(alpha: 0.12),
+      ),
     );
   }
 

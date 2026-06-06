@@ -37,6 +37,54 @@ class BlogItemCollection {
   };
 }
 
+class BlogItemShopProduct {
+  const BlogItemShopProduct({
+    this.id,
+    this.shopId,
+    this.name,
+    this.coverUrl,
+    this.price,
+    this.externalUrl,
+    this.sort,
+    this.status,
+  });
+
+  final int? id;
+  final int? shopId;
+  final String? name;
+  final String? coverUrl;
+
+  /// 售价（分）
+  final int? price;
+  final String? externalUrl;
+  final int? sort;
+  final int? status;
+
+  factory BlogItemShopProduct.fromJson(Map<String, dynamic> json) {
+    return BlogItemShopProduct(
+      id: (json['id'] as num?)?.toInt(),
+      shopId: (json['shopId'] as num?)?.toInt(),
+      name: json['name'] as String?,
+      coverUrl: json['coverUrl'] as String?,
+      price: (json['price'] as num?)?.toInt(),
+      externalUrl: json['externalUrl'] as String?,
+      sort: (json['sort'] as num?)?.toInt(),
+      status: (json['status'] as num?)?.toInt(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'shopId': shopId,
+    'name': name,
+    'coverUrl': coverUrl,
+    'price': price,
+    'externalUrl': externalUrl,
+    'sort': sort,
+    'status': status,
+  };
+}
+
 @freezed
 sealed class BlogItem with _$BlogItem {
   const factory BlogItem({
@@ -101,6 +149,9 @@ sealed class BlogItem with _$BlogItem {
 
     /// 视频所属合集。后端可返回 collections/collectionList 等字段，解析层会归一到这里。
     List<BlogItemCollection>? collections,
+
+    /// 挂载的店铺商品（团购带货）
+    List<BlogItemShopProduct>? shopProducts,
   }) = _BlogItem;
 
   factory BlogItem.fromJson(Map<String, dynamic> json) =>

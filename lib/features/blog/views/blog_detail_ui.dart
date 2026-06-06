@@ -17,6 +17,7 @@ import '../data/models/blog_page_model.dart';
 import '../data/repos/blog_repo.dart';
 import '../../comment/providers/comment_providers.dart';
 import 'blog_avatar_preview.dart';
+import 'blog_shop_product_display.dart';
 
 /// 详情侧栏操作数：只显示数字（无数量时显示 0）。
 String blogDetailCountLabel(int? count) {
@@ -45,6 +46,9 @@ class BlogDetailBottomInfo extends ConsumerWidget {
     final time = formatConversationListTime(item.createTime);
     final collections = (item.collections ?? [])
         .where((e) => e.name?.trim().isNotEmpty == true)
+        .toList();
+    final shopProducts = (item.shopProducts ?? [])
+        .where((e) => e.name?.trim().isNotEmpty == true || e.id != null)
         .toList();
 
     return Positioned(
@@ -114,6 +118,10 @@ class BlogDetailBottomInfo extends ConsumerWidget {
                   ),
               ],
             ),
+          ],
+          if (shopProducts.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            BlogShopProductStrip(products: shopProducts),
           ],
         ],
       ),

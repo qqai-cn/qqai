@@ -36,8 +36,8 @@ class DarkThemeColors
   static const Color hintTextColor = Color(0xFF9CA3AF);
 
   //chip
-  static const Color chipBackground = primaryColor;
-  static const Color chipTextColor = Colors.black87;
+  static const Color chipBackground = listTileBackgroundColor;
+  static const Color chipTextColor = displayTextColor;
 
   // progress bar indicator
   static const Color progressIndicatorColor = Color(0xFF40A76A);
