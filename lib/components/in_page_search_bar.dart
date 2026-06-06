@@ -14,6 +14,8 @@ class InPageSearchBar extends StatefulWidget {
     /// AppBar 与状态栏占用的顶部留白，搜索框渲染在其下方。
     this.height = kToolbarHeight,
     this.debounce = const Duration(milliseconds: 350),
+    /// 搜索框右侧附加操作（如宽屏布局切换）。
+    this.trailing,
   });
 
   final String hintText;
@@ -21,6 +23,7 @@ class InPageSearchBar extends StatefulWidget {
   final TextEditingController? controller;
   final double height;
   final Duration debounce;
+  final Widget? trailing;
 
   /// 首页透明 AppBar 下，内容区顶部应预留的高度。
   static double homeTabTopInset(BuildContext context) {
@@ -84,54 +87,67 @@ class _InPageSearchBarState extends State<InPageSearchBar> {
         SizedBox(height: widget.height),
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
-          child: TextField(
-            controller: _controller,
-            style: TextStyle(
-              color: AppActionColors.strong(context),
-              fontSize: 14,
-            ),
-            textInputAction: TextInputAction.search,
-            onSubmitted: (value) {
-              _debounce?.cancel();
-              widget.onQueryChanged(value.trim());
-            },
-            decoration: InputDecoration(
-              hintText: widget.hintText,
-              hintStyle: TextStyle(
-                color: AppActionColors.subtle(context),
-                fontSize: 14,
-              ),
-              prefixIcon: Icon(
-                Icons.search,
-                size: 20,
-                color: AppActionColors.subtle(context),
-              ),
-              suffixIcon: _query.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: Icon(
-                        Icons.clear,
-                        size: 18,
-                        color: AppActionColors.muted(context),
-                      ),
-                      onPressed: _clear,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  style: TextStyle(
+                    color: AppActionColors.strong(context),
+                    fontSize: 14,
+                  ),
+                  textInputAction: TextInputAction.search,
+                  onSubmitted: (value) {
+                    _debounce?.cancel();
+                    widget.onQueryChanged(value.trim());
+                  },
+                  decoration: InputDecoration(
+                    hintText: widget.hintText,
+                    hintStyle: TextStyle(
+                      color: AppActionColors.subtle(context),
+                      fontSize: 14,
                     ),
-              filled: true,
-              fillColor: AppActionColors.surface(context),
-              contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: GoodsPageStyle.border(context)),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      size: 20,
+                      color: AppActionColors.subtle(context),
+                    ),
+                    suffixIcon: _query.isEmpty
+                        ? null
+                        : IconButton(
+                            icon: Icon(
+                              Icons.clear,
+                              size: 18,
+                              color: AppActionColors.muted(context),
+                            ),
+                            onPressed: _clear,
+                          ),
+                    filled: true,
+                    fillColor: AppActionColors.surface(context),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          BorderSide(color: GoodsPageStyle.border(context)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide:
+                          BorderSide(color: GoodsPageStyle.border(context)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF3578E5)),
+                    ),
+                  ),
+                ),
               ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: GoodsPageStyle.border(context)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFF3578E5)),
-              ),
-            ),
+              if (widget.trailing != null) ...[
+                const SizedBox(width: 8),
+                widget.trailing!,
+              ],
+            ],
           ),
         ),
       ],

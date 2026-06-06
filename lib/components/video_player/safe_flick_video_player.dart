@@ -60,6 +60,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
   double? _videoWidth;
   double? _videoHeight;
   bool _managerInitialized = false;
+  final FocusNode _focusNode = FocusNode(skipTraversal: true);
 
   @override
   void initState() {
@@ -102,6 +103,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     if (widget.wakelockEnabled && !kIsWeb) {
       WakelockPlus.disable();
     }
+    _focusNode.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -137,6 +139,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     _setSystemUIOverlays();
     if (kIsWeb) {
       requestFlickWebFullscreen();
+      _focusNode.requestFocus();
       Future.delayed(const Duration(milliseconds: 100), () {
         if (!mounted) return;
         _videoHeight = MediaQuery.of(context).size.height;
@@ -170,7 +173,9 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     _isFullscreen = false;
 
     if (kIsWeb) {
-      exitFlickWebFullscreen();
+      if (flickWebScreenIsFullscreen()) {
+        exitFlickWebFullscreen();
+      }
       _videoHeight = null;
       _videoWidth = null;
       setState(() {});
@@ -212,13 +217,34 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
 
   void _webFullscreenListener() {
     if (!mounted) return;
-    final isFullscreen = flickWebScreenIsFullscreen();
-    if (isFullscreen && !flickManager.flickControlManager!.isFullscreen) {
+    final browserFullscreen = flickWebScreenIsFullscreen();
+    if (browserFullscreen && !flickManager.flickControlManager!.isFullscreen) {
       flickManager.flickControlManager!.enterFullscreen();
-    } else if (!isFullscreen &&
-        flickManager.flickControlManager!.isFullscreen) {
-      flickManager.flickControlManager!.exitFullscreen();
+    } else if (!browserFullscreen) {
+      _syncExitWebFullscreen();
     }
+  }
+
+  /// Browser left native fullscreen (e.g. ESC); reset player UI to match.
+  void _syncExitWebFullscreen() {
+    if (flickManager.flickControlManager!.isFullscreen) {
+      flickManager.flickControlManager!.exitFullscreen();
+    } else if (_isFullscreen) {
+      _isFullscreen = false;
+      _videoHeight = null;
+      _videoWidth = null;
+      _setPreferredOrientation();
+      _setSystemUIOverlays();
+      setState(() {});
+    }
+  }
+
+  KeyEventResult _handleEscapeKey() {
+    if (!_isFullscreen && !flickManager.flickControlManager!.isFullscreen) {
+      return KeyEventResult.ignored;
+    }
+    flickManager.flickControlManager!.exitFullscreen();
+    return KeyEventResult.handled;
   }
 
   void _webKeyListener(Object event) {
@@ -228,12 +254,22 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: _videoWidth,
-      height: _videoHeight,
-      child: FlickManagerBuilder(
-        flickManager: flickManager,
-        child: widget.flickVideoWithControls,
+    return Focus(
+      focusNode: _focusNode,
+      onKeyEvent: (node, event) {
+        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+        if (event.logicalKey != LogicalKeyboardKey.escape) {
+          return KeyEventResult.ignored;
+        }
+        return _handleEscapeKey();
+      },
+      child: SizedBox(
+        width: _videoWidth,
+        height: _videoHeight,
+        child: FlickManagerBuilder(
+          flickManager: flickManager,
+          child: widget.flickVideoWithControls,
+        ),
       ),
     );
   }

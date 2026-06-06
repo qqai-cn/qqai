@@ -11,6 +11,7 @@ import 'components/chat/global_chat_realtime_scope.dart';
 import 'config/theme/my_theme.dart';
 import 'config/translations/localization_service.dart';
 import 'util/my_shared_pref.dart';
+import 'util/no_scrollbar_behavior.dart';
 import 'util/api_base_client.dart';
 import 'util/api_messenger.dart';
 import 'providers/auth_providers.dart';
@@ -71,6 +72,7 @@ class _MyAppState extends ConsumerState<MyApp> {
           scaffoldMessengerKey: ApiMessenger.scaffoldMessengerKey,
           title: '千千Ai',
           debugShowCheckedModeBanner: false,
+          scrollBehavior: const NoScrollbarScrollBehavior(),
           locale: locale,
           supportedLocales: LocalizationService.supportedLanguages.values
               .toSet()

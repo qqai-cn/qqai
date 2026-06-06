@@ -164,14 +164,18 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     );
   }
 
-  Widget _buildBlogTile(BlogItem blogItem, double itemHeight) {
+  Widget _buildBlogTile(
+    BlogItem blogItem,
+    double itemHeight, {
+    required String heroScope,
+  }) {
     return RepaintBoundary(
       child: blogItem.blogType == 1
           ? _buildDailyCard(
               child: MyBlogImgItemView(
                 _kCategory,
                 blogItem,
-                heroScope: 'profile-${widget.userId ?? 'self'}',
+                heroScope: heroScope,
               ),
             )
           : _buildDailyCard(
@@ -225,8 +229,12 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
                   itemCount: section.items.length,
-                  itemBuilder: (context, index) =>
-                      _buildBlogTile(section.items[index], itemHeight),
+                  itemBuilder: (context, index) => _buildBlogTile(
+                    section.items[index],
+                    itemHeight,
+                    heroScope:
+                        'profile-${widget.userId ?? 'self'}-${section.title}-$index',
+                  ),
                 ),
               );
             },

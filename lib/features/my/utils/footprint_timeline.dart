@@ -219,7 +219,10 @@ class ContentTimelineRecordTile extends StatelessWidget {
                           title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            color: AppActionColors.strong(context),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(

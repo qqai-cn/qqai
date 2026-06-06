@@ -26,6 +26,11 @@ void flickDefaultWebKeyDownHandler(
   } else if (event.keyCode == 32) {
     flickManager.flickControlManager?.togglePlay();
     flickManager.flickDisplayManager?.handleShowPlayerControls();
+  } else if (event.keyCode == 27) {
+    if (flickManager.flickControlManager?.isFullscreen ?? false) {
+      flickManager.flickControlManager?.exitFullscreen();
+      flickManager.flickDisplayManager?.handleShowPlayerControls();
+    }
   } else if (event.keyCode == 38) {
     flickManager.flickControlManager?.increaseVolume(0.05);
     flickManager.flickDisplayManager?.handleShowPlayerControls();

@@ -243,7 +243,7 @@ class _RecommendSearchTitle extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '搜索内容、用户、商品',
+                    '搜索内容、用户、商品 &flutter全平台网站源码，有意联系807404400',
                     style: TextStyle(
                       color: AppActionColors.subtle(context),
                       fontSize: 13,

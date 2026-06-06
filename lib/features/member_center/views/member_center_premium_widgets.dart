@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/config/theme/dark_theme_colors.dart';
 
 import '../../../router/app_routes.dart';
 import '../data/member_center_models.dart';
@@ -16,17 +17,67 @@ abstract final class MemberPremiumColors {
   static const goldDeep = Color(0xFFB88746);
   static const jdRed = Color(0xFFE1251B);
   static const jdRedLight = Color(0xFFFF6B5A);
-  static const pageBg = Color(0xFFF4F4F4);
-  static const cardBg = Colors.white;
+  static const pageBgLight = Color(0xFFF4F4F4);
+  static const cardBgLight = Colors.white;
+
+  static bool _isLight(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.light;
+
+  static Color pageBg(BuildContext context) {
+    return _isLight(context)
+        ? pageBgLight
+        : DarkThemeColors.scaffoldBackgroundColor;
+  }
+
+  static Color cardBg(BuildContext context) {
+    return _isLight(context) ? cardBgLight : DarkThemeColors.cardColor;
+  }
+
+  static Color giftButtonBg(BuildContext context) {
+    return _isLight(context)
+        ? const Color(0xFFF5E6C8)
+        : gold.withValues(alpha: 0.18);
+  }
+
+  static Color giftButtonFg(BuildContext context) {
+    return _isLight(context) ? const Color(0xFF5C4528) : goldLight;
+  }
+
+  static Color inactiveDot(BuildContext context) {
+    return _isLight(context)
+        ? const Color(0xFFCBD5E1)
+        : Colors.white.withValues(alpha: 0.24);
+  }
+
+  /// 内容区卡片上的次要文字（浅色模式保留原 45% 黑，避免偏淡）。
+  static Color bodySecondary(BuildContext context) {
+    return _isLight(context)
+        ? Colors.black.withValues(alpha: 0.45)
+        : AppActionColors.muted(context);
+  }
+
+  static Color giftButtonDisabledBg(BuildContext context) {
+    return _isLight(context)
+        ? const Color(0xFFE8E8E8)
+        : AppActionColors.borderSubtle(context);
+  }
+
+  static Color giftButtonDisabledFg(BuildContext context) {
+    return _isLight(context) ? Colors.black38 : AppActionColors.subtle(context);
+  }
 }
 
-BoxDecoration memberCardDecoration({double radius = 14}) {
+BoxDecoration memberCardDecoration(BuildContext context, {double radius = 14}) {
+  final isLight = MemberPremiumColors._isLight(context);
   return BoxDecoration(
-    color: MemberPremiumColors.cardBg,
+    color: MemberPremiumColors.cardBg(context),
     borderRadius: BorderRadius.circular(radius),
+    border: isLight
+        ? null
+        : Border.all(color: Colors.white.withValues(alpha: 0.08)),
     boxShadow: [
       BoxShadow(
-        color: Colors.black.withValues(alpha: 0.06),
+        color: Colors.black.withValues(alpha: isLight ? 0.06 : 0.35),
         blurRadius: 16,
         offset: const Offset(0, 4),
       ),
@@ -655,9 +706,9 @@ class MemberPremiumBody extends StatelessWidget {
         return Transform.translate(
           offset: const Offset(0, -18),
           child: Container(
-            decoration: const BoxDecoration(
-              color: MemberPremiumColors.pageBg,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+            decoration: BoxDecoration(
+              color: MemberPremiumColors.pageBg(context),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
             ),
             child: Align(
               alignment: Alignment.topCenter,
@@ -939,7 +990,7 @@ class _DailyGiftCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(10, 14, 10, 12),
-      decoration: memberCardDecoration(radius: 14),
+      decoration: memberCardDecoration(context, radius: 14),
       child: Column(
         children: [
           Container(
@@ -965,7 +1016,11 @@ class _DailyGiftCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             data.title,
-            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              fontSize: 13,
+              color: AppActionColors.strong(context),
+            ),
           ),
           const SizedBox(height: 3),
           Text(
@@ -974,7 +1029,7 @@ class _DailyGiftCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Colors.black.withValues(alpha: 0.45),
+              color: MemberPremiumColors.bodySecondary(context),
               fontSize: 10,
             ),
           ),
@@ -985,26 +1040,32 @@ class _DailyGiftCard extends StatelessWidget {
             child: TextButton(
               onPressed: data.enabled ? data.onTap : null,
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFFF5E6C8),
-                foregroundColor: const Color(0xFF5C4528),
-                disabledBackgroundColor: const Color(0xFFE8E8E8),
-                disabledForegroundColor: Colors.black38,
+                backgroundColor: MemberPremiumColors.giftButtonBg(context),
+                foregroundColor: MemberPremiumColors.giftButtonFg(context),
+                disabledBackgroundColor:
+                    MemberPremiumColors.giftButtonDisabledBg(context),
+                disabledForegroundColor:
+                    MemberPremiumColors.giftButtonDisabledFg(context),
                 padding: EdgeInsets.zero,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
               child: data.loading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 14,
                       height: 14,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: MemberPremiumColors.giftButtonFg(context),
+                      ),
                     )
                   : Text(
                       data.buttonLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
+                        color: MemberPremiumColors.giftButtonFg(context),
                       ),
                     ),
             ),
@@ -1026,7 +1087,7 @@ class _SignInDayStrip extends StatelessWidget {
     final visible = configs.take(7).toList();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: memberCardDecoration(radius: 12),
+      decoration: memberCardDecoration(context, radius: 12),
       child: Row(
         children: visible
             .map(
@@ -1065,7 +1126,7 @@ class _SignDayDot extends StatelessWidget {
         ? MemberPremiumColors.goldDeep
         : today
         ? MemberPremiumColors.jdRed
-        : const Color(0xFFCBD5E1);
+        : MemberPremiumColors.inactiveDot(context);
 
     return Column(
       children: [
@@ -1087,7 +1148,7 @@ class _SignDayDot extends StatelessWidget {
           '+$point',
           style: TextStyle(
             fontSize: 9,
-            color: Colors.black.withValues(alpha: 0.45),
+            color: MemberPremiumColors.bodySecondary(context),
           ),
         ),
       ],
@@ -1194,7 +1255,7 @@ class _HotBenefitCard extends StatelessWidget {
       child: Container(
         width: 148,
         padding: const EdgeInsets.all(12),
-        decoration: memberCardDecoration(radius: 12),
+        decoration: memberCardDecoration(context, radius: 12),
         child: Row(
           children: [
             Container(
@@ -1216,9 +1277,10 @@ class _HotBenefitCard extends StatelessWidget {
                     item.title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 12,
+                      color: AppActionColors.strong(context),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -1228,7 +1290,7 @@ class _HotBenefitCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 10,
-                      color: Colors.black.withValues(alpha: 0.45),
+                      color: MemberPremiumColors.bodySecondary(context),
                     ),
                   ),
                 ],
@@ -1418,16 +1480,20 @@ class _LevelProgressCard extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: memberCardDecoration(),
+      decoration: memberCardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: Text(
                   '等级星图',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                    color: AppActionColors.strong(context),
+                  ),
                 ),
               ),
               GestureDetector(
@@ -1435,7 +1501,7 @@ class _LevelProgressCard extends StatelessWidget {
                 child: Text(
                   '全部 >',
                   style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.45),
+                    color: MemberPremiumColors.bodySecondary(context),
                     fontSize: 12,
                   ),
                 ),
@@ -1469,7 +1535,9 @@ class _LevelStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = active ? MemberPremiumColors.goldDeep : const Color(0xFFCBD5E1);
+    final color = active
+        ? MemberPremiumColors.goldDeep
+        : MemberPremiumColors.inactiveDot(context);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -1538,7 +1606,7 @@ class _LevelStep extends StatelessWidget {
                   '${level.discountPercent == null ? '' : ' · ${level.discountPercent}% 权益'}',
                   style: TextStyle(
                     fontSize: 11,
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: MemberPremiumColors.bodySecondary(context),
                   ),
                 ),
               ],
@@ -1628,7 +1696,7 @@ class _MiniRecordCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
-      decoration: memberCardDecoration(),
+      decoration: memberCardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1637,9 +1705,10 @@ class _MiniRecordCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.w900,
                     fontSize: 14,
+                    color: AppActionColors.strong(context),
                   ),
                 ),
               ),
@@ -1664,7 +1733,7 @@ class _MiniRecordCard extends StatelessWidget {
                 child: Text(
                   emptyText,
                   style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.4),
+                    color: AppActionColors.subtle(context),
                     fontSize: 12,
                   ),
                 ),
@@ -1681,7 +1750,10 @@ class _MiniRecordCard extends StatelessWidget {
                         r.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppActionColors.strong(context),
+                        ),
                       ),
                     ),
                     Text(
@@ -1722,10 +1794,11 @@ class _SectionHeader extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 17,
               fontWeight: FontWeight.w900,
               letterSpacing: 0.3,
+              color: AppActionColors.strong(context),
             ),
           ),
         ),
@@ -1735,7 +1808,7 @@ class _SectionHeader extends StatelessWidget {
             child: Text(
               trailing!,
               style: TextStyle(
-                color: Colors.black.withValues(alpha: 0.45),
+                color: MemberPremiumColors.bodySecondary(context),
                 fontSize: 12,
               ),
             ),

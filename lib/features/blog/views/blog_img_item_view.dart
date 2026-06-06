@@ -33,10 +33,14 @@ class BlogImgItemView extends ConsumerStatefulWidget {
     super.key,
     this.listKind = BlogListKind.recommend,
     this.feedActions,
+    this.heroScope,
   });
 
   /// 指定时用于广场等独立列表，覆盖 [listKind] / [blogProvider] 解析。
   final BlogFeedListActions? feedActions;
+
+  /// 区分同页内相同 [BlogItem.id] 的 Hero tag（通常为列表 index）。
+  final String? heroScope;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -94,6 +98,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
     final mediaHeroTag = blogImageDetailHeroTag(
       widget.category,
       widget.blogItem,
+      scope: widget.heroScope,
     );
     return Card(
       child: Padding(
@@ -146,6 +151,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                 widget.category,
                 widget.blogItem,
                 index: i,
+                scope: widget.heroScope,
               ),
               onImageTap: (i, heroTag) {
                 blogNotifier.onBlogImgItemTap(

@@ -20,25 +20,29 @@ class WideSidebarThemeToggle extends ConsumerWidget {
     final isLight = appThemeIsLight(preference, platformBrightness);
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+      padding: const EdgeInsets.fromLTRB(10, 6, 10, 4),
       child: Align(
         alignment: isExtended ? Alignment.centerLeft : Alignment.center,
         child: Tooltip(
           message: isLight ? '切换到夜间' : '切换到浅色',
-          child: Switch(
-            value: !isLight,
-            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            onChanged: (wantDark) {
-              final currentlyLight = appThemeIsLight(
-                preference,
-                platformBrightness,
-              );
-              if (wantDark == currentlyLight) {
-                ref
-                    .read(appThemeModeProvider.notifier)
-                    .toggleForPlatform(platformBrightness);
-              }
-            },
+          child: Transform.scale(
+            scale: 0.72,
+            alignment: isExtended ? Alignment.centerLeft : Alignment.center,
+            child: Switch(
+              value: !isLight,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              onChanged: (wantDark) {
+                final currentlyLight = appThemeIsLight(
+                  preference,
+                  platformBrightness,
+                );
+                if (wantDark == currentlyLight) {
+                  ref
+                      .read(appThemeModeProvider.notifier)
+                      .toggleForPlatform(platformBrightness);
+                }
+              },
+            ),
           ),
         ),
       ),

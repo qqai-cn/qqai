@@ -1,3 +1,5 @@
+import 'dart:js_interop';
+
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flick_video_player/src/utils/web_key_bindings.dart';
 import 'package:web/web.dart' as web;
@@ -10,9 +12,12 @@ void setupFlickWebDocumentListeners({
   required void Function() onFullscreenChange,
   required void Function(Object event) onKeyDown,
 }) {
-  web.document.documentElement?.onFullscreenChange
-      .listen((_) => onFullscreenChange());
-  web.document.documentElement?.onKeyDown.listen((event) => onKeyDown(event));
+  void handleFullscreenChange(web.Event _) => onFullscreenChange();
+  void handleKeyDown(web.Event event) => onKeyDown(event);
+
+  // Listen on document: ESC exits browser fullscreen here, not on documentElement.
+  web.document.addEventListener('fullscreenchange', handleFullscreenChange.toJS);
+  web.document.addEventListener('keydown', handleKeyDown.toJS);
 }
 
 void requestFlickWebFullscreen() {
@@ -24,6 +29,5 @@ void exitFlickWebFullscreen() {
 }
 
 bool flickWebScreenIsFullscreen() {
-  final w = web.document.defaultView;
-  return w != null && w.screenTop == 0 && w.screenY == 0;
+  return web.document.fullscreenElement != null;
 }

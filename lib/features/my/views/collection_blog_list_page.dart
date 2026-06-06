@@ -269,7 +269,16 @@ class _CollectionBlogListPageState extends ConsumerState<CollectionBlogListPage>
       onRefresh: _refresh,
       itemBuilder: (context, index, item) {
         if (item.blogType == 1) {
-          return BlogImgItemView(_feedCategory, item, feedActions: this);
+          return BlogImgItemView(
+            _feedCategory,
+            item,
+            feedActions: this,
+            heroScope: blogFeedListItemHeroScope(
+              category: _feedCategory,
+              listIndex: index,
+              prefix: 'collection-${widget.collectionId}',
+            ),
+          );
         }
         return BlogVideoItemView(_feedCategory, item, feedActions: this);
       },

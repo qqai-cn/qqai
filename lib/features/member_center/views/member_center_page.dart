@@ -47,9 +47,11 @@ class _MemberCenterPageState extends ConsumerState<MemberCenterPage> {
     final isWide = MediaQuery.sizeOf(context).width >= 900;
 
     return Scaffold(
-      backgroundColor: MemberPremiumColors.darkBg,
+      backgroundColor: MemberPremiumColors.pageBg(context),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: MemberPremiumColors.gold),
+        ),
         error: (error, stackTrace) => ApiErrorWidget(
           message: error.toString(),
           padding: const EdgeInsets.all(24),
@@ -77,9 +79,18 @@ class _MemberCenterPageState extends ConsumerState<MemberCenterPage> {
                     }
                   },
                 ),
+                iconTheme: const IconThemeData(color: Colors.white),
+                actionsIconTheme: const IconThemeData(color: Colors.white),
+                titleTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1,
+                  fontSize: 20,
+                ),
                 title: const Text(
                   'PLUS会员',
                   style: TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1,
                   ),
@@ -125,7 +136,7 @@ class MemberCenterDetailPage extends ConsumerWidget {
     final async = ref.watch(memberCenterProvider);
     final title = _memberDetailTitle(section);
     return Scaffold(
-      backgroundColor: MemberPremiumColors.pageBg,
+      backgroundColor: MemberPremiumColors.pageBg(context),
       appBar: AppBar(
         title: Text(title),
         backgroundColor: AppActionColors.surface(context),
@@ -467,13 +478,17 @@ class _DetailPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: memberCardDecoration(),
+      decoration: memberCardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: AppActionColors.strong(context),
+            ),
           ),
           const SizedBox(height: 6),
           Text(
@@ -523,7 +538,10 @@ class _InfoTile extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: AppActionColors.strong(context),
+                  ),
                 ),
                 const SizedBox(height: 3),
                 Text(

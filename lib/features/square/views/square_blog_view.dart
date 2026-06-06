@@ -12,6 +12,7 @@ import 'package:qqai/config/theme/app_action_colors.dart';
 
 import '../../../util/media_url.dart';
 import '../../chat/providers/chat_providers.dart';
+import '../../blog/data/blog_route_extra.dart';
 import '../../blog/providers/blog_providers.dart';
 import '../../blog/views/blog_img_item_view.dart';
 import '../../blog/views/blog_video_item_view.dart';
@@ -190,7 +191,16 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
         itemBuilder: (context, index) {
           final blogItem = items[index];
           if (blogItem.blogType == 1) {
-            return BlogImgItemView(3, blogItem, feedActions: blogsNotifier);
+            return BlogImgItemView(
+              3,
+              blogItem,
+              feedActions: blogsNotifier,
+              heroScope: blogFeedListItemHeroScope(
+                category: 3,
+                listIndex: index,
+                prefix: 'square-${widget.squareId}',
+              ),
+            );
           }
           return BlogVideoItemView(3, blogItem, feedActions: blogsNotifier);
         },

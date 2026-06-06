@@ -8,6 +8,7 @@ import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 
 import '../../index/providers/home_follow_feed_providers.dart';
+import '../data/blog_route_extra.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_providers.dart';
 import 'blog_img_item_view.dart';
@@ -91,11 +92,17 @@ class _BlogViewState extends ConsumerState<BlogView> {
           }
         },
         itemBuilder: (context, index, blogItem) {
+          final heroScope = blogFeedListItemHeroScope(
+            category: widget.category,
+            listIndex: index,
+            prefix: widget.listKind.name,
+          );
           if (blogItem.blogType == 1) {
             return BlogImgItemView(
               widget.category,
               blogItem,
               listKind: widget.listKind,
+              heroScope: heroScope,
             );
           } else {
             return BlogVideoItemView(

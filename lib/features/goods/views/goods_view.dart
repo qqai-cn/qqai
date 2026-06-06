@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/constant/constant.dart';
 import '../goods_tab_navigator.dart';
 import '../../../components/in_page_search_bar.dart';
 import '../../../components/refresh_status_badge.dart';
@@ -13,10 +14,13 @@ import '../data/models/mall_product_model.dart';
 import '../data/repos/goods_repo.dart';
 import '../providers/goods_mall_tab_reselect_provider.dart';
 import '../theme/goods_page_style.dart';
+import '../../../components/horizontal_deal_layout.dart';
 import '../widgets/coupon_claim_entry.dart';
+import '../widgets/mall_product_horizontal_card.dart';
 
-bool _isWideMallLayout(BuildContext context) =>
-    MediaQuery.sizeOf(context).width >= 800;
+enum _MallListLayout { grid, horizontalCards }
+
+bool _isWideMallLayout(double width) => width > Constant.SQUARE_SPLIT_WIDTH;
 
 class GoodsView extends ConsumerStatefulWidget {
   const GoodsView({super.key, this.reserveHomeTabTopInset = true});
@@ -44,6 +48,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
   bool _searching = false;
   String _keyword = '';
   Object? _error;
+  _MallListLayout _wideLayout = _MallListLayout.grid;
 
   bool get _hasMore =>
       _items.length < _total || (_total == 0 && _items.isEmpty);
@@ -149,6 +154,74 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
     _refresh();
   }
 
+  bool _useHorizontalCards(double width) {
+    return !_isWideMallLayout(width) ||
+        _wideLayout == _MallListLayout.horizontalCards;
+  }
+
+  Widget _layoutToggleButton(BuildContext context) {
+    final useCards = _wideLayout == _MallListLayout.horizontalCards;
+    return Tooltip(
+      message: useCards ? '切换为网格' : '切换为列表',
+      child: Material(
+        color: AppActionColors.surface(context),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: GoodsPageStyle.border(context)),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            setState(() {
+              _wideLayout = useCards
+                  ? _MallListLayout.grid
+                  : _MallListLayout.horizontalCards;
+            });
+          },
+          child: SizedBox(
+            width: 44,
+            height: 44,
+            child: Icon(
+              useCards ? Icons.grid_view_rounded : Icons.view_list_rounded,
+              color: AppActionColors.strong(context),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _horizontalCardSlivers({
+    required BuildContext context,
+    required void Function(MallProduct item) onItemTap,
+  }) {
+    final cols = horizontalDealGridCrossAxisCount(context);
+    return [
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(14, 0, 14, 0),
+        sliver: SliverGrid(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: kHorizontalDealCardAspectRatio,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              final item = _items[index];
+              return MallProductHorizontalCard(
+                item: item,
+                onTap: () => onItemTap(item),
+              );
+            },
+            childCount: _items.length,
+          ),
+        ),
+      ),
+      if (_loadingMore) _loadingMoreSliver(),
+    ];
+  }
+
   void _onMallTabReselect() {
     _searchController.clear();
     setState(() {
@@ -186,46 +259,59 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: _pageMaxWidth),
-            child: Stack(
-              children: [
-                RefreshIndicator(
-                  onRefresh: _refresh,
-                  color: Colors.white,
-                  backgroundColor: const Color(0xFFFF8C00),
-                  displacement: 54,
-                  strokeWidth: 3,
-                  child: CustomScrollView(
-                    controller: _scrollController,
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: InPageSearchBar(
-                          controller: _searchController,
-                          height: topInset,
-                          hintText: '搜索商品名称',
-                          onQueryChanged: _onSearchQuery,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final pageW = constraints.maxWidth;
+                final isWide = _isWideMallLayout(pageW);
+                final useHorizontalCards = _useHorizontalCards(pageW);
+
+                return Stack(
+                  children: [
+                    RefreshIndicator(
+                      onRefresh: _refresh,
+                      color: Colors.white,
+                      backgroundColor: const Color(0xFFFF8C00),
+                      displacement: 54,
+                      strokeWidth: 3,
+                      child: CustomScrollView(
+                        controller: _scrollController,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: InPageSearchBar(
+                              controller: _searchController,
+                              height: topInset,
+                              hintText: '搜索商品名称',
+                              onQueryChanged: _onSearchQuery,
+                              trailing:
+                                  isWide ? _layoutToggleButton(context) : null,
+                            ),
+                          ),
+                          const SliverToBoxAdapter(child: _MallHeader()),
+                          ..._buildBodySlivers(
+                            context,
+                            useHorizontalCards: useHorizontalCards,
+                          ),
+                          const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: refreshBadgeTop,
+                      left: 0,
+                      right: 0,
+                      child: IgnorePointer(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          child: _isRefreshing
+                              ? const RefreshStatusBadge()
+                              : const SizedBox.shrink(),
                         ),
                       ),
-                      const SliverToBoxAdapter(child: _MallHeader()),
-                      ..._buildBodySlivers(context),
-                      const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: refreshBadgeTop,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      child: _isRefreshing
-                          ? const RefreshStatusBadge()
-                          : const SizedBox.shrink(),
                     ),
-                  ),
-                ),
-              ],
+                  ],
+                );
+              },
             ),
           ),
         ),
@@ -233,7 +319,10 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
     );
   }
 
-  List<Widget> _buildBodySlivers(BuildContext context) {
+  List<Widget> _buildBodySlivers(
+    BuildContext context, {
+    required bool useHorizontalCards,
+  }) {
     if (_loading && _items.isEmpty) {
       return const [
         SliverFillRemaining(
@@ -266,23 +355,8 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
       }
     }
 
-    if (!_isWideMallLayout(context)) {
-      return [
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          sliver: SliverList.separated(
-            itemCount: _items.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              return _MallHorizontalCard(
-                item: _items[index],
-                onTap: () => onItemTap(_items[index]),
-              );
-            },
-          ),
-        ),
-        if (_loadingMore) _loadingMoreSliver(),
-      ];
+    if (useHorizontalCards) {
+      return _horizontalCardSlivers(context: context, onItemTap: onItemTap);
     }
 
     return [
@@ -383,110 +457,6 @@ class _MallHeader extends StatelessWidget {
           ),
           const CouponClaimEntry(),
         ],
-      ),
-    );
-  }
-}
-
-/// 窄屏横向列表卡片，布局对齐「我的 - 团购带货」。
-class _MallHorizontalCard extends StatelessWidget {
-  const _MallHorizontalCard({required this.item, required this.onTap});
-
-  final MallProduct item;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final coverUrl = resolveMediaUrl(item.coverUrl);
-    final name = item.name?.trim().isNotEmpty == true
-        ? item.name!.trim()
-        : '商品';
-    final sales = item.salesCount ?? 0;
-
-    return Material(
-      color: GoodsPageStyle.cardBg(context),
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(color: GoodsPageStyle.border(context)),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: SizedBox(
-                    width: 88,
-                    height: 88,
-                    child: coverUrl == null
-                        ? const _GoodsImageFallback()
-                        : CachedNetworkImage(
-                            imageUrl: coverUrl,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, _, _) =>
-                                const _GoodsImageFallback(),
-                          ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: GoodsPageStyle.accent.withValues(alpha: 0.08),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          sales > 0 ? '$sales 已售' : '精选',
-                          style: const TextStyle(
-                            color: GoodsPageStyle.accent,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        name,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: GoodsPageStyle.text(context),
-                          fontSize: 15,
-                          height: 1.25,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '¥${item.priceYuan.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: GoodsPageStyle.accent,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Icon(Icons.chevron_right, color: GoodsPageStyle.sub(context)),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

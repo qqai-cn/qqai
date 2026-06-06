@@ -78,6 +78,16 @@ VideoAdPlaybackState? _parseVideoAdPlaybackState(Object? raw) {
   return null;
 }
 
+/// 列表项 Hero 作用域，避免同页重复 [blog.id] 时 tag 冲突。
+String blogFeedListItemHeroScope({
+  required int category,
+  required int listIndex,
+  String? prefix,
+}) {
+  final head = prefix ?? 'feed';
+  return '$head-$category-$listIndex';
+}
+
 String blogImageDetailHeroTag(
   int category,
   BlogItem blog, {
