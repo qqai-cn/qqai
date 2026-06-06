@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/blog/media_detail_shell.dart';
 import 'package:qqai/features/blog/views/blog_detail_side_panel.dart';
 import 'package:qqai/features/index/presentation/widgets/lazy_shell_tab.dart';
 import 'package:qqai/features/video/providers/video_recommend_providers.dart';
@@ -57,7 +58,14 @@ class _VideoPageState extends ConsumerState<VideoPage>
                   ),
                 ),
                 if (sidePanel != null && !isWideScreen)
-                  SizedBox(width: 1.sw, height: 0.6.sh, child: sidePanel),
+                  PortraitCommentPanel(
+                    onDismiss: commentNotifier.changeShowComment,
+                    child: SizedBox(
+                      width: 1.sw,
+                      height: 0.6.sh,
+                      child: sidePanel,
+                    ),
+                  ),
               ],
             ),
           ),

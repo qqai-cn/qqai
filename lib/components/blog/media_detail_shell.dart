@@ -59,7 +59,7 @@ class MediaDetailShell extends StatelessWidget {
               children: [
                 Expanded(child: mediaContent),
                 if (sidePanel != null)
-                  _PortraitCommentPanel(
+                  PortraitCommentPanel(
                     onDismiss: onCommentClose,
                     child: SizedBox(
                       width: 1.sw,
@@ -87,17 +87,18 @@ class MediaDetailShell extends StatelessWidget {
   }
 }
 
-class _PortraitCommentPanel extends StatefulWidget {
-  const _PortraitCommentPanel({required this.child, this.onDismiss});
+/// 窄屏详情底部评论栏：下滑关闭。
+class PortraitCommentPanel extends StatefulWidget {
+  const PortraitCommentPanel({super.key, required this.child, this.onDismiss});
 
   final Widget child;
   final VoidCallback? onDismiss;
 
   @override
-  State<_PortraitCommentPanel> createState() => _PortraitCommentPanelState();
+  State<PortraitCommentPanel> createState() => _PortraitCommentPanelState();
 }
 
-class _PortraitCommentPanelState extends State<_PortraitCommentPanel> {
+class _PortraitCommentPanelState extends State<PortraitCommentPanel> {
   double _dragOffset = 0;
   bool _dismissed = false;
 
