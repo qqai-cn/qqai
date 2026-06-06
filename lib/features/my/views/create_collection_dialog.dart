@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 import '../../../util/api_base_client.dart';
 import '../data/models/profile_models.dart';
@@ -104,9 +105,9 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
         aspectRatio: 16 / 9,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: const Color(0xFFF8F9FB),
+            color: GoodsPageStyle.imageBg(context),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE1E5EB)),
+            border: Border.all(color: GoodsPageStyle.border(context)),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
@@ -117,8 +118,8 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                       Container(
                         width: 52,
                         height: 52,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
+                        decoration: BoxDecoration(
+                          color: AppActionColors.surface(context),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -128,18 +129,18 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
+                      Text(
                         '上传合集封面',
                         style: TextStyle(
-                          color: Color(0xFF202124),
+                          color: AppActionColors.strong(context),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         '建议使用横向图片',
                         style: TextStyle(
-                          color: Color(0xFF9CA3AF),
+                          color: AppActionColors.subtle(context),
                           fontSize: 12,
                         ),
                       ),
@@ -196,12 +197,14 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
     return InputDecoration(
       labelText: label,
       hintText: hintText,
+      labelStyle: TextStyle(color: AppActionColors.muted(context)),
+      hintStyle: TextStyle(color: AppActionColors.subtle(context)),
       filled: true,
-      fillColor: const Color(0xFFF8F9FB),
+      fillColor: GoodsPageStyle.imageBg(context),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        borderSide: BorderSide(color: GoodsPageStyle.border(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -218,7 +221,9 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFFEFF6FF)
+                : const Color(0xFF3578E5).withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Icon(
@@ -253,7 +258,10 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
         IconButton(
           tooltip: '关闭',
           onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close),
+          icon: Icon(
+            Icons.close,
+            color: AppActionColors.foreground(context),
+          ),
         ),
       ],
     );
@@ -262,29 +270,32 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
   Widget _visibilityRow() {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FB),
+        color: GoodsPageStyle.imageBg(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: GoodsPageStyle.border(context)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         child: Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '公开合集',
                     style: TextStyle(
-                      color: Color(0xFF202124),
+                      color: AppActionColors.strong(context),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     '关闭后仅自己可见',
-                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                    style: TextStyle(
+                      color: AppActionColors.subtle(context),
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -303,26 +314,80 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
   }
 
   Widget _submitButton() {
-    return FilledButton(
-      style: FilledButton.styleFrom(
-        minimumSize: const Size.fromHeight(46),
-        backgroundColor: const Color(0xFF3578E5),
-        foregroundColor: Colors.white,
-        disabledBackgroundColor: const Color(0xFFE5E7EB),
-        disabledForegroundColor: const Color(0xFF9CA3AF),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(23)),
+    final enabled = !_submitting;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const accent = Color(0xFF3578E5);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: enabled
+            ? LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: isDark
+                    ? const [Color(0xFF2A62D4), Color(0xFF4A88F5)]
+                    : const [Color(0xFF3578E5), Color(0xFF5B9CFF)],
+              )
+            : null,
+        color: enabled ? null : AppActionColors.borderSubtle(context),
+        boxShadow: enabled
+            ? [
+                BoxShadow(
+                  color: accent.withValues(alpha: isDark ? 0.38 : 0.32),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
       ),
-      onPressed: _submitting ? null : _submit,
-      child: _submitting
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Colors.white,
-              ),
-            )
-          : const Text('创建合集', style: TextStyle(fontWeight: FontWeight.w700)),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: enabled ? _submit : null,
+          borderRadius: BorderRadius.circular(24),
+          splashColor: Colors.white.withValues(alpha: 0.12),
+          highlightColor: Colors.white.withValues(alpha: 0.06),
+          child: SizedBox(
+            height: 48,
+            child: Center(
+              child: _submitting
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.collections_bookmark_rounded,
+                          size: 20,
+                          color: enabled
+                              ? Colors.white
+                              : AppActionColors.subtle(context),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '创建合集',
+                          style: TextStyle(
+                            color: enabled
+                                ? Colors.white
+                                : AppActionColors.subtle(context),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -335,11 +400,16 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
         constraints: const BoxConstraints(maxWidth: 480),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppActionColors.surface(context),
             borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: GoodsPageStyle.border(context)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.light
+                      ? 0.12
+                      : 0.35,
+                ),
                 blurRadius: 30,
                 offset: const Offset(0, 14),
               ),
@@ -359,6 +429,7 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                     enabled: !_submitting,
                     maxLength: 64,
                     textInputAction: TextInputAction.next,
+                    style: TextStyle(color: AppActionColors.strong(context)),
                     decoration: _fieldDecoration(
                       '合集名称 *',
                       hintText: '给合集取个名字',
@@ -371,6 +442,7 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                     maxLength: 512,
                     minLines: 2,
                     maxLines: 4,
+                    style: TextStyle(color: AppActionColors.strong(context)),
                     decoration: _fieldDecoration(
                       '合集简介',
                       hintText: '简单介绍这个合集',

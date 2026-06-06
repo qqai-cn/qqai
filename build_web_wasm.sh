@@ -42,6 +42,8 @@ case "$MODE" in
     ;;
 esac
 
+bash scripts/sync_web_icons.sh
+
 INDEX_BAK="$(mktemp)"
 BOOTSTRAP_BAK="$(mktemp)"
 cp web/index.html "$INDEX_BAK"
@@ -76,7 +78,7 @@ if [[ -x web/compress_web_assets.sh ]]; then
 fi
 
 echo ""
-echo "完成：renderer=$MODE，标记 build/web/.web-renderer-mode"
+echo "完成: renderer=${MODE}, 标记 build/web/.web-renderer-mode"
 if [[ "$MODE" == "local" ]]; then
   echo "  skwasm: https://<你的域名>/canvaskit/skwasm.wasm"
   echo "  部署: ./web/deploy/deploy_web.sh"

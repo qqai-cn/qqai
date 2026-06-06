@@ -30,12 +30,20 @@ SQUARE_SRC="$(mktemp "${TMPDIR:-/tmp}/qqai-icon-square.XXXXXX.png")"
 cleanup() { rm -f "$SQUARE_SRC"; }
 trap cleanup EXIT
 
-width="$(sips -g pixelWidth "$SOURCE" | awk '/pixelWidth:/{print $2}')"
-height="$(sips -g pixelHeight "$SOURCE" | awk '/pixelHeight:/{print $2}')"
-side="$width"
-if (( height < width )); then side="$height"; fi
-sips --cropToHeightWidth "$side" "$side" "$SOURCE" --out "$SQUARE_SRC" >/dev/null
-echo "Square crop: ${width}x${height} -> ${side}x${side}"
+"$PY" << PY
+from pathlib import Path
+from PIL import Image
+
+source = Path("$SOURCE")
+out = Path("$SQUARE_SRC")
+img = Image.open(source).convert("RGBA")
+w, h = img.size
+side = min(w, h)
+left = (w - side) // 2
+top = (h - side) // 2
+img.crop((left, top, left + side, top + side)).save(out, "PNG")
+print(f"Square crop: {w}x{h} -> {side}x{side}")
+PY
 
 gen_icon() {
   local size="$1"

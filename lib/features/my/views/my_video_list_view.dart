@@ -237,6 +237,63 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
     );
   }
 
+  Widget _createCollectionButton() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const accent = Color(0xFF3578E5);
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [Color(0xFF2A62D4), Color(0xFF4A88F5)]
+              : const [Color(0xFF3578E5), Color(0xFF5B9CFF)],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: isDark ? 0.42 : 0.34),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: _openCreateDialog,
+          borderRadius: BorderRadius.circular(28),
+          splashColor: Colors.white.withValues(alpha: 0.14),
+          highlightColor: Colors.white.withValues(alpha: 0.08),
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.collections_bookmark_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  '创建合集',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -301,7 +358,7 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
             hasScrollBody: false,
             child: Center(
               child: Text(
-                _isSelf ? '暂无合集，点击右下角创建' : '暂无合集',
+                _isSelf ? '暂无合集，点击下方按钮创建' : '暂无合集',
                 style: context.typo.body,
               ),
             ),
@@ -318,12 +375,10 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
       children: [
         body,
         Positioned(
-          right: 16,
+          left: 0,
+          right: 0,
           bottom: 24,
-          child: FloatingActionButton(
-            onPressed: _openCreateDialog,
-            child: const Icon(Icons.add),
-          ),
+          child: Center(child: _createCollectionButton()),
         ),
       ],
     );

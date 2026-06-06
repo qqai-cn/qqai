@@ -62,6 +62,9 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Sync web icons
+        run: bash scripts/sync_web_icons.sh
+
       - name: Run code generation
         run: dart run build_runner build --delete-conflicting-outputs
 
