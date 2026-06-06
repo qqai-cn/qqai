@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 /// 底部视频工具条高度（含控制行），供 overlay 避让。
-const double kBlogDetailVideoToolbarHeight = 72;
+const double kBlogDetailVideoToolbarHeight = 84;
 
 /// 仅进度条、无控制行时的工具条高度。
 const double kBlogDetailVideoToolbarProgressOnlyHeight = 37;
@@ -30,6 +30,7 @@ class BlogDetailVideoToolbar extends StatelessWidget {
     this.segmentCount = 0,
     this.segmentIndex = 0,
     this.onSegmentSelected,
+    this.danmakuComposer,
   });
 
   final double iconSize;
@@ -46,6 +47,9 @@ class BlogDetailVideoToolbar extends StatelessWidget {
 
   /// 点击分段进度条时切换到对应分段。
   final ValueChanged<int>? onSegmentSelected;
+
+  /// 可选弹幕发布组件，显示在时间与全屏按钮之间。
+  final Widget? danmakuComposer;
 
   static const _controlColor = Colors.white;
 
@@ -90,7 +94,14 @@ class BlogDetailVideoToolbar extends StatelessWidget {
                     ),
                   ),
                   FlickTotalDuration(fontSize: fontSize, color: _controlColor),
-                  if (segmentCount > 1)
+                  if (danmakuComposer != null)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: danmakuComposer!,
+                      ),
+                    )
+                  else if (segmentCount > 1)
                     Expanded(
                       child: Center(
                         child: _ToolbarSegmentProgressRow(

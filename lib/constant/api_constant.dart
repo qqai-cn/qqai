@@ -48,7 +48,8 @@ class ApiConstant {
   // Chat / 消息
   static const String CHAT_MESSAGE_SEND = '/app-api/infra/chat/message/send';
   static const String CHAT_MESSAGE_PAGE = '/app-api/infra/chat/message/page';
-  static const String CHAT_MESSAGE_SEARCH = '/app-api/infra/chat/message/search';
+  static const String CHAT_MESSAGE_SEARCH =
+      '/app-api/infra/chat/message/search';
   static const String CHAT_CONVERSATION_LIST =
       '/app-api/infra/chat/conversation/list';
   static const String CHAT_CONVERSATION_GET =
@@ -97,7 +98,8 @@ class ApiConstant {
   static const String MEMBER_ADDRESS_CREATE = '/app-api/member/address/create';
   static const String MEMBER_ADDRESS_UPDATE = '/app-api/member/address/update';
   static const String MEMBER_ADDRESS_DELETE = '/app-api/member/address/delete';
-  static const String MEMBER_FEEDBACK_CREATE = '/app-api/member/feedback/create';
+  static const String MEMBER_FEEDBACK_CREATE =
+      '/app-api/member/feedback/create';
   static const String SYSTEM_AREA_TREE = '/app-api/system/area/tree';
 
   /// 个人中心 / 我的（QQAI blog profile）
@@ -208,6 +210,10 @@ class ApiConstant {
   /// 评论点赞 POST / 取消点赞 DELETE
   static String blogCommentLikePath(int id) =>
       '/app-api/blog/qqai/comments/$id/like';
+
+  /// 博客视频弹幕
+  static const String BLOG_DANMAKU = '/app-api/blog/qqai/danmaku';
+  static const String BLOG_DANMAKU_LIST = '/app-api/blog/qqai/danmaku/list';
 
   /// 记录分享（分享次数 +1）
   static String blogSharePath(int blogId) => '/app-api/blog/qqai/$blogId/share';

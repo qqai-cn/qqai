@@ -28,6 +28,7 @@ import '../data/blog_detail_feed_resolver.dart';
 import '../data/blog_feed_more_menu_handler.dart';
 import 'blog_avatar_preview.dart';
 import 'blog_list_kind.dart';
+import 'blog_shop_product_display.dart';
 
 class BlogVideoItemView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
@@ -190,6 +191,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     required String mediaHeroTag,
     required double aspectRatio,
   }) {
+    final shopProducts = visibleBlogShopProducts(item);
     return Card(
       child: SizedBox(
         height: _videoItemHeightWithAspectRatio(aspectRatio),
@@ -303,6 +305,9 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 onLike: () => blogNotifier.onZanTap(item),
                 shareCount: item.shareCount,
                 onShare: () => blogNotifier.onShareTap(item),
+                afterShare: shopProducts.isEmpty
+                    ? null
+                    : BlogShopProductCartButton(products: shopProducts),
                 onMenuSelected: (value) {
                   handleBlogFeedMoreMenuSelection(
                     context: context,

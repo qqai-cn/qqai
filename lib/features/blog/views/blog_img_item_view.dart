@@ -21,6 +21,7 @@ import '../../index/providers/home_follow_feed_providers.dart';
 import 'blog_avatar_preview.dart';
 import '../data/blog_detail_feed_resolver.dart';
 import 'blog_list_kind.dart';
+import 'blog_shop_product_display.dart';
 
 class BlogImgItemView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
@@ -94,6 +95,7 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
           );
     final content = _contentWithoutReward(item.content);
     final rewardText = _rewardText(item.content);
+    final shopProducts = visibleBlogShopProducts(item);
     final bodyStyle = context.typo.body;
     final mediaHeroTag = blogImageDetailHeroTag(
       widget.category,
@@ -175,6 +177,9 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
               onLike: () => blogNotifier.onZanTap(item),
               shareCount: item.shareCount,
               onShare: () => blogNotifier.onShareTap(item),
+              afterShare: shopProducts.isEmpty
+                  ? null
+                  : BlogShopProductCartButton(products: shopProducts),
               onMenuSelected: (value) {
                 handleBlogFeedMoreMenuSelection(
                   context: context,

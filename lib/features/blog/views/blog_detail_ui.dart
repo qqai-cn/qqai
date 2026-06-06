@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/blog/blog_danmaku.dart';
 import 'package:qqai/components/blog/detail_side_action_rail.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/providers/auth_providers.dart';
@@ -47,9 +48,11 @@ class BlogDetailBottomInfo extends ConsumerWidget {
     final collections = (item.collections ?? [])
         .where((e) => e.name?.trim().isNotEmpty == true)
         .toList();
-    final shopProducts = (item.shopProducts ?? [])
-        .where((e) => e.name?.trim().isNotEmpty == true || e.id != null)
-        .toList();
+    final shopProducts = visibleBlogShopProducts(item);
+    final showDanmakuLaunch =
+        MediaQuery.sizeOf(context).width <= 900 &&
+        item.blogType == 2 &&
+        item.id != null;
 
     return Positioned(
       left: 12,
@@ -59,6 +62,10 @@ class BlogDetailBottomInfo extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (showDanmakuLaunch) ...[
+            BlogDanmakuActionButtons(blogId: item.id),
+            const SizedBox(height: 8),
+          ],
           Row(
             children: [
               Flexible(
@@ -121,7 +128,7 @@ class BlogDetailBottomInfo extends ConsumerWidget {
           ],
           if (shopProducts.isNotEmpty) ...[
             const SizedBox(height: 12),
-            BlogShopProductStrip(products: shopProducts),
+            BlogShopProductStrip(products: shopProducts.take(3).toList()),
           ],
         ],
       ),

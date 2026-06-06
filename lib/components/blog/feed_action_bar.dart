@@ -15,6 +15,7 @@ class FeedActionBar extends StatelessWidget {
   final VoidCallback? onShare;
   final List<PopupMenuEntry<String>> Function(BuildContext context) menuBuilder;
   final Widget? shareButton;
+  final Widget? afterShare;
   final void Function(String value)? onMenuSelected;
 
   const FeedActionBar({
@@ -28,6 +29,7 @@ class FeedActionBar extends StatelessWidget {
     this.shareCount,
     this.onShare,
     this.shareButton,
+    this.afterShare,
     this.onMenuSelected,
   });
 
@@ -50,15 +52,14 @@ class FeedActionBar extends StatelessWidget {
         ),
         if (onShare != null)
           TextButton.icon(
-            onPressed: () => showBlogShareSheet(
-              context,
-              onShareChannelTap: onShare,
-            ),
+            onPressed: () =>
+                showBlogShareSheet(context, onShareChannelTap: onShare),
             icon: Icon(Icons.share, color: actionColor),
             label: Text(_shareLabel()),
           )
         else
           shareButton ?? MySharePage(),
+        ?afterShare,
         const Spacer(),
         PopupMenuButton<String>(
           tooltip: '',

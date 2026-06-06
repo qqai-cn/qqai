@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../components/blog/blog_danmaku.dart';
 import '../../../../components/video_player/item_controls.dart';
 import '../../../../components/video_player/qqai_player.dart';
 import '../../../../components/video_player/video_ad_overlay.dart';
@@ -54,6 +55,12 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           videoAdInitialState: widget.videoAdInitialState,
           onVideoAdStateChanged: widget.onVideoAdStateChanged,
           onCompleted: widget.onCompleted,
+          overlayBuilder: (context, positionListenable) => BlogDanmakuOverlay(
+            blogId: widget.videoId,
+            positionListenable: positionListenable,
+            topPadding: 12,
+            bottomPadding: 26,
+          ),
         ),
       ),
     );

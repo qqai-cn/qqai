@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/media_url.dart';
@@ -32,9 +33,9 @@ Future<void> openBlogShopProduct(
     }
   }
   if (!context.mounted) return;
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(content: Text('暂无商品详情')),
-  );
+  ScaffoldMessenger.of(
+    context,
+  ).showSnackBar(const SnackBar(content: Text('暂无商品详情')));
 }
 
 void showBlogShopProductsSheet(
@@ -60,7 +61,8 @@ void showBlogShopProductsSheet(
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: products.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final product = products[index];
                     return BlogShopProductListTile(
@@ -79,6 +81,45 @@ void showBlogShopProductsSheet(
       );
     },
   );
+}
+
+List<BlogItemShopProduct> visibleBlogShopProducts(BlogItem item) {
+  return (item.shopProducts ?? const <BlogItemShopProduct>[])
+      .where((e) => e.name?.trim().isNotEmpty == true || e.id != null)
+      .toList();
+}
+
+class BlogShopProductCartButton extends StatelessWidget {
+  const BlogShopProductCartButton({
+    super.key,
+    required this.products,
+    this.overlay = false,
+  });
+
+  final List<BlogItemShopProduct> products;
+  final bool overlay;
+
+  @override
+  Widget build(BuildContext context) {
+    if (products.isEmpty) return const SizedBox.shrink();
+    final iconColor = overlay
+        ? Colors.white
+        : AppActionColors.foreground(context);
+    final button = IconButton(
+      tooltip: '商品',
+      onPressed: () => showBlogShopProductsSheet(context, products: products),
+      icon: Icon(Icons.shopping_cart_outlined, color: iconColor, size: 22),
+    );
+    if (!overlay) {
+      return Align(alignment: Alignment.centerLeft, child: button);
+    }
+    return Material(
+      color: Colors.black.withValues(alpha: 0.42),
+      shape: const CircleBorder(),
+      clipBehavior: Clip.antiAlias,
+      child: SizedBox(width: 40, height: 40, child: button),
+    );
+  }
 }
 
 /// 详情页左下角横向商品条（视频/图文共用）。
@@ -101,7 +142,7 @@ class BlogShopProductStrip extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: products.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
         itemBuilder: (context, index) {
           final product = products[index];
           return BlogShopProductChip(
@@ -110,6 +151,39 @@ class BlogShopProductStrip extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class BlogShopProductsPanel extends StatelessWidget {
+  const BlogShopProductsPanel({super.key, required this.products});
+
+  final List<BlogItemShopProduct> products;
+
+  @override
+  Widget build(BuildContext context) {
+    if (products.isEmpty) {
+      return Center(
+        child: Text(
+          '暂无商品',
+          style: context.typo.body.copyWith(
+            color: AppActionColors.muted(context),
+          ),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(12),
+      itemCount: products.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 10),
+      itemBuilder: (context, index) {
+        final product = products[index];
+        return BlogShopProductListTile(
+          product: product,
+          onTap: () => openBlogShopProduct(context, product),
+        );
+      },
     );
   }
 }
@@ -141,7 +215,11 @@ class BlogShopProductChip extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 14),
+              const Icon(
+                Icons.shopping_bag_outlined,
+                color: Colors.white,
+                size: 14,
+              ),
               const SizedBox(width: 4),
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: maxLabelWidth),
@@ -210,10 +288,11 @@ class BlogShopProductListTile extends StatelessWidget {
                       : Image.network(
                           coverUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => ColoredBox(
-                            color: Theme.of(context).colorScheme.surface,
-                            child: const Icon(Icons.shopping_bag_outlined),
-                          ),
+                          errorBuilder: (context, error, stackTrace) =>
+                              ColoredBox(
+                                color: Theme.of(context).colorScheme.surface,
+                                child: const Icon(Icons.shopping_bag_outlined),
+                              ),
                         ),
                 ),
               ),

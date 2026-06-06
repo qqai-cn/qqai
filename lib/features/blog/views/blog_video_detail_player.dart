@@ -1,5 +1,6 @@
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/blog/blog_danmaku.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/components/video_player/shared_video_playback_session.dart';
@@ -316,6 +317,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
       );
     }
     final poster = resolveMediaUrl(resolveBlogCoverUrl(widget.blog));
+    final showToolbarDanmakuComposer = MediaQuery.sizeOf(context).width > 900;
 
     return VisibilityDetector(
       key: ObjectKey(flickManager),
@@ -346,35 +348,46 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                     widget.adSkipRightInset ?? kVideoAdDetailSkipRightInset,
                 initialPlaybackState: widget.videoAdInitialState,
                 onPlaybackStateChanged: widget.onVideoAdStateChanged,
-                child: SafeFlickVideoPlayer(
-                  flickManager: flickManager,
-                  flickVideoWithControls: FlickVideoWithControls(
-                    videoFit: BoxFit.contain,
-                    playerLoadingFallback: Positioned.fill(
-                      child: VideoLoadingPlaceholder(
-                        imageUrl: poster,
-                        showPoster: true,
+                child: Stack(
+                  children: [
+                    SafeFlickVideoPlayer(
+                      flickManager: flickManager,
+                      flickVideoWithControls: FlickVideoWithControls(
+                        videoFit: BoxFit.contain,
+                        playerLoadingFallback: Positioned.fill(
+                          child: VideoLoadingPlaceholder(
+                            imageUrl: poster,
+                            showPoster: true,
+                          ),
+                        ),
+                        controls: const BlogDetailVideoSurfaceControls(),
+                      ),
+                      flickVideoWithControlsFullscreen: FlickVideoWithControls(
+                        videoFit: BoxFit.contain,
+                        playerLoadingFallback: VideoLoadingPlaceholder(
+                          imageUrl: poster,
+                          showPoster: true,
+                          showIndicator: false,
+                        ),
+                        controls: FlickLandscapeControls(),
+                        iconThemeData: const IconThemeData(
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                        textStyle: context.typo.body.copyWith(
+                          fontSize: 16,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    controls: const BlogDetailVideoSurfaceControls(),
-                  ),
-                  flickVideoWithControlsFullscreen: FlickVideoWithControls(
-                    videoFit: BoxFit.contain,
-                    playerLoadingFallback: VideoLoadingPlaceholder(
-                      imageUrl: poster,
-                      showPoster: true,
-                      showIndicator: false,
+                    Positioned.fill(
+                      child: BlogDanmakuOverlay(
+                        blogId: widget.blog.id,
+                        positionListenable: videoController,
+                        bottomPadding: 24,
+                      ),
                     ),
-                    controls: FlickLandscapeControls(),
-                    iconThemeData: const IconThemeData(
-                      size: 40,
-                      color: Colors.white,
-                    ),
-                    textStyle: context.typo.body.copyWith(
-                      fontSize: 16,
-                      color: Colors.white,
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -386,6 +399,24 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
               segmentCount: widget.segmentCount,
               segmentIndex: widget.segmentIndex,
               onSegmentSelected: widget.onSegmentSelected,
+              danmakuComposer: showToolbarDanmakuComposer
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: BlogDanmakuComposer(
+                            blogId: widget.blog.id,
+                            positionMillisGetter: () =>
+                                videoController.value.position.inMilliseconds,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        BlogDanmakuVisibilityButton(
+                          blogId: widget.blog.id,
+                          size: 42,
+                        ),
+                      ],
+                    )
+                  : null,
             ),
           ),
         ],

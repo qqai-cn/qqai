@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/components/video_player/shared_video_playback_session.dart';
@@ -31,6 +32,7 @@ class QqaiPlayer extends StatefulWidget {
     this.videoAdInitialState,
     this.onVideoAdStateChanged,
     this.onCompleted,
+    this.overlayBuilder,
   });
 
   final String? image;
@@ -46,6 +48,11 @@ class QqaiPlayer extends StatefulWidget {
   final VideoAdPlaybackState? videoAdInitialState;
   final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
   final VoidCallback? onCompleted;
+  final Widget Function(
+    BuildContext context,
+    ValueListenable<VideoPlayerValue> positionListenable,
+  )?
+  overlayBuilder;
 
   @override
   State<QqaiPlayer> createState() => _QqaiPlayerState();
@@ -284,23 +291,31 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
           videoId: widget.videoId,
           initialPlaybackState: widget.videoAdInitialState,
           onPlaybackStateChanged: widget.onVideoAdStateChanged,
-          child: SafeFlickVideoPlayer(
-            flickManager: flickManager,
-            flickVideoWithControls: FlickVideoWithControls(
-              videoFit: widget.videoFit,
-              playerLoadingFallback: _buildLoadingFallback(),
-              controls: widget.controls,
-            ),
-            flickVideoWithControlsFullscreen: FlickVideoWithControls(
-              videoFit: widget.videoFit,
-              playerLoadingFallback: _buildFullscreenLoadingFallback(),
-              controls: FlickLandscapeControls(),
-              iconThemeData: IconThemeData(size: 40, color: Colors.white),
-              textStyle: context.typo.body.copyWith(
-                fontSize: 16,
-                color: Colors.white,
+          child: Stack(
+            children: [
+              SafeFlickVideoPlayer(
+                flickManager: flickManager,
+                flickVideoWithControls: FlickVideoWithControls(
+                  videoFit: widget.videoFit,
+                  playerLoadingFallback: _buildLoadingFallback(),
+                  controls: widget.controls,
+                ),
+                flickVideoWithControlsFullscreen: FlickVideoWithControls(
+                  videoFit: widget.videoFit,
+                  playerLoadingFallback: _buildFullscreenLoadingFallback(),
+                  controls: FlickLandscapeControls(),
+                  iconThemeData: IconThemeData(size: 40, color: Colors.white),
+                  textStyle: context.typo.body.copyWith(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
+              if (widget.overlayBuilder != null)
+                Positioned.fill(
+                  child: widget.overlayBuilder!(context, videoController),
+                ),
+            ],
           ),
         ),
       ),

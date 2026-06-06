@@ -6,6 +6,7 @@ import '../data/models/blog_page_model.dart';
 import '../../../router/app_routes.dart';
 import 'blog_comment_panel.dart';
 import 'blog_related_recommend_view.dart';
+import 'blog_shop_product_display.dart';
 
 /// 宽屏详情右侧：评论 + 相关推荐 + 合集（Tab）。
 class BlogDetailSidePanel extends StatefulWidget {
@@ -32,11 +33,19 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
     with SingleTickerProviderStateMixin {
   static const _baseTabs = ['评论', '相关推荐'];
   static const _collectionTab = '合集';
+  static const _productsTab = '商品';
   late TabController _tabController;
 
   bool get _hasCollection => widget.collection?.id != null;
+  List<BlogItemShopProduct> get _shopProducts =>
+      visibleBlogShopProducts(widget.blog);
+  bool get _hasShopProducts => _shopProducts.isNotEmpty;
 
-  List<String> get _tabs => [..._baseTabs, if (_hasCollection) _collectionTab];
+  List<String> get _tabs => [
+    ..._baseTabs,
+    if (_hasCollection) _collectionTab,
+    if (_hasShopProducts) _productsTab,
+  ];
 
   @override
   void initState() {
@@ -48,7 +57,11 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
   void didUpdateWidget(BlogDetailSidePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     final oldHasCollection = oldWidget.collection?.id != null;
-    if (oldHasCollection != _hasCollection) {
+    final oldHasShopProducts = visibleBlogShopProducts(
+      oldWidget.blog,
+    ).isNotEmpty;
+    if (oldHasCollection != _hasCollection ||
+        oldHasShopProducts != _hasShopProducts) {
       _tabController.dispose();
       _tabController = _createController();
       return;
@@ -94,6 +107,8 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
                 Expanded(
                   child: TabBar(
                     controller: _tabController,
+                    isScrollable: true,
+                    tabAlignment: TabAlignment.start,
                     indicatorSize: TabBarIndicatorSize.label,
                     labelColor: AppActionColors.strong(context),
                     unselectedLabelColor: AppActionColors.muted(context),
@@ -118,10 +133,7 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
               ],
             ),
           ),
-          Divider(
-            height: 1,
-            color: AppActionColors.borderSubtle(context),
-          ),
+          Divider(height: 1, color: AppActionColors.borderSubtle(context)),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -142,6 +154,8 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
                     collection: widget.collection,
                     detailRoute: widget.collectionVideoDetailRoute,
                   ),
+                if (_hasShopProducts)
+                  BlogShopProductsPanel(products: _shopProducts),
               ],
             ),
           ),
