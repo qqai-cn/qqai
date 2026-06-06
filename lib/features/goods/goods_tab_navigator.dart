@@ -33,6 +33,7 @@ class _GoodsTabNavigatorState extends ConsumerState<GoodsTabNavigator> {
   @override
   Widget build(BuildContext context) {
     ref.listen(goodsMallTabReselectProvider, (previous, next) {
+      if (!context.mounted) return;
       if (previous == null || next <= previous) return;
       final nav = _navigatorKey.currentState;
       if (nav == null) return;

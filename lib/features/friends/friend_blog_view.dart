@@ -12,6 +12,7 @@ import '../blog/providers/blog_providers.dart';
 import 'friend_blog_img_item_view.dart';
 import 'friend_blog_video_item_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/api_error_message.dart';
 
 class FriendBlogView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -58,7 +59,13 @@ class _TabPageState extends ConsumerState<FriendBlogView>
             );
             return RepaintBoundary(
               child: blogItem.blogType == 1
-                  ? Card(child: FriendBlogImgItemView(category, blogItem))
+                  ? Card(
+                      child: FriendBlogImgItemView(
+                        category,
+                        blogItem,
+                        heroScope: 'friends-feed',
+                      ),
+                    )
                   : Card(
                       child: SizedBox(
                         height: itemHeight,
@@ -74,7 +81,7 @@ class _TabPageState extends ConsumerState<FriendBlogView>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '加载失败: $err',
+              ApiErrorMessage.userMessage(err),
               style: context.typo.body.copyWith(color: Colors.white),
             ),
             ElevatedButton(

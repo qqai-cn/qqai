@@ -35,17 +35,17 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
+  late final AuthNotifier _authNotifier;
+
   @override
   void initState() {
     super.initState();
-    // 在 initState 后通过 addPostFrameCallback 安全地设置回调
+    _authNotifier = ref.read(authProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        ApiBaseClient.setRefreshCallbacks(
-          onRefreshToken: () => ref.read(authProvider.notifier).refreshToken(),
-          onLogout: () => ref.read(authProvider.notifier).logout(),
-        );
-      }
+      ApiBaseClient.setRefreshCallbacks(
+        onRefreshToken: _authNotifier.refreshToken,
+        onLogout: _authNotifier.logout,
+      );
     });
   }
 

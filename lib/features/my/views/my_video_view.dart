@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/api_error_message.dart';
 import 'package:qqai/constant/constant.dart';
 
 import '../../../../components/blog/network_image_carousel_pages.dart';
@@ -190,7 +191,7 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      '加载失败: $_error',
+                      ApiErrorMessage.userMessage(_error!),
                       textAlign: TextAlign.center,
                       style: context.typo.body,
                     ),

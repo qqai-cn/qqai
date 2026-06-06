@@ -169,7 +169,7 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
     if (collections.isEmpty) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       final commentState = ref.read(commentProvider);
       final collection = _effectiveCollection(
         widget.blogItem,

@@ -44,7 +44,7 @@ class _VideoViewState extends ConsumerState<VideoView>
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
+      if (!context.mounted) return;
       ref.read(videoSubTabIndexProvider.notifier).select(_tabController.index);
     });
   }
@@ -263,7 +263,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
           );
         }
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted) return;
+          if (!context.mounted) return;
           final current = ref.read(videoRecommendCurrentBlogProvider);
           final currentStillVisible =
               current?.id != null &&
@@ -370,7 +370,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
       _showAutoPlayNextTip();
       setState(() => _collectionNextItems[currentId] = nextBlog);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted || !_pageController.hasClients) return;
+        if (!context.mounted || !_pageController.hasClients) return;
         final items = _playableItems(
           ref.read(videoRecommendProvider).allItems,
           ref.read(videoPlayQueueProvider),

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/api_error_message.dart';
 
 import '../../my/data/models/profile_models.dart';
 import '../../my/data/repos/profile_repo.dart';
@@ -105,7 +106,7 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
                 padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Column(
                   children: [
-                    Text('加载失败: $_error', style: context.typo.body),
+                    Text(ApiErrorMessage.userMessage(_error!), style: context.typo.body),
                     TextButton(onPressed: _loadCollections, child: const Text('重试')),
                   ],
                 ),

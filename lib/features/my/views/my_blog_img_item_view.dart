@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../../constant/constant.dart';
 import '../../../../components/level_icon.dart';
 import '../../../../components/myshare_page.dart';
+import '../../blog/data/blog_route_extra.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
@@ -15,8 +16,9 @@ import 'package:qqai/config/theme/app_typography.dart';
 class MyBlogImgItemView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
   final int category;
+  final String? heroScope;
 
-  MyBlogImgItemView(this.category, this.blogItem);
+  MyBlogImgItemView(this.category, this.blogItem, {this.heroScope});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() {
@@ -73,8 +75,12 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
                 runSpacing: 10,
                 children: List.generate(imageCount, (i) {
                   final url = _imageUrls[i];
-                  final heroTag =
-                      'lookBlogImg-${widget.category}-${widget.blogItem.id}-$i';
+                  final heroTag = blogImageDetailHeroTag(
+                    widget.category,
+                    widget.blogItem,
+                    index: i,
+                    scope: widget.heroScope,
+                  );
                   return InkWell(
                     onTap: () {
                       blogNotifier.onBlogImgItemTap(

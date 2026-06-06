@@ -8,6 +8,7 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../config/translations/strings_enum.dart';
 import '../constant/api_constant.dart';
+import 'api_error_message.dart';
 import 'api_exceptions.dart';
 import 'api_messenger.dart';
 import 'my_shared_pref.dart';
@@ -318,19 +319,19 @@ class ApiBaseClient {
       // 3) return response (api done successfully)
       return response;
     } on DioException catch (error) {
-      // dio error (api reach the server but not performed successfully)
-      _handleDioError(error: error, url: url, onError: null);
-      rethrow;
+      final exception = _toApiException(error: error, url: url);
+      Logger().e('DioException [$url]: $error');
+      throw exception;
     } on TimeoutException {
-      // Api call went out of time
-      _handleTimeoutException(url: url, onError: null);
-      rethrow;
+      final exception = ApiException(
+        message: Strings.serverNotResponding,
+        url: url,
+      );
+      Logger().e('TimeoutException [$url]');
+      throw exception;
     } catch (error, stackTrace) {
-      // print the line of code that throw unexpected exception
       Logger().e(stackTrace);
-      // unexpected error for example (parsing json error)
-      _handleUnexpectedException(url: url, onError: null, error: error);
-      rethrow;
+      throw ApiException(message: error.toString(), url: url);
     }
   }
 
@@ -359,109 +360,40 @@ class ApiBaseClient {
     }
   }
 
-  /// handle unexpected error
-  static void _handleUnexpectedException({
-    Function(ApiException)? onError,
-    required String url,
-    required Object error,
-  }) {
-    if (onError != null) {
-      onError(ApiException(message: error.toString(), url: url));
-    } else {
-      _handleError(error.toString());
-    }
-  }
-
-  /// handle timeout exception
-  static void _handleTimeoutException({
-    Function(ApiException)? onError,
-    required String url,
-  }) {
-    final message = Strings.serverNotResponding;
-    if (onError != null) {
-      onError(ApiException(message: message, url: url));
-    } else {
-      _handleError(message);
-    }
-  }
-
-  /// handle timeout exception
-  static void _handleSocketException({
-    Function(ApiException)? onError,
-    required String url,
-  }) {
-    final message = Strings.noInternetConnection;
-    if (onError != null) {
-      onError(ApiException(message: message, url: url));
-    } else {
-      _handleError(message);
-    }
-  }
-
-  /// handle Dio error
-  static void _handleDioError({
+  static ApiException _toApiException({
     required DioException error,
-    Function(ApiException)? onError,
     required String url,
   }) {
-    // no internet connection
-    if (error.type == DioExceptionType.connectionError) {
-      _handleSocketException(url: url, onError: onError);
-      return;
+    if (ApiErrorMessage.userMessage(error) == ApiErrorMessage.networkUnavailable) {
+      return ApiException(
+        message: ApiErrorMessage.networkUnavailable,
+        url: url,
+      );
     }
 
-    // 404 error
     if (error.response?.statusCode == 404) {
-      final message = Strings.urlNotFound;
-      if (onError != null) {
-        onError(ApiException(message: message, url: url, statusCode: 404));
-        return;
-      } else {
-        _handleError(message);
-        return;
-      }
+      return ApiException(
+        message: Strings.urlNotFound,
+        url: url,
+        statusCode: 404,
+      );
     }
 
-    // no internet connection
-    if (error.message != null &&
-        error.message!.toLowerCase().contains('socket')) {
-      final message = Strings.noInternetConnection;
-      if (onError != null) {
-        onError(ApiException(message: message, url: url));
-        return;
-      } else {
-        _handleError(message);
-        return;
-      }
-    }
-
-    // check if the error is 500 (server problem)
     if (error.response?.statusCode == 500) {
-      final message = Strings.serverError;
-      var exception = ApiException(message: message, url: url, statusCode: 500);
-
-      if (onError != null) {
-        onError(exception);
-        return;
-      } else {
-        handleApiError(exception);
-        return;
-      }
+      return ApiException(
+        message: Strings.serverError,
+        url: url,
+        statusCode: 500,
+        response: error.response,
+      );
     }
 
-    var exception = ApiException(
+    return ApiException(
       url: url,
-      message: error.message ?? 'Un Expected Api Error!',
+      message: error.message ?? Strings.someThingWentWorng,
       response: error.response,
       statusCode: error.response?.statusCode,
     );
-    if (onError != null) {
-      onError(exception);
-      return;
-    } else {
-      handleApiError(exception);
-      return;
-    }
   }
 
   static void handleApiError(ApiException apiException) {

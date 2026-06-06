@@ -14,6 +14,7 @@ import '../data/models/profile_models.dart';
 import '../data/repos/profile_repo.dart';
 import 'create_collection_dialog.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/api_error_message.dart';
 
 /// 「合集」Tab：我的合集分页。
 class MyVideoListView extends ConsumerStatefulWidget {
@@ -275,7 +276,7 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
                   Padding(
                     padding: const EdgeInsets.all(16),
                     child: Text(
-                      '加载失败: $_error',
+                      ApiErrorMessage.userMessage(_error!),
                       textAlign: TextAlign.center,
                       style: context.typo.body,
                     ),

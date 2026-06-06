@@ -135,10 +135,15 @@ class FlickVideoManager extends ChangeNotifier {
 
     // If movie already ended, restart the movie (Happens when previously used controller is
     // used again).
-    if (videoPlayerController!.value.position ==
-        videoPlayerController!.value.duration) {
-      videoPlayerController!
-          .seekTo(Duration(hours: 0, minutes: 0, seconds: 0, milliseconds: 0));
+    final durationMs =
+        safeDurationMilliseconds(videoPlayerController!.value.duration);
+    final positionMs =
+        safeDurationMilliseconds(videoPlayerController!.value.position);
+    if (durationMs != null &&
+        durationMs > 0 &&
+        positionMs != null &&
+        positionMs >= durationMs) {
+      await videoPlayerController!.seekTo(Duration.zero);
     }
 
     if (autoPlay &&

@@ -572,6 +572,14 @@ GoRouter appRouter(Ref ref) {
         ),
       ),
       GoRoute(
+        path: Routes.groupInvitations,
+        name: 'groupInvitations',
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.GroupInvitationsPage(),
+        ),
+      ),
+      GoRoute(
         path: '${Routes.userDetail}/:userId/:showAppBar',
         name: 'userDetail',
         builder: (context, state) {
@@ -646,6 +654,28 @@ GoRouter appRouter(Ref ref) {
                     isCaller: caller,
                   );
                 },
+              );
+            },
+          ),
+          GoRoute(
+            path: 'search',
+            name: 'chatMessageSearch',
+            builder: (context, state) {
+              final id =
+                  int.tryParse(state.pathParameters['chatId'] ?? '') ?? 0;
+              if (id == 0) {
+                return Scaffold(
+                  appBar: AppBar(title: const Text('查找聊天内容')),
+                  body: const Center(child: Text('无效会话')),
+                );
+              }
+              final title = state.extra is String ? state.extra as String : null;
+              return AppDeferredWidget(
+                libraryLoader: route_pages.loadLibrary,
+                builder: () => route_pages.ChatMessageSearchPage(
+                  conversationId: id,
+                  conversationTitle: title,
+                ),
               );
             },
           ),

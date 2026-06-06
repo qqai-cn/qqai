@@ -48,6 +48,7 @@ class ApiConstant {
   // Chat / 消息
   static const String CHAT_MESSAGE_SEND = '/app-api/infra/chat/message/send';
   static const String CHAT_MESSAGE_PAGE = '/app-api/infra/chat/message/page';
+  static const String CHAT_MESSAGE_SEARCH = '/app-api/infra/chat/message/search';
   static const String CHAT_CONVERSATION_LIST =
       '/app-api/infra/chat/conversation/list';
   static const String CHAT_CONVERSATION_GET =
@@ -64,10 +65,20 @@ class ApiConstant {
       '/app-api/infra/chat/conversation/pin';
   static const String CHAT_CONVERSATION_DELETE =
       '/app-api/infra/chat/conversation/delete';
+  static const String CHAT_CONVERSATION_CLEAR_HISTORY =
+      '/app-api/infra/chat/conversation/clear-history';
   static const String CHAT_CONVERSATION_READ =
       '/app-api/infra/chat/conversation/read';
   static const String CHAT_GROUP_MEMBER_LIST =
       '/app-api/member/chat/conversation/members';
+  static const String CHAT_GROUP_INVITATION_PENDING_INCOMING =
+      '/app-api/member/chat/group-invitation/pending-incoming';
+  static const String CHAT_GROUP_INVITATION_PENDING_OUTGOING =
+      '/app-api/member/chat/group-invitation/pending-outgoing';
+  static const String CHAT_GROUP_INVITATION_ACCEPT =
+      '/app-api/member/chat/group-invitation/accept';
+  static const String CHAT_GROUP_INVITATION_REJECT =
+      '/app-api/member/chat/group-invitation/reject';
 
   static const String MEMBER_USER_UPDATE = '/app-api/member/user/update';
   static const String MEMBER_USER_GET = '/app-api/member/user/get';

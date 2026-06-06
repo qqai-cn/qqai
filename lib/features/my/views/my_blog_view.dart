@@ -13,6 +13,7 @@ import '../utils/footprint_timeline.dart';
 import 'my_blog_img_item_view.dart';
 import 'my_blog_video_item_view.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/api_error_message.dart';
 
 /// 「日常」Tab：我的/他人作品分页，仅 [blogType] = 1（图文），按时间线分组展示。
 class MyBlogView extends ConsumerStatefulWidget {
@@ -165,7 +166,13 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
   Widget _buildBlogTile(BlogItem blogItem, double itemHeight) {
     return RepaintBoundary(
       child: blogItem.blogType == 1
-          ? _buildDailyCard(child: MyBlogImgItemView(_kCategory, blogItem))
+          ? _buildDailyCard(
+              child: MyBlogImgItemView(
+                _kCategory,
+                blogItem,
+                heroScope: 'profile-${widget.userId ?? 'self'}',
+              ),
+            )
           : _buildDailyCard(
               child: SizedBox(
                 height: itemHeight,
@@ -284,7 +291,7 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('加载失败: $_error', style: context.typo.body),
+                  Text(ApiErrorMessage.userMessage(_error!), style: context.typo.body),
                   TextButton(
                     onPressed: _loadFirstPage,
                     child: const Text('重试'),

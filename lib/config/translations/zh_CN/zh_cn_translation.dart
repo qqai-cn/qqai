@@ -7,7 +7,7 @@ const Map<String, String> zhCN = {
   Strings.changeTheme: '切换主题',
   Strings.changeLanguage: '切换语言',
 
-  Strings.noInternetConnection: '网络连接不可用',
+  Strings.noInternetConnection: '网络异常，请稍后再试',
   Strings.serverNotResponding: '服务器无响应',
   Strings.someThingWentWorng: '发生错误',
   Strings.apiNotFound: '接口不存在',

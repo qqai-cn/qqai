@@ -27,11 +27,14 @@ class ImageDetailPage extends StatelessWidget {
           // 用 photo_view 包实现多图滑动
           itemCount: urls.length,
           builder: (context, index) {
+            final heroTag = preview.heroTag;
             return PhotoViewGalleryPageOptions(
               imageProvider: NetworkImage(urls[index]),
-              heroAttributes: PhotoViewHeroAttributes(
-                tag: '${preview.heroTag}',
-              ),
+              heroAttributes: heroTag != null &&
+                      heroTag.isNotEmpty &&
+                      index == initialIndex
+                  ? PhotoViewHeroAttributes(tag: heroTag)
+                  : null,
               initialScale: PhotoViewComputedScale.contained,
               minScale: PhotoViewComputedScale.contained * 0.8,
               maxScale: PhotoViewComputedScale.covered * 2.5,

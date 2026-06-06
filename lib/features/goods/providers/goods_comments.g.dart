@@ -50,7 +50,7 @@ final class GoodsCommentsProvider
   }
 }
 
-String _$goodsCommentsHash() => r'db9926b080b225311e2e21e4500f56b5eb5e518a';
+String _$goodsCommentsHash() => r'7f52b0772369abe931bba1bcbe6636ece8307f6e';
 
 final class GoodsCommentsFamily extends $Family
     with

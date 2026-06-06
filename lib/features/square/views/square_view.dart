@@ -270,6 +270,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
     final notifier = ref.read(squareProvider.notifier);
 
     ref.listen(squareProvider, (prev, next) {
+      if (!context.mounted) return;
       if (prev?.isLoadingMore == true && !next.isLoadingMore) {
         _loadingMoreGuard = false;
       }

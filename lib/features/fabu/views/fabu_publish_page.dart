@@ -43,6 +43,9 @@ class FabuPublishPage extends ConsumerStatefulWidget {
 class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   static const List<int> _rewardOptions = [50, 100, 150];
 
+  late final FabuNotifier _fabuNotifier;
+  late final IBlogRepo _blogRepo;
+
   final _contentController = TextEditingController();
   final _titleController = TextEditingController();
   final _targetController = TextEditingController();
@@ -58,15 +61,15 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   @override
   void initState() {
     super.initState();
+    _fabuNotifier = ref.read(fabuProvider.notifier);
+    _blogRepo = ref.read(blogRepoProvider);
     _contentController.addListener(_syncContent);
     _titleController.addListener(_syncContent);
     _targetController.addListener(_syncContent);
     if (widget.type == FabuPublishType.video) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        ref
-            .read(fabuProvider.notifier)
-            .setWidgetCoverCapture(_captureWidgetCoverForPublish);
+        if (!context.mounted) return;
+        _fabuNotifier.setWidgetCoverCapture(_captureWidgetCoverForPublish);
       });
     }
   }
@@ -82,7 +85,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   @override
   void dispose() {
     if (widget.type == FabuPublishType.video) {
-      ref.read(fabuProvider.notifier).setWidgetCoverCapture(null);
+      _fabuNotifier.setWidgetCoverCapture(null);
     }
     _videoPreviewController.detach();
     _videoSegmentsPageController.dispose();
@@ -93,8 +96,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   }
 
   void _syncContent() {
-    final notifier = ref.read(fabuProvider.notifier);
-    notifier.updateRewardAmount(
+    _fabuNotifier.updateRewardAmount(
       widget.type == FabuPublishType.help ? _rewardAmountCents : null,
     );
     final content = switch (widget.type) {
@@ -108,9 +110,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
           '悬赏金额：${_formatYuan(_rewardAmountCents!)}元',
       ].where((text) => text.isNotEmpty).join('\n'),
     };
-    notifier.updateTextContent(content);
+    _fabuNotifier.updateTextContent(content);
     if (widget.type == FabuPublishType.video) {
-      notifier.updateBlogTitle(_titleController.text.trim());
+      _fabuNotifier.updateBlogTitle(_titleController.text.trim());
     }
   }
 
@@ -609,15 +611,13 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final availableStyles = qqaiVideoCoverStylesForAspectRatio(
       videoAspectRatio,
     );
-    if (!availableStyles.any(
-      (style) => style.id == state.selectedCoverStyleId,
-    )) {
+    final selectedCoverStyleId = state.selectedCoverStyleId;
+    if (!availableStyles.any((style) => style.id == selectedCoverStyleId)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        final current = ref.read(fabuProvider);
+        if (!context.mounted) return;
         if (!qqaiVideoCoverStylesForAspectRatio(
           videoAspectRatio,
-        ).any((style) => style.id == current.selectedCoverStyleId)) {
+        ).any((style) => style.id == selectedCoverStyleId)) {
           notifier.setCoverStyle(
             qqaiDefaultVideoCoverStyleForAspectRatio(videoAspectRatio),
           );
@@ -933,15 +933,19 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => _BackgroundMusicSheet(
-        repo: ref.read(blogRepoProvider),
+        repo: _blogRepo,
         onImport: () async => _importBackgroundMusic(notifier),
       ),
     );
-    if (selected == null) return;
-    notifier.selectBackgroundMusicFromLibrary(
-      url: selected.musicUrl,
-      name: selected.musicName,
-    );
+    if (selected == null || !context.mounted) return;
+    // 等 BottomSheet 关闭并完成 finalizeTree 后再改 provider，避免 deactivate 期间 rebuild 触发 ref 报错
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
+      notifier.selectBackgroundMusicFromLibrary(
+        url: selected.musicUrl,
+        name: selected.musicName,
+      );
+    });
   }
 
   void _showMessage(String message) {
@@ -1075,9 +1079,11 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
         );
       },
     );
-    if (selected != null) {
+    if (selected == null || !context.mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!context.mounted) return;
       notifier.setSoundMode(selected);
-    }
+    });
   }
 
   Future<void> _showVisibilitySheet(

@@ -166,6 +166,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
   @override
   Widget build(BuildContext context) {
     ref.listen(goodsMallListRefreshSignalProvider, (previous, next) {
+      if (!context.mounted) return;
       if (previous == null || next <= previous) return;
       _onMallTabReselect();
     });

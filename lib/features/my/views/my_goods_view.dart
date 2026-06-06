@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../goods/data/models/mall_product_model.dart';
 import '../../goods/data/repos/goods_repo.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/api_error_message.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/media_url.dart';
 
@@ -238,7 +239,7 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('加载失败: $_error', style: context.typo.body),
+                  Text(ApiErrorMessage.userMessage(_error!), style: context.typo.body),
                   TextButton(onPressed: _loadFirstPage, child: const Text('重试')),
                 ],
               ),

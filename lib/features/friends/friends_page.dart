@@ -16,6 +16,7 @@ import '../../router/app_routes.dart';
 import '../data/models/contact.dart';
 import 'data/friend_models.dart';
 import 'friends_detail_view.dart';
+import '../chat/providers/chat_providers.dart';
 import 'providers/friend_providers.dart';
 
 /// 好友列表（消息 Tab → 好友）
@@ -39,7 +40,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     ),
     ContactInfo(
       id: 13,
-      name: '群聊',
+      name: '群聊邀请',
       tagIndex: '↑',
       bgColor: Colors.green,
       iconData: Icons.people,
@@ -166,6 +167,31 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     return model.name;
   }
 
+  Widget? _groupInvitationsTrailing() {
+    return ref.watch(groupInvitationPendingIncomingProvider).when(
+          data: (l) => l.isEmpty
+              ? null
+              : Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    l.length > 99 ? '99+' : '${l.length}',
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+          loading: () => const SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          error: (_, _) => null,
+        );
+  }
+
   Widget? _newFriendsTrailing() {
     return ref.watch(friendPendingIncomingProvider).when(
           data: (l) => l.isEmpty
@@ -194,6 +220,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   Future<void> _onRefresh() async {
     ref.invalidate(friendListGroupedProvider);
     ref.invalidate(friendPendingIncomingProvider);
+    ref.invalidate(groupInvitationPendingIncomingProvider);
     await ref.read(friendListGroupedProvider.future);
   }
 
@@ -329,10 +356,18 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
       selectedTileColor: Constant.SELECT_COLOR,
       leading: _buildFriendLeading(context, model, defHeaderBgColor: defHeaderBgColor),
       title: Text(_contactTitle(model)),
-      trailing: model.id == 12 ? _newFriendsTrailing() : null,
+      trailing: model.id == 12
+          ? _newFriendsTrailing()
+          : model.id == 13
+              ? _groupInvitationsTrailing()
+              : null,
       onTap: () {
         if (model.id == 12) {
           context.push(Routes.friendPendingIncoming);
+          return;
+        }
+        if (model.id == 13) {
+          context.push(Routes.groupInvitations);
           return;
         }
         setState(() {

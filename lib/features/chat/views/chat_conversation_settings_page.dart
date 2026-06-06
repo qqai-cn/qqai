@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/constant/constant.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
@@ -182,6 +181,62 @@ class _ChatConversationSettingsPageState
     }
   }
 
+  Future<void> _confirmClearHistory() async {
+    final conversation = _conversation;
+    if (conversation == null) return;
+
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('清空聊天记录'),
+        content: Text(
+          '确定清空与「${conversation.displayTitle}」的聊天记录吗？'
+          '此操作仅对你本人生效，对方仍可查看历史消息。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('清空', style: TextStyle(color: Color(0xFFE53935))),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    setState(() => _saving = true);
+    try {
+      await ref
+          .read(chatRepoProvider)
+          .clearConversationHistory(widget.conversationId);
+      ref.read(chatHistoryRevisionProvider(widget.conversationId).notifier).state++;
+      await _invalidateConversations();
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('聊天记录已清空')));
+      context.pop();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('清空失败：$e')));
+    }
+  }
+
+  void _openMessageSearch() {
+    final title = _conversation?.displayTitle;
+    context.push(
+      '${Routes.chat}/${widget.conversationId}/search',
+      extra: title,
+    );
+  }
+
   Future<void> _confirmDelete() async {
     final conversation = _conversation;
     if (conversation == null) return;
@@ -346,6 +401,27 @@ class _ChatConversationSettingsPageState
                       onTap: _openUserProfile,
                     ),
                   ]),
+                const SizedBox(height: 12),
+                _section([
+                  ListTile(
+                    leading: const Icon(Icons.search),
+                    title: const Text('查找聊天内容'),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: _saving ? null : _openMessageSearch,
+                  ),
+                  const Divider(height: 1, indent: 16),
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_outline,
+                      color: Color(0xFFE53935),
+                    ),
+                    title: const Text(
+                      '清空聊天记录',
+                      style: TextStyle(color: Color(0xFFE53935)),
+                    ),
+                    onTap: _saving ? null : _confirmClearHistory,
+                  ),
+                ]),
                 if (showDeleteConversation) ...[
                   const SizedBox(height: 12),
                   _section([

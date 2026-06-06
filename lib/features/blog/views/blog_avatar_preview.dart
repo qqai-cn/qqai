@@ -5,13 +5,17 @@ import 'package:qqai/router/app_routes.dart';
 
 import '../data/models/blog_page_model.dart';
 
-/// 博客作者头像 Hero 标签（与列表 category、blogId 唯一对应）。
-String blogAvatarHeroTag(int category, BlogItem blog) =>
-    'blogAvatar-$category-${blog.id ?? blog.userId ?? 0}';
+/// 博客作者头像 Hero 标签（与列表 category、blog 实例唯一对应）。
+String blogAvatarHeroTag(int category, BlogItem blog) {
+  final id = blog.id ?? identityHashCode(blog);
+  return 'blogAvatar-$category-$id';
+}
 
 /// 详情页侧栏头像 Hero 标签。
-String blogAvatarDetailHeroTag(BlogItem blog) =>
-    'blogAvatar-detail-${blog.id ?? blog.userId ?? 0}';
+String blogAvatarDetailHeroTag(BlogItem blog) {
+  final id = blog.id ?? identityHashCode(blog);
+  return 'blogAvatar-detail-$id';
+}
 
 /// 头像大图预览（与博客图片同一套 [Routes.watchImgUrl] + Hero）。
 void openBlogAvatarPreview(

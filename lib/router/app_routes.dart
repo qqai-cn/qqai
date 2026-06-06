@@ -10,6 +10,9 @@ class Routes {
 
   /// 新的朋友（待处理好友申请）
   static const String friendPendingIncoming = "/friend/pending-incoming";
+
+  /// 群聊邀请（待处理群邀请）
+  static const String groupInvitations = "/chat/group-invitations";
   static const String userDetail = "/user_detail";
   static const String care = "/cares";
   static const String collect = "/collects";

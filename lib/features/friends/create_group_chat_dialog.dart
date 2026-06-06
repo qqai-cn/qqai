@@ -135,9 +135,10 @@ Future<void> showCreateGroupChatDialog(
   if (newId == null) return;
   if (!parentContext.mounted) return;
   ref.invalidate(chatConversationsProvider);
+  ref.invalidate(groupInvitationPendingOutgoingProvider);
   ScaffoldMessenger.of(
     parentContext,
-  ).showSnackBar(const SnackBar(content: Text('群聊已创建')));
+  ).showSnackBar(const SnackBar(content: Text('群聊已创建，邀请已发送')));
   parentContext.go(Routes.messagePage);
 }
 

@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:qqai/components/default_asset_image.dart';
+import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -328,6 +328,28 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     );
   }
 
+  void _showFullIntroSheet(BuildContext context, String intro) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      constraints: BoxConstraints(maxHeight: 0.6.sh),
+      builder: (ctx) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('个性签名', style: context.typo.pageTitle),
+              const SizedBox(height: 12),
+              SelectableText(intro, style: context.typo.body),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionButton() {
     if (_isSelf) {
       return ElevatedButton(
@@ -387,7 +409,8 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
         ? page!.backgroundUrl!.trim()
         : _defaultCover;
     final avatarUrl = page?.avatar?.trim();
-    final intro = page?.intro?.trim().isNotEmpty == true
+    final hasCustomIntro = page?.intro?.trim().isNotEmpty == true;
+    final intro = hasCustomIntro
         ? page!.intro!.trim()
         : '这个人很懒，还没有写签名。';
     final targetUserId = widget.userId;
@@ -399,7 +422,12 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     const toolbarHeight = 0.0;
     const tabBarHeight = kTextTabBarHeight;
     const bannerHeight = 180.0;
-    const infoHeight = 220.0;
+    final hasProfileMeta =
+        page?.address?.trim().isNotEmpty == true || page?.age != null;
+    // 本人主页含 Douyin 入口需更高；他人主页内容较少，避免签名与 Tab 之间留白过大。
+    final infoHeight = _isSelf
+        ? 220.0
+        : (hasProfileMeta ? 156.0 : 132.0);
     final expandedHeight =
         bannerHeight + infoHeight + toolbarHeight + tabBarHeight;
 
@@ -477,18 +505,10 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                               child: Row(
                                 children: <Widget>[
                                   const SizedBox(width: 20),
-                                  CircleAvatar(
-                                    radius: 50,
-                                    backgroundImage:
-                                        avatarUrl != null &&
-                                            avatarUrl.isNotEmpty
-                                        ? CachedNetworkImageProvider(avatarUrl)
-                                        : null,
-                                    child:
-                                        avatarUrl != null &&
-                                            avatarUrl.isNotEmpty
-                                        ? null
-                                        : const DefaultAssetImage(),
+                                  buildDetailAvatar(
+                                    avatarUrl: avatarUrl,
+                                    size: 100,
+                                    context: context,
                                   ),
                                   const SizedBox(width: 10),
                                   Expanded(
@@ -529,74 +549,94 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                         ],
                       ),
                     ),
-                    Container(
+                    SizedBox(
                       height: infoHeight,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: 5,
-                          children: [
-                            Row(
-                              children: [
-                                _statColumn(
-                                  formatCompactCount(page?.likeReceivedCount),
-                                  '获赞',
-                                ),
-                                const SizedBox(width: 20),
-                                _statColumn(
-                                  formatCompactCount(page?.mutualFollowCount),
-                                  '互关',
-                                ),
-                                const SizedBox(width: 20),
-                                _statColumn(
-                                  formatCompactCount(page?.followingCount),
-                                  '关注',
-                                  onTap: _isSelf
-                                      ? () => context.push(Routes.care)
-                                      : null,
-                                ),
-                                const SizedBox(width: 20),
-                                _statColumn(
-                                  formatCompactCount(page?.followerCount),
-                                  '粉丝',
-                                ),
-                                const Spacer(),
-                                _buildActionButton(),
-                              ],
-                            ),
-                            Text(
-                              intro,
-                              style: context.typo.body,
-                              maxLines: 4,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Row(
-                              spacing: 10,
-                              children: [
-                                if (page?.address?.trim().isNotEmpty == true)
-                                  Label(
-                                    content: formatAddressForDisplay(
-                                      page!.address,
-                                      empty: '',
+                      child: Container(
+                        color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  _statColumn(
+                                    formatCompactCount(page?.likeReceivedCount),
+                                    '获赞',
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _statColumn(
+                                    formatCompactCount(page?.mutualFollowCount),
+                                    '互关',
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _statColumn(
+                                    formatCompactCount(page?.followingCount),
+                                    '关注',
+                                    onTap: _isSelf
+                                        ? () => context.push(Routes.care)
+                                        : null,
+                                  ),
+                                  const SizedBox(width: 20),
+                                  _statColumn(
+                                    formatCompactCount(page?.followerCount),
+                                    '粉丝',
+                                  ),
+                                  const Spacer(),
+                                  _buildActionButton(),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.topLeft,
+                                  child: GestureDetector(
+                                    onTap: hasCustomIntro
+                                        ? () => _showFullIntroSheet(
+                                            context,
+                                            intro,
+                                          )
+                                        : null,
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Text(
+                                      intro,
+                                      style: context.typo.body,
+                                      maxLines: _isSelf ? 3 : 4,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    backgroundColor: Colors.black12,
                                   ),
-                                if (page?.age != null)
-                                  Label(
-                                    content: '${page!.age}岁',
-                                    backgroundColor: Colors.black12,
-                                  ),
+                                ),
+                              ),
+                              if (hasProfileMeta) ...[
+                                const SizedBox(height: 5),
+                                Row(
+                                  spacing: 10,
+                                  children: [
+                                    if (page?.address?.trim().isNotEmpty ==
+                                        true)
+                                      Label(
+                                        content: formatAddressForDisplay(
+                                          page!.address,
+                                          empty: '',
+                                        ),
+                                        backgroundColor: Colors.black12,
+                                      ),
+                                    if (page?.age != null)
+                                      Label(
+                                        content: '${page!.age}岁',
+                                        backgroundColor: Colors.black12,
+                                      ),
+                                  ],
+                                ),
                               ],
-                            ),
-                            if (_isSelf) ...[
-                              const Spacer(),
-                              const DouyinServiceStrip(),
+                              if (_isSelf) ...[
+                                const SizedBox(height: 5),
+                                const DouyinServiceStrip(),
+                              ],
                             ],
-                          ],
-                        ),
+                          ),
                       ),
+                    ),
                     ),
                   ],
                 ),

@@ -9,6 +9,7 @@ import '../../../router/app_routes.dart';
 import '../../../util/amap_launcher.dart';
 import '../../../util/format_count.dart';
 import '../../../util/media_url.dart';
+import '../../chat/providers/chat_providers.dart';
 import '../../blog/providers/blog_providers.dart';
 import '../../blog/views/blog_img_item_view.dart';
 import '../../blog/views/blog_video_item_view.dart';
@@ -83,7 +84,8 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
         ).showSnackBar(const SnackBar(content: Text('暂无法进入群聊')));
         return;
       }
-      context.push('${Routes.chat}/$convId');
+      ref.invalidate(chatConversationsProvider);
+      context.go('${Routes.messagePage}?conversationId=$convId');
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -224,6 +226,7 @@ class _SquareBlogViewState extends ConsumerState<SquareBlogView> {
     final blogsNotifier = ref.read(squareBlogsProvider(squareId).notifier);
 
     ref.listen(squareBlogsProvider(squareId), (prev, next) {
+      if (!context.mounted) return;
       if (prev?.isLoadingMore == true && next.isLoadingMore == false) {
         _loadingMoreGuard = false;
       }

@@ -4,6 +4,8 @@ import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
+import '../utils/duration_utils.dart';
+
 /// Renders progress bar for the video using custom paint.
 class FlickVideoProgressBar extends StatelessWidget {
   FlickVideoProgressBar({
@@ -30,11 +32,20 @@ class FlickVideoProgressBar extends StatelessWidget {
     if (videoPlayerValue == null) return Container();
 
     void seekToRelativePosition(Offset globalPosition) {
-      final box = context.findRenderObject() as RenderBox;
-      final Offset tapPos = box.globalToLocal(globalPosition);
-      final double relative = tapPos.dx / box.size.width;
-      final Duration position = videoPlayerValue.duration * relative;
-      controlManager.seekTo(position);
+      if (!videoPlayerValue.isInitialized) return;
+
+      final durationMs = safeDurationMilliseconds(videoPlayerValue.duration);
+      if (durationMs == null || durationMs <= 0) return;
+
+      final box = context.findRenderObject();
+      if (box is! RenderBox || box.size.width <= 0) return;
+
+      final tapPos = box.globalToLocal(globalPosition);
+      final relative = (tapPos.dx / box.size.width).clamp(0.0, 1.0);
+      if (!relative.isFinite) return;
+
+      final positionMs = (durationMs * relative).round();
+      controlManager.seekTo(Duration(milliseconds: positionMs));
     }
 
     return LayoutBuilder(builder: (context, size) {
@@ -134,10 +145,14 @@ class _ProgressBarPainter extends CustomPainter {
       return;
     }
 
-    final double playedPartPercent =
-        value.position.inMilliseconds / value.duration.inMilliseconds;
-    final double playedPart =
-        playedPartPercent > 1 ? width : playedPartPercent * width;
+    final durationMs = safeDurationMilliseconds(value.duration);
+    final positionMs = safeDurationMilliseconds(value.position);
+    if (durationMs == null || durationMs <= 0 || positionMs == null) {
+      return;
+    }
+
+    final playedPartPercent = positionMs / durationMs;
+    final playedPart = playedPartPercent > 1 ? width : playedPartPercent * width;
 
     for (DurationRange range in value.buffered) {
       final double start = range.startFraction(value.duration) * width;

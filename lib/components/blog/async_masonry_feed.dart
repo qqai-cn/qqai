@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/responsive_masonry_grid.dart';
 import 'package:qqai/components/refresh_status_badge.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/api_error_message.dart';
 
 /// 异步列表 + 瀑布流 + 加载/错误占位 + 下拉刷新 + 上拉加载更多。
 class AsyncMasonryFeed<T> extends StatefulWidget {
@@ -161,7 +162,7 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '加载失败: $err',
+              ApiErrorMessage.userMessage(err),
               style: context.typo.body.copyWith(color: Colors.white),
             ),
             ElevatedButton(onPressed: widget.onRetry, child: const Text('重试')),

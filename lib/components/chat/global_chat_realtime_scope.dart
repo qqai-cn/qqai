@@ -23,14 +23,29 @@ class _GlobalChatRealtimeScopeState
   StreamSubscription<GlobalRtcSignalEvent>? _rtcSubscription;
   StreamSubscription<GlobalChatMessageEvent>? _messageSubscription;
   final Set<String> _pendingInviteCallIds = <String>{};
+  late final GlobalChatSocketService _socket;
   String? _connectedToken;
 
   @override
   void initState() {
     super.initState();
-    final socket = ref.read(globalChatSocketServiceProvider);
-    _rtcSubscription = socket.rtcSignalStream.listen(_handleRtcSignal);
-    _messageSubscription = socket.messageStream.listen(_handleNewMessage);
+    _socket = ref.read(globalChatSocketServiceProvider);
+    _rtcSubscription = _socket.rtcSignalStream.listen(_handleRtcSignal);
+    _messageSubscription = _socket.messageStream.listen(_handleNewMessage);
+    _syncSocketWithAuth(ref.read(authProvider));
+  }
+
+  void _syncSocketWithAuth(AuthState auth) {
+    final token = auth.token;
+    if (auth.isAuthenticated && token != null && token.isNotEmpty) {
+      if (_connectedToken != token) {
+        _socket.connect(token: token);
+        _connectedToken = token;
+      }
+    } else if (_connectedToken != null) {
+      _socket.disconnect();
+      _connectedToken = null;
+    }
   }
 
   @override
@@ -42,20 +57,8 @@ class _GlobalChatRealtimeScopeState
 
   @override
   Widget build(BuildContext context) {
-    final auth = ref.watch(authProvider);
-    final token = auth.token;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      final socket = ref.read(globalChatSocketServiceProvider);
-      if (auth.isAuthenticated && token != null && token.isNotEmpty) {
-        if (_connectedToken != token) {
-          socket.connect(token: token);
-          _connectedToken = token;
-        }
-      } else if (_connectedToken != null) {
-        socket.disconnect();
-        _connectedToken = null;
-      }
+    ref.listen(authProvider, (previous, next) {
+      _syncSocketWithAuth(next);
     });
     return widget.child;
   }
@@ -67,7 +70,7 @@ class _GlobalChatRealtimeScopeState
   }
 
   void _handleNewMessage(GlobalChatMessageEvent event) {
-    if (!mounted) return;
+    if (!context.mounted) return;
     final conversationId = event.dto.conversationId;
     if (conversationId == null) return;
 
@@ -100,15 +103,14 @@ class _GlobalChatRealtimeScopeState
       ),
     );
     _pendingInviteCallIds.remove(signal.callId);
-    if (!mounted) return;
+    if (!context.mounted) return;
     if (accepted == true) {
       ref.read(appRouterProvider).push(
         '${Routes.chat}/${signal.conversationId}/video-call'
         '?callId=${signal.callId}&caller=false',
       );
     } else {
-      ref
-          .read(globalChatSocketServiceProvider)
+      _socket
           .emitRtcSignal(
             conversationId: signal.conversationId,
             callId: signal.callId,

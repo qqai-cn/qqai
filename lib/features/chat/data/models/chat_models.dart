@@ -119,6 +119,65 @@ class ChatConversationDto {
       (name != null && name!.isNotEmpty) ? name! : '会话 ${id ?? ''}';
 }
 
+class GroupInvitationPendingDto {
+  GroupInvitationPendingDto({
+    this.id,
+    this.conversationId,
+    this.groupName,
+    this.groupAvatar,
+    this.inviterUserId,
+    this.inviterNickname,
+    this.inviterAvatar,
+    this.inviteeUserId,
+    this.inviteeNickname,
+    this.inviteeAvatar,
+    this.createTime,
+  });
+
+  final int? id;
+  final int? conversationId;
+  final String? groupName;
+  final String? groupAvatar;
+  final int? inviterUserId;
+  final String? inviterNickname;
+  final String? inviterAvatar;
+  final int? inviteeUserId;
+  final String? inviteeNickname;
+  final String? inviteeAvatar;
+  final String? createTime;
+
+  factory GroupInvitationPendingDto.fromJson(Map<String, dynamic> json) {
+    return GroupInvitationPendingDto(
+      id: (json['id'] as num?)?.toInt(),
+      conversationId: (json['conversationId'] as num?)?.toInt(),
+      groupName: json['groupName'] as String?,
+      groupAvatar: json['groupAvatar'] as String?,
+      inviterUserId: (json['inviterUserId'] as num?)?.toInt(),
+      inviterNickname: json['inviterNickname'] as String?,
+      inviterAvatar: json['inviterAvatar'] as String?,
+      inviteeUserId: (json['inviteeUserId'] as num?)?.toInt(),
+      inviteeNickname: json['inviteeNickname'] as String?,
+      inviteeAvatar: json['inviteeAvatar'] as String?,
+      createTime: json['createTime'] as String?,
+    );
+  }
+
+  String get inviterDisplayName =>
+      (inviterNickname != null && inviterNickname!.trim().isNotEmpty)
+          ? inviterNickname!.trim()
+          : '用户 ${inviterUserId ?? ''}';
+
+  String get inviteeDisplayName =>
+      (inviteeNickname != null && inviteeNickname!.trim().isNotEmpty)
+          ? inviteeNickname!.trim()
+          : '用户 ${inviteeUserId ?? ''}';
+
+  String get groupDisplayName =>
+      (groupName != null && groupName!.trim().isNotEmpty)
+          ? groupName!.trim()
+          : '群聊';
+}
+
 class ChatGroupMemberDto {
   ChatGroupMemberDto({
     this.userId,

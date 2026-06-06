@@ -70,6 +70,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
   @override
   Widget build(BuildContext context) {
     ref.listen(mainShellTabReselectProvider(0), (int? previous, int next) {
+      if (!context.mounted) return;
       if (previous != null && next > previous) {
         _refreshCurrentHomeTab();
       }
@@ -79,6 +80,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
       HomeIndexTabNavRequest? previous,
       next,
     ) {
+      if (!context.mounted) return;
       if (previous == null || next.nonce <= previous.nonce) return;
       final index = next.tabIndex.clamp(0, HomeNotifier.tabItems.length - 1);
       lazyTabMount(index);

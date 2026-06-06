@@ -24,6 +24,15 @@ abstract class IChatRepo {
     int pageSize = 50,
   });
 
+  Future<ChatMessagePageData> searchMessages({
+    required int conversationId,
+    required String keyword,
+    required int pageNo,
+    int pageSize = 20,
+  });
+
+  Future<void> clearConversationHistory(int conversationId);
+
   Future<ChatMessageDto> sendMessage({
     required int conversationId,
     required int type,
@@ -55,6 +64,14 @@ abstract class IChatRepo {
   });
 
   Future<List<ChatGroupMemberDto>> listGroupMembers(int conversationId);
+
+  Future<List<GroupInvitationPendingDto>> listPendingIncomingGroupInvitations();
+
+  Future<List<GroupInvitationPendingDto>> listPendingOutgoingGroupInvitations();
+
+  Future<bool> acceptGroupInvitation({required int invitationId});
+
+  Future<bool> rejectGroupInvitation({required int invitationId});
 }
 
 void _throwIfBadEnvelope(Map<String, dynamic> root) {
@@ -190,6 +207,43 @@ class ChatRepo implements IChatRepo {
   }
 
   @override
+  Future<ChatMessagePageData> searchMessages({
+    required int conversationId,
+    required String keyword,
+    required int pageNo,
+    int pageSize = 20,
+  }) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_MESSAGE_SEARCH,
+      RequestType.get,
+      queryParameters: {
+        'conversationId': conversationId,
+        'keyword': keyword,
+        'pageNo': pageNo,
+        'pageSize': pageSize,
+      },
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+    final data = root['data'] as Map<String, dynamic>?;
+    if (data == null) {
+      return ChatMessagePageData(list: [], total: 0);
+    }
+    return ChatMessagePageData.fromJson(data);
+  }
+
+  @override
+  Future<void> clearConversationHistory(int conversationId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_CONVERSATION_CLEAR_HISTORY,
+      RequestType.delete,
+      queryParameters: {'id': conversationId},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+  }
+
+  @override
   Future<ChatMessageDto> sendMessage({
     required int conversationId,
     required int type,
@@ -286,6 +340,68 @@ class ChatRepo implements IChatRepo {
     );
     final root = Map<String, dynamic>.from(response.data as Map);
     _throwIfBadEnvelope(root);
+  }
+
+  @override
+  Future<List<GroupInvitationPendingDto>> listPendingIncomingGroupInvitations() async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_GROUP_INVITATION_PENDING_INCOMING,
+      RequestType.get,
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+    final data = root['data'];
+    if (data is! List) return [];
+    return data
+        .map(
+          (e) => GroupInvitationPendingDto.fromJson(
+            Map<String, dynamic>.from(e as Map),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<List<GroupInvitationPendingDto>> listPendingOutgoingGroupInvitations() async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_GROUP_INVITATION_PENDING_OUTGOING,
+      RequestType.get,
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+    final data = root['data'];
+    if (data is! List) return [];
+    return data
+        .map(
+          (e) => GroupInvitationPendingDto.fromJson(
+            Map<String, dynamic>.from(e as Map),
+          ),
+        )
+        .toList();
+  }
+
+  @override
+  Future<bool> acceptGroupInvitation({required int invitationId}) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_GROUP_INVITATION_ACCEPT,
+      RequestType.post,
+      data: {'invitationId': invitationId},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+    return root['data'] == true;
+  }
+
+  @override
+  Future<bool> rejectGroupInvitation({required int invitationId}) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.CHAT_GROUP_INVITATION_REJECT,
+      RequestType.post,
+      data: {'invitationId': invitationId},
+    );
+    final root = Map<String, dynamic>.from(response.data as Map);
+    _throwIfBadEnvelope(root);
+    return root['data'] == true;
   }
 
   @override

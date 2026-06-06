@@ -38,12 +38,15 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
   }
 
   void _updateProgress() {
-    if (!mounted || !_isDragging) {
-      if (!mounted) return;
-      setState(() {
-        _progress = widget.controller.value.position.inMilliseconds.toDouble();
-      });
+    if (!mounted || _isDragging || !widget.controller.value.isInitialized) {
+      return;
     }
+    final positionMs =
+        widget.controller.value.position.inMilliseconds.toDouble();
+    if (!positionMs.isFinite) return;
+    setState(() {
+      _progress = positionMs;
+    });
   }
 
   void _onDragStart(double value) {
@@ -53,15 +56,23 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
   }
 
   void _onDragEnd(double value) {
+    if (!value.isFinite || value < 0) return;
     setState(() {
       _isDragging = false;
-      widget.controller.seekTo(Duration(milliseconds: value.toInt()));
     });
+    if (!widget.controller.value.isInitialized) return;
+    final durationMs = widget.controller.value.duration.inMilliseconds;
+    if (durationMs <= 0) return;
+    final targetMs = value.round().clamp(0, durationMs);
+    widget.controller.seekTo(Duration(milliseconds: targetMs));
   }
 
   @override
   Widget build(BuildContext context) {
-    final duration = widget.controller.value.duration.inMilliseconds.toDouble();
+    final rawDuration = widget.controller.value.isInitialized
+        ? widget.controller.value.duration.inMilliseconds.toDouble()
+        : 0.0;
+    final duration = rawDuration.isFinite && rawDuration > 0 ? rawDuration : 0.0;
     final maxProgress = duration <= 0 ? 1.0 : duration;
     // final bufferedEnd = widget.controller.value.buffered.isNotEmpty
     //     ? widget.controller.value.buffered.last.end.inMilliseconds.toDouble()

@@ -246,6 +246,15 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<int>(chatHistoryRevisionProvider(widget.conversationId), (
+      previous,
+      next,
+    ) {
+      if (previous != next) {
+        _loadInitialHistory();
+      }
+    });
+
     final theme = Theme.of(context);
 
     return Scaffold(

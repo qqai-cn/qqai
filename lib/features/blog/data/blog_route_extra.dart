@@ -78,8 +78,16 @@ VideoAdPlaybackState? _parseVideoAdPlaybackState(Object? raw) {
   return null;
 }
 
-String blogImageDetailHeroTag(int category, BlogItem blog, {int index = 0}) {
+String blogImageDetailHeroTag(
+  int category,
+  BlogItem blog, {
+  int index = 0,
+  String? scope,
+}) {
   final id = blog.id ?? identityHashCode(blog);
+  if (scope != null && scope.isNotEmpty) {
+    return 'lookBlogImg-$scope-$category-$id-$index';
+  }
   return 'lookBlogImg-$category-$id-$index';
 }
 

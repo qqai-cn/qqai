@@ -107,21 +107,39 @@ class FlickControlManager extends ChangeNotifier {
 
   /// Seek video to a duration.
   Future<void> seekTo(Duration moment) async {
-    await _videoPlayerController!.seekTo(moment);
+    final controller = _videoPlayerController;
+    if (controller == null || !controller.value.isInitialized) return;
+
+    final target = safeSeekDuration(
+      moment,
+      maxDuration: controller.value.duration,
+    );
+    if (target == null) return;
+
+    await controller.seekTo(target);
   }
 
   /// Seek video forward by the duration.
   Future<void> seekForward(Duration videoSeekDuration) async {
     _flickManager._handleVideoSeek(forward: true);
-    await seekTo(_videoPlayerController!.value.position + videoSeekDuration);
+    final controller = _videoPlayerController;
+    if (controller == null) return;
+
+    final positionMs = safeDurationMilliseconds(controller.value.position) ?? 0;
+    final deltaMs = safeDurationMilliseconds(videoSeekDuration) ?? 0;
+    await seekTo(Duration(milliseconds: positionMs + deltaMs));
   }
 
   /// Seek video backward by the duration.
   Future<void> seekBackward(Duration videoSeekDuration) async {
     _flickManager._handleVideoSeek(forward: false);
-    await seekTo(
-      _videoPlayerController!.value.position - videoSeekDuration,
-    );
+    final controller = _videoPlayerController;
+    if (controller == null) return;
+
+    final positionMs = safeDurationMilliseconds(controller.value.position) ?? 0;
+    final deltaMs = safeDurationMilliseconds(videoSeekDuration) ?? 0;
+    final nextMs = positionMs - deltaMs;
+    await seekTo(Duration(milliseconds: nextMs < 0 ? 0 : nextMs));
   }
 
   /// Mute the video.

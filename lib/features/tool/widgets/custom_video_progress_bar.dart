@@ -28,11 +28,13 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
   }
 
   void _updateProgress() {
-    if (!_isDragging) {
-      setState(() {
-        _progress = widget.controller.value.position.inMilliseconds.toDouble();
-      });
-    }
+    if (_isDragging || !widget.controller.value.isInitialized) return;
+    final positionMs =
+        widget.controller.value.position.inMilliseconds.toDouble();
+    if (!positionMs.isFinite) return;
+    setState(() {
+      _progress = positionMs;
+    });
   }
 
   void _onDragStart(double value) {
@@ -42,15 +44,23 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
   }
 
   void _onDragEnd(double value) {
+    if (!value.isFinite || value < 0) return;
     setState(() {
       _isDragging = false;
-      widget.controller.seekTo(Duration(milliseconds: value.toInt()));
     });
+    if (!widget.controller.value.isInitialized) return;
+    final durationMs = widget.controller.value.duration.inMilliseconds;
+    if (durationMs <= 0) return;
+    final targetMs = value.round().clamp(0, durationMs);
+    widget.controller.seekTo(Duration(milliseconds: targetMs));
   }
 
   @override
   Widget build(BuildContext context) {
-    final duration = widget.controller.value.duration.inMilliseconds.toDouble();
+    final rawDuration = widget.controller.value.isInitialized
+        ? widget.controller.value.duration.inMilliseconds.toDouble()
+        : 0.0;
+    final duration = rawDuration.isFinite && rawDuration > 0 ? rawDuration : 1.0;
     final bufferedEnd = widget.controller.value.buffered.isNotEmpty
         ? widget.controller.value.buffered.last.end.inMilliseconds.toDouble()
         : 0.0;
@@ -69,7 +79,7 @@ class _CustomVideoProgressBarState extends State<CustomVideoProgressBar> {
             '/' +
             formatDuration((duration / 1000).toInt())),
         Slider(
-          value: _progress,
+          value: _progress.clamp(0.0, duration),
           min: 0.0,
           max: duration,
           inactiveColor: Colors.grey,
