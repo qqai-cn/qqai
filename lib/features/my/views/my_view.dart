@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/profile/profile_banner_overlay_buttons.dart';
 import 'package:qqai/components/label.dart';
+import 'package:qqai/components/app_action_outline_button.dart';
 import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -353,14 +354,14 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
   Widget _buildActionButton() {
     if (_isSelf) {
-      return ElevatedButton(
-        onPressed: () async {
+      return AppActionOutlineButton(
+        label: '编辑主页',
+        onTap: () async {
           await context.push(Routes.myProfileEdit);
           if (mounted) {
             ref.invalidate(myPageProfileProvider);
           }
         },
-        child: const Text('编辑主页'),
       );
     }
     final followed = _followed == true;
@@ -376,15 +377,10 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
             loading: _followLoading,
           ),
           const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: _messageLoading ? null : _openSingleConversation,
-            child: _messageLoading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('发消息'),
+          AppActionOutlineButton(
+            label: '发消息',
+            onTap: _messageLoading ? null : _openSingleConversation,
+            loading: _messageLoading,
           ),
         ],
       ),

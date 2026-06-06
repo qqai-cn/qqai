@@ -18,7 +18,8 @@ class LightThemeColors
   static const Color cardColor = Color(0xfffafafa);
 
   //ICONS
-  static const Color appBarIconsColor = Colors.green;
+  static const Color actionButtonForegroundColor = Color(0xFF424242);
+  static const Color appBarIconsColor = actionButtonForegroundColor;
   static const Color iconColor = Colors.black;
 
   //BUTTON

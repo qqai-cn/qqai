@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 import 'package:qqai/features/index/data/home_tab_config.dart';
+import 'package:qqai/features/index/presentation/widgets/app_bar_publish_search_actions.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
 import 'package:qqai/features/index/presentation/widgets/app_bar_user_avatar.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/features/index/providers/home_index_tab_navigate_provider.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
-import 'package:qqai/router/app_routes.dart';
 
 import '../widgets/lazy_tab_slot.dart';
 import '../widgets/slide_transition_x.dart';
@@ -92,7 +91,6 @@ class _IndexPageState extends ConsumerState<IndexPage>
     });
 
     final isWideScreen = 1.sw > 800;
-    final showSearchTitle = _tabController.index == 0;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -104,8 +102,8 @@ class _IndexPageState extends ConsumerState<IndexPage>
         leadingWidth: isWideScreen ? 148 : 48,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
-        centerTitle: showSearchTitle,
-        titleSpacing: showSearchTitle ? null : 0,
+        centerTitle: false,
+        titleSpacing: 0,
         title: animatedTitle(),
         actions: [animateActions()],
       ),
@@ -145,41 +143,9 @@ class _IndexPageState extends ConsumerState<IndexPage>
   }
 
   Widget getTitleWidget() {
-    if (_tabController.index == 0) {
-      final theme = Theme.of(context);
-      final isDark = theme.brightness == Brightness.dark;
-      return Center(
-        key: const ValueKey('home_search_title'),
-        child: InkWell(
-          onTap: () => context.push(Routes.searchPage),
-          child: Container(
-            width: 0.5.sw,
-            height: 40,
-            margin: const EdgeInsets.all(10),
-            alignment: Alignment.centerLeft,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: isDark ? theme.cardColor : Colors.white,
-            ),
-            child: TextButton.icon(
-              onPressed: null,
-              icon: Icon(Icons.search, color: isDark ? Colors.white70 : null),
-              label: Text(
-                '网站flutter源码出售，有意联系QQ：807404400',
-                style: TextStyle(
-                  color: isDark ? Colors.white70 : null,
-                  fontSize: 13,
-                ),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
     return Align(
       alignment: Alignment.centerLeft,
-      key: const ValueKey('home_tab_bar_title'),
+      key: ValueKey('home_tab_bar_title_${_tabController.index}'),
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
@@ -210,43 +176,14 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   Widget getActions() {
     final isWideScreen = 1.sw > 800;
-    if (_tabController.index == 0) {
-      return Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.switch_right),
-            onPressed: () {
-              setState(() {
-                _tabController.animateTo(1);
-              });
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.add_circle_sharp),
-            onPressed: () => context.push(Routes.publishZuoPinPageUrl),
-          ),
-          if (isWideScreen) _avatarEndDrawerAction(),
-        ],
-      );
-    } else {
-      return Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.add_circle_sharp),
-            onPressed: () {
-              context.push(Routes.publishZuoPinPageUrl);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              context.push(Routes.searchPage);
-            },
-          ),
-          if (isWideScreen) _avatarEndDrawerAction(),
-        ],
-      );
-    }
+    return Row(
+      key: ValueKey('home_actions_${_tabController.index}'),
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const AppBarPublishSearchActions(),
+        if (isWideScreen) _avatarEndDrawerAction(),
+      ],
+    );
   }
 
   Widget _avatarEndDrawerAction() {

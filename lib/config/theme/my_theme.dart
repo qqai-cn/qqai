@@ -69,6 +69,9 @@ class MyTheme {
         isLightTheme: isLight,
       ),
 
+      // text button theme (feed actions, share, etc.)
+      textButtonTheme: MyStyles.getTextButtonTheme(isLightTheme: isLight),
+
       // text theme
       textTheme: MyStyles.getTextTheme(isLightTheme: isLight),
 

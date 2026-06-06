@@ -19,7 +19,8 @@ class DarkThemeColors
   static const Color cardColor = Color(0xff1e2336);
 
   //ICONS
-  static const Color appBarIconsColor = Colors.white;
+  static const Color actionButtonForegroundColor = Color(0xFFE0E0E0);
+  static const Color appBarIconsColor = actionButtonForegroundColor;
   static const Color iconColor = primaryColor;
 
   //BUTTON

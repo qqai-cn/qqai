@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qqai/components/myshare_page.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/features/blog/views/blog_share_button.dart';
 import 'package:qqai/util/format_count.dart';
 
@@ -32,36 +33,28 @@ class FeedActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final actionColor = AppActionColors.foreground(context);
     return Row(
       children: <Widget>[
         TextButton.icon(
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.transparent),
-          ),
           onPressed: onLike,
           icon: liked
-              ? const Icon(Icons.favorite, color: Colors.red)
-              : const Icon(Icons.favorite_border),
+              ? const Icon(Icons.favorite, color: AppActionColors.liked)
+              : Icon(Icons.favorite_border, color: actionColor),
           label: Text(_likeLabel()),
         ),
         TextButton.icon(
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.transparent),
-          ),
           onPressed: onComment,
-          icon: const Icon(Icons.comment),
+          icon: Icon(Icons.comment, color: actionColor),
           label: Text(_commentLabel()),
         ),
         if (onShare != null)
           TextButton.icon(
-            style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.transparent),
-            ),
             onPressed: () => showBlogShareSheet(
               context,
               onShareChannelTap: onShare,
             ),
-            icon: const Icon(Icons.share),
+            icon: Icon(Icons.share, color: actionColor),
             label: Text(_shareLabel()),
           )
         else
@@ -69,7 +62,7 @@ class FeedActionBar extends StatelessWidget {
         const Spacer(),
         PopupMenuButton<String>(
           tooltip: '',
-          icon: const Icon(Icons.more_vert, color: Colors.black54),
+          icon: Icon(Icons.more_vert, color: actionColor),
           onSelected: onMenuSelected,
           itemBuilder: menuBuilder,
         ),

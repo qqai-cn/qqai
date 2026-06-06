@@ -66,7 +66,9 @@ class MyStyles {
         shadowColor: Colors.transparent,
         titleTextStyle:
             getTextTheme(isLightTheme: isLightTheme).bodyMedium!.copyWith(
-                  color: Colors.green,
+                  color: isLightTheme
+                      ? LightThemeColors.actionButtonForegroundColor
+                      : DarkThemeColors.actionButtonForegroundColor,
                   fontSize: MyFonts.appBarTittleSize,
                 ),
         iconTheme: IconThemeData(
@@ -207,6 +209,22 @@ class MyStyles {
               borderRadius: BorderRadius.all(Radius.circular(10))),
         ),
       );
+
+  /// 列表/顶栏 TextButton.icon（喜欢、评论、分享等）统一前景色。
+  static TextButtonThemeData getTextButtonTheme({required bool isLightTheme}) {
+    final foreground = isLightTheme
+        ? LightThemeColors.actionButtonForegroundColor
+        : DarkThemeColors.actionButtonForegroundColor;
+    return TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: foreground,
+        backgroundColor: Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+    );
+  }
 
   static InputDecorationTheme getInputDecorationTheme() {
     return InputDecorationTheme(

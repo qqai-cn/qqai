@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../components/qq_tab_bar.dart';
+import '../../../../config/theme/app_action_colors.dart';
 import '../../providers/home_providers.dart';
+import '../widgets/app_bar_publish_search_actions.dart';
 import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
 import '../widgets/lazy_tab_slot.dart';
-import '../../../../router/app_routes.dart';
 import '../../../friends/chat_page_list.dart';
 import '../../../friends/create_group_chat_dialog.dart';
 import '../../../friends/friends_page.dart';
@@ -77,17 +77,13 @@ class _MessagePageState extends ConsumerState<MessagePage>
         actions: [
           IconButton(
             tooltip: '创建群聊',
-            icon: const Icon(Icons.group_add),
+            icon: Icon(
+              Icons.group_add,
+              color: AppActionColors.foreground(context),
+            ),
             onPressed: () => showCreateGroupChatDialog(context, ref),
           ),
-          IconButton(
-            icon: const Icon(Icons.add_circle_sharp),
-            onPressed: () => context.push(Routes.publishZuoPinPageUrl),
-          ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () => context.push(Routes.searchPage),
-          ),
+          const AppBarPublishSearchActions(),
         ],
       ),
       drawer: isWideScreen ? null : const DrawerPage(),
