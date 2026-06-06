@@ -2,6 +2,7 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -85,7 +86,7 @@ class _SearchItemV2 extends State<SearchItemV2>
                     title: Text(
                       "历史搜索",
                       style: context.typo.sectionTitle.copyWith(
-                        color: Colors.grey,
+                        color: AppActionColors.muted(context),
                       ),
                     ),
                     trailing: IconButton(
@@ -141,7 +142,7 @@ class _SearchItemV2 extends State<SearchItemV2>
             floating: true,
             snap: true,
             pinned: true,
-            backgroundColor: Colors.white,
+            backgroundColor: AppActionColors.surface(context),
             titleTextStyle: context.typo.sectionTitle.copyWith(
               color: Colors.amber,
             ),
@@ -149,7 +150,7 @@ class _SearchItemV2 extends State<SearchItemV2>
               controller: _tabController,
               tabs: _tabs.map((String name) => Tab(text: name)).toList(),
               labelColor: Colors.green,
-              unselectedLabelColor: Colors.grey,
+              unselectedLabelColor: AppActionColors.muted(context),
               indicatorSize: TabBarIndicatorSize.label,
             ),
           ),

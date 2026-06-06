@@ -36,11 +36,11 @@ class IconButtonH extends StatelessWidget {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: DouyinTheme.chip,
+              color: DouyinTheme.chip(context),
               shape: BoxShape.circle,
-              border: Border.all(color: DouyinTheme.line),
+              border: Border.all(color: DouyinTheme.line(context)),
             ),
-            child: Icon(icon, color: DouyinTheme.text, size: 20),
+            child: Icon(icon, color: DouyinTheme.text(context), size: 20),
           ),
           Text(
             text,

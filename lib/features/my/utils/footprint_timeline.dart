@@ -1,5 +1,6 @@
 // 足迹 / 日常等内容的时间线分组：近 30 天按天，更早按自然月。
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class FootprintTimelineSection<T> {
@@ -101,7 +102,7 @@ class ContentTimelineSectionHeader extends StatelessWidget {
         title,
         style: context.typo.bodyStrong.copyWith(
           fontSize: 16,
-          color: Colors.black87,
+          color: AppActionColors.strong(context),
         ),
       ),
     );
@@ -135,8 +136,8 @@ class ContentTimelineSectionFrame extends StatelessWidget {
               title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF123D4A),
+              style: TextStyle(
+                color: AppActionColors.strong(context),
                 fontSize: 13,
                 fontWeight: FontWeight.w900,
               ),
@@ -150,7 +151,10 @@ class ContentTimelineSectionFrame extends StatelessWidget {
                   left: 18,
                   top: 4,
                   bottom: 8,
-                  child: Container(width: 1, color: const Color(0xFFE2E8F0)),
+                  child: Container(
+                    width: 1,
+                    color: AppActionColors.borderSubtle(context),
+                  ),
                 ),
                 child,
               ],
@@ -190,7 +194,7 @@ class ContentTimelineRecordTile extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppActionColors.surface(context),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: color.withValues(alpha: 0.36)),
             ),
@@ -201,9 +205,9 @@ class ContentTimelineRecordTile extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
+                color: AppActionColors.borderSubtle(context),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: AppActionColors.borderSubtle(context)),
               ),
               child: Row(
                 children: [
@@ -223,7 +227,7 @@ class ContentTimelineRecordTile extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: Colors.black.withValues(alpha: 0.48),
+                            color: AppActionColors.muted(context),
                             fontSize: 12,
                             height: 1.25,
                           ),

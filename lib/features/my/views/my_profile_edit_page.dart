@@ -4,6 +4,7 @@ import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_base_client.dart';
 
@@ -404,7 +405,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                 children: [
                   CircleAvatar(
                     radius: avatarRadius,
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppActionColors.surface(context),
                     child: CircleAvatar(
                       radius: avatarRadius - 2,
                       backgroundImage: _avatarUrl?.trim().isNotEmpty == true
@@ -469,13 +470,15 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
             Expanded(
               child: Text(
                 value,
-                style: context.typo.body.copyWith(color: Colors.black87),
+                style: context.typo.body.copyWith(
+                  color: AppActionColors.strong(context),
+                ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             if (showChevron)
-              Icon(Icons.chevron_right, color: Colors.grey.shade400),
+              Icon(Icons.chevron_right, color: AppActionColors.subtle(context)),
           ],
         ),
       ),
@@ -489,7 +492,7 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Align(
         alignment: Alignment.topCenter,
         child: ConstrainedBox(
@@ -507,13 +510,13 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
                       Icon(
                         Icons.check_circle_outline,
                         size: 16,
-                        color: Colors.grey.shade600,
+                        color: AppActionColors.muted(context),
                       ),
                       const SizedBox(width: 4),
                       Text(
                         '资料完成度 $_completionPercent%',
                         style: context.typo.caption.copyWith(
-                          color: Colors.grey.shade600,
+                          color: AppActionColors.muted(context),
                         ),
                       ),
                     ],

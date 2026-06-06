@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_error_message.dart';
 
@@ -93,7 +94,9 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
             const SizedBox(height: 4),
             Text(
               '可选多个，发布后将加入对应合集',
-              style: context.typo.caption.copyWith(color: const Color(0xFF6B7280)),
+              style: context.typo.caption.copyWith(
+                color: AppActionColors.muted(context),
+              ),
             ),
             const SizedBox(height: 12),
             if (_loading)
@@ -117,7 +120,9 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
                 child: Text(
                   '暂无合集，可先在「我的-合集」中创建',
                   textAlign: TextAlign.center,
-                  style: context.typo.body.copyWith(color: const Color(0xFF6B7280)),
+                  style: context.typo.body.copyWith(
+                    color: AppActionColors.muted(context),
+                  ),
                 ),
               )
             else

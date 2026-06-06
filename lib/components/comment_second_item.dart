@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../constant/constant.dart';
 import 'level_icon.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 void main() => runApp(MyApp());
@@ -75,7 +76,7 @@ class _CommengSecondItem extends State<CommengSecondItem> {
       title: Container(
         // padding: EdgeInsets.only(top: 10),
         decoration: UnderlineTabIndicator(
-          borderSide: BorderSide(color: Colors.black12),
+          borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +90,7 @@ class _CommengSecondItem extends State<CommengSecondItem> {
                 Text('212'),
                 PopupMenuButton(
                   tooltip: "",
-                  icon: Icon(Icons.more_vert, color: Colors.black54),
+                  icon: Icon(Icons.more_vert, color: AppActionColors.menuItemForeground(context)),
                   onSelected: (va) {
                     print(va);
                   },
@@ -107,7 +108,7 @@ class _CommengSecondItem extends State<CommengSecondItem> {
             Text(
               '2022-12-11 10：12',
               style: context.typo.body.copyWith(
-                color: Colors.grey,
+                color: AppActionColors.subtle(context),
                 fontSize: 15,
               ),
             ),

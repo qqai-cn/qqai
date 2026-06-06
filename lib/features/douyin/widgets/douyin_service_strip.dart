@@ -45,7 +45,7 @@ class DouyinServiceStrip extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: DecoratedBox(
-        decoration: BoxDecoration(color: DouyinTheme.bg),
+        decoration: BoxDecoration(color: DouyinTheme.bg(context)),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
@@ -100,11 +100,11 @@ class _DouyinEntryTile extends StatelessWidget {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: DouyinTheme.chip,
+              color: DouyinTheme.chip(context),
               shape: BoxShape.circle,
-              border: Border.all(color: DouyinTheme.line),
+              border: Border.all(color: DouyinTheme.line(context)),
             ),
-            child: Icon(entry.icon, color: DouyinTheme.text, size: 20),
+            child: Icon(entry.icon, color: DouyinTheme.text(context), size: 20),
           ),
           SizedBox(height: 6.h),
           Expanded(
@@ -117,7 +117,7 @@ class _DouyinEntryTile extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: context.typo.caption.copyWith(
                   fontSize: 11.sp,
-                  color: DouyinTheme.sub,
+                  color: DouyinTheme.sub(context),
                   height: 1.3,
                 ),
               ),

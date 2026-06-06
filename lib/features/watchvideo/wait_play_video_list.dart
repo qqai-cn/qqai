@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 // 模板,方便快速创建一个StatefulWidget
@@ -33,7 +34,7 @@ class _WaitPlayVideoList extends State<WaitPlayVideoList> {
               title: Container(
                 padding: EdgeInsets.only(top: 10),
                 decoration: UnderlineTabIndicator(
-                    borderSide: BorderSide(color: Colors.black12)),
+                    borderSide: BorderSide(color: AppActionColors.borderSubtle(context))),
                 child: Row(
                   children: [
                     Image.asset(
@@ -65,7 +66,7 @@ class _WaitPlayVideoList extends State<WaitPlayVideoList> {
                                 child: Text(
                                   '爱看电影',
                                   style: context.typo.caption.copyWith(
-                                    color: Colors.black54,
+                                    color: AppActionColors.muted(context),
                                   ),
                                 ),
                               ),
@@ -77,7 +78,7 @@ class _WaitPlayVideoList extends State<WaitPlayVideoList> {
                                 child: Text(
                                   '19万次播放',
                                   style: context.typo.caption.copyWith(
-                                    color: Colors.grey,
+                                    color: AppActionColors.subtle(context),
                                   ),
                                 ),
                               ),

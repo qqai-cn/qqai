@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 class QqTabItem {
   const QqTabItem({
@@ -44,9 +45,9 @@ class QqTabBar extends StatelessWidget {
 
     Widget bar = DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F5F8),
+        color: AppActionColors.borderSubtle(context),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE8EBF0)),
+        border: Border.all(color: AppActionColors.borderSubtle(context)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(4),
@@ -57,8 +58,8 @@ class QqTabBar extends StatelessWidget {
           tabAlignment: tabAlign,
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
-              labelColor: const Color(0xFF202124),
-              unselectedLabelColor: const Color(0xFF6B7280),
+              labelColor: AppActionColors.strong(context),
+              unselectedLabelColor: AppActionColors.muted(context),
               labelStyle: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -68,7 +69,7 @@ class QqTabBar extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
               indicator: BoxDecoration(
-                color: Colors.white,
+                color: AppActionColors.surface(context),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -238,7 +239,9 @@ class _QqTabSelectorItem extends StatelessWidget {
         height: 38,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? Colors.white : Colors.transparent,
+          color: selected
+              ? AppActionColors.surface(context)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           boxShadow: selected
               ? [
@@ -255,7 +258,9 @@ class _QqTabSelectorItem extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: TextStyle(
-            color: selected ? const Color(0xFF202124) : const Color(0xFF6B7280),
+            color: selected
+                ? AppActionColors.strong(context)
+                : AppActionColors.muted(context),
             fontSize: 13,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/constant/api_constant.dart';
 import 'package:qqai/util/api_base_client.dart';
 import 'package:qqai/util/media_url.dart';
@@ -379,8 +380,8 @@ class _AdSurface extends StatelessWidget {
                       FilledButton(
                         onPressed: _openActionUrl,
                         style: FilledButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black87,
+                          backgroundColor: AppActionColors.surface(context),
+                          foregroundColor: AppActionColors.strong(context),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 18,
                             vertical: 10,

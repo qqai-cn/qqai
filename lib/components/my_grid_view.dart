@@ -34,7 +34,7 @@ class _MyGridView extends State<MyGridView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-        backgroundColor: Colors.black12,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: MasonryGridView.count(
           crossAxisCount: 4,
           mainAxisSpacing: 4,

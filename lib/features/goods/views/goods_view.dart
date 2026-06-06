@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import '../goods_tab_navigator.dart';
 import '../../../components/in_page_search_bar.dart';
 import '../../../components/refresh_status_badge.dart';
@@ -11,6 +12,7 @@ import '../../../util/media_url.dart';
 import '../data/models/mall_product_model.dart';
 import '../data/repos/goods_repo.dart';
 import '../providers/goods_mall_tab_reselect_provider.dart';
+import '../theme/goods_page_style.dart';
 import '../widgets/coupon_claim_entry.dart';
 
 bool _isWideMallLayout(BuildContext context) =>
@@ -180,7 +182,7 @@ class _GoodsViewState extends ConsumerState<GoodsView> {
       context: context,
       removeTop: true,
       child: ColoredBox(
-        color: const Color(0xFFF6F7F9),
+        color: GoodsPageStyle.pageBg(context),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: _pageMaxWidth),
@@ -328,9 +330,9 @@ class _MallHeader extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(14, 4, 14, 16),
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFECEEF2)),
+        border: Border.all(color: GoodsPageStyle.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -345,16 +347,16 @@ class _MallHeader extends StatelessWidget {
             width: 46,
             height: 46,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF1F2),
+              color: GoodsPageStyle.accent.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
               Icons.shopping_bag_outlined,
-              color: Color(0xFFE11D48),
+              color: GoodsPageStyle.accent,
             ),
           ),
           const SizedBox(width: 14),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -363,15 +365,18 @@ class _MallHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF202124),
+                    color: GoodsPageStyle.text(context),
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   '精选商城商品，看看今天有哪些新东西',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: GoodsPageStyle.sub(context),
+                  ),
                 ),
               ],
             ),
@@ -399,14 +404,14 @@ class _MallHorizontalCard extends StatelessWidget {
     final sales = item.salesCount ?? 0;
 
     return Material(
-      color: Colors.white,
+      color: GoodsPageStyle.cardBg(context),
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFECEEF2)),
+            border: Border.all(color: GoodsPageStyle.border(context)),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Padding(
@@ -441,13 +446,13 @@ class _MallHorizontalCard extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFF1F2),
+                          color: GoodsPageStyle.accent.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           sales > 0 ? '$sales 已售' : '精选',
                           style: const TextStyle(
-                            color: Color(0xFFE11D48),
+                            color: GoodsPageStyle.accent,
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                           ),
@@ -458,8 +463,8 @@ class _MallHorizontalCard extends StatelessWidget {
                         name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF202124),
+                        style: TextStyle(
+                          color: GoodsPageStyle.text(context),
                           fontSize: 15,
                           height: 1.25,
                           fontWeight: FontWeight.w600,
@@ -469,7 +474,7 @@ class _MallHorizontalCard extends StatelessWidget {
                       Text(
                         '¥${item.priceYuan.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          color: Color(0xFFE11D48),
+                          color: GoodsPageStyle.accent,
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                         ),
@@ -477,7 +482,7 @@ class _MallHorizontalCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: Colors.grey.shade500),
+                Icon(Icons.chevron_right, color: GoodsPageStyle.sub(context)),
               ],
             ),
           ),
@@ -508,14 +513,14 @@ class _GoodsCard extends StatelessWidget {
     final intro = item.introduction?.trim();
 
     return Material(
-      color: Colors.white,
+      color: GoodsPageStyle.cardBg(context),
       borderRadius: BorderRadius.circular(18),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            border: Border.all(color: const Color(0xFFECEEF2)),
+            border: Border.all(color: GoodsPageStyle.border(context)),
             borderRadius: BorderRadius.circular(18),
           ),
           child: Column(
@@ -540,8 +545,8 @@ class _GoodsCard extends StatelessWidget {
                       name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF202124),
+                      style: TextStyle(
+                        color: GoodsPageStyle.text(context),
                         fontSize: 15,
                         height: 1.22,
                         fontWeight: FontWeight.w700,
@@ -554,7 +559,7 @@ class _GoodsCard extends StatelessWidget {
                         const Text(
                           '¥',
                           style: TextStyle(
-                            color: Color(0xFFE11D48),
+                            color: GoodsPageStyle.accent,
                             fontSize: 13,
                             fontWeight: FontWeight.w800,
                           ),
@@ -562,7 +567,7 @@ class _GoodsCard extends StatelessWidget {
                         Text(
                           item.priceYuan.toStringAsFixed(2),
                           style: const TextStyle(
-                            color: Color(0xFFE11D48),
+                            color: GoodsPageStyle.accent,
                             fontSize: 22,
                             height: 1,
                             fontWeight: FontWeight.w900,
@@ -571,7 +576,7 @@ class _GoodsCard extends StatelessWidget {
                         const Spacer(),
                         DecoratedBox(
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFF1F2),
+                            color: GoodsPageStyle.accent.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(999),
                           ),
                           child: const CouponClaimEntry(
@@ -586,8 +591,8 @@ class _GoodsCard extends StatelessWidget {
                         intro,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
+                        style: TextStyle(
+                          color: GoodsPageStyle.sub(context),
                           fontSize: 12,
                           height: 1.35,
                         ),
@@ -599,13 +604,13 @@ class _GoodsCard extends StatelessWidget {
                         Icon(
                           Icons.local_fire_department_outlined,
                           size: 16,
-                          color: Colors.grey.shade600,
+                          color: GoodsPageStyle.sub(context),
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${item.salesCount ?? 0} 已售',
-                          style: const TextStyle(
-                            color: Color(0xFF6B7280),
+                          style: TextStyle(
+                            color: GoodsPageStyle.sub(context),
                             fontSize: 12,
                           ),
                         ),
@@ -613,7 +618,7 @@ class _GoodsCard extends StatelessWidget {
                         Icon(
                           Icons.inventory_2_outlined,
                           size: 16,
-                          color: Colors.grey.shade600,
+                          color: GoodsPageStyle.sub(context),
                         ),
                         const SizedBox(width: 4),
                         Expanded(
@@ -621,8 +626,8 @@ class _GoodsCard extends StatelessWidget {
                             '库存 ${item.stock ?? 0}',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF6B7280),
+                            style: TextStyle(
+                              color: GoodsPageStyle.sub(context),
                               fontSize: 12,
                             ),
                           ),
@@ -646,11 +651,11 @@ class _GoodsImageFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: const Color(0xFFF3F5F8),
+      color: GoodsPageStyle.imageBg(context),
       child: Center(
         child: Icon(
           Icons.shopping_bag_outlined,
-          color: Colors.grey.shade500,
+          color: GoodsPageStyle.sub(context),
           size: 36,
         ),
       ),
@@ -692,7 +697,7 @@ class _MallEmpty extends StatelessWidget {
     return Center(
       child: Text(
         searching ? '未找到相关商品' : '暂无在售商品',
-        style: const TextStyle(color: Color(0xFF6B7280)),
+        style: TextStyle(color: AppActionColors.muted(context)),
       ),
     );
   }

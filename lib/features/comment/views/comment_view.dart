@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/features/comment/views/wait_video_view.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
 import '../../../config/theme/app_typography.dart';
 import '../providers/comment_providers.dart';
 import 'comment_list_view.dart';
@@ -41,7 +42,7 @@ class _CommentViewState extends ConsumerState<CommentView>
       appBar: AppBar(
         titleSpacing: 0,
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
+        backgroundColor: AppActionColors.surface(context),
         title: Center(child: getTabBar(commentNotifier)),
         actions: [
           IconButton(
@@ -74,7 +75,7 @@ class _CommentViewState extends ConsumerState<CommentView>
           alignment: Alignment.center,
           child: Text(
             e,
-            style: context.typo.sectionTitle.copyWith(color: Colors.black54, fontWeight: FontWeight.bold),
+            style: context.typo.sectionTitle.copyWith(color: AppActionColors.muted(context), fontWeight: FontWeight.bold),
           ),
         );
       }).toList(),

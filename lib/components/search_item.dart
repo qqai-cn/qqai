@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class SearchItem extends StatefulWidget {
@@ -38,7 +39,7 @@ class _SearchItem extends State<SearchItem> {
                       ),
                       Icon(
                         Icons.search,
-                        color: Colors.grey,
+                        color: AppActionColors.subtle(context),
                       ),
                       Expanded(
                         child: Container(
@@ -58,7 +59,7 @@ class _SearchItem extends State<SearchItem> {
                       ),
                       new IconButton(
                         icon: new Icon(Icons.cancel),
-                        color: Colors.grey,
+                        color: AppActionColors.subtle(context),
                         iconSize: 18.0,
                         onPressed: () {
                           controller.clear();

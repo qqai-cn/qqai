@@ -10,6 +10,7 @@ import '../../../../../../constant/constant.dart';
 import '../../../../../router/app_routes.dart';
 import '../../features/comment/providers/comment_providers.dart';
 import 'package:qqai/components/level_icon.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'video_share_view.dart';
 
@@ -280,8 +281,8 @@ class _DetailControls extends ConsumerState<DetailControls> {
 
   Widget getRow(int i) {
     return ListTile(
-      hoverColor: Colors.white,
-      focusColor: Colors.white,
+      hoverColor: AppActionColors.surface(context),
+      focusColor: AppActionColors.surface(context),
       leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE,
         height: Constant.HEAD_IMG_SEZE,
@@ -290,7 +291,7 @@ class _DetailControls extends ConsumerState<DetailControls> {
       title: Container(
         padding: EdgeInsets.only(top: 10),
         decoration: UnderlineTabIndicator(
-          borderSide: BorderSide(color: Colors.black12),
+          borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,7 +305,10 @@ class _DetailControls extends ConsumerState<DetailControls> {
                 Text('212'),
                 PopupMenuButton(
                   tooltip: "",
-                  icon: Icon(Icons.more_vert, color: Colors.black54),
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: AppActionColors.foreground(context),
+                  ),
                   onSelected: (va) {
                     print(va);
                   },
@@ -322,7 +326,7 @@ class _DetailControls extends ConsumerState<DetailControls> {
             Text(
               '2022-12-11 10：12',
               style: context.typo.body.copyWith(
-                color: Colors.grey,
+                color: AppActionColors.subtle(context),
                 fontSize: 15,
               ),
             ),

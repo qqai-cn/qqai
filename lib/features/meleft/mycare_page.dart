@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/components/follow_button.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/my/data/models/profile_models.dart';
 import 'package:qqai/features/my/providers/my_followers_providers.dart';
@@ -60,15 +61,15 @@ class _MyCarePageState extends ConsumerState<MyCarePage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black12,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: AppActionColors.surface(context),
+        surfaceTintColor: AppActionColors.surface(context),
         elevation: 0,
-        title: const Text(
+        title: Text(
           '关注',
-          style: TextStyle(
-            color: Color(0xFF202124),
+          style: context.typo.appBarTitle.copyWith(
+            color: AppActionColors.strong(context),
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -82,9 +83,9 @@ class _MyCarePageState extends ConsumerState<MyCarePage>
                 constraints: const BoxConstraints(maxWidth: 720),
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF3F5F8),
+                    color: AppActionColors.borderSubtle(context),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE8EBF0)),
+                    border: Border.all(color: AppActionColors.borderSubtle(context)),
                   ),
                   child: Padding(
                     padding: const EdgeInsets.all(4),
@@ -92,8 +93,8 @@ class _MyCarePageState extends ConsumerState<MyCarePage>
                       controller: _tabController,
                       indicatorSize: TabBarIndicatorSize.tab,
                       dividerColor: Colors.transparent,
-                      labelColor: const Color(0xFF202124),
-                      unselectedLabelColor: const Color(0xFF6B7280),
+                      labelColor: AppActionColors.strong(context),
+                      unselectedLabelColor: AppActionColors.muted(context),
                       labelStyle: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -103,7 +104,7 @@ class _MyCarePageState extends ConsumerState<MyCarePage>
                         fontWeight: FontWeight.w500,
                       ),
                       indicator: BoxDecoration(
-                        color: Colors.white,
+                        color: AppActionColors.surface(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -166,15 +167,15 @@ class _MyCarePageState extends ConsumerState<MyCarePage>
                         },
                       ),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: AppActionColors.surface(context),
                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE8EBF0)),
+                  borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFE8EBF0)),
+                  borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

@@ -32,8 +32,8 @@ class DarkThemeColors
   //TEXT
   static const Color bodyTextColor = Colors.white70;
   static const Color displayTextColor = Colors.white;
-  static const Color bodySmallTextColor =  Color(0xff7C7C7C);
-  static const Color hintTextColor = Color(0xff686868);
+  static const Color bodySmallTextColor = Color(0xFFB0B0B0);
+  static const Color hintTextColor = Color(0xFF9CA3AF);
 
   //chip
   static const Color chipBackground = primaryColor;
@@ -55,6 +55,11 @@ class DarkThemeColors
   static const Color switchThumb = Colors.white;
   static const Color switchTrackDisabled = Color(0xFF424242);
   static const Color switchThumbDisabled = Color(0xFFBDBDBD);
+
+  // BOTTOM NAV
+  static const Color bottomBarBackground = Colors.black;
+  static const Color bottomBarForeground = Colors.white;
+  static const Color bottomBarForegroundMuted = Color(0xFFB0B0B0);
 
   //------------------- custom theme (extensions) ------------------- //
   // header containers

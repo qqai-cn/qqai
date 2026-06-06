@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../components/qq_tab_bar.dart';
@@ -122,8 +123,8 @@ class _FabuViewState extends ConsumerState<FabuView>
     final fabuState = ref.watch(fabuProvider);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: AppActionColors.surface(context),
+        surfaceTintColor: AppActionColors.surface(context),
         elevation: 0,
         title: const Text(
           '发布',

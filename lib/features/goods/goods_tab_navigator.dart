@@ -97,11 +97,11 @@ class _CheckoutEmptyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: GoodsPageStyle.pageBg,
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         title: const Text('确认订单'),
-        backgroundColor: GoodsPageStyle.cardBg,
-        foregroundColor: GoodsPageStyle.text,
+        backgroundColor: GoodsPageStyle.cardBg(context),
+        foregroundColor: GoodsPageStyle.text(context),
       ),
       body: const Center(child: Text('没有待结算商品')),
     );

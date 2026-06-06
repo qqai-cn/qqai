@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/qq_tab_bar.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/data/repos/blog_repo.dart';
@@ -116,7 +117,7 @@ class _FootprintPageState extends ConsumerState<FootprintPage>
           TextButton(onPressed: _cleanCurrentTab, child: const Text('清空')),
         ],
       ),
-      backgroundColor: Colors.black12,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: TabBarView(
         controller: _tab,
         children: [
@@ -432,11 +433,11 @@ Widget _buildListBody({
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.history, size: 56, color: Colors.grey.shade500),
+          Icon(Icons.history, size: 56, color: AppActionColors.subtle(context)),
           const SizedBox(height: 12),
           Text('暂无浏览记录', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(emptyHint, style: TextStyle(color: Colors.grey.shade600)),
+          Text(emptyHint, style: TextStyle(color: AppActionColors.muted(context))),
           const SizedBox(height: 20),
           FilledButton(onPressed: onEmptyAction, child: Text(emptyActionLabel)),
         ],
@@ -531,7 +532,7 @@ class _BlogFootprintCard extends StatelessWidget {
     final cover = resolveMediaUrl(coverRaw) ?? '';
     final name = item.creatorName ?? '用户';
     return Material(
-      color: Colors.white,
+      color: AppActionColors.surface(context),
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -543,12 +544,12 @@ class _BlogFootprintCard extends StatelessWidget {
             Expanded(
               child: cover.isEmpty
                   ? ColoredBox(
-                      color: Colors.grey.shade200,
+                      color: AppActionColors.borderSubtle(context),
                       child: Icon(
                         item.blogType == 2
                             ? Icons.play_circle_outline
                             : Icons.image_outlined,
-                        color: Colors.grey,
+                        color: AppActionColors.muted(context),
                         size: 40,
                       ),
                     )
@@ -572,7 +573,9 @@ class _BlogFootprintCard extends StatelessWidget {
                     '@$name · ${formatCompactCount(item.zan)}赞',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: context.typo.caption.copyWith(color: Colors.grey),
+                    style: context.typo.caption.copyWith(
+                      color: AppActionColors.subtle(context),
+                    ),
                   ),
                 ],
               ),
@@ -599,7 +602,7 @@ class _ProductFootprintCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cover = resolveMediaUrl(item.picUrl) ?? '';
     return Material(
-      color: Colors.white,
+      color: AppActionColors.surface(context),
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -611,10 +614,10 @@ class _ProductFootprintCard extends StatelessWidget {
             Expanded(
               child: cover.isEmpty
                   ? ColoredBox(
-                      color: Colors.grey.shade200,
-                      child: const Icon(
+                      color: AppActionColors.borderSubtle(context),
+                      child: Icon(
                         Icons.image_outlined,
-                        color: Colors.grey,
+                        color: AppActionColors.muted(context),
                       ),
                     )
                   : CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover),

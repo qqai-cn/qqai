@@ -4,6 +4,7 @@ import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../watchvideo/wait_play_video_list.dart';
 import '../providers/lookart_providers.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 //控制评论和下一个播放
@@ -40,7 +41,7 @@ class _LookArtRight extends ConsumerState<LookArtRight>
       appBar: AppBar(
         titleSpacing: 0,
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
+        backgroundColor: AppActionColors.surface(context),
         title: Center(child: getTabBar(lookArtNotifier)),
         actions: [
           IconButton(
@@ -72,7 +73,7 @@ class _LookArtRight extends ConsumerState<LookArtRight>
           alignment: Alignment.center,
           child: Text(
             e,
-            style: context.typo.tab.copyWith(color: Colors.black54, fontWeight: FontWeight.bold),
+            style: context.typo.tab.copyWith(color: AppActionColors.muted(context), fontWeight: FontWeight.bold),
           ),
         );
       }).toList(),

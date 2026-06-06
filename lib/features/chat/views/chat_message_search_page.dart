@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
@@ -201,7 +202,7 @@ class _ChatMessageSearchPageState extends ConsumerState<ChatMessageSearchPage> {
           decoration: InputDecoration(
             hintText: '搜索聊天内容',
             border: InputBorder.none,
-            hintStyle: TextStyle(color: Colors.grey.shade500),
+            hintStyle: TextStyle(color: AppActionColors.subtle(context)),
           ),
           onChanged: _onKeywordChanged,
           onSubmitted: _search,
@@ -226,7 +227,7 @@ class _ChatMessageSearchPageState extends ConsumerState<ChatMessageSearchPage> {
       return Center(
         child: Text(
           '输入关键词查找聊天记录',
-          style: context.typo.body.copyWith(color: Colors.grey[600]),
+          style: context.typo.body.copyWith(color: AppActionColors.muted(context)),
         ),
       );
     }
@@ -252,7 +253,7 @@ class _ChatMessageSearchPageState extends ConsumerState<ChatMessageSearchPage> {
       return Center(
         child: Text(
           '未找到相关消息',
-          style: context.typo.body.copyWith(color: Colors.grey[600]),
+          style: context.typo.body.copyWith(color: AppActionColors.muted(context)),
         ),
       );
     }
@@ -274,7 +275,9 @@ class _ChatMessageSearchPageState extends ConsumerState<ChatMessageSearchPage> {
           title: _highlightText(_messagePreview(message)),
           subtitle: Text(
             formatConversationListTime(message.createTime),
-            style: context.typo.caption.copyWith(color: Colors.grey[600]),
+            style: context.typo.caption.copyWith(
+              color: AppActionColors.muted(context),
+            ),
           ),
           onTap: _openChat,
         );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/blog_list_patch.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
@@ -22,7 +23,7 @@ class BlogLocalLocationButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          foregroundColor: const Color(0xFF6B7280),
+          foregroundColor: AppActionColors.muted(context),
         ),
         onPressed: () => _openLocation(context),
         icon: const Icon(Icons.location_on_outlined, size: 16),
@@ -30,7 +31,9 @@ class BlogLocalLocationButton extends StatelessWidget {
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: context.typo.caption.copyWith(color: const Color(0xFF6B7280)),
+          style: context.typo.caption.copyWith(
+            color: AppActionColors.muted(context),
+          ),
         ),
       ),
     );

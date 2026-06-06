@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/follow_button.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 import '../../../router/app_routes.dart';
 import '../../../util/format_count.dart';
@@ -128,10 +130,12 @@ class _SquareCardShellState extends State<_SquareCardShell> {
       duration: const Duration(milliseconds: 180),
       curve: Curves.easeOut,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppActionColors.surface(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: elevated ? const Color(0xFFCBD5E1) : const Color(0xFFE2E8F0),
+          color: elevated
+              ? AppActionColors.muted(context).withValues(alpha: 0.45)
+              : AppActionColors.borderSubtle(context),
         ),
         boxShadow: [
           BoxShadow(
@@ -219,7 +223,7 @@ class _SquareCover extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const ColoredBox(color: Color(0xFFE2E8F0)),
+        ColoredBox(color: GoodsPageStyle.imageBg(context)),
         Image(
           image: CachedNetworkImageProvider(imageUrl, maxWidth: cacheWidth),
           fit: BoxFit.cover,
@@ -238,11 +242,11 @@ class _SquareCover extends StatelessWidget {
             );
           },
           errorBuilder: (_, _, _) => ColoredBox(
-            color: Colors.grey.shade300,
+            color: AppActionColors.borderSubtle(context),
             child: Center(
               child: Icon(
                 Icons.image_not_supported_outlined,
-                color: Colors.grey.shade600,
+                color: AppActionColors.muted(context),
               ),
             ),
           ),
@@ -340,9 +344,11 @@ class _SquareFooter extends StatelessWidget {
     final showDesc = density != SquareTileDensity.compact;
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF8FAFC),
-        border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+      decoration: BoxDecoration(
+        color: AppActionColors.surface(context),
+        border: Border(
+          top: BorderSide(color: AppActionColors.borderSubtle(context)),
+        ),
       ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(horizontal, 8, horizontal, 8),
@@ -352,7 +358,10 @@ class _SquareFooter extends StatelessWidget {
             DecoratedBox(
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 2),
+                border: Border.all(
+                  color: AppActionColors.surface(context),
+                  width: 2,
+                ),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.08),
@@ -380,7 +389,7 @@ class _SquareFooter extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: const Color(0xFF0F172A),
+                      color: AppActionColors.strong(context),
                       fontSize: density == SquareTileDensity.compact ? 13.5 : 14.5,
                       height: 1.2,
                       fontWeight: FontWeight.w700,
@@ -392,8 +401,8 @@ class _SquareFooter extends StatelessWidget {
                       desc,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF64748B),
+                      style: TextStyle(
+                        color: AppActionColors.muted(context),
                         fontSize: 11.5,
                         height: 1.2,
                       ),

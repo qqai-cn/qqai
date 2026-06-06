@@ -16,10 +16,10 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
     final notifier = ref.read(watchHistoryProvider.notifier);
 
     return Scaffold(
-      backgroundColor: DouyinTheme.bg,
+      backgroundColor: DouyinTheme.bg(context),
       appBar: AppBar(
-        backgroundColor: DouyinTheme.bg,
-        foregroundColor: DouyinTheme.text,
+        backgroundColor: DouyinTheme.bg(context),
+        foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
@@ -34,23 +34,23 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                 final ok = await showDialog<bool>(
                   context: context,
                   builder: (c) => AlertDialog(
-                    backgroundColor: DouyinTheme.card,
+                    backgroundColor: DouyinTheme.card(context),
                     title: Text(
                       '清空观看历史',
                       style: context.typo.sectionTitle.copyWith(
-                        color: DouyinTheme.text,
+                        color: DouyinTheme.text(context),
                       ),
                     ),
                     content: Text(
                       '确定清空全部记录？',
-                      style: context.typo.body.copyWith(color: DouyinTheme.sub),
+                      style: context.typo.body.copyWith(color: DouyinTheme.sub(context)),
                     ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(c, false),
                         child: Text(
                           '取消',
-                          style: context.typo.body.copyWith(color: DouyinTheme.sub),
+                          style: context.typo.body.copyWith(color: DouyinTheme.sub(context)),
                         ),
                       ),
                       TextButton(
@@ -82,12 +82,12 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.history, size: 56.sp, color: DouyinTheme.sub),
+                  Icon(Icons.history, size: 56.sp, color: DouyinTheme.sub(context)),
                   SizedBox(height: 12.h),
                   Text(
                     '暂无观看记录',
                     style: context.typo.sectionTitle.copyWith(
-                      color: DouyinTheme.text,
+                      color: DouyinTheme.text(context),
                       fontSize: 15.sp,
                     ),
                   ),
@@ -96,7 +96,7 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                     '刷视频时会自动记录（可接入播放页埋点）',
                     textAlign: TextAlign.center,
                     style: context.typo.caption.copyWith(
-                      color: DouyinTheme.sub,
+                      color: DouyinTheme.sub(context),
                       fontSize: 12.sp,
                     ),
                   ),
@@ -120,7 +120,7 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                   ),
                   onDismissed: (_) => notifier.remove(e.id),
                   child: Material(
-                    color: DouyinTheme.card,
+                    color: DouyinTheme.card(context),
                     borderRadius: BorderRadius.circular(12.r),
                     child: ListTile(
                       contentPadding: EdgeInsets.all(10.w),
@@ -130,9 +130,9 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                             ? Container(
                                 width: 56.w,
                                 height: 56.w,
-                                color: DouyinTheme.chip,
+                                color: DouyinTheme.chip(context),
                                 child: Icon(Icons.play_circle_outline,
-                                    color: DouyinTheme.sub),
+                                    color: DouyinTheme.sub(context)),
                               )
                             : Image.network(
                                 e.coverUrl,
@@ -146,7 +146,7 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: context.typo.body.copyWith(
-                          color: DouyinTheme.text,
+                          color: DouyinTheme.text(context),
                           fontSize: 14.sp,
                         ),
                       ),
@@ -155,7 +155,7 @@ class DouyinWatchHistoryPage extends ConsumerWidget {
                         child: Text(
                           _format(e.watchedAt),
                           style: context.typo.caption.copyWith(
-                            color: DouyinTheme.sub,
+                            color: DouyinTheme.sub(context),
                             fontSize: 12.sp,
                           ),
                         ),

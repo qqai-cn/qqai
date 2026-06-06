@@ -15,6 +15,8 @@ import '../../../../components/blog/network_image_carousel_pages.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
+import 'package:qqai/components/blog/feed_video_more_menu.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class MyBlogVideoItemView extends ConsumerStatefulWidget {
@@ -55,7 +57,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
               style: bodyStyle.copyWith(fontSize: (bodyStyle.fontSize ?? 16)),
             ),
           ),
-          Container(height: 2, color: Colors.white),
+          const SizedBox(height: 2),
           Expanded(
             flex: 9,
             child: _LazyVideoPlaceholder(
@@ -112,50 +114,15 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
               Spacer(),
               PopupMenuButton(
                 tooltip: "",
-                icon: Icon(Icons.more_vert, color: Colors.black54),
+                icon: Icon(
+                  Icons.more_vert,
+                  color: AppActionColors.foreground(context),
+                ),
                 onSelected: (va) {
                   print(va);
                 },
-                itemBuilder: (BuildContext context) {
-                  return <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: '0',
-                      child: Text(
-                        '收藏',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '1',
-                      child: Text(
-                        '举报',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '2',
-                      child: Text(
-                        '不感兴趣',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '3',
-                      child: Text(
-                        '加入播放队列',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                  ];
-                },
+                itemBuilder: (BuildContext context) =>
+                    feedVideoMoreMenuEntries(context),
               ),
             ],
           ),
@@ -166,8 +133,8 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
 
   Widget getRow(int i) {
     return ListTile(
-      hoverColor: Colors.white,
-      focusColor: Colors.white,
+      hoverColor: Theme.of(context).colorScheme.surface,
+      focusColor: Theme.of(context).colorScheme.surface,
       titleAlignment: ListTileTitleAlignment.titleHeight,
       leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE.w,
@@ -177,7 +144,7 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
       title: Container(
         // padding: EdgeInsets.only(top: 10),
         decoration: UnderlineTabIndicator(
-          borderSide: BorderSide(color: Colors.black12),
+          borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -191,16 +158,15 @@ class _BlogVideoItemViewState extends ConsumerState<MyBlogVideoItemView> {
                 Text('212'),
                 PopupMenuButton(
                   tooltip: "",
-                  icon: Icon(Icons.more_vert, color: Colors.black54),
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: AppActionColors.foreground(context),
+                  ),
                   onSelected: (va) {
                     print(va);
                   },
-                  itemBuilder: (BuildContext context) {
-                    return <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(value: '0', child: Text('收藏')),
-                      PopupMenuItem<String>(value: '1', child: Text('举报')),
-                    ];
-                  },
+                  itemBuilder: (BuildContext context) =>
+                      feedVideoMoreMenuEntries(context),
                 ),
               ],
             ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 ///整理
@@ -85,7 +86,10 @@ class TextFeildHomePageState extends State {
                 ///输入框获取焦点时 并且没有输入文字时
                 hintText: "请输入用户名",
                 ///设置输入文本框的提示文字的样式
-                hintStyle: context.typo.body.copyWith(color: Colors.grey,textBaseline: TextBaseline.ideographic,),
+                hintStyle: context.typo.body.copyWith(
+                  color: AppActionColors.subtle(context),
+                  textBaseline: TextBaseline.ideographic,
+                ),
                 ///输入框内的提示 输入框没有获取焦点时显示
                 labelText: "用户名",
                 labelStyle: context.typo.body.copyWith(color: Colors.blue),

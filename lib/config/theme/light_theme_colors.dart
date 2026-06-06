@@ -55,6 +55,11 @@ class LightThemeColors
   static const Color switchTrackDisabled = Color(0xFFE0E0E0);
   static const Color switchThumbDisabled = Color(0xFFF5F5F5);
 
+  // BOTTOM NAV
+  static const Color bottomBarBackground = Colors.white;
+  static const Color bottomBarForeground = Color(0xFF424242);
+  static const Color bottomBarForegroundMuted = Color(0xFF9E9E9E);
+
   //------------------- custom theme (extensions) ------------------- //
   // header containers
   static const Color headerContainerBackgroundColor = Color(0XFF38B6F0);

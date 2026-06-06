@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 /// 由 [HomePage] 注入，供 [LazyShellTab] 同步读取当前主壳 Tab 索引。
 class MainShellIndexScope extends InheritedWidget {
@@ -50,9 +51,9 @@ class _LazyShellTabState extends State<LazyShellTab> {
       _everMounted = true;
     }
     if (!_everMounted) {
-      return const ColoredBox(
-        color: Colors.black12,
-        child: SizedBox.expand(),
+      return ColoredBox(
+        color: AppActionColors.borderSubtle(context),
+        child: const SizedBox.expand(),
       );
     }
     return widget.child;

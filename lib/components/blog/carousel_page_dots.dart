@@ -31,7 +31,9 @@ class CarouselPageDots extends StatelessWidget {
               margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: currentIndex == index ? Colors.white : Colors.black45,
+                color: currentIndex == index
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.45),
               ),
             ),
           );

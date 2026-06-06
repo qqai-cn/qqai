@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 import '../../components/qq_tab_bar.dart';
 import '../../router/app_routes.dart';
@@ -423,14 +424,14 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
           ),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '添加好友',
                 style: TextStyle(
-                  color: Color(0xFF202124),
+                  color: AppActionColors.strong(context),
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
@@ -438,7 +439,10 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
               SizedBox(height: 2),
               Text(
                 '通过千千号搜索并发送好友申请',
-                style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                style: TextStyle(
+                  color: AppActionColors.muted(context),
+                  fontSize: 13,
+                ),
               ),
             ],
           ),

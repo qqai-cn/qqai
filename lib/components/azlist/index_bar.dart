@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 /// IndexHintBuilder.
@@ -123,11 +124,7 @@ class IndexBarOptions {
     this.selectItemDecoration,
     this.indexHintWidth = 72,
     this.indexHintHeight = 72,
-    this.indexHintDecoration = const BoxDecoration(
-      color: Colors.black87,
-      shape: BoxShape.rectangle,
-      borderRadius: BorderRadius.all(Radius.circular(6)),
-    ),
+    this.indexHintDecoration,
     this.indexHintTextStyle =
         const TextStyle(fontSize: 24.0, color: Colors.white),
     this.indexHintChildAlignment = Alignment.center,
@@ -180,7 +177,7 @@ class IndexBarOptions {
   final double indexHintHeight;
 
   /// Index hint decoration.
-  final Decoration indexHintDecoration;
+  final Decoration? indexHintDecoration;
 
   /// Index hint alignment.
   final Alignment indexHintAlignment;
@@ -343,7 +340,12 @@ class _IndexBarState extends State<IndexBar> {
       width: widget.options.indexHintWidth,
       height: widget.options.indexHintHeight,
       alignment: widget.options.indexHintChildAlignment,
-      decoration: widget.options.indexHintDecoration,
+      decoration: widget.options.indexHintDecoration ??
+          BoxDecoration(
+            color: AppActionColors.strong(context),
+            shape: BoxShape.rectangle,
+            borderRadius: const BorderRadius.all(Radius.circular(6)),
+          ),
       child: child,
     );
   }

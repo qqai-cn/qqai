@@ -8,6 +8,7 @@ import 'package:qqai/components/profile/profile_banner_overlay_buttons.dart';
 import 'package:qqai/components/label.dart';
 import 'package:qqai/components/app_action_outline_button.dart';
 import 'package:qqai/components/follow_button.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
@@ -438,7 +439,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
               forceElevated: true,
               expandedHeight: expandedHeight,
               automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
+              backgroundColor: AppActionColors.surface(context),
               flexibleSpace: FlexibleSpaceBar(
                 collapseMode: CollapseMode.pin,
                 background: Column(
@@ -544,7 +545,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                     SizedBox(
                       height: infoHeight,
                       child: Container(
-                        color: Colors.white,
+                        color: AppActionColors.surface(context),
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
                           child: Column(
@@ -611,12 +612,18 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                           page!.address,
                                           empty: '',
                                         ),
-                                        backgroundColor: Colors.black12,
+                                        backgroundColor:
+                                            AppActionColors.borderSubtle(
+                                          context,
+                                        ),
                                       ),
                                     if (page?.age != null)
                                       Label(
                                         content: '${page!.age}岁',
-                                        backgroundColor: Colors.black12,
+                                        backgroundColor:
+                                            AppActionColors.borderSubtle(
+                                          context,
+                                        ),
                                       ),
                                   ],
                                 ),
@@ -634,10 +641,10 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                 ),
               ),
               bottom: TabBar(
-                indicatorColor: Colors.grey,
+                indicatorColor: AppActionColors.muted(context),
                 controller: _tabController,
-                labelColor: Colors.black,
-                unselectedLabelColor: Colors.grey,
+                labelColor: AppActionColors.strong(context),
+                unselectedLabelColor: AppActionColors.muted(context),
                 isScrollable: false,
                 indicatorSize: TabBarIndicatorSize.label,
                 tabs: const [

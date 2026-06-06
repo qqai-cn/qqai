@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -249,14 +250,14 @@ class _GoodsFilterPage extends State<GoodsFilterPage> {
     return Container(
         alignment: Alignment.topCenter,
         margin: const EdgeInsets.fromLTRB(0, 8, 0, 5.0),
-        color: Colors.white,
+        color: AppActionColors.surface(context),
         child: ListView.builder(
           itemBuilder: (context, index) {
             if (_left.length > index + 1) {
               return Column(
                 children: [
                   Container(
-                    color: Colors.black12,
+                    color: AppActionColors.borderSubtle(context),
                     height: rightItemTitleHeight,
                     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
                     child: Row(

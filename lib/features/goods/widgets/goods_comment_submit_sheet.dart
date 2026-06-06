@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 
 import '../providers/goods_comments.dart';
 
@@ -11,7 +13,7 @@ Future<void> showGoodsCommentSubmitSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppActionColors.surface(context),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -103,11 +105,14 @@ class _GoodsCommentSubmitSheetState
             pending.when(
               data: (item) {
                 if (item == null) {
-                  return const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
                     child: Text(
                       '购买并完成订单后可评价该商品',
-                      style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                      style: TextStyle(
+                        color: AppActionColors.muted(context),
+                        fontSize: 13,
+                      ),
                     ),
                   );
                 }
@@ -116,8 +121,8 @@ class _GoodsCommentSubmitSheetState
                   child: Text(
                     '订单商品：${item.spuName ?? '商品'}'
                     '${item.skuLabel != null ? ' · ${item.skuLabel}' : ''}',
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
+                    style: TextStyle(
+                      color: AppActionColors.muted(context),
                       fontSize: 13,
                     ),
                   ),
@@ -129,9 +134,12 @@ class _GoodsCommentSubmitSheetState
               ),
               error: (_, _) => const SizedBox.shrink(),
             ),
-            const Text(
+            Text(
               '商品满意度',
-              style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+              style: TextStyle(
+                fontSize: 13,
+                color: AppActionColors.muted(context),
+              ),
             ),
             const SizedBox(height: 8),
             Row(

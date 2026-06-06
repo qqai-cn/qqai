@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../utils/footprint_timeline.dart';
@@ -35,11 +36,14 @@ Widget buildTimelineGridListBody({
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.star_border, size: 56, color: Colors.grey.shade500),
+          Icon(Icons.star_border, size: 56, color: AppActionColors.muted(context)),
           const SizedBox(height: 12),
           Text('暂无收藏', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(emptyHint, style: TextStyle(color: Colors.grey.shade600)),
+          Text(
+            emptyHint,
+            style: TextStyle(color: AppActionColors.subtle(context)),
+          ),
           const SizedBox(height: 20),
           FilledButton(onPressed: onEmptyAction, child: Text(emptyActionLabel)),
         ],
@@ -139,7 +143,7 @@ class TimelineBlogGridCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cover = coverUrl ?? '';
     return Material(
-      color: Colors.white,
+      color: AppActionColors.surface(context),
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -151,12 +155,12 @@ class TimelineBlogGridCard extends StatelessWidget {
             Expanded(
               child: cover.isEmpty
                   ? ColoredBox(
-                      color: Colors.grey.shade200,
+                      color: AppActionColors.borderSubtle(context),
                       child: Icon(
                         blogType == 2
                             ? Icons.play_circle_outline
                             : Icons.image_outlined,
-                        color: Colors.grey,
+                        color: AppActionColors.muted(context),
                         size: 40,
                       ),
                     )
@@ -180,7 +184,9 @@ class TimelineBlogGridCard extends StatelessWidget {
                     subtitle,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: context.typo.caption.copyWith(color: Colors.grey),
+                    style: context.typo.caption.copyWith(
+                      color: AppActionColors.subtle(context),
+                    ),
                   ),
                 ],
               ),
@@ -212,7 +218,7 @@ class TimelineProductGridCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cover = picUrl ?? '';
     return Material(
-      color: Colors.white,
+      color: AppActionColors.surface(context),
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -224,10 +230,10 @@ class TimelineProductGridCard extends StatelessWidget {
             Expanded(
               child: cover.isEmpty
                   ? ColoredBox(
-                      color: Colors.grey.shade200,
-                      child: const Icon(
+                      color: AppActionColors.borderSubtle(context),
+                      child: Icon(
                         Icons.image_outlined,
-                        color: Colors.grey,
+                        color: AppActionColors.muted(context),
                       ),
                     )
                   : CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover),

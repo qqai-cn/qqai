@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 /// 嵌入首页 Tab 内容区顶部（AppBar 下方空隙）的搜索条。
 class InPageSearchBar extends StatefulWidget {
@@ -91,27 +93,35 @@ class _InPageSearchBarState extends State<InPageSearchBar> {
             },
             decoration: InputDecoration(
               hintText: widget.hintText,
-              hintStyle: const TextStyle(
-                color: Color(0xFF9CA3AF),
+              hintStyle: TextStyle(
+                color: AppActionColors.subtle(context),
                 fontSize: 14,
               ),
-              prefixIcon: const Icon(Icons.search, size: 20, color: Color(0xFF9CA3AF)),
+              prefixIcon: Icon(
+                Icons.search,
+                size: 20,
+                color: AppActionColors.subtle(context),
+              ),
               suffixIcon: _query.isEmpty
                   ? null
                   : IconButton(
-                      icon: const Icon(Icons.clear, size: 18),
+                      icon: Icon(
+                        Icons.clear,
+                        size: 18,
+                        color: AppActionColors.muted(context),
+                      ),
                       onPressed: _clear,
                     ),
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppActionColors.surface(context),
               contentPadding: const EdgeInsets.symmetric(vertical: 0),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE8EBF0)),
+                borderSide: BorderSide(color: GoodsPageStyle.border(context)),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE8EBF0)),
+                borderSide: BorderSide(color: GoodsPageStyle.border(context)),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 import '../../../util/api_base_client.dart';
 import '../data/models/profile_models.dart';
@@ -226,14 +227,14 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
           ),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '创建合集',
                 style: TextStyle(
-                  color: Color(0xFF202124),
+                  color: AppActionColors.strong(context),
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
@@ -241,7 +242,10 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
               SizedBox(height: 2),
               Text(
                 '把作品整理成系列，方便观众连续观看',
-                style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                style: TextStyle(
+                  color: AppActionColors.muted(context),
+                  fontSize: 13,
+                ),
               ),
             ],
           ),

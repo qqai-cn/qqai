@@ -11,10 +11,10 @@ class DouyinAnchorCenterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: DouyinTheme.bg,
+      backgroundColor: DouyinTheme.bg(context),
       appBar: AppBar(
-        backgroundColor: DouyinTheme.bg,
-        foregroundColor: DouyinTheme.text,
+        backgroundColor: DouyinTheme.bg(context),
+        foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
@@ -45,20 +45,20 @@ class DouyinAnchorCenterPage extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: 10.h),
       child: Material(
-        color: DouyinTheme.card,
+        color: DouyinTheme.card(context),
         borderRadius: BorderRadius.circular(12.r),
         child: ListTile(
           contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          leading: Icon(icon, color: DouyinTheme.text),
+          leading: Icon(icon, color: DouyinTheme.text(context)),
           title: Text(
             title,
-            style: context.typo.bodyStrong.copyWith(color: DouyinTheme.text, fontSize: 15.sp),
+            style: context.typo.bodyStrong.copyWith(color: DouyinTheme.text(context), fontSize: 15.sp),
           ),
           subtitle: Text(
             sub,
-            style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 12.sp),
+            style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 12.sp),
           ),
-          trailing: Icon(Icons.chevron_right, color: DouyinTheme.sub, size: 20.sp),
+          trailing: Icon(Icons.chevron_right, color: DouyinTheme.sub(context), size: 20.sp),
           onTap: () {},
         ),
       ),
@@ -77,7 +77,7 @@ class _SectionTitle extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 10.h),
       child: Text(
         text,
-        style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 13.sp, fontWeight: FontWeight.w500),
+        style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 13.sp, fontWeight: FontWeight.w500),
       ),
     );
   }
@@ -120,14 +120,14 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 8.w),
       decoration: BoxDecoration(
-        color: DouyinTheme.card,
+        color: DouyinTheme.card(context),
         borderRadius: BorderRadius.circular(12.r),
       ),
       child: Column(
         children: [
           Text(
             stat.label,
-            style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 12.sp),
+            style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 12.sp),
           ),
           SizedBox(height: 8.h),
           Row(
@@ -136,14 +136,14 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 stat.value,
-                style: context.typo.heroTitle.copyWith(color: DouyinTheme.text, fontSize: 20.sp, fontWeight: FontWeight.bold),
+                style: context.typo.heroTitle.copyWith(color: DouyinTheme.text(context), fontSize: 20.sp, fontWeight: FontWeight.bold),
               ),
               if (stat.unit.isNotEmpty)
                 Padding(
                   padding: EdgeInsets.only(left: 2.w, bottom: 2.h),
                   child: Text(
                     stat.unit,
-                    style: context.typo.caption.copyWith(color: DouyinTheme.sub, fontSize: 12.sp),
+                    style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 12.sp),
                   ),
                 ),
             ],

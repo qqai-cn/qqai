@@ -44,10 +44,10 @@ class DouyinGroupBuyPage extends StatelessWidget {
     final cols = _isWideLayout(context) ? 2 : 1;
 
     return Scaffold(
-      backgroundColor: DouyinTheme.bg,
+      backgroundColor: DouyinTheme.bg(context),
       appBar: AppBar(
-        backgroundColor: DouyinTheme.bg,
-        foregroundColor: DouyinTheme.text,
+        backgroundColor: DouyinTheme.bg(context),
+        foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
@@ -73,7 +73,7 @@ class DouyinGroupBuyPage extends StatelessWidget {
             sliver: SliverToBoxAdapter(
               child: Text(
                 '为你推荐',
-                style: context.typo.sectionTitle.copyWith(color: DouyinTheme.text),
+                style: context.typo.sectionTitle.copyWith(color: DouyinTheme.text(context)),
               ),
             ),
           ),
@@ -154,7 +154,7 @@ class _DealCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: DouyinTheme.card,
+      color: DouyinTheme.card(context),
       borderRadius: BorderRadius.circular(12.r),
       child: InkWell(
         onTap: () => context.push(Routes.goodsPageUrl),
@@ -201,7 +201,7 @@ class _DealCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                Icon(Icons.chevron_right, color: DouyinTheme.sub),
+                Icon(Icons.chevron_right, color: DouyinTheme.sub(context)),
               ],
             ),
           ),

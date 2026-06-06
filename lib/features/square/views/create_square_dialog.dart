@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 import '../../../router/app_routes.dart';
 import '../../../util/api_base_client.dart';
@@ -324,14 +325,14 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
           child: const Icon(Icons.grid_view_rounded, color: Color(0xFF3578E5)),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 '创建广场',
                 style: TextStyle(
-                  color: Color(0xFF202124),
+                  color: AppActionColors.strong(context),
                   fontSize: 20,
                   fontWeight: FontWeight.w800,
                 ),
@@ -339,7 +340,10 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
               SizedBox(height: 2),
               Text(
                 '建立一个新的作品聚合空间',
-                style: TextStyle(color: Color(0xFF6B7280), fontSize: 13),
+                style: TextStyle(
+                  color: AppActionColors.muted(context),
+                  fontSize: 13,
+                ),
               ),
             ],
           ),

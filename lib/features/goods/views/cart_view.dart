@@ -51,15 +51,15 @@ class _CartViewState extends ConsumerState<CartView> {
     final wide = _isWide(context);
 
     return Scaffold(
-      backgroundColor: GoodsPageStyle.pageBg,
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: GoodsPageStyle.cardBg,
-        foregroundColor: GoodsPageStyle.text,
+        backgroundColor: GoodsPageStyle.cardBg(context),
+        foregroundColor: GoodsPageStyle.text(context),
         title: Text(
           '购物车',
-          style: context.typo.appBarTitle.copyWith(color: GoodsPageStyle.text),
+          style: context.typo.appBarTitle.copyWith(color: GoodsPageStyle.text(context)),
         ),
         centerTitle: true,
       ),
@@ -258,7 +258,7 @@ class _CartSummaryPanel extends StatelessWidget {
           Text(
             '结算明细',
             style: context.typo.sectionTitle.copyWith(
-              color: GoodsPageStyle.text,
+              color: GoodsPageStyle.text(context),
             ),
           ),
           const SizedBox(height: 16),
@@ -271,7 +271,7 @@ class _CartSummaryPanel extends StatelessWidget {
               ),
               Text(
                 '全选',
-                style: context.typo.body.copyWith(color: GoodsPageStyle.text),
+                style: context.typo.body.copyWith(color: GoodsPageStyle.text(context)),
               ),
             ],
           ),
@@ -281,12 +281,12 @@ class _CartSummaryPanel extends StatelessWidget {
             children: [
               Text(
                 '已选商品',
-                style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+                style: context.typo.caption.copyWith(color: GoodsPageStyle.sub(context)),
               ),
               Text(
                 '$selectedCount 件',
                 style: context.typo.bodyStrong.copyWith(
-                  color: GoodsPageStyle.text,
+                  color: GoodsPageStyle.text(context),
                 ),
               ),
             ],
@@ -297,7 +297,7 @@ class _CartSummaryPanel extends StatelessWidget {
             children: [
               Text(
                 '合计',
-                style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+                style: context.typo.caption.copyWith(color: GoodsPageStyle.sub(context)),
               ),
               const Spacer(),
               const Text(
@@ -327,7 +327,7 @@ class _CartSummaryPanel extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: GoodsPageStyle.accent,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                disabledBackgroundColor: GoodsPageStyle.sub(context).withValues(
                   alpha: 0.35,
                 ),
                 elevation: 0,
@@ -370,7 +370,7 @@ class _CartCheckoutBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Material(
-        color: GoodsPageStyle.cardBg,
+        color: GoodsPageStyle.cardBg(context),
         elevation: 8,
         shadowColor: Colors.black.withValues(alpha: 0.08),
         child: Padding(
@@ -389,14 +389,14 @@ class _CartCheckoutBar extends StatelessWidget {
                   Text(
                     '全选',
                     style: context.typo.body.copyWith(
-                      color: GoodsPageStyle.text,
+                      color: GoodsPageStyle.text(context),
                     ),
                   ),
                   const Spacer(),
                   Text(
                     '合计：',
                     style: context.typo.caption.copyWith(
-                      color: GoodsPageStyle.sub,
+                      color: GoodsPageStyle.sub(context),
                     ),
                   ),
                   const Text(
@@ -425,7 +425,7 @@ class _CartCheckoutBar extends StatelessWidget {
                   child: Text(
                     '已选 $selectedCount 件',
                     style: context.typo.caption.copyWith(
-                      color: GoodsPageStyle.sub,
+                      color: GoodsPageStyle.sub(context),
                     ),
                   ),
                 ),
@@ -439,7 +439,7 @@ class _CartCheckoutBar extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: GoodsPageStyle.accent,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                    disabledBackgroundColor: GoodsPageStyle.sub(context).withValues(
                       alpha: 0.35,
                     ),
                     elevation: 0,
@@ -475,7 +475,7 @@ class _EmptyCart extends StatelessWidget {
               width: 88,
               height: 88,
               decoration: BoxDecoration(
-                color: GoodsPageStyle.imageBg,
+                color: GoodsPageStyle.imageBg(context),
                 borderRadius: BorderRadius.circular(22),
               ),
               child: const Icon(
@@ -488,13 +488,13 @@ class _EmptyCart extends StatelessWidget {
             Text(
               '购物车空空如也',
               style: context.typo.sectionTitle.copyWith(
-                color: GoodsPageStyle.text,
+                color: GoodsPageStyle.text(context),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               '快去挑选心仪商品吧',
-              style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+              style: context.typo.caption.copyWith(color: GoodsPageStyle.sub(context)),
             ),
             const SizedBox(height: 24),
             FilledButton(
@@ -535,9 +535,9 @@ class _CartPanel extends StatelessWidget {
     return Container(
       padding: padding ?? const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: GoodsPageStyle.cardBg,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: GoodsPageStyle.border),
+        border: Border.all(color: GoodsPageStyle.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -592,7 +592,7 @@ class _CartItemCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: context.typo.cardTitle2.copyWith(
-                    color: GoodsPageStyle.text,
+                    color: GoodsPageStyle.text(context),
                     height: 1.3,
                     fontWeight: FontWeight.w700,
                   ),
@@ -626,15 +626,15 @@ class _CartItemCard extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: onDelete,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.delete_outline,
                       size: 16,
-                      color: GoodsPageStyle.sub,
+                      color: GoodsPageStyle.sub(context),
                     ),
                     label: Text(
                       '删除',
                       style: context.typo.caption.copyWith(
-                        color: GoodsPageStyle.sub,
+                        color: GoodsPageStyle.sub(context),
                       ),
                     ),
                     style: TextButton.styleFrom(
@@ -681,16 +681,16 @@ class _CoverFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
+    return SizedBox(
       width: 88,
       height: 88,
       child: ColoredBox(
-        color: GoodsPageStyle.imageBg,
+        color: GoodsPageStyle.imageBg(context),
         child: Center(
           child: Icon(
             Icons.shopping_bag_outlined,
             size: 32,
-            color: Color(0xFF9CA3AF),
+            color: GoodsPageStyle.sub(context),
           ),
         ),
       ),
@@ -713,7 +713,7 @@ class _QtyStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: GoodsPageStyle.border),
+        border: Border.all(color: GoodsPageStyle.border(context)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -724,9 +724,9 @@ class _QtyStepper extends StatelessWidget {
             borderRadius: const BorderRadius.horizontal(
               left: Radius.circular(8),
             ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: Icon(Icons.remove, size: 16, color: GoodsPageStyle.text),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Icon(Icons.remove, size: 16, color: GoodsPageStyle.text(context)),
             ),
           ),
           Container(
@@ -735,7 +735,7 @@ class _QtyStepper extends StatelessWidget {
             child: Text(
               '$qty',
               style: context.typo.bodyStrong.copyWith(
-                color: GoodsPageStyle.text,
+                color: GoodsPageStyle.text(context),
               ),
             ),
           ),
@@ -744,9 +744,9 @@ class _QtyStepper extends StatelessWidget {
             borderRadius: const BorderRadius.horizontal(
               right: Radius.circular(8),
             ),
-            child: const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              child: Icon(Icons.add, size: 16, color: GoodsPageStyle.text),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Icon(Icons.add, size: 16, color: GoodsPageStyle.text(context)),
             ),
           ),
         ],

@@ -5,6 +5,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/components/blog/blog_local_location_button.dart';
 import 'package:qqai/components/blog/creator_header_row.dart';
 import 'package:qqai/components/blog/feed_action_bar.dart';
+import 'package:qqai/components/blog/feed_video_more_menu.dart';
 import 'package:qqai/components/blog/hero_image_wrap_grid.dart';
 
 import '../../../../../constant/constant.dart';
@@ -182,32 +183,10 @@ class _BlogImgItemViewState extends ConsumerState<BlogImgItemView> {
                 widget.blogItem,
                 mediaHeroTag: mediaHeroTag,
               ),
-              menuBuilder: (context) {
-                final collected = blogCollectedByMe(item);
-                return <PopupMenuEntry<String>>[
-                  PopupMenuItem<String>(
-                    value: '0',
-                    child: Text(
-                      collected ? '取消收藏' : '收藏',
-                      style: context.typo.body.copyWith(color: Colors.black54),
-                    ),
-                  ),
-                  PopupMenuItem<String>(
-                    value: '1',
-                    child: Text(
-                      '举报',
-                      style: context.typo.body.copyWith(color: Colors.black54),
-                    ),
-                  ),
-                  PopupMenuItem<String>(
-                    value: '2',
-                    child: Text(
-                      '不感兴趣',
-                      style: context.typo.body.copyWith(color: Colors.black54),
-                    ),
-                  ),
-                ];
-              },
+              menuBuilder: (context) => feedBlogMoreMenuEntries(
+                context,
+                collected: blogCollectedByMe(item),
+              ),
             ),
           ],
         ),

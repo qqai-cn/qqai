@@ -29,6 +29,15 @@ class MyTheme {
             secondary: isLight
                 ? LightThemeColors.accentColor
                 : DarkThemeColors.accentColor,
+            surface: isLight
+                ? LightThemeColors.cardColor
+                : DarkThemeColors.cardColor,
+            onSurface: isLight
+                ? LightThemeColors.displayTextColor
+                : DarkThemeColors.displayTextColor,
+            onSurfaceVariant: isLight
+                ? LightThemeColors.bodySmallTextColor
+                : DarkThemeColors.bodySmallTextColor,
           ),
 
       // color contrast (if the theme is dark text should be white for example)
@@ -80,9 +89,12 @@ class MyTheme {
 
       // icon theme
       iconTheme: MyStyles.getIconTheme(isLightTheme: isLight),
-      tabBarTheme: TabBarThemeData(
-        dividerColor: Colors.transparent, // ← 关键！隐藏底部横线
-      ),
+      tabBarTheme: MyStyles.getTabBarTheme(isLightTheme: isLight),
+      cardTheme: MyStyles.getCardTheme(isLightTheme: isLight),
+      popupMenuTheme: MyStyles.getPopupMenuTheme(isLightTheme: isLight),
+      dividerTheme: MyStyles.getDividerTheme(isLightTheme: isLight),
+      dialogTheme: MyStyles.getDialogTheme(isLightTheme: isLight),
+      bottomSheetTheme: MyStyles.getBottomSheetTheme(isLightTheme: isLight),
 
       // list tile theme
       listTileTheme: MyStyles.getListTileThemeData(isLightTheme: isLight),
@@ -95,7 +107,17 @@ class MyTheme {
         insetPadding: EdgeInsets.only(bottom: 0.2.sh, left: 200.w),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        backgroundColor: Colors.lightGreen,
+        backgroundColor: isLight
+            ? LightThemeColors.bottomBarBackground
+            : DarkThemeColors.bottomBarBackground,
+        selectedItemColor: isLight
+            ? LightThemeColors.bottomBarForeground
+            : DarkThemeColors.bottomBarForeground,
+        unselectedItemColor: isLight
+            ? LightThemeColors.bottomBarForegroundMuted
+            : DarkThemeColors.bottomBarForegroundMuted,
+        type: BottomNavigationBarType.fixed,
+        elevation: 0,
       ),
       // custom themes
       extensions: [

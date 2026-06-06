@@ -1,6 +1,7 @@
 import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class SearchDefItem extends StatefulWidget {
@@ -68,7 +69,9 @@ class _SearchDefItem extends State<SearchDefItem> {
                         ListTile(
                           title: Text(
                             "历史搜索",
-                            style: context.typo.caption.copyWith(color: Colors.grey),
+                            style: context.typo.caption.copyWith(
+                              color: AppActionColors.muted(context),
+                            ),
                           ),
                           trailing: IconButton(
                             icon: Icon(Icons.delete_forever),
@@ -103,14 +106,18 @@ class _SearchDefItem extends State<SearchDefItem> {
                         ListTile(
                           title: Text(
                             "搜索发现",
-                            style: context.typo.caption.copyWith(color: Colors.grey),
+                            style: context.typo.caption.copyWith(
+                              color: AppActionColors.muted(context),
+                            ),
                           ),
                           trailing: TextButton.icon(
                             icon: Icon(Icons.refresh),
                             onPressed: () {},
                             label: Text(
                               "换一换",
-                              style: context.typo.caption.copyWith(color: Colors.grey),
+                              style: context.typo.caption.copyWith(
+                              color: AppActionColors.muted(context),
+                            ),
                             ),
                           ),
                         ),
@@ -140,12 +147,12 @@ class _SearchDefItem extends State<SearchDefItem> {
                   snap: true,
                   pinned: true,
                   forceElevated: innerBoxIsScrolled,
-                  backgroundColor: Colors.white,
+                  backgroundColor: AppActionColors.surface(context),
                   titleTextStyle: context.typo.label.copyWith(color: Colors.amber),
                   bottom: TabBar(
                     tabs: _tabs.map((String name) => Tab(text: name)).toList(),
                     labelColor: Colors.green,
-                    unselectedLabelColor: Colors.grey,
+                    unselectedLabelColor: AppActionColors.muted(context),
                     indicatorSize: TabBarIndicatorSize.label,
                   ),
                 ),

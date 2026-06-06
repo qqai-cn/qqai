@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 /// TabBarView 子页懒挂载：未访问过的 index 不 build [builder]。
 class LazyTabSlot extends StatelessWidget {
@@ -6,19 +7,22 @@ class LazyTabSlot extends StatelessWidget {
     super.key,
     required this.isMounted,
     required this.builder,
-    this.placeholder = const ColoredBox(
-      color: Colors.black12,
-      child: SizedBox.expand(),
-    ),
+    this.placeholder,
   });
 
   final bool isMounted;
   final WidgetBuilder builder;
-  final Widget placeholder;
+  final Widget? placeholder;
 
   @override
   Widget build(BuildContext context) {
-    if (!isMounted) return placeholder;
+    if (!isMounted) {
+      return placeholder ??
+          ColoredBox(
+            color: AppActionColors.borderSubtle(context),
+            child: const SizedBox.expand(),
+          );
+    }
     return builder(context);
   }
 }

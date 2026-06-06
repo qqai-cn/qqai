@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/async_masonry_feed.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -33,14 +34,16 @@ class _BlogViewState extends ConsumerState<BlogView> {
     final follow = widget.listKind == BlogListKind.followFeed;
     if (follow && !ref.watch(authProvider).isAuthenticated) {
       return Scaffold(
-        backgroundColor: Colors.black12,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '登录后查看关注的作品',
-                style: context.typo.body.copyWith(color: Colors.white),
+                style: context.typo.body.copyWith(
+                  color: AppActionColors.strong(context),
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -59,7 +62,7 @@ class _BlogViewState extends ConsumerState<BlogView> {
       (data) => data.list ?? [],
     );
     return Scaffold(
-      backgroundColor: Colors.black12,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: AsyncMasonryFeed<BlogItem>(
         asyncItems: asyncItems,
         items: blogState.allItems,

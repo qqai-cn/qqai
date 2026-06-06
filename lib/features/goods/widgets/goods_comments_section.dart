@@ -5,6 +5,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 
 import '../models/goods_comment_item.dart';
 import '../providers/goods_comments.dart';
+import '../theme/goods_page_style.dart';
 import '../theme/jd_goods_theme.dart';
 import 'goods_comment_submit_sheet.dart';
 
@@ -64,11 +65,8 @@ class _GoodsCommentsBodyState extends ConsumerState<_GoodsCommentsBody> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final items = widget.state.items;
-    final isDark = theme.brightness == Brightness.dark;
-    final pageBg =
-        isDark ? theme.colorScheme.surfaceContainerHighest : JdGoodsTheme.pageBg;
+    final pageBg = GoodsPageStyle.pageBg(context);
 
     return Container(
       width: double.infinity,
@@ -87,7 +85,7 @@ class _GoodsCommentsBodyState extends ConsumerState<_GoodsCommentsBody> {
                 Text(
                   '评价',
                   style: context.typo.sectionTitle.copyWith(
-                    color: JdGoodsTheme.text,
+                    color: GoodsPageStyle.text(context),
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -95,14 +93,16 @@ class _GoodsCommentsBodyState extends ConsumerState<_GoodsCommentsBody> {
                 Text(
                   '${widget.state.total}条',
                   style: context.typo.caption.copyWith(
-                    color: JdGoodsTheme.sub,
+                    color: GoodsPageStyle.sub(context),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
                 Text(
                   '好评度 ',
-                  style: context.typo.caption.copyWith(color: JdGoodsTheme.sub),
+                  style: context.typo.caption.copyWith(
+                    color: GoodsPageStyle.sub(context),
+                  ),
                 ),
                 Text(
                   widget.state.goodRateLabel,
@@ -120,13 +120,15 @@ class _GoodsCommentsBodyState extends ConsumerState<_GoodsCommentsBody> {
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 32.h),
                 decoration: BoxDecoration(
-                  color: isDark ? theme.colorScheme.surface : Colors.white,
+                  color: GoodsPageStyle.cardBg(context),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
                 child: Center(
                   child: Text(
                     '暂无评价，购买后发表第一条吧～',
-                    style: context.typo.body.copyWith(color: JdGoodsTheme.sub),
+                    style: context.typo.body.copyWith(
+                      color: GoodsPageStyle.sub(context),
+                    ),
                   ),
                 ),
               ),

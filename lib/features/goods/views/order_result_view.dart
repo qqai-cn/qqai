@@ -15,16 +15,16 @@ class OrderResultView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: GoodsPageStyle.pageBg,
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: GoodsPageStyle.cardBg,
-        foregroundColor: GoodsPageStyle.text,
+        backgroundColor: GoodsPageStyle.cardBg(context),
+        foregroundColor: GoodsPageStyle.text(context),
         automaticallyImplyLeading: false,
         title: Text(
           '下单结果',
-          style: context.typo.appBarTitle.copyWith(color: GoodsPageStyle.text),
+          style: context.typo.appBarTitle.copyWith(color: GoodsPageStyle.text(context)),
         ),
         centerTitle: true,
       ),
@@ -77,7 +77,7 @@ class _SuccessCard extends StatelessWidget {
           Text(
             '订单提交成功',
             style: context.typo.sectionTitle.copyWith(
-              color: GoodsPageStyle.text,
+              color: GoodsPageStyle.text(context),
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -86,7 +86,7 @@ class _SuccessCard extends StatelessWidget {
             '我们会尽快为您安排发货',
             textAlign: TextAlign.center,
             style: context.typo.body.copyWith(
-              color: GoodsPageStyle.sub,
+              color: GoodsPageStyle.sub(context),
               height: 1.45,
             ),
           ),
@@ -95,14 +95,14 @@ class _SuccessCard extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: GoodsPageStyle.pageBg,
+              color: GoodsPageStyle.pageBg(context),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: GoodsPageStyle.border),
+              border: Border.all(color: GoodsPageStyle.border(context)),
             ),
             child: SelectableText(
               '订单编号：$orderId',
               style: context.typo.body.copyWith(
-                color: GoodsPageStyle.text,
+                color: GoodsPageStyle.text(context),
                 height: 1.45,
               ),
             ),
@@ -125,8 +125,8 @@ class _ResultActions extends StatelessWidget {
           onPressed: () => context.openGoodsCartFromRoot(),
           style: OutlinedButton.styleFrom(
             minimumSize: const Size(double.infinity, 48),
-            foregroundColor: GoodsPageStyle.text,
-            side: const BorderSide(color: GoodsPageStyle.border),
+            foregroundColor: GoodsPageStyle.text(context),
+            side: BorderSide(color: GoodsPageStyle.border(context)),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
@@ -164,9 +164,9 @@ class _GoodsPanel extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: GoodsPageStyle.cardBg,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: GoodsPageStyle.border),
+        border: Border.all(color: GoodsPageStyle.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),

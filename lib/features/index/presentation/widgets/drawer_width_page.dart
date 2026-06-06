@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
+
 import '../../../../providers/app_config_providers.dart';
 import '../../../../providers/auth_providers.dart';
 import '../../../../router/app_routes.dart';
@@ -71,7 +73,7 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
               context.push(Routes.footprint);
             },
           ),
-          Container(height: 1, color: Colors.black12),
+          Container(height: 1, color: AppActionColors.borderSubtle(context)),
           ListTile(
             leading: SvgPicture.asset(
               imgPath + 'fuli.svg',
@@ -86,10 +88,10 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
             },
           ),
           ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.location_on_outlined,
               size: 35,
-              color: Colors.black87,
+              color: AppActionColors.strong(context),
             ),
             title: Text('我的地址'),
             onTap: () {
@@ -123,7 +125,7 @@ class _DrawerWidthPage extends ConsumerState<DrawerWidthPage> {
               context.push(Routes.cartPageUrl);
             },
           ),
-          Container(height: 1, color: Colors.black12),
+          Container(height: 1, color: AppActionColors.borderSubtle(context)),
           ListTile(
             leading: SvgPicture.asset(
               imgPath + 'set.svg',

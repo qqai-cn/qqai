@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
@@ -312,7 +313,7 @@ class _RecommendTile extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     item.creatorName ?? '用户',
-                    style: context.typo.caption.copyWith(color: Colors.black54),
+                    style: context.typo.caption.copyWith(color: AppActionColors.muted(context)),
                   ),
                   const SizedBox(height: 2),
                   Text(

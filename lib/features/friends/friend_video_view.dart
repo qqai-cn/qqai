@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
@@ -41,7 +42,7 @@ class _TabPageState extends State<FriendVideoView>
           ),
           delegate: SliverChildBuilderDelegate(
             (context, index) => Container(
-              color: Colors.black12,
+              color: AppActionColors.borderSubtle(context),
               child: Stack(
                 children: [
                   Positioned.fill(

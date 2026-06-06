@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/config/theme/shell_nav_colors.dart';
 
 /// 主 Shell 底部 Tab 内容区高度（对齐 Material [kBottomNavigationBarHeight] / iOS TabBar ~49pt）。
 const double kMainShellBottomBarHeight = 66;
@@ -48,20 +49,28 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: kMainShellBottomBarHeight,
-      child: Padding(
-        padding: .only(top: 5),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: _buildBarItems(),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: ShellNavColors.background(context),
+        border: Border(
+          top: BorderSide(color: ShellNavColors.border(context)),
+        ),
+      ),
+      child: SizedBox(
+        height: kMainShellBottomBarHeight,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: _buildBarItems(context),
+          ),
         ),
       ),
     );
   }
 
-  List<Widget> _buildBarItems() {
+  List<Widget> _buildBarItems(BuildContext context) {
     List<Widget> barItems = [];
     for (int i = 0; i < widget.barItems.length; i++) {
       BarItem item = widget.barItems[i];
@@ -70,6 +79,7 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
               i < widget.badgeCounts!.length)
           ? widget.badgeCounts![i]
           : 0;
+
       barItems.add(
         InkWell(
           splashColor: Colors.transparent,
@@ -84,9 +94,12 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
             duration: widget.animationDuration,
             decoration: BoxDecoration(
               color: isSelected
-                  ? item.color.withValues(alpha: 0.15)
+                  ? ShellNavColors.selectedBackground(
+                      context,
+                      lightAccent: item.color,
+                    )
                   : Colors.transparent,
-              borderRadius: BorderRadius.all(Radius.circular(10)),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -95,9 +108,18 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
                   clipBehavior: Clip.none,
                   children: [
                     SvgPicture.asset(
-                      isSelected ? item.selectPath : item.unSelectPath,
+                      ShellNavColors.iconPath(
+                        context,
+                        isSelected: isSelected,
+                        selectPath: item.selectPath,
+                        unSelectPath: item.unSelectPath,
+                      ),
                       width: widget.barStyle.iconSize,
                       height: widget.barStyle.iconSize,
+                      colorFilter: ShellNavColors.iconColorFilter(
+                        context,
+                        isSelected: isSelected,
+                      ),
                     ),
                     if (badgeCount > 0)
                       Positioned(
@@ -107,14 +129,18 @@ class _AnimatedBottomBarState extends State<AnimatedBottomBar>
                       ),
                   ],
                 ),
-                SizedBox(width: 2.0),
+                const SizedBox(width: 2.0),
                 AnimatedSize(
                   duration: widget.animationDuration,
                   curve: Curves.easeInOut,
                   child: AutoSizeText(
                     isSelected ? item.text : "",
                     style: context.typo.body.copyWith(
-                      color: item.color,
+                      color: ShellNavColors.label(
+                        context,
+                        isSelected: isSelected,
+                        lightAccent: item.color,
+                      ),
                       fontWeight: widget.barStyle.fontWeight,
                       fontSize: widget.barStyle.fontSize,
                     ),

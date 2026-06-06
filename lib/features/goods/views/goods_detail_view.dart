@@ -18,6 +18,7 @@ import '../widgets/coupon_claim_entry.dart';
 import '../../chat/data/models/chat_models.dart';
 import '../../chat/utils/open_member_conversation_chat.dart';
 import '../widgets/goods_comment_submit_sheet.dart';
+import '../theme/goods_page_style.dart';
 import '../widgets/goods_page_layout.dart';
 
 String goodsRecentPraiseText(List<GoodsCommentItem> comments) {
@@ -550,7 +551,7 @@ class _PriceCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -573,7 +574,7 @@ class _PriceCard extends StatelessWidget {
                     const Text(
                       '¥',
                       style: TextStyle(
-                        color: Color(0xFFE6462D),
+                        color: GoodsPageStyle.accent,
                         fontSize: 21,
                         fontWeight: FontWeight.w500,
                       ),
@@ -581,7 +582,7 @@ class _PriceCard extends StatelessWidget {
                     Text(
                       price.toStringAsFixed(2),
                       style: const TextStyle(
-                        color: Color(0xFFE6462D),
+                        color: GoodsPageStyle.accent,
                         fontSize: 28,
                         fontWeight: FontWeight.w700,
                       ),
@@ -590,8 +591,8 @@ class _PriceCard extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         '¥${marketPrice.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          color: Color(0xFFB9B9B9),
+                        style: TextStyle(
+                          color: GoodsPageStyle.sub(context),
                           fontSize: 14,
                           decoration: TextDecoration.lineThrough,
                         ),
@@ -605,8 +606,8 @@ class _PriceCard extends StatelessWidget {
                 children: [
                   Text(
                     '已售$salesCount',
-                    style: const TextStyle(
-                      color: Color(0xFFB9B9B9),
+                    style: TextStyle(
+                      color: GoodsPageStyle.sub(context),
                       fontSize: 12,
                     ),
                   ),
@@ -617,12 +618,12 @@ class _PriceCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Container(height: 1, color: const Color(0xFFF2F2F2)),
+          Container(height: 1, color: GoodsPageStyle.border(context)),
           const SizedBox(height: 14),
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF111111),
+            style: TextStyle(
+              color: GoodsPageStyle.text(context),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -630,8 +631,8 @@ class _PriceCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             subtitle,
-            style: const TextStyle(
-              color: Color(0xFF929292),
+            style: TextStyle(
+              color: GoodsPageStyle.sub(context),
               fontSize: 13.5,
               height: 1.45,
             ),
@@ -652,7 +653,7 @@ class _CellCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: GoodsPageStyle.cardBg(context),
       borderRadius: BorderRadius.circular(12),
       shadowColor: Colors.black.withValues(alpha: 0.025),
       elevation: 1,
@@ -665,8 +666,8 @@ class _CellCard extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF7D7D7D),
+                style: TextStyle(
+                  color: GoodsPageStyle.sub(context),
                   fontSize: 14.5,
                 ),
               ),
@@ -676,17 +677,17 @@ class _CellCard extends StatelessWidget {
                   content,
                   style: TextStyle(
                     color: onTap == null
-                        ? const Color(0xFF6B7280)
-                        : const Color(0xFF2B2B2B),
+                        ? GoodsPageStyle.sub(context)
+                        : GoodsPageStyle.text(context),
                     fontSize: 15.5,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
               if (onTap != null)
-                const Icon(
+                Icon(
                   Icons.chevron_right_rounded,
-                  color: Color(0xFFBDBDBD),
+                  color: GoodsPageStyle.sub(context),
                 ),
             ],
           ),
@@ -708,7 +709,7 @@ class _SingleSpecCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -721,17 +722,20 @@ class _SingleSpecCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
+          Row(
             children: [
               Text(
                 '规格',
-                style: TextStyle(color: Color(0xFF7D7D7D), fontSize: 14.5),
+                style: TextStyle(
+                  color: GoodsPageStyle.sub(context),
+                  fontSize: 14.5,
+                ),
               ),
               SizedBox(width: 18),
               Text(
                 '单规格商品',
                 style: TextStyle(
-                  color: Color(0xFF2B2B2B),
+                  color: GoodsPageStyle.text(context),
                   fontSize: 15.5,
                   fontWeight: FontWeight.w600,
                 ),

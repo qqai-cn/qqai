@@ -4,6 +4,7 @@ import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:spring/spring.dart';
 
@@ -276,8 +277,8 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
 
   Widget getRow(int i) {
     return ListTile(
-      hoverColor: Colors.white,
-      focusColor: Colors.white,
+      hoverColor: AppActionColors.surface(context),
+      focusColor: AppActionColors.surface(context),
       leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE,
         height: Constant.HEAD_IMG_SEZE,
@@ -286,7 +287,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
       title: Container(
         padding: EdgeInsets.only(top: 10),
         decoration: UnderlineTabIndicator(
-          borderSide: BorderSide(color: Colors.black12),
+          borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +301,10 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                 Text('212'),
                 PopupMenuButton(
                   tooltip: "",
-                  icon: Icon(Icons.more_vert, color: Colors.black54),
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: AppActionColors.foreground(context),
+                  ),
                   onSelected: (va) {
                     print(va);
                   },
@@ -318,7 +322,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
             Text(
               '2022-12-11 10：12',
               style: context.typo.caption.copyWith(
-                color: Colors.grey,
+                color: AppActionColors.subtle(context),
                 fontSize: 15,
               ),
             ),

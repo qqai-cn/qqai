@@ -143,7 +143,7 @@ class _DouyinMyAddressesPageState extends ConsumerState<DouyinMyAddressesPage> {
       backgroundColor: const Color(0xFFF4F4F4),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        foregroundColor: DouyinTheme.text,
+        foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
@@ -378,7 +378,7 @@ class _MemberAddressEditPageState extends ConsumerState<MemberAddressEditPage> {
       backgroundColor: const Color(0xFFF0F0F0),
       appBar: AppBar(
         backgroundColor: Colors.white,
-        foregroundColor: DouyinTheme.text,
+        foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
@@ -393,9 +393,9 @@ class _MemberAddressEditPageState extends ConsumerState<MemberAddressEditPage> {
           if (_isEdit)
             TextButton(
               onPressed: _saving ? null : _delete,
-              child: const Text(
+              child: Text(
                 '删除',
-                style: TextStyle(color: DouyinTheme.text, fontSize: 16),
+                style: TextStyle(color: DouyinTheme.text(context), fontSize: 16),
               ),
             ),
         ],
@@ -533,7 +533,7 @@ class _AddressTabs extends StatelessWidget {
                 Text(
                   tab.$1,
                   style: TextStyle(
-                    color: tab.$2 ? DouyinTheme.accent : DouyinTheme.text,
+                    color: tab.$2 ? DouyinTheme.accent : DouyinTheme.text(context),
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -592,7 +592,7 @@ class _AddressCard extends StatelessWidget {
                   style: context.typo.cardTitle.copyWith(
                     fontSize: 21,
                     fontWeight: FontWeight.w800,
-                    color: DouyinTheme.text,
+                    color: DouyinTheme.text(context),
                   ),
                 ),
                 Text(
@@ -600,7 +600,7 @@ class _AddressCard extends StatelessWidget {
                   style: context.typo.cardTitle.copyWith(
                     fontSize: 21,
                     fontWeight: FontWeight.w800,
-                    color: DouyinTheme.text,
+                    color: DouyinTheme.text(context),
                   ),
                 ),
                 if (address.defaultStatus)
@@ -709,10 +709,10 @@ class _TextInputRow extends StatelessWidget {
             padding: EdgeInsets.only(top: maxLines > 1 ? 14 : 0),
             child: Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: DouyinTheme.text,
+                color: DouyinTheme.text(context),
               ),
             ),
           ),
@@ -723,7 +723,7 @@ class _TextInputRow extends StatelessWidget {
             keyboardType: keyboardType,
             maxLines: maxLines,
             validator: validator,
-            style: const TextStyle(fontSize: 18, color: DouyinTheme.text),
+            style: TextStyle(fontSize: 18, color: DouyinTheme.text(context)),
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: const TextStyle(color: Color(0xFFB0B3BA)),
@@ -762,10 +762,10 @@ class _TapRow extends StatelessWidget {
               width: 86,
               child: Text(
                 label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w500,
-                  color: DouyinTheme.text,
+                  color: DouyinTheme.text(context),
                 ),
               ),
             ),
@@ -778,7 +778,7 @@ class _TapRow extends StatelessWidget {
                   fontSize: 18,
                   color: placeholder
                       ? const Color(0xFFB0B3BA)
-                      : DouyinTheme.text,
+                      : DouyinTheme.text(context),
                 ),
               ),
             ),
@@ -804,7 +804,7 @@ class _DefaultRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 18),
         child: Row(
           children: [
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -812,7 +812,7 @@ class _DefaultRow extends StatelessWidget {
                     '设为默认地址',
                     style: TextStyle(
                       fontSize: 18,
-                      color: DouyinTheme.text,
+                      color: DouyinTheme.text(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -870,10 +870,10 @@ class _ChoiceSection extends StatelessWidget {
             padding: const EdgeInsets.only(top: 12),
             child: Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: DouyinTheme.text,
+                color: DouyinTheme.text(context),
               ),
             ),
           ),
@@ -898,7 +898,7 @@ class _ChoiceSection extends StatelessWidget {
                   labelStyle: TextStyle(
                     color: selected == i
                         ? DouyinTheme.accent
-                        : DouyinTheme.text,
+                        : DouyinTheme.text(context),
                     fontSize: 17,
                   ),
                   padding: const EdgeInsets.symmetric(
@@ -938,13 +938,13 @@ class _CenteredContent extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: DouyinTheme.sub),
+            Icon(icon, size: 64, color: DouyinTheme.sub(context)),
             const SizedBox(height: 16),
             Text(
               title,
               style: context.typo.bodyStrong.copyWith(
                 fontSize: 18,
-                color: DouyinTheme.text,
+                color: DouyinTheme.text(context),
               ),
             ),
             const SizedBox(height: 8),
@@ -953,7 +953,7 @@ class _CenteredContent extends StatelessWidget {
               textAlign: TextAlign.center,
               style: context.typo.caption.copyWith(
                 fontSize: 14,
-                color: DouyinTheme.sub,
+                color: DouyinTheme.sub(context),
               ),
             ),
             const SizedBox(height: 20),

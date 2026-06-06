@@ -1,5 +1,6 @@
 import 'package:easy_sidemenu/easy_sidemenu.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../../constant/color_constant.dart';
@@ -128,7 +129,9 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                               ),
                           ],
                           collapseWidth: 100,
-                          style: SideMenuStyle(selectedColor: Colors.black12),
+                          style: SideMenuStyle(
+                            selectedColor: AppActionColors.borderSubtle(context),
+                          ),
                         ),
                       ),
                       Expanded(
@@ -137,7 +140,7 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                           controller: pageController,
                           children: [
                             Container(
-                              color: Colors.black12,
+                              color: AppActionColors.borderSubtle(context),
                               child: Center(
                                 child: Column(
                                   children: [
@@ -180,7 +183,7 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                               ),
                             ),
                             Container(
-                              color: Colors.black12,
+                              color: AppActionColors.borderSubtle(context),
                               child: Center(
                                 child: Column(
                                   children: [
@@ -223,7 +226,7 @@ class _GoodsFilterPageV2 extends State<GoodsFilterPageV2> {
                               ),
                             ),
                             Container(
-                              color: Colors.black12,
+                              color: AppActionColors.borderSubtle(context),
                               child: Center(
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,

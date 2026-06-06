@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
+
 import '../../../components/api_error_widget.dart';
 import '../../my/utils/footprint_timeline.dart';
 import '../data/member_center_models.dart';
@@ -126,8 +128,8 @@ class MemberCenterDetailPage extends ConsumerWidget {
       backgroundColor: MemberPremiumColors.pageBg,
       appBar: AppBar(
         title: Text(title),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
+        backgroundColor: AppActionColors.surface(context),
+        foregroundColor: AppActionColors.strong(context),
         elevation: 0,
       ),
       body: async.when(
@@ -476,7 +478,7 @@ class _DetailPanel extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             subtitle,
-            style: TextStyle(color: Colors.black.withValues(alpha: 0.54)),
+            style: TextStyle(color: AppActionColors.muted(context)),
           ),
           const SizedBox(height: 16),
           ...children,
@@ -529,7 +531,7 @@ class _InfoTile extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    color: Colors.black.withValues(alpha: 0.5),
+                    color: AppActionColors.muted(context),
                     fontSize: 12,
                     height: 1.25,
                   ),
@@ -555,7 +557,7 @@ class _EmptyDetail extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style: TextStyle(color: Colors.black.withValues(alpha: 0.48)),
+          style: TextStyle(color: AppActionColors.subtle(context)),
         ),
       ),
     );

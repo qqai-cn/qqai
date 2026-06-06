@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
 import '../../../config/theme/app_typography.dart';
 
 // 模板,方便快速创建一个StatefulWidget
@@ -35,7 +36,7 @@ class _WaitVideoView extends State<WaitVideoView> {
               title: Container(
                 padding: EdgeInsets.only(top: 10),
                 decoration: UnderlineTabIndicator(
-                    borderSide: BorderSide(color: Colors.black12)),
+                    borderSide: BorderSide(color: AppActionColors.borderSubtle(context))),
                 child: Row(
                   children: [
                     Image.asset(

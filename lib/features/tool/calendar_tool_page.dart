@@ -7,6 +7,7 @@ import 'package:lunar/calendar/Lunar.dart';
 import 'package:lunar/calendar/Solar.dart';
 import 'package:lunar/calendar/Tao.dart';
 import 'package:lunar/calendar/util/HolidayUtil.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/api_constant.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -69,7 +70,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
                 elevation: 0.5,
                 expandedHeight: 355,
                 automaticallyImplyLeading: false,
-                backgroundColor: Colors.white,
+                backgroundColor: AppActionColors.surface(context),
                 flexibleSpace: FlexibleSpaceBar(
                   collapseMode: CollapseMode.parallax,
                   background: Center(
@@ -87,7 +88,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
                   isScrollable: true,
                   tabs: _tabs.map((String name) => Tab(text: name)).toList(),
                   labelColor: Colors.green,
-                  unselectedLabelColor: Colors.grey,
+                  unselectedLabelColor: AppActionColors.muted(context),
                   indicatorSize: TabBarIndicatorSize.label,
                 ),
               ),
@@ -163,7 +164,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
               );
             },
             separatorBuilder: (BuildContext context, int index) =>
-                Divider(height: 1.0, color: Colors.grey),
+                Divider(height: 1.0, color: AppActionColors.borderSubtle(context)),
           );
         }
         return CircularProgressIndicator();
@@ -228,7 +229,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
               );
             },
             separatorBuilder: (BuildContext context, int index) =>
-                Divider(height: 1.0, color: Colors.grey),
+                Divider(height: 1.0, color: AppActionColors.borderSubtle(context)),
           );
         }
         return CircularProgressIndicator();
@@ -356,7 +357,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
         );
       },
       separatorBuilder: (BuildContext context, int index) =>
-          Divider(height: 1.0, color: Colors.grey),
+          Divider(height: 1.0, color: AppActionColors.borderSubtle(context)),
     );
   }
 
@@ -434,7 +435,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
         );
       },
       separatorBuilder: (BuildContext context, int index) =>
-          Divider(height: 1.0, color: Colors.grey),
+          Divider(height: 1.0, color: AppActionColors.borderSubtle(context)),
     );
   }
 
@@ -583,7 +584,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
         );
       },
       separatorBuilder: (BuildContext context, int index) =>
-          Divider(height: 1.0, color: Colors.grey),
+          Divider(height: 1.0, color: AppActionColors.borderSubtle(context)),
     );
   }
 
@@ -912,7 +913,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
         );
       },
       separatorBuilder: (BuildContext context, int index) =>
-          Divider(height: 1.0, color: Colors.grey),
+          Divider(height: 1.0, color: AppActionColors.borderSubtle(context)),
     );
   }
 
@@ -921,7 +922,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
       selectedDayHighlightColor: Colors.amber[900],
       weekdayLabels: ['日', '一', '二', '三', '四', '五', '六'],
       weekdayLabelTextStyle: context.typo.label.copyWith(
-        color: Colors.black87,
+        color: AppActionColors.strong(context),
         fontWeight: FontWeight.bold,
       ),
       firstDate: DateTime(1000),
@@ -953,7 +954,9 @@ class _CalendarToolPage extends State<CalendarToolPage>
         color: Colors.amber,
         fontWeight: FontWeight.bold,
       ),
-      disabledDayTextStyle: context.typo.caption.copyWith(color: Colors.grey),
+      disabledDayTextStyle: context.typo.caption.copyWith(
+        color: AppActionColors.subtle(context),
+      ),
       dayBuilder: ({
         required date,
         textStyle,
@@ -1036,7 +1039,7 @@ class _CalendarToolPage extends State<CalendarToolPage>
             )
           : (work == "班")
               ? BoxDecoration(
-                  color: Colors.grey[200],
+                  color: AppActionColors.borderSubtle(context),
                   shape: BoxShape.circle,
                 )
               : decoration,
@@ -1068,7 +1071,9 @@ class _CalendarToolPage extends State<CalendarToolPage>
               text,
               style: context.typo.caption.copyWith(
                 fontSize: 8,
-                color: hasFestival ? Colors.red : Colors.grey,
+                color: hasFestival
+                    ? Colors.red
+                    : AppActionColors.subtle(context),
                 fontWeight: FontWeight.bold,
               ),
             )

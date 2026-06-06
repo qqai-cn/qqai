@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../components/AnimatedBottomBar.dart';
 import '../../../../components/AnimatedLeftBar.dart';
+import '../../../../config/theme/shell_nav_colors.dart';
 import '../../../../features/chat/providers/chat_providers.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/main_shell_tab_reselect_provider.dart';
@@ -81,16 +82,23 @@ class _HomePageState extends ConsumerState<HomePage> {
       children: [
         Drawer(
           width: homeState.isExtended ? 200 : 70,
-          backgroundColor: Theme.of(context).primaryColor,
-          shape: BorderDirectional(),
-          child: SafeArea(
-            child: Animatedleftbar(
+          backgroundColor: ShellNavColors.background(context),
+          shape: const BorderDirectional(),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(
+                right: BorderSide(color: ShellNavColors.border(context)),
+              ),
+            ),
+            child: SafeArea(
+              child: Animatedleftbar(
               selectedBarIndex: shell.currentIndex,
               barItems: HomeNotifier.barItems,
               onBarTap: _onMainTabTap,
               animationDuration: const Duration(milliseconds: 150),
               barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
               isExtended: homeState.isExtended,
+            ),
             ),
           ),
         ),

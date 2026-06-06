@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/level_icon.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/constant.dart';
 
@@ -40,8 +41,8 @@ class CommentPreviewRow extends StatelessWidget {
         fit: BoxFit.fill,
       ),
       title: Container(
-        decoration: const UnderlineTabIndicator(
-          borderSide: BorderSide(color: Colors.black12),
+        decoration: UnderlineTabIndicator(
+          borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,7 +56,7 @@ class CommentPreviewRow extends StatelessWidget {
                 const Text('212'),
                 PopupMenuButton<String>(
                   tooltip: '',
-                  icon: const Icon(Icons.more_vert, color: Colors.black54),
+                  icon: Icon(Icons.more_vert, color: AppActionColors.menuItemForeground(context)),
                   onSelected: (va) {},
                   itemBuilder: (BuildContext context) {
                     return const <PopupMenuEntry<String>>[

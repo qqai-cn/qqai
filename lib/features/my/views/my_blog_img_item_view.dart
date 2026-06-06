@@ -11,6 +11,8 @@ import '../../blog/data/blog_route_extra.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/home_blog_tab.dart';
 import '../../blog/providers/blog_providers.dart';
+import 'package:qqai/components/blog/feed_video_more_menu.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class MyBlogImgItemView extends ConsumerStatefulWidget {
@@ -162,41 +164,15 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
               Spacer(),
               PopupMenuButton(
                 tooltip: '',
-                icon: Icon(Icons.more_vert, color: Colors.black54),
+                icon: Icon(
+                  Icons.more_vert,
+                  color: AppActionColors.foreground(context),
+                ),
                 onSelected: (va) {
                   print(va);
                 },
-                itemBuilder: (BuildContext context) {
-                  return <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: '0',
-                      child: Text(
-                        '收藏',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '1',
-                      child: Text(
-                        '举报',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem<String>(
-                      value: '2',
-                      child: Text(
-                        '不感兴趣',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ),
-                  ];
-                },
+                itemBuilder: (BuildContext context) =>
+                    feedBlogMoreMenuEntries(context, collected: false),
               ),
             ],
           ),
@@ -217,8 +193,8 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
 
   Widget getRow(int i) {
     return ListTile(
-      hoverColor: Colors.white,
-      focusColor: Colors.white,
+      hoverColor: Theme.of(context).colorScheme.surface,
+      focusColor: Theme.of(context).colorScheme.surface,
       titleAlignment: ListTileTitleAlignment.titleHeight,
       leading: DefaultAssetImage(
         width: Constant.HEAD_IMG_SEZE.w,
@@ -228,7 +204,7 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
       title: Container(
         // padding: EdgeInsets.only(top: 10),
         decoration: UnderlineTabIndicator(
-          borderSide: BorderSide(color: Colors.black12),
+          borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,16 +218,15 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
                 Text('212'),
                 PopupMenuButton(
                   tooltip: "",
-                  icon: Icon(Icons.more_vert, color: Colors.black54),
+                  icon: Icon(
+                    Icons.more_vert,
+                    color: AppActionColors.foreground(context),
+                  ),
                   onSelected: (va) {
                     print(va);
                   },
-                  itemBuilder: (BuildContext context) {
-                    return <PopupMenuEntry<String>>[
-                      PopupMenuItem<String>(value: '0', child: Text('收藏')),
-                      PopupMenuItem<String>(value: '1', child: Text('举报')),
-                    ];
-                  },
+                  itemBuilder: (BuildContext context) =>
+                      feedBlogMoreMenuEntries(context, collected: false),
                 ),
               ],
             ),

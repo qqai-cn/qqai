@@ -4,10 +4,36 @@ import 'package:qqai/constant/constant.dart';
 
 import '../../util/my_shared_pref.dart';
 import '../translations/localization_service.dart';
+import 'dark_theme_colors.dart';
 
 //  configure text family and size
 class MyFonts
 {
+  static bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
+  static Color _onSurface(BuildContext context) => _isDark(context)
+      ? DarkThemeColors.displayTextColor
+      : Colors.black;
+
+  static Color _onSurfaceVariant(BuildContext context) => _isDark(context)
+      ? DarkThemeColors.bodyTextColor
+      : Colors.black87;
+
+  static Color _onSurfaceMuted(BuildContext context) => _isDark(context)
+      ? DarkThemeColors.bodySmallTextColor
+      : Colors.black54;
+
+  static Color _captionColor(BuildContext context) {
+    if (_isDark(context)) {
+      return Theme.of(context).colorScheme.onSurfaceVariant;
+    }
+    return Colors.grey;
+  }
+
+  static Color _labelColor(BuildContext context) => _isDark(context)
+      ? DarkThemeColors.bodySmallTextColor
+      : Colors.black45;
   // return the right font depending on app language
   static TextStyle get getAppFontType => LocalizationService.supportedLanguagesFontsFamilies[MySharedPref.getCurrentLocal().languageCode]!;
 
@@ -69,14 +95,14 @@ class MyFonts
       return displayTextStyle.copyWith(
         fontSize: 20,
         height: 1.3,
-        color: Colors.black,
+        color: _onSurface(context),
         fontWeight: FontWeight.w500,
       );
     }
     return displayTextStyle.copyWith(
       fontSize: 18,
       height: 1.3,
-      color: Colors.black,
+      color: _onSurface(context),
       fontWeight: FontWeight.w500,
     );
   }
@@ -87,14 +113,14 @@ class MyFonts
       return displayTextStyle.copyWith(
         fontSize: 15,
         height: 1.3,
-        color: Colors.black,
+        color: _onSurface(context),
         fontWeight: FontWeight.w500,
       );
     }
     return displayTextStyle.copyWith(
       fontSize: 13,
       height: 1.3,
-      color: Colors.black,
+      color: _onSurface(context),
       fontWeight: FontWeight.w500,
     );
   }
@@ -105,13 +131,13 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: 13,
         height: 1.2,
-        color: Colors.grey,
+        color: _captionColor(context),
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: 11,
       height: 1.2,
-      color: Colors.grey,
+      color: _captionColor(context),
     );
   }
 
@@ -121,14 +147,14 @@ class MyFonts
       return displayTextStyle.copyWith(
         fontSize: 16,
         height: 1.3,
-        color: Colors.black,
+        color: _onSurface(context),
         fontWeight: FontWeight.w600,
       );
     }
     return displayTextStyle.copyWith(
       fontSize: 14,
       height: 1.3,
-      color: Colors.black,
+      color: _onSurface(context),
       fontWeight: FontWeight.w600,
     );
   }
@@ -139,14 +165,14 @@ class MyFonts
       return displayTextStyle.copyWith(
         fontSize: 22,
         height: 1.25,
-        color: Colors.black,
+        color: _onSurface(context),
         fontWeight: FontWeight.w700,
       );
     }
     return displayTextStyle.copyWith(
       fontSize: 20,
       height: 1.25,
-      color: Colors.black,
+      color: _onSurface(context),
       fontWeight: FontWeight.w700,
     );
   }
@@ -157,14 +183,14 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: 14,
         height: 1.35,
-        color: Colors.black54,
+        color: _onSurfaceMuted(context),
         fontWeight: FontWeight.w400,
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: 12,
       height: 1.35,
-      color: Colors.black54,
+      color: _onSurfaceMuted(context),
       fontWeight: FontWeight.w400,
     );
   }
@@ -175,14 +201,14 @@ class MyFonts
       return appBarTextStyle.copyWith(
         fontSize: appBarTittleSizeW,
         height: 1.2,
-        color: Colors.black,
+        color: _onSurface(context),
         fontWeight: FontWeight.w600,
       );
     }
     return appBarTextStyle.copyWith(
       fontSize: appBarTittleSize,
       height: 1.2,
-      color: Colors.black,
+      color: _onSurface(context),
       fontWeight: FontWeight.w600,
     );
   }
@@ -193,14 +219,14 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: 13,
         height: 1.3,
-        color: Colors.black54,
+        color: _onSurfaceMuted(context),
         fontWeight: FontWeight.w400,
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: 12,
       height: 1.3,
-      color: Colors.black54,
+      color: _onSurfaceMuted(context),
       fontWeight: FontWeight.w400,
     );
   }
@@ -211,14 +237,14 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: bodyMediumSizeW,
         height: 1.4,
-        color: Colors.black87,
+        color: _onSurfaceVariant(context),
         fontWeight: FontWeight.w400,
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: bodyMediumSize,
       height: 1.4,
-      color: Colors.black87,
+      color: _onSurfaceVariant(context),
       fontWeight: FontWeight.w400,
     );
   }
@@ -227,7 +253,7 @@ class MyFonts
   static TextStyle bodyStrong(BuildContext context) {
     return body(context).copyWith(
       fontWeight: FontWeight.w600,
-      color: Colors.black,
+      color: _onSurface(context),
     );
   }
 
@@ -237,14 +263,14 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: 11,
         height: 1.2,
-        color: Colors.black45,
+        color: _labelColor(context),
         fontWeight: FontWeight.w500,
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: 10,
       height: 1.2,
-      color: Colors.black45,
+      color: _labelColor(context),
       fontWeight: FontWeight.w500,
     );
   }
@@ -273,14 +299,14 @@ class MyFonts
       return buttonTextStyle.copyWith(
         fontSize: 14,
         height: 1.2,
-        color: Colors.black87,
+        color: _onSurfaceVariant(context),
         fontWeight: FontWeight.w500,
       );
     }
     return buttonTextStyle.copyWith(
       fontSize: 13,
       height: 1.2,
-      color: Colors.black87,
+      color: _onSurfaceVariant(context),
       fontWeight: FontWeight.w500,
     );
   }
@@ -291,14 +317,14 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: 13,
         height: 1.3,
-        color: Colors.grey,
+        color: _captionColor(context),
         fontWeight: FontWeight.w400,
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: 12,
       height: 1.3,
-      color: Colors.grey,
+      color: _captionColor(context),
       fontWeight: FontWeight.w400,
     );
   }
@@ -309,14 +335,14 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: 14,
         height: 1.3,
-        color: Colors.black87,
+        color: _onSurfaceVariant(context),
         fontWeight: FontWeight.w400,
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: 13,
       height: 1.3,
-      color: Colors.black87,
+      color: _onSurfaceVariant(context),
       fontWeight: FontWeight.w400,
     );
   }
@@ -327,14 +353,14 @@ class MyFonts
       return bodyTextStyle.copyWith(
         fontSize: 14,
         height: 1.2,
-        color: Colors.black87,
+        color: _onSurfaceVariant(context),
         fontWeight: FontWeight.w600,
       );
     }
     return bodyTextStyle.copyWith(
       fontSize: 13,
       height: 1.2,
-      color: Colors.black87,
+      color: _onSurfaceVariant(context),
       fontWeight: FontWeight.w600,
     );
   }
@@ -380,13 +406,13 @@ class MyFonts
     if (isWideScreen(context)) {
       return caption(context).copyWith(
         fontSize: 12,
-        color: Colors.grey,
+        color: _captionColor(context),
         decoration: TextDecoration.lineThrough,
       );
     }
     return caption(context).copyWith(
       fontSize: 11,
-      color: Colors.grey,
+      color: _captionColor(context),
       decoration: TextDecoration.lineThrough,
     );
   }
@@ -414,7 +440,7 @@ class MyFonts
         fontFamily: 'monospace',
         fontSize: 13,
         height: 1.35,
-        color: Colors.black87,
+        color: _onSurfaceVariant(context),
         fontWeight: FontWeight.w400,
       );
     }
@@ -422,7 +448,7 @@ class MyFonts
       fontFamily: 'monospace',
       fontSize: 12,
       height: 1.35,
-      color: Colors.black87,
+      color: _onSurfaceVariant(context),
       fontWeight: FontWeight.w400,
     );
   }
@@ -433,14 +459,14 @@ class MyFonts
       return displayTextStyle.copyWith(
         fontSize: 32,
         height: 1.2,
-        color: Colors.black,
+        color: _onSurface(context),
         fontWeight: FontWeight.w700,
       );
     }
     return displayTextStyle.copyWith(
       fontSize: 28,
       height: 1.2,
-      color: Colors.black,
+      color: _onSurface(context),
       fontWeight: FontWeight.w700,
     );
   }

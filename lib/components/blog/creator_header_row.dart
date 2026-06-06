@@ -41,7 +41,9 @@ class CreatorHeaderRow extends StatelessWidget {
     final titleStyle = context.typo.cardTitle.copyWith(
       fontWeight: FontWeight.bold,
     );
-    final metaStyle = context.typo.caption;
+    final metaStyle = context.typo.caption.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
     return Row(
       children: <Widget>[
         InkWell(

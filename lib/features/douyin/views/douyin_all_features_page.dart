@@ -64,16 +64,16 @@ class DouyinAllFeaturesPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: DouyinTheme.bg,
+      backgroundColor: DouyinTheme.bg(context),
       appBar: AppBar(
-        backgroundColor: DouyinTheme.bg,
-        foregroundColor: DouyinTheme.text,
+        backgroundColor: DouyinTheme.bg(context),
+        foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         title: Text(
           '全部功能',
-          style: context.typo.appBarTitle.copyWith(color: DouyinTheme.text),
+          style: context.typo.appBarTitle.copyWith(color: DouyinTheme.text(context)),
         ),
       ),
       body: Center(
@@ -88,7 +88,7 @@ class DouyinAllFeaturesPage extends StatelessWidget {
                   child: Text(
                     g.title,
                     style: context.typo.caption.copyWith(
-                      color: DouyinTheme.sub,
+                      color: DouyinTheme.sub(context),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -146,7 +146,7 @@ class _FeatureGrid extends StatelessWidget {
           children: [
             for (final item in items)
               Material(
-                color: DouyinTheme.card,
+                color: DouyinTheme.card(context),
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
                   onTap: () => context.push(item.route),
@@ -154,7 +154,7 @@ class _FeatureGrid extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(item.icon, color: DouyinTheme.text, size: 26),
+                      Icon(item.icon, color: DouyinTheme.text(context), size: 26),
                       const SizedBox(height: 8),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -164,7 +164,7 @@ class _FeatureGrid extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                           style: context.typo.label.copyWith(
-                            color: DouyinTheme.sub,
+                            color: DouyinTheme.sub(context),
                           ),
                         ),
                       ),

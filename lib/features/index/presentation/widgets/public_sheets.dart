@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../router/app_routes.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
+
 import '../../../../components/mybutton.dart';
 
 class PublicSheets extends StatelessWidget {
@@ -10,6 +12,7 @@ class PublicSheets extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final muted = AppActionColors.muted(context);
     return Center(
       child: SizedBox(
         width: 1.sw,
@@ -20,7 +23,7 @@ class PublicSheets extends StatelessWidget {
             MyFlatButton(
               text: '发布动态',
               img: 'imgs/dongtai.png',
-              textColor: Colors.black54,
+              textColor: muted,
               onPress: () => {
                 Navigator.of(context).pop(),
                 context.push(Routes.publishDynamicPageUrl),
@@ -29,7 +32,7 @@ class PublicSheets extends StatelessWidget {
             MyFlatButton(
               text: '发布短视频',
               img: 'imgs/fabu-shorts.png',
-              textColor: Colors.black54,
+              textColor: muted,
               onPress: () => {
                 Navigator.of(context).pop(),
                 context.push(Routes.publishShortVideoPageUrl),
@@ -38,7 +41,7 @@ class PublicSheets extends StatelessWidget {
             MyFlatButton(
               text: '发布视频',
               img: 'imgs/fabu-video.png',
-              textColor: Colors.black54,
+              textColor: muted,
               onPress: () => {
                 Navigator.of(context).pop(),
                 context.push(Routes.publishVideoPageUrl),
@@ -47,7 +50,7 @@ class PublicSheets extends StatelessWidget {
             MyFlatButton(
               text: '发布求助',
               img: 'imgs/send_friend.png',
-              textColor: Colors.black54,
+              textColor: muted,
               onPress: () => {
                 Navigator.of(context).pop(),
                 context.push(Routes.publishHelpPageUrl),

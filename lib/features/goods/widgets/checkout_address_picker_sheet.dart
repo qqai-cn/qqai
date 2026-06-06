@@ -14,7 +14,7 @@ Future<MemberAddress?> showCheckoutAddressPickerSheet(
   return showModalBottomSheet<MemberAddress>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: GoodsPageStyle.cardBg,
+    backgroundColor: GoodsPageStyle.cardBg(context),
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
     ),
@@ -82,7 +82,7 @@ class _CheckoutAddressPickerSheetState
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: GoodsPageStyle.border,
+                color: GoodsPageStyle.border(context),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -94,13 +94,13 @@ class _CheckoutAddressPickerSheetState
                     child: Text(
                       '选择收货地址',
                       style: context.typo.sectionTitle.copyWith(
-                        color: GoodsPageStyle.text,
+                        color: GoodsPageStyle.text(context),
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close, color: GoodsPageStyle.sub),
+                    icon: Icon(Icons.close, color: GoodsPageStyle.sub(context)),
                   ),
                 ],
               ),
@@ -125,17 +125,17 @@ class _CheckoutAddressPickerSheetState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline, size: 40, color: GoodsPageStyle.sub),
+            Icon(Icons.error_outline, size: 40, color: GoodsPageStyle.sub(context)),
             const SizedBox(height: 12),
             Text(
               '地址加载失败',
-              style: context.typo.bodyStrong.copyWith(color: GoodsPageStyle.text),
+              style: context.typo.bodyStrong.copyWith(color: GoodsPageStyle.text(context)),
             ),
             const SizedBox(height: 6),
             Text(
               _error!,
               textAlign: TextAlign.center,
-              style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+              style: context.typo.caption.copyWith(color: GoodsPageStyle.sub(context)),
             ),
             const SizedBox(height: 16),
             TextButton(onPressed: _load, child: const Text('重试')),
@@ -152,18 +152,18 @@ class _CheckoutAddressPickerSheetState
             Icon(
               Icons.location_off_outlined,
               size: 40,
-              color: GoodsPageStyle.sub,
+              color: GoodsPageStyle.sub(context),
             ),
             const SizedBox(height: 12),
             Text(
               '还没有保存的地址',
-              style: context.typo.bodyStrong.copyWith(color: GoodsPageStyle.text),
+              style: context.typo.bodyStrong.copyWith(color: GoodsPageStyle.text(context)),
             ),
             const SizedBox(height: 6),
             Text(
               '请先在「我的地址」中添加，或手动填写下方收货信息',
               textAlign: TextAlign.center,
-              style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+              style: context.typo.caption.copyWith(color: GoodsPageStyle.sub(context)),
             ),
           ],
         ),
@@ -188,12 +188,12 @@ class _CheckoutAddressPickerSheetState
               decoration: BoxDecoration(
                 color: isSelected
                     ? GoodsPageStyle.accent.withValues(alpha: 0.06)
-                    : GoodsPageStyle.pageBg,
+                    : GoodsPageStyle.pageBg(context),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
                   color: isSelected
                       ? GoodsPageStyle.accent
-                      : GoodsPageStyle.border,
+                      : GoodsPageStyle.border(context),
                 ),
               ),
               child: Padding(
@@ -213,13 +213,13 @@ class _CheckoutAddressPickerSheetState
                               Text(
                                 address.name ?? '收货人',
                                 style: context.typo.bodyStrong.copyWith(
-                                  color: GoodsPageStyle.text,
+                                  color: GoodsPageStyle.text(context),
                                 ),
                               ),
                               Text(
                                 address.mobile ?? '',
                                 style: context.typo.body.copyWith(
-                                  color: GoodsPageStyle.text,
+                                  color: GoodsPageStyle.text(context),
                                 ),
                               ),
                               if (address.defaultStatus)
@@ -247,7 +247,7 @@ class _CheckoutAddressPickerSheetState
                           Text(
                             address.fullAddress,
                             style: context.typo.caption.copyWith(
-                              color: GoodsPageStyle.sub,
+                              color: GoodsPageStyle.sub(context),
                               height: 1.35,
                             ),
                           ),
@@ -261,7 +261,7 @@ class _CheckoutAddressPickerSheetState
                           : Icons.radio_button_unchecked,
                       color: isSelected
                           ? GoodsPageStyle.accent
-                          : GoodsPageStyle.border,
+                          : GoodsPageStyle.border(context),
                       size: 22,
                     ),
                   ],

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
+
 import '../../../../components/mybutton.dart';
 
 class VideoShareView extends StatefulWidget {
@@ -40,6 +42,7 @@ class _VideoShareView extends State<VideoShareView> {
             constraints: BoxConstraints(maxHeight: 350.h),
             context: context,
             builder: (BuildContext build) {
+              final muted = AppActionColors.muted(build);
               return Center(
                 child: SizedBox(
                   width: 1.sw,
@@ -50,7 +53,7 @@ class _VideoShareView extends State<VideoShareView> {
                       MyFlatButton(
                         text: '微信好友',
                         img: 'imgs/wechat.png',
-                        textColor: Colors.black54,
+                        textColor: muted,
                         onPress: () => {
                           setState(() {
                             _selected = _selected == 0 ? -1 : 0;
@@ -60,7 +63,7 @@ class _VideoShareView extends State<VideoShareView> {
                       MyFlatButton(
                         text: 'qq好友',
                         img: 'imgs/qq.png',
-                        textColor: Colors.black54,
+                        textColor: muted,
                         onPress: () => {
                           setState(() {
                             _selected = _selected == 1 ? -1 : 1;
@@ -70,7 +73,7 @@ class _VideoShareView extends State<VideoShareView> {
                       MyFlatButton(
                         text: '好友',
                         img: 'imgs/send_friend.png',
-                        textColor: Colors.black54,
+                        textColor: muted,
                         onPress: () => {
                           setState(() {
                             _selected = _selected == 2 ? -1 : 2;
@@ -80,7 +83,7 @@ class _VideoShareView extends State<VideoShareView> {
                       MyFlatButton(
                         text: '复制链接',
                         img: 'imgs/link.png',
-                        textColor: Colors.black54,
+                        textColor: muted,
                         onPress: () => {},
                       ),
                     ],

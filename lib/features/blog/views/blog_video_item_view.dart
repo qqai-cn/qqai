@@ -10,6 +10,7 @@ import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/blog/visibility_video_slot.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../../../constant/constant.dart';
@@ -237,12 +238,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
                   child: _RewardAmountText(text: rewardText),
                 ),
-              Container(
-                height: 2,
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.white,
-              ),
+              const SizedBox(height: 2),
               Expanded(
                 flex: 9,
                 child: Stack(
@@ -317,22 +313,10 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                   );
                 },
                 onComment: () => _openVideoDetail(mediaHeroTag),
-                menuBuilder: (context) {
-                  final collected = blogCollectedByMe(item);
-                  final entries = feedVideoMoreMenuEntries(context);
-                  if (entries.isNotEmpty && entries.first is PopupMenuItem) {
-                    entries[0] = PopupMenuItem<String>(
-                      value: '0',
-                      child: Text(
-                        collected ? '取消收藏' : '收藏',
-                        style: context.typo.body.copyWith(
-                          color: Colors.black54,
-                        ),
-                      ),
-                    );
-                  }
-                  return entries;
-                },
+                menuBuilder: (context) => feedVideoMoreMenuEntries(
+                  context,
+                  collectLabel: blogCollectedByMe(item) ? '取消收藏' : '收藏',
+                ),
               ),
             ],
           ),
@@ -432,7 +416,7 @@ class _VideoSegmentButtons extends StatelessWidget {
               height: 26,
               child: Material(
                 color: selected
-                    ? Colors.white
+                    ? AppActionColors.surface(context)
                     : Colors.white.withValues(alpha: 0.18),
                 shape: const CircleBorder(),
                 child: InkWell(
@@ -442,7 +426,9 @@ class _VideoSegmentButtons extends StatelessWidget {
                     child: Text(
                       '${index + 1}',
                       style: context.typo.caption.copyWith(
-                        color: selected ? Colors.black87 : Colors.white,
+                        color: selected
+                            ? AppActionColors.strong(context)
+                            : Colors.white,
                         fontWeight: FontWeight.w800,
                       ),
                     ),

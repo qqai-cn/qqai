@@ -1,21 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 import 'mybutton.dart';
-
-
-void main() => runApp(MyApp());
-
-//发表作品 页面
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Material",
-      home: MySharePage(),
-    );
-  }
-}
 
 class MySharePage extends StatefulWidget {
   @override
@@ -41,6 +28,7 @@ class _MySharePage extends State<MySharePage> {
 
   @override
   Widget build(BuildContext context) {
+    final muted = AppActionColors.muted(context);
     return TextButton.icon(
       style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all(Colors.transparent)),
@@ -59,7 +47,7 @@ class _MySharePage extends State<MySharePage> {
                     MyFlatButton(
                       text: '微信好友',
                       img: 'imgs/wechat.png',
-                      textColor: Colors.black54,
+                      textColor: muted,
                       onPress: () => {
                         setState(() {
                           _selected = _selected == 0 ? -1 : 0;
@@ -69,7 +57,7 @@ class _MySharePage extends State<MySharePage> {
                     MyFlatButton(
                       text: 'qq好友',
                       img: 'imgs/qq.png',
-                      textColor: Colors.black54,
+                      textColor: muted,
                       onPress: () => {
                         setState(() {
                           _selected = _selected == 1 ? -1 : 1;
@@ -79,7 +67,7 @@ class _MySharePage extends State<MySharePage> {
                     MyFlatButton(
                       text: '好友',
                       img: 'imgs/send_friend.png',
-                      textColor: Colors.black54,
+                      textColor: muted,
                       onPress: () => {
                         setState(() {
                           _selected = _selected == 2 ? -1 : 2;
@@ -89,7 +77,7 @@ class _MySharePage extends State<MySharePage> {
                     MyFlatButton(
                       text: '复制链接',
                       img: 'imgs/link.png',
-                      textColor: Colors.black54,
+                      textColor: muted,
                       onPress: () => {},
                     ),
                   ],
@@ -99,6 +87,7 @@ class _MySharePage extends State<MySharePage> {
       },
       icon: Icon(
         Icons.share,
+        color: AppActionColors.foreground(context),
       ),
       label: Text(
         '分享',

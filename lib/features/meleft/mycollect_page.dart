@@ -68,7 +68,7 @@ class _MyCollectPageState extends ConsumerState<MyCollectPage>
           ],
         ),
       ),
-      backgroundColor: Colors.black12,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: TabBarView(
         controller: _tab,
         children: [

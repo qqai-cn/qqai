@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/default_asset_image.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
@@ -341,7 +342,7 @@ class _ChatConversationSettingsPageState
                           ? '群聊 · ${conversation.memberCount ?? 0} 人'
                           : '单聊',
                       style: context.typo.caption.copyWith(
-                        color: Colors.grey[600],
+                        color: AppActionColors.muted(context),
                       ),
                     ),
                   ],
@@ -383,7 +384,9 @@ class _ChatConversationSettingsPageState
                             child: Text(
                               conversation.name ?? '',
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.grey[600]),
+                              style: TextStyle(
+                                color: AppActionColors.muted(context),
+                              ),
                             ),
                           ),
                           const Icon(Icons.chevron_right),
@@ -471,7 +474,9 @@ class _ChatConversationSettingsPageState
                   children: [
                     Text(
                       '成员加载失败',
-                      style: context.typo.caption.copyWith(color: Colors.grey[600]),
+                      style: context.typo.caption.copyWith(
+                        color: AppActionColors.muted(context),
+                      ),
                     ),
                     TextButton(onPressed: _loadMembers, child: const Text('重试')),
                   ],
@@ -482,7 +487,9 @@ class _ChatConversationSettingsPageState
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   '暂无成员',
-                  style: context.typo.caption.copyWith(color: Colors.grey[600]),
+                  style: context.typo.caption.copyWith(
+                    color: AppActionColors.muted(context),
+                  ),
                 ),
               )
             else
@@ -532,13 +539,13 @@ class _ChatConversationSettingsPageState
         data: SwitchThemeData(
           thumbColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
-              return Colors.grey.shade100;
+              return AppActionColors.borderSubtle(context);
             }
-            return Colors.white;
+            return AppActionColors.surface(context);
           }),
           trackColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.disabled)) {
-              return Colors.grey.shade300;
+              return AppActionColors.muted(context).withValues(alpha: 0.35);
             }
             if (states.contains(WidgetState.selected)) {
               return const Color(0xFF3578E5);

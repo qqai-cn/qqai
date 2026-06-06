@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/components/video_player/local_qqai_player.dart';
 import 'package:qqai/util/media_url.dart';
@@ -129,7 +130,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppActionColors.surface(context),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: const Color(0xFFECEEF2)),
               boxShadow: [
@@ -315,7 +316,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     children: [
                       DecoratedBox(
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppActionColors.surface(context),
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
@@ -342,7 +343,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                             ? '添加视频'
                             : '添加图片/视频',
                         style: context.typo.caption.copyWith(
-                          color: const Color(0xFF6B7280),
+                          color: AppActionColors.muted(context),
                         ),
                       ),
                     ],
@@ -526,7 +527,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       icon: const Icon(Icons.close, size: 18),
                     )
                   else
-                    const Icon(Icons.chevron_right, color: Color(0xFF6B7280)),
+                    Icon(Icons.chevron_right, color: AppActionColors.muted(context)),
                 ],
               ),
             ),
@@ -537,9 +538,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                 onTap: () => _showSoundModeSheet(state, notifier),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.volume_up_outlined,
-                      color: Color(0xFF6B7280),
+                      color: AppActionColors.muted(context),
                       size: 20,
                     ),
                     12.horizontalSpace,
@@ -547,11 +548,11 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       child: Text(
                         state.soundMode == 2 ? '循环播放背景音乐' : '播放视频原声',
                         style: context.typo.caption.copyWith(
-                          color: const Color(0xFF6B7280),
+                          color: AppActionColors.muted(context),
                         ),
                       ),
                     ),
-                    const Icon(Icons.chevron_right, color: Color(0xFF6B7280)),
+                    Icon(Icons.chevron_right, color: AppActionColors.muted(context)),
                   ],
                 ),
               ),
@@ -656,7 +657,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       Text(
                         _coverStatusText(state, hasDisplay: hasDisplay),
                         style: context.typo.caption.copyWith(
-                          color: const Color(0xFF6B7280),
+                          color: AppActionColors.muted(context),
                         ),
                       ),
                     ],
@@ -711,7 +712,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                   labelStyle: context.typo.caption.copyWith(
                     color: selected
                         ? const Color(0xFF3578E5)
-                        : const Color(0xFF6B7280),
+                        : AppActionColors.muted(context),
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                   ),
                 );
@@ -1313,7 +1314,7 @@ class _WidgetVideoCoverPreviewCard extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: qqaiVideoCoverAspectRatio,
               child: Material(
-                color: Colors.white,
+                color: AppActionColors.surface(context),
                 clipBehavior: Clip.antiAlias,
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
@@ -1416,7 +1417,7 @@ class _VideoCoverStyledFullscreenDialog extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Material(
-                  color: Colors.white,
+                  color: AppActionColors.surface(context),
                   clipBehavior: Clip.antiAlias,
                   child: alreadyFramed
                       ? image
@@ -1467,7 +1468,7 @@ class _VideoCoverPreviewCard extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: qqaiVideoCoverAspectRatio,
               child: Material(
-                color: Colors.white,
+                color: AppActionColors.surface(context),
                 clipBehavior: Clip.antiAlias,
                 borderRadius: BorderRadius.circular(12),
                 child: InkWell(
@@ -1584,7 +1585,7 @@ class _VideoCoverPlaceholder extends StatelessWidget {
           Text(
             '封面占位',
             style: context.typo.caption.copyWith(
-              color: const Color(0xFF6B7280),
+              color: AppActionColors.muted(context),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -1671,9 +1672,9 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
       top: false,
       child: Container(
         height: MediaQuery.of(context).size.height * 0.58,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        decoration: BoxDecoration(
+          color: AppActionColors.surface(context),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
         ),
         child: Column(
           children: [
@@ -1757,7 +1758,7 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
       return Center(
         child: Text(
           '背景音乐加载失败',
-          style: context.typo.caption.copyWith(color: const Color(0xFF6B7280)),
+          style: context.typo.caption.copyWith(color: AppActionColors.muted(context)),
         ),
       );
     }
@@ -1765,7 +1766,7 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
       return Center(
         child: Text(
           '暂无可选背景音乐',
-          style: context.typo.caption.copyWith(color: const Color(0xFF6B7280)),
+          style: context.typo.caption.copyWith(color: AppActionColors.muted(context)),
         ),
       );
     }
@@ -1969,10 +1970,13 @@ class _VideoCoverPreview extends StatelessWidget {
     Object error,
     StackTrace? stackTrace,
   ) {
-    return const ColoredBox(
-      color: Colors.white,
+    return ColoredBox(
+      color: AppActionColors.surface(context),
       child: Center(
-        child: Icon(Icons.broken_image_outlined, color: Color(0xFF9CA3AF)),
+        child: Icon(
+          Icons.broken_image_outlined,
+          color: AppActionColors.muted(context),
+        ),
       ),
     );
   }
@@ -2100,8 +2104,8 @@ class _ActionRow extends StatelessWidget {
               Container(
                 width: 34,
                 height: 34,
-                decoration: const BoxDecoration(
-                  color: Colors.white,
+                decoration: BoxDecoration(
+                  color: AppActionColors.surface(context),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(icon, color: const Color(0xFF4B5563), size: 20),
@@ -2118,7 +2122,10 @@ class _ActionRow extends StatelessWidget {
                 ),
               ),
               IconTheme(
-                data: const IconThemeData(color: Color(0xFF6B7280), size: 22),
+                data: IconThemeData(
+                  color: AppActionColors.muted(context),
+                  size: 22,
+                ),
                 child: trailing,
               ),
             ],

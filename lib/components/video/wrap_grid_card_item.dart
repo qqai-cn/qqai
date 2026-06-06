@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
 import 'package:qqai/components/default_asset_image.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 /// 网格卡片底部信息行：头像 + 标题/作者/元信息 + 关注 + 更多。
@@ -42,7 +43,7 @@ class WrapGridCardItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final titleStyle = context.typo.cardTitle;
     final creatorStyle = context.typo.cardSubtitle.copyWith(
-      color: Colors.grey,
+      color: AppActionColors.subtle(context),
       fontSize: titleStyle.fontSize,
     );
     final metaStyle = context.typo.caption;
@@ -115,7 +116,7 @@ class WrapGridCardItem extends StatelessWidget {
               ),
               PopupMenuButton<String>(
                 tooltip: '',
-                icon: Icon(moreIcon, color: Colors.black54),
+                icon: Icon(moreIcon, color: AppActionColors.foreground(context)),
                 onSelected: onMenuSelected,
                 itemBuilder: menuEntries ?? feedVideoMoreMenuEntries,
               ),

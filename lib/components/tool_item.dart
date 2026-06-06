@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../features/data/models/tool_item_bean.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/config/theme/dark_theme_colors.dart';
 
 
 class ToolItem extends StatelessWidget {
@@ -13,8 +15,9 @@ class ToolItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-        surfaceTintColor: Colors.white,
-        child: Column(
+      color: AppActionColors.surface(context),
+      surfaceTintColor: Colors.transparent,
+      child: Column(
           mainAxisAlignment: .center,
           children: [
             ListTile(
@@ -26,12 +29,18 @@ class ToolItem extends StatelessWidget {
               ),
               title: Text(toolItemBean.title,
                   style: context.typo.body.copyWith(fontWeight: FontWeight.bold)),
-              subtitle: Text(toolItemBean.subTitle,
-                  style: context.typo.sectionTitle.copyWith(color: Colors.green)),
+              subtitle: Text(
+                toolItemBean.subTitle,
+                style: context.typo.sectionTitle.copyWith(
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.green
+                      : DarkThemeColors.progressIndicatorColor,
+                ),
+              ),
             ),
             ListTile(
               title:
-                  Text(style: context.typo.caption.copyWith(color: Colors.grey), toolItemBean.desc),
+                  Text(style: context.typo.caption.copyWith(color: AppActionColors.subtle(context)), toolItemBean.desc),
             ),
           ],
         ));

@@ -1,3 +1,5 @@
+import 'package:qqai/config/theme/app_action_colors.dart';
+
 import 'package:flutter/material.dart';
 
 class CustomeProcess extends StatelessWidget {
@@ -17,7 +19,7 @@ class CustomeProcess extends StatelessWidget {
         Container(
           height: height,
           decoration: BoxDecoration(
-            color: Colors.grey,
+            color: AppActionColors.borderSubtle(context),
             borderRadius: BorderRadius.circular(3.0), //3像素圆角
           ),
         ),

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../goods/data/models/mall_product_model.dart';
 import '../../goods/data/repos/goods_repo.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_error_message.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -292,7 +293,7 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
                     final updating = product.id != null &&
                         _statusUpdatingIds.contains(product.id);
                     return Material(
-                      color: Colors.white,
+                      color: AppActionColors.surface(context),
                       child: InkWell(
                         onTap: () => _openProduct(product),
                         child: Column(

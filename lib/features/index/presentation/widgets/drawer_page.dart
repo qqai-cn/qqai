@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/components/shiny_avatar_ring.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/format_count.dart';
 
@@ -269,7 +270,7 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
         context.push(Routes.footprint);
       },
     ),
-    Container(height: 1, color: Colors.black12),
+    Container(height: 1, color: AppActionColors.borderSubtle(context)),
     ListTile(
       leading: SvgPicture.asset(
         '${imgPath}fuli.svg',
@@ -284,10 +285,10 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
       },
     ),
     ListTile(
-      leading: const Icon(
+      leading: Icon(
         Icons.location_on_outlined,
         size: 35,
-        color: Colors.black87,
+        color: AppActionColors.strong(context),
       ),
       title: const Text('我的地址'),
       onTap: () {
@@ -321,7 +322,7 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
         context.push(Routes.cartPageUrl);
       },
     ),
-    Container(height: 1, color: Colors.black12),
+    Container(height: 1, color: AppActionColors.borderSubtle(context)),
     ListTile(
       leading: SvgPicture.asset(
         '${imgPath}set.svg',

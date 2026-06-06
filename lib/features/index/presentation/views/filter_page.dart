@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
 import '../../../../../constant/color_constant.dart';
@@ -74,14 +75,14 @@ class _FilterPage extends State<FilterPage> {
                               ? Icon(Icons.check_circle, color: Colors.white)
                               : Icon(
                                   Icons.add_circle_outline,
-                                  color: Colors.grey,
+                                  color: AppActionColors.muted(context),
                                 ),
                           label: Text(
                             topic.topicName ?? '',
                             style: TextStyle(
                               color: _selectedTopics.containsKey(topic.id)
-                                  ? Colors.white // 选中时文字白色
-                                  : Colors.black87,
+                                  ? Colors.white
+                                  : AppActionColors.strong(context),
                             ),
                           ))
                   ],

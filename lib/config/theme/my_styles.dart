@@ -57,6 +57,47 @@ class MyStyles {
             : DarkThemeColors.iconColor,
       );
 
+  static TabBarThemeData getTabBarTheme({required bool isLightTheme}) {
+    return TabBarThemeData(
+      dividerColor: Colors.transparent,
+      labelColor: isLightTheme
+          ? LightThemeColors.actionButtonForegroundColor
+          : DarkThemeColors.bottomBarForeground,
+      unselectedLabelColor: isLightTheme
+          ? LightThemeColors.bodySmallTextColor
+          : DarkThemeColors.bottomBarForegroundMuted,
+      indicatorColor: isLightTheme
+          ? const Color(0xFF00BD5F)
+          : DarkThemeColors.bottomBarForeground,
+    );
+  }
+
+  static CardThemeData getCardTheme({required bool isLightTheme}) {
+    return CardThemeData(
+      color: isLightTheme
+          ? LightThemeColors.cardColor
+          : DarkThemeColors.cardColor,
+      elevation: isLightTheme ? 1 : 0,
+      shadowColor: Colors.black26,
+      surfaceTintColor: Colors.transparent,
+    );
+  }
+
+  static PopupMenuThemeData getPopupMenuTheme({required bool isLightTheme}) {
+    return PopupMenuThemeData(
+      color: isLightTheme
+          ? LightThemeColors.cardColor
+          : DarkThemeColors.cardColor,
+      surfaceTintColor: Colors.transparent,
+      textStyle: MyFonts.bodyTextStyle.copyWith(
+        fontSize: MyFonts.bodyMediumSize,
+        color: isLightTheme
+            ? Colors.black54
+            : DarkThemeColors.bodyTextColor,
+      ),
+    );
+  }
+
   ///app bar theme
   static AppBarTheme getAppBarTheme({required bool isLightTheme}) =>
       AppBarTheme(
@@ -64,11 +105,14 @@ class MyStyles {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
+        foregroundColor: isLightTheme
+            ? LightThemeColors.actionButtonForegroundColor
+            : DarkThemeColors.bottomBarForeground,
         titleTextStyle:
             getTextTheme(isLightTheme: isLightTheme).bodyMedium!.copyWith(
                   color: isLightTheme
                       ? LightThemeColors.actionButtonForegroundColor
-                      : DarkThemeColors.actionButtonForegroundColor,
+                      : DarkThemeColors.bottomBarForeground,
                   fontSize: MyFonts.appBarTittleSize,
                 ),
         iconTheme: IconThemeData(
@@ -263,6 +307,52 @@ class MyStyles {
   }
 
   /// Switch / SwitchListTile 统一对比度（个人中心夜间模式等）。
+  static DividerThemeData getDividerTheme({required bool isLightTheme}) {
+    return DividerThemeData(
+      color: isLightTheme
+          ? LightThemeColors.dividerColor
+          : DarkThemeColors.dividerColor,
+      thickness: 1,
+      space: 1,
+    );
+  }
+
+  static DialogThemeData getDialogTheme({required bool isLightTheme}) {
+    return DialogThemeData(
+      backgroundColor: isLightTheme
+          ? LightThemeColors.cardColor
+          : DarkThemeColors.cardColor,
+      surfaceTintColor: Colors.transparent,
+      elevation: isLightTheme ? 8 : 4,
+      titleTextStyle: MyFonts.displayTextStyle.copyWith(
+        fontSize: MyFonts.displaySmallSize,
+        fontWeight: FontWeight.bold,
+        color: isLightTheme
+            ? LightThemeColors.displayTextColor
+            : DarkThemeColors.displayTextColor,
+      ),
+      contentTextStyle: MyFonts.bodyTextStyle.copyWith(
+        fontSize: MyFonts.bodyMediumSize,
+        color: isLightTheme
+            ? LightThemeColors.bodyTextColor
+            : DarkThemeColors.bodyTextColor,
+      ),
+    );
+  }
+
+  static BottomSheetThemeData getBottomSheetTheme({required bool isLightTheme}) {
+    return BottomSheetThemeData(
+      backgroundColor: isLightTheme
+          ? LightThemeColors.cardColor
+          : DarkThemeColors.cardColor,
+      surfaceTintColor: Colors.transparent,
+      modalBackgroundColor: Colors.black54,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+    );
+  }
+
   static SwitchThemeData getSwitchTheme({required bool isLightTheme}) {
     final trackOff = isLightTheme
         ? LightThemeColors.switchTrackOff

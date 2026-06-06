@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
+
 import '../../../router/app_routes.dart';
 import '../data/member_center_models.dart';
 
@@ -1504,7 +1506,9 @@ class _LevelStep extends StatelessWidget {
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
-                          color: active ? Colors.black87 : Colors.black45,
+                          color: active
+                              ? AppActionColors.strong(context)
+                              : AppActionColors.subtle(context),
                         ),
                       ),
                     ),

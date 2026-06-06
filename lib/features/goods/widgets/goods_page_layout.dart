@@ -195,13 +195,13 @@ class GoodsBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: onTap,
-      icon: const Icon(
+      icon: Icon(
         Icons.arrow_back_ios_new_rounded,
         size: 22,
-        color: GoodsPageStyle.text,
+        color: GoodsPageStyle.text(context),
       ),
       style: IconButton.styleFrom(
-        foregroundColor: GoodsPageStyle.text,
+        foregroundColor: GoodsPageStyle.text(context),
         padding: EdgeInsets.zero,
         minimumSize: const Size(40, 40),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -234,7 +234,7 @@ class GoodsTopRoundButton extends StatelessWidget {
         child: SizedBox(
           width: 38,
           height: 32,
-          child: Icon(icon, size: 19, color: GoodsPageStyle.text),
+          child: Icon(icon, size: 19, color: GoodsPageStyle.text(context)),
         ),
       ),
     );

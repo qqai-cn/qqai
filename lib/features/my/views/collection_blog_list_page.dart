@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/async_masonry_feed.dart';
 import 'package:qqai/components/imgpreview/preview_img.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/blog_feed_state_interactions.dart';
 import 'package:qqai/features/blog/data/blog_route_extra.dart';
@@ -254,7 +255,9 @@ class _CollectionBlogListPageState extends ConsumerState<CollectionBlogListPage>
       return Center(
         child: Text(
           '暂无合集作品',
-          style: context.typo.body.copyWith(color: Colors.white),
+          style: context.typo.body.copyWith(
+            color: AppActionColors.muted(context),
+          ),
         ),
       );
     }
@@ -278,7 +281,7 @@ class _CollectionBlogListPageState extends ConsumerState<CollectionBlogListPage>
     final name = _collection?.name?.trim();
     final title = name?.isNotEmpty == true ? name! : '合集';
     return Scaffold(
-      backgroundColor: Colors.black12,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -292,8 +295,8 @@ class _CollectionBlogListPageState extends ConsumerState<CollectionBlogListPage>
               ),
           ],
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: AppActionColors.surface(context),
+        foregroundColor: AppActionColors.strong(context),
       ),
       body: _buildBody(),
     );

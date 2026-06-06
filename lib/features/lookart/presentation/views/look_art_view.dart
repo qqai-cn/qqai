@@ -13,6 +13,7 @@ import '../../../../components/comment_second_item.dart';
 import '../../../../components/level_icon.dart';
 import '../providers/lookart_providers.dart';
 import 'look_art_right.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 class LookartView extends ConsumerStatefulWidget {
@@ -174,7 +175,7 @@ class _LookartViewState extends ConsumerState<LookartView>
           ),
           SliverAppBar(
             pinned: false,
-            backgroundColor: Colors.white,
+            backgroundColor: AppActionColors.surface(context),
             automaticallyImplyLeading: false,
             title: Row(
               children: [
@@ -185,7 +186,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                     style: context.typo.sectionTitle.copyWith(
                       color: lookArtState.allComment
                           ? Colors.blue
-                          : Colors.grey,
+                          : AppActionColors.muted(context),
                     ),
                   ),
                 ),
@@ -196,7 +197,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                     style: context.typo.sectionTitle.copyWith(
                       color: !lookArtState.allComment
                           ? Colors.blue
-                          : Colors.grey,
+                          : AppActionColors.muted(context),
                     ),
                   ),
                 ),
@@ -271,7 +272,7 @@ class _LookartViewState extends ConsumerState<LookartView>
         title: Container(
           // padding: EdgeInsets.only(top: 10),
           decoration: UnderlineTabIndicator(
-            borderSide: BorderSide(color: Colors.black12),
+            borderSide: BorderSide(color: AppActionColors.borderSubtle(context)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -290,7 +291,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                   Text('212'),
                   PopupMenuButton(
                     tooltip: "",
-                    icon: Icon(Icons.more_vert, color: Colors.black54),
+                    icon: Icon(Icons.more_vert, color: AppActionColors.menuItemForeground(context)),
                     onSelected: (va) {
                       print(va);
                     },
@@ -301,7 +302,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                           child: Text(
                             '收藏',
                             style: context.typo.body.copyWith(
-                              color: Colors.black54,
+                              color: AppActionColors.menuItemForeground(context),
                             ),
                           ),
                         ),
@@ -310,7 +311,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                           child: Text(
                             '举报',
                             style: context.typo.body.copyWith(
-                              color: Colors.black54,
+                              color: AppActionColors.menuItemForeground(context),
                             ),
                           ),
                         ),
@@ -338,7 +339,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                           TextSpan(
                             text: '新飞飞1',
                             style: context.typo.caption.copyWith(
-                              color: Colors.grey,
+                              color: AppActionColors.subtle(context),
                               height: 1.8,
                             ),
                             recognizer: TapGestureRecognizer()
@@ -359,7 +360,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                           TextSpan(
                             text: '新飞飞1：',
                             style: context.typo.caption.copyWith(
-                              color: Colors.grey,
+                              color: AppActionColors.subtle(context),
                               height: 1.8,
                             ),
                             recognizer: TapGestureRecognizer()
@@ -380,7 +381,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                           TextSpan(
                             text: '新飞飞1：',
                             style: context.typo.caption.copyWith(
-                              color: Colors.grey,
+                              color: AppActionColors.subtle(context),
                               height: 1.8,
                             ),
                             recognizer: TapGestureRecognizer()
@@ -401,7 +402,7 @@ class _LookartViewState extends ConsumerState<LookartView>
                           TextSpan(
                             text: '新飞飞1：',
                             style: context.typo.caption.copyWith(
-                              color: Colors.grey,
+                              color: AppActionColors.subtle(context),
                               height: 1.8,
                             ),
                             recognizer: TapGestureRecognizer()

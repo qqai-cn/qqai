@@ -4,6 +4,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:get_thumbnail_video/index.dart';
@@ -186,7 +187,10 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                         // color: Colors.amber,
                         decoration: BoxDecoration(
                           // color: Colors.grey,
-                          border: Border.all(color: Colors.grey, width: 2),
+                          border: Border.all(
+                            color: AppActionColors.borderSubtle(context),
+                            width: 2,
+                          ),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         padding: EdgeInsets.symmetric(
@@ -206,7 +210,9 @@ class _ThumbnailPage extends State<ThumbnailPage> {
                                   child: InkWell(
                                     onTap: _pickVideo,
                                     child: Container(
-                                      color: Colors.black12,
+                                      color: AppActionColors.borderSubtle(
+                                        context,
+                                      ),
                                       alignment: Alignment.center,
                                       child: Text('请先选择视频（点击选择）'),
                                     ),

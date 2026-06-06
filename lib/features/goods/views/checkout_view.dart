@@ -119,15 +119,15 @@ class _CheckoutViewState extends ConsumerState<CheckoutView> {
     final wide = _isWide(context);
 
     return Scaffold(
-      backgroundColor: GoodsPageStyle.pageBg,
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: GoodsPageStyle.cardBg,
-        foregroundColor: GoodsPageStyle.text,
+        backgroundColor: GoodsPageStyle.cardBg(context),
+        foregroundColor: GoodsPageStyle.text(context),
         title: Text(
           '确认订单',
-          style: context.typo.appBarTitle.copyWith(color: GoodsPageStyle.text),
+          style: context.typo.appBarTitle.copyWith(color: GoodsPageStyle.text(context)),
         ),
         centerTitle: true,
       ),
@@ -305,20 +305,20 @@ class _CheckoutFormContent extends StatelessWidget {
                 selectedAddress: selectedAddress,
                 onTap: onPickAddress,
               ),
-              const Divider(height: 1, color: GoodsPageStyle.border),
+              Divider(height: 1, color: GoodsPageStyle.border(context)),
               _CheckoutTextField(
                 controller: nameController,
                 label: '收货人',
                 icon: Icons.person_outline,
               ),
-              const Divider(height: 1, color: GoodsPageStyle.border),
+              Divider(height: 1, color: GoodsPageStyle.border(context)),
               _CheckoutTextField(
                 controller: phoneController,
                 label: '手机号',
                 icon: Icons.phone_android_outlined,
                 keyboardType: TextInputType.phone,
               ),
-              const Divider(height: 1, color: GoodsPageStyle.border),
+              Divider(height: 1, color: GoodsPageStyle.border(context)),
               _CheckoutTextField(
                 controller: addressController,
                 label: '详细地址',
@@ -342,7 +342,7 @@ class _CheckoutFormContent extends StatelessWidget {
                     title: Text(
                       payLabels[i],
                       style: context.typo.body.copyWith(
-                        color: GoodsPageStyle.text,
+                        color: GoodsPageStyle.text(context),
                       ),
                     ),
                     trailing: payIndex == i
@@ -351,15 +351,15 @@ class _CheckoutFormContent extends StatelessWidget {
                             color: GoodsPageStyle.accent,
                             size: 22,
                           )
-                        : const Icon(
+                        : Icon(
                             Icons.radio_button_unchecked,
-                            color: GoodsPageStyle.border,
+                            color: GoodsPageStyle.border(context),
                             size: 22,
                           ),
                     onTap: () => onPayChanged(i),
                   ),
                   if (!last)
-                    const Divider(height: 1, color: GoodsPageStyle.border),
+                    Divider(height: 1, color: GoodsPageStyle.border(context)),
                 ],
               );
             }),
@@ -415,16 +415,16 @@ class _CheckoutSidePanel extends StatelessWidget {
           Text(
             '订单金额',
             style: context.typo.sectionTitle.copyWith(
-              color: GoodsPageStyle.text,
+              color: GoodsPageStyle.text(context),
             ),
           ),
           const SizedBox(height: 16),
           _PriceLine(label: '商品合计', value: '¥${goodsTotal.toStringAsFixed(2)}'),
           const SizedBox(height: 10),
           _PriceLine(label: '运费', value: '¥${freight.toStringAsFixed(2)}'),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1, color: GoodsPageStyle.border),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, color: GoodsPageStyle.border(context)),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -433,7 +433,7 @@ class _CheckoutSidePanel extends StatelessWidget {
               Text(
                 '实付款',
                 style: context.typo.bodyStrong.copyWith(
-                  color: GoodsPageStyle.text,
+                  color: GoodsPageStyle.text(context),
                 ),
               ),
               Row(
@@ -469,7 +469,7 @@ class _CheckoutSidePanel extends StatelessWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: GoodsPageStyle.accent,
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                disabledBackgroundColor: GoodsPageStyle.sub(context).withValues(
                   alpha: 0.35,
                 ),
                 elevation: 0,
@@ -516,7 +516,7 @@ class _CheckoutSubmitBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Material(
-        color: GoodsPageStyle.cardBg,
+        color: GoodsPageStyle.cardBg(context),
         elevation: 8,
         shadowColor: Colors.black.withValues(alpha: 0.08),
         child: Padding(
@@ -530,7 +530,7 @@ class _CheckoutSubmitBar extends StatelessWidget {
                   Text(
                     '实付款：',
                     style: context.typo.caption.copyWith(
-                      color: GoodsPageStyle.sub,
+                      color: GoodsPageStyle.sub(context),
                     ),
                   ),
                   const Text(
@@ -561,7 +561,7 @@ class _CheckoutSubmitBar extends StatelessWidget {
                   style: FilledButton.styleFrom(
                     backgroundColor: GoodsPageStyle.accent,
                     foregroundColor: Colors.white,
-                    disabledBackgroundColor: GoodsPageStyle.sub.withValues(
+                    disabledBackgroundColor: GoodsPageStyle.sub(context).withValues(
                       alpha: 0.35,
                     ),
                     elevation: 0,
@@ -612,9 +612,9 @@ class _PriceSummaryCard extends StatelessWidget {
           _PriceLine(label: '商品合计', value: '¥${goodsTotal.toStringAsFixed(2)}'),
           const SizedBox(height: 10),
           _PriceLine(label: '运费', value: '¥${freight.toStringAsFixed(2)}'),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1, color: GoodsPageStyle.border),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, color: GoodsPageStyle.border(context)),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -623,7 +623,7 @@ class _PriceSummaryCard extends StatelessWidget {
               Text(
                 '实付款',
                 style: context.typo.bodyStrong.copyWith(
-                  color: GoodsPageStyle.text,
+                  color: GoodsPageStyle.text(context),
                 ),
               ),
               Row(
@@ -682,7 +682,7 @@ class _CheckoutGoodsRow extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: context.typo.cardTitle2.copyWith(
-                    color: GoodsPageStyle.text,
+                    color: GoodsPageStyle.text(context),
                     height: 1.3,
                     fontWeight: FontWeight.w700,
                   ),
@@ -691,7 +691,7 @@ class _CheckoutGoodsRow extends StatelessWidget {
                 Text(
                   '¥${line.price.toStringAsFixed(2)} × ${line.quantity}',
                   style: context.typo.caption.copyWith(
-                    color: GoodsPageStyle.sub,
+                    color: GoodsPageStyle.sub(context),
                   ),
                 ),
               ],
@@ -743,7 +743,7 @@ class _CoverFallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ColoredBox(
-      color: GoodsPageStyle.imageBg,
+      color: GoodsPageStyle.imageBg(context),
       child: SizedBox(
         width: size,
         height: size,
@@ -768,7 +768,7 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         title,
-        style: context.typo.sectionTitle.copyWith(color: GoodsPageStyle.text),
+        style: context.typo.sectionTitle.copyWith(color: GoodsPageStyle.text(context)),
       ),
     );
   }
@@ -786,9 +786,9 @@ class _GoodsPanel extends StatelessWidget {
       width: double.infinity,
       padding: padding,
       decoration: BoxDecoration(
-        color: GoodsPageStyle.cardBg,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: GoodsPageStyle.border),
+        border: Border.all(color: GoodsPageStyle.border(context)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
@@ -838,7 +838,7 @@ class _CheckoutAddressPickRow extends StatelessWidget {
                   Text(
                     '从我的地址选择',
                     style: context.typo.bodyStrong.copyWith(
-                      color: GoodsPageStyle.text,
+                      color: GoodsPageStyle.text(context),
                     ),
                   ),
                   if (subtitle.isNotEmpty) ...[
@@ -848,17 +848,17 @@ class _CheckoutAddressPickRow extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.typo.caption.copyWith(
-                        color: GoodsPageStyle.sub,
+                        color: GoodsPageStyle.sub(context),
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
               size: 22,
-              color: GoodsPageStyle.sub,
+              color: GoodsPageStyle.sub(context),
             ),
           ],
         ),
@@ -890,12 +890,12 @@ class _CheckoutTextField extends StatelessWidget {
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboardType,
-        style: context.typo.body.copyWith(color: GoodsPageStyle.text),
+        style: context.typo.body.copyWith(color: GoodsPageStyle.text(context)),
         decoration: InputDecoration(
           border: InputBorder.none,
-          icon: Icon(icon, size: 20, color: GoodsPageStyle.sub),
+          icon: Icon(icon, size: 20, color: GoodsPageStyle.sub(context)),
           labelText: label,
-          labelStyle: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+          labelStyle: context.typo.caption.copyWith(color: GoodsPageStyle.sub(context)),
           floatingLabelBehavior: FloatingLabelBehavior.never,
         ),
       ),
@@ -916,11 +916,11 @@ class _PriceLine extends StatelessWidget {
       children: [
         Text(
           label,
-          style: context.typo.caption.copyWith(color: GoodsPageStyle.sub),
+          style: context.typo.caption.copyWith(color: GoodsPageStyle.sub(context)),
         ),
         Text(
           value,
-          style: context.typo.body.copyWith(color: GoodsPageStyle.text),
+          style: context.typo.body.copyWith(color: GoodsPageStyle.text(context)),
         ),
       ],
     );

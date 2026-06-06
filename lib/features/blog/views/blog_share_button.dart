@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
+
 import '../../../components/mybutton.dart';
 import '../data/models/blog_page_model.dart';
 
@@ -82,6 +84,7 @@ void showBlogShareSheet(
         onShareChannelTap?.call();
       }
 
+      final muted = AppActionColors.muted(ctx);
       return Center(
         child: SizedBox(
           width: 1.sw,
@@ -92,25 +95,25 @@ void showBlogShareSheet(
               MyFlatButton(
                 text: '微信好友',
                 img: 'imgs/wechat.png',
-                textColor: Colors.black54,
+                textColor: muted,
                 onPress: onChannel,
               ),
               MyFlatButton(
                 text: 'qq好友',
                 img: 'imgs/qq.png',
-                textColor: Colors.black54,
+                textColor: muted,
                 onPress: onChannel,
               ),
               MyFlatButton(
                 text: '好友',
                 img: 'imgs/send_friend.png',
-                textColor: Colors.black54,
+                textColor: muted,
                 onPress: onChannel,
               ),
               MyFlatButton(
                 text: '复制链接',
                 img: 'imgs/link.png',
-                textColor: Colors.black54,
+                textColor: muted,
                 onPress: onChannel,
               ),
             ],

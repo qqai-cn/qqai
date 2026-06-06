@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
-import '../../../constant/color_constant.dart';
 import '../../components/tool_item.dart';
 import '../../router/app_routes.dart';
 import '../data/models/tool_item_bean.dart';
@@ -160,7 +161,10 @@ class _ToolPage extends State<ToolPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: ColorConstant.lightBlue,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Container(
           width: 0.8.sw,
           height: 40,
@@ -168,13 +172,19 @@ class _ToolPage extends State<ToolPage> {
           alignment: Alignment.centerLeft,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(15),
-            color: Colors.white,
+            color: AppActionColors.surface(context),
+            border: Border.all(color: GoodsPageStyle.border(context)),
           ),
           child: TextField(
+            style: TextStyle(color: AppActionColors.strong(context)),
             decoration: InputDecoration(
               border: InputBorder.none,
-              hintText: "快速搜索",
-              prefixIcon: Icon(Icons.search),
+              hintText: '快速搜索',
+              hintStyle: TextStyle(color: AppActionColors.subtle(context)),
+              prefixIcon: Icon(
+                Icons.search,
+                color: AppActionColors.subtle(context),
+              ),
             ),
             onChanged: (t) {
               if (t.isNotEmpty) {
@@ -190,8 +200,7 @@ class _ToolPage extends State<ToolPage> {
           ),
         ),
       ),
-      backgroundColor: Colors.black12,
-      // backgroundColor: ColorConstant.lightBlue,
+      backgroundColor: GoodsPageStyle.pageBg(context),
       body: MasonryGridView.count(
         crossAxisCount: colCount,
         mainAxisSpacing: 1.w,

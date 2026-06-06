@@ -12,6 +12,7 @@ import '../data/repos/profile_repo.dart';
 import '../utils/footprint_timeline.dart';
 import 'my_blog_img_item_view.dart';
 import 'my_blog_video_item_view.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_error_message.dart';
 
@@ -151,12 +152,12 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
     return Card(
       elevation: 3,
       shadowColor: Colors.black.withValues(alpha: 0.2),
-      color: const Color(0xFFFFFFFF),
+      color: AppActionColors.surface(context),
       surfaceTintColor: Colors.transparent,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+        side: BorderSide(color: AppActionColors.borderSubtle(context)),
       ),
       clipBehavior: Clip.antiAlias,
       child: child,

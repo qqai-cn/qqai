@@ -26,8 +26,8 @@ class MePage extends ConsumerWidget {
     bool isWideScreen,
   ) {
     return AppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.white,
+      backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       leadingWidth: 132,
       leading: BrandDrawerLeading(isWideScreen: isWideScreen),

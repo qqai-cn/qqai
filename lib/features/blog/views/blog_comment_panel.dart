@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -146,7 +147,7 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
               child: Text(
                 '$count条',
                 style: context.typo.caption.copyWith(
-                  color: Colors.black54,
+                  color: AppActionColors.muted(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -237,7 +238,7 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
           if (target != null)
             Container(
               width: double.infinity,
-              color: Colors.black12,
+              color: AppActionColors.borderSubtle(context),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Row(
                 children: [
@@ -354,13 +355,15 @@ class _SortChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? Colors.black87 : Colors.black12,
+          color: selected
+              ? AppActionColors.strong(context)
+              : AppActionColors.borderSubtle(context),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
           style: context.typo.caption.copyWith(
-            color: selected ? Colors.white : Colors.black54,
+            color: selected ? Colors.white : AppActionColors.muted(context),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -508,7 +511,7 @@ class _CommentRow extends StatelessWidget {
                     child: Text(
                       comment.nickname ?? '用户',
                       style: context.typo.caption.copyWith(
-                        color: Colors.black54,
+                        color: AppActionColors.muted(context),
                         fontWeight: FontWeight.w600,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -567,7 +570,7 @@ class _CommentRow extends StatelessWidget {
                         TextSpan(
                           text: '回复 ',
                           style: context.typo.caption.copyWith(
-                            color: Colors.black45,
+                            color: AppActionColors.subtle(context),
                           ),
                         ),
                         TextSpan(
@@ -597,7 +600,7 @@ class _CommentRow extends StatelessWidget {
                     child: Text(
                       '回复',
                       style: context.typo.caption.copyWith(
-                        color: Colors.black54,
+                        color: AppActionColors.muted(context),
                       ),
                     ),
                   ),
@@ -615,7 +618,7 @@ class _CommentRow extends StatelessWidget {
                           size: 16,
                           color: comment.liked == true
                               ? Colors.red
-                              : Colors.black45,
+                              : AppActionColors.subtle(context),
                         ),
                         const SizedBox(width: 4),
                         Text(

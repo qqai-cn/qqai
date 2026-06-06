@@ -15,6 +15,7 @@
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 /// The API key to use when accessing the Gemini API.
 ///
@@ -103,7 +104,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           Radius.circular(14),
         ),
         borderSide: BorderSide(
-          color: Colors.grey,
+          color: AppActionColors.borderSubtle(context),
         ),
       ),
       focusedBorder: OutlineInputBorder(
@@ -111,7 +112,7 @@ class _ChatWidgetState extends State<ChatWidget> {
           Radius.circular(14),
         ),
         borderSide: BorderSide(
-          color: Colors.grey,
+          color: AppActionColors.borderSubtle(context),
         ),
       ),
     );

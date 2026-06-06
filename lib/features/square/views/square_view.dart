@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
+
 import '../../../components/in_page_search_bar.dart';
 import '../../../components/refresh_status_badge.dart';
 import '../providers/square_providers.dart';
@@ -75,7 +78,9 @@ class _SquareViewState extends ConsumerState<SquareView> {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
+                color: Theme.of(context).brightness == Brightness.light
+                    ? const Color(0xFFEFF6FF)
+                    : const Color(0xFF3578E5).withValues(alpha: 0.18),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Icon(
@@ -84,7 +89,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
               ),
             ),
             const SizedBox(width: 14),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -93,7 +98,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF202124),
+                      color: AppActionColors.strong(context),
                     ),
                   ),
                   SizedBox(height: 4),
@@ -101,7 +106,10 @@ class _SquareViewState extends ConsumerState<SquareView> {
                     '加入感兴趣的广场，浏览和发布作品',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppActionColors.muted(context),
+                    ),
                   ),
                 ],
               ),
@@ -127,9 +135,9 @@ class _SquareViewState extends ConsumerState<SquareView> {
           margin: const EdgeInsets.fromLTRB(14, 12, 14, 16),
           padding: const EdgeInsets.fromLTRB(18, 18, 14, 18),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppActionColors.surface(context),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFECEEF2)),
+            border: Border.all(color: AppActionColors.borderSubtle(context)),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.04),
@@ -162,23 +170,23 @@ class _SquareViewState extends ConsumerState<SquareView> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 28),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppActionColors.surface(context),
             borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFECEEF2)),
+            border: Border.all(color: AppActionColors.borderSubtle(context)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(
+              Icon(
                 Icons.grid_view_rounded,
-                color: Color(0xFF9CA3AF),
+                color: AppActionColors.subtle(context),
                 size: 38,
               ),
               const SizedBox(height: 12),
               Text(
                 searching ? '未找到相关广场' : '暂无广场',
-                style: const TextStyle(
-                  color: Color(0xFF6B7280),
+                style: TextStyle(
+                  color: AppActionColors.muted(context),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -282,7 +290,7 @@ class _SquareViewState extends ConsumerState<SquareView> {
       context: context,
       removeTop: true,
       child: ColoredBox(
-        color: const Color(0xFFF6F7F9),
+        color: GoodsPageStyle.pageBg(context),
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: kSquarePageMaxWidth),
@@ -296,8 +304,8 @@ class _SquareViewState extends ConsumerState<SquareView> {
                   children: [
                     RefreshIndicator(
                       onRefresh: _handlePullRefresh,
-                      color: Colors.white,
-                      backgroundColor: const Color(0xFFFF8C00),
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       displacement: 54,
                       strokeWidth: 3,
                       child: CustomScrollView(
@@ -362,7 +370,11 @@ class _SquareError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(message, textAlign: TextAlign.center),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppActionColors.muted(context)),
+            ),
             const SizedBox(height: 12),
             FilledButton(onPressed: onRetry, child: const Text('重试')),
           ],

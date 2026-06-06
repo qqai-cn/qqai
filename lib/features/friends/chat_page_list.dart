@@ -7,6 +7,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:qqai/components/chat/chat_widget.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/constant/constant.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
@@ -243,9 +244,12 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
           flex: 2,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.grey[50],
+              color: AppActionColors.surface(context),
               border: Border(
-                right: BorderSide(color: Colors.grey[200]!, width: 1),
+                right: BorderSide(
+                  color: AppActionColors.borderSubtle(context),
+                  width: 1,
+                ),
               ),
             ),
             child: asyncConvs.when(
@@ -265,14 +269,14 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                         Icon(
                           Icons.chat_bubble_outline,
                           size: 80,
-                          color: Colors.grey[300],
+                          color: AppActionColors.borderSubtle(context),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           '暂无会话',
                           style: TextStyle(
                             fontSize: 18,
-                            color: Colors.grey[500],
+                            color: AppActionColors.muted(context),
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -298,7 +302,11 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     itemCount: convs.length,
                     separatorBuilder: (context, index) =>
-                        Divider(height: 1, indent: 80, color: Colors.grey[200]),
+                        Divider(
+                          height: 1,
+                          indent: 80,
+                          color: AppActionColors.borderSubtle(context),
+                        ),
                     itemBuilder: (context, position) {
                       final c = convs[position];
                       final selected =
@@ -319,7 +327,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
               data: (convs) {
                 if (convs.isEmpty) {
                   return ColoredBox(
-                    color: const Color(0xFFF5F7FA),
+                    color: Theme.of(context).scaffoldBackgroundColor,
                     child: Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -327,14 +335,14 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                           Icon(
                             Icons.chat_outlined,
                             size: 100,
-                            color: Colors.grey[300],
+                            color: AppActionColors.borderSubtle(context),
                           ),
                           const SizedBox(height: 16),
                           Text(
                             '请选择会话开始聊天',
                             style: TextStyle(
                               fontSize: 18,
-                              color: Colors.grey[500],
+                              color: AppActionColors.muted(context),
                             ),
                           ),
                         ],
@@ -347,7 +355,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                   return const SizedBox.shrink();
                 }
                 return ColoredBox(
-                  color: const Color(0xFFF5F7FA),
+                  color: Theme.of(context).scaffoldBackgroundColor,
                   child: ChatWidget(
                     key: ValueKey<int>(id),
                     currentUserId: authState.userId ?? '0',
@@ -359,9 +367,9 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                   ),
                 );
               },
-              orElse: () => const ColoredBox(
-                color: Color(0xFFF5F7FA),
-                child: Center(child: CircularProgressIndicator()),
+              orElse: () => ColoredBox(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: const Center(child: CircularProgressIndicator()),
               ),
             ),
           ),
@@ -480,7 +488,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                               fontSize: 13,
                               color: hasUnread
                                   ? const Color(0xFFE53935)
-                                  : Colors.grey[500],
+                                  : AppActionColors.muted(context),
                             ),
                           ),
                         ],
@@ -497,7 +505,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                                 fontSize: 14,
                                 color: hasUnread
                                     ? const Color(0xFF616161)
-                                    : Colors.grey[600],
+                                    : AppActionColors.subtle(context),
                                 fontWeight: hasUnread
                                     ? FontWeight.w500
                                     : FontWeight.normal,
@@ -508,14 +516,14 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                           if (pinned)
                             Icon(
                               Icons.push_pin,
-                              color: Colors.grey[400],
+                              color: AppActionColors.subtle(context),
                               size: 16,
                             ),
                           if (pinned) const SizedBox(width: 4),
                           if (muted)
                             Icon(
                               Icons.notifications_off,
-                              color: Colors.grey[400],
+                              color: AppActionColors.subtle(context),
                               size: notiSize,
                             ),
                         ],
