@@ -10,7 +10,10 @@ import '../../../../features/chat/providers/chat_providers.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/main_shell_tab_reselect_provider.dart';
 import '../../../../providers/auth_providers.dart';
+import '../widgets/drawer_page.dart';
 import '../widgets/lazy_shell_tab.dart';
+import '../widgets/wide_sidebar_profile_entry.dart';
+import '../widgets/wide_sidebar_theme_toggle.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key, required this.navigationShell});
@@ -44,6 +47,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       currentIndex: shell.currentIndex,
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        drawer: isWideScreen ? const DrawerPage() : null,
         body: isWideScreen
             ? getWideScreen(homeState, shell)
             : shell,
@@ -91,14 +95,25 @@ class _HomePageState extends ConsumerState<HomePage> {
               ),
             ),
             child: SafeArea(
-              child: Animatedleftbar(
-              selectedBarIndex: shell.currentIndex,
-              barItems: HomeNotifier.barItems,
-              onBarTap: _onMainTabTap,
-              animationDuration: const Duration(milliseconds: 150),
-              barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
-              isExtended: homeState.isExtended,
-            ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  WideSidebarProfileEntry(isExtended: homeState.isExtended),
+                  Expanded(
+                    child: Animatedleftbar(
+                      selectedBarIndex: shell.currentIndex,
+                      barItems: HomeNotifier.barItems,
+                      onBarTap: _onMainTabTap,
+                      animationDuration: const Duration(milliseconds: 150),
+                      barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),
+                      isExtended: homeState.isExtended,
+                      footerAboveBeian: WideSidebarThemeToggle(
+                        isExtended: homeState.isExtended,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

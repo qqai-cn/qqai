@@ -13,6 +13,7 @@ class Animatedleftbar extends StatefulWidget {
   final Duration animationDuration;
   final Function onBarTap;
   final BarStyle barStyle;
+  final Widget? footerAboveBeian;
   late int selectedBarIndex;
   late bool isExtended;
 
@@ -21,6 +22,7 @@ class Animatedleftbar extends StatefulWidget {
     this.animationDuration = const Duration(milliseconds: 500),
     required this.onBarTap,
     required this.barStyle,
+    this.footerAboveBeian,
     this.selectedBarIndex = 0,
     this.isExtended = false,
   });
@@ -116,6 +118,7 @@ class _Animatedleftbar extends State<Animatedleftbar>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            if (widget.footerAboveBeian != null) widget.footerAboveBeian!,
             TextButton(
               onPressed: () {
                 _launchURL(Uri(scheme: 'https', host: 'beian.miit.gov.cn'));

@@ -8,7 +8,6 @@ import 'package:qqai/features/index/data/home_tab_config.dart';
 import 'package:qqai/features/index/presentation/widgets/app_bar_publish_search_actions.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
 import 'package:qqai/features/index/presentation/widgets/drawer_page.dart';
-import 'package:qqai/features/index/presentation/widgets/app_bar_user_avatar.dart';
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/features/index/providers/home_index_tab_navigate_provider.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
@@ -114,7 +113,6 @@ class _IndexPageState extends ConsumerState<IndexPage>
         actions: [animateActions()],
       ),
       drawer: isWideScreen ? null : const DrawerPage(),
-      endDrawer: isWideScreen ? const DrawerPage() : null,
       body: RepaintBoundary(
         child: TabBarView(
           controller: _tabController,
@@ -187,7 +185,6 @@ class _IndexPageState extends ConsumerState<IndexPage>
   }
 
   Widget getActions() {
-    final isWideScreen = 1.sw > 800;
     final onRecommendTab = _tabController.index == 0;
     return Row(
       key: ValueKey('home_actions_${_tabController.index}'),
@@ -206,16 +203,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
             },
           ),
         AppBarPublishSearchActions(showSearch: !onRecommendTab),
-        if (isWideScreen) _avatarEndDrawerAction(),
       ],
-    );
-  }
-
-  Widget _avatarEndDrawerAction() {
-    return Builder(
-      builder: (ctx) => AppBarUserAvatarButton(
-        onPressed: () => Scaffold.of(ctx).openEndDrawer(),
-      ),
     );
   }
 }
