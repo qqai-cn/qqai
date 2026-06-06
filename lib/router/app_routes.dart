@@ -1,7 +1,6 @@
 class Routes {
   static const String HOME = "/";
   static const String login = "/login";
-  static const String indexPage = "/index_page";
   static const String videoPage = "/video_page";
   static const String messagePage = "/message_page";
   static const String mePage = "/me_page";
@@ -20,7 +19,6 @@ class Routes {
   static const String feedback = "/feedback";
   static const String memberCenter = "/member_center";
   static const String memberCenterDetail = "/member_center/detail";
-  static const String watchVideo = "/watchs";
   static const String whatArticle = "/look_art";
   static const String squareBlogView = "/square_blog_view";
   static const String collectionBlogList = "/collection_blog_list";
@@ -28,7 +26,6 @@ class Routes {
   static const String blogVideoDetailView = "/blog_video_detail_view";
   static const String videoDetailView = "/video_detail_view";
   static const String watchImgUrl = "/watchImg";
-  static const String fullVideoUrl = "/fullVideo";
   static const String searchPage = "/search_page";
   static const String dateToolPageUrl = "/data_tool_page";
   static const String urlToolPageUrl = "/url_tool_page";
@@ -39,8 +36,6 @@ class Routes {
   static const String imageFormatConvertPageUrl = "/image_format_convert_page";
   static const String imageCompressIntroPageUrl = "/image_compress_intro_page";
   static const String jsonFormatterPageUrl = "/json_formatter_page";
-  static const String homeItemPageUrl = "/home_item_page";
-  static const String homeAppbarItemPageUrl = "/home_appbar_item_page";
   static const String goodsPageUrl = "/goods_page";
   // static const String goodsItemUrl = "/goods_item_page";
   static const String goodsDetailPageUrl = "/goods_detail_page";

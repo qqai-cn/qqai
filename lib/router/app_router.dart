@@ -9,7 +9,6 @@ import '../../features/lookart/presentation/views/look_art_view.dart'
     deferred as look_art;
 import '../../features/meleft/mycare_page.dart' deferred as my_care;
 import '../../features/meleft/mycollect_page.dart' deferred as my_collect;
-import '../../features/watchvideo/play_video_page.dart' deferred as play_video;
 import '../cache/deferred_widget.dart';
 import '../components/imgpreview/preview_img.dart';
 import '../components/blog/network_image_carousel_pages.dart';
@@ -395,29 +394,6 @@ GoRouter appRouter(Ref ref) {
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
             builder: () => route_pages.ImageDetailPage(preview: preview),
-          );
-        },
-      ),
-      GoRoute(
-        path: Routes.fullVideoUrl,
-        name: 'fullScreenVideo',
-        builder: (c, s) {
-          final videoItem = s.extra;
-          return AppDeferredWidget(
-            libraryLoader: route_pages.loadLibrary,
-            builder: () =>
-                route_pages.FullScreenVideoPlayer(videoItem: videoItem),
-          );
-        },
-      ),
-      GoRoute(
-        path: Routes.watchVideo,
-        name: 'playVideo',
-        builder: (c, s) {
-          final videoItem = s.extra;
-          return AppDeferredWidget(
-            libraryLoader: play_video.loadLibrary,
-            builder: () => play_video.PlayVideoPage(videoItem: videoItem),
           );
         },
       ),
