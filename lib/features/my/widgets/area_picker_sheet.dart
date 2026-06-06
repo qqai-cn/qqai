@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 
 import '../data/models/area_models.dart';
 
@@ -23,7 +24,7 @@ Future<AreaPickResult?> showAreaPickerSheet(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: kAreaPickerMaxWidth),
           child: Material(
-            color: Colors.white,
+            color: AppActionColors.surface(context),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             clipBehavior: Clip.antiAlias,
             child: _AreaPickerSheet(
@@ -161,13 +162,16 @@ class _AreaPickerSheetState extends State<_AreaPickerSheet> {
       itemExtent: 36,
       onSelectedItemChanged: onSelected,
       children: items
-          .map((e) => Center(
-                child: Text(
-                  e.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ))
+          .map(
+            (e) => Center(
+              child: Text(
+                e.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(color: AppActionColors.strong(context)),
+              ),
+            ),
+          )
           .toList(),
     );
   }

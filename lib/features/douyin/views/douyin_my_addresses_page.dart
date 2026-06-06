@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/theme/app_action_colors.dart';
 import '../../../config/theme/app_typography.dart';
 import '../../my/data/models/area_models.dart';
 import '../../my/data/models/member_address_models.dart';
@@ -9,6 +10,25 @@ import '../../my/data/repos/area_repo.dart';
 import '../../my/data/repos/member_address_repo.dart';
 import '../../my/widgets/area_picker_sheet.dart';
 import '../theme/douyin_theme.dart';
+
+abstract final class _AddressUi {
+  static Color chipSelectedBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFFFECEC)
+        : DouyinTheme.accent.withValues(alpha: 0.18);
+  }
+
+  static Color tagBg(BuildContext context, {required bool strong}) {
+    if (strong) {
+      return Theme.of(context).brightness == Brightness.light
+          ? Colors.white
+          : DouyinTheme.card(context);
+    }
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFFFF3EA)
+        : DouyinTheme.accent.withValues(alpha: 0.12);
+  }
+}
 
 class DouyinMyAddressesPage extends ConsumerStatefulWidget {
   const DouyinMyAddressesPage({super.key});
@@ -140,9 +160,9 @@ class _DouyinMyAddressesPageState extends ConsumerState<DouyinMyAddressesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F4F4),
+      backgroundColor: DouyinTheme.bg(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: DouyinTheme.bg(context),
         foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -375,9 +395,9 @@ class _MemberAddressEditPageState extends ConsumerState<MemberAddressEditPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F0F0),
+      backgroundColor: DouyinTheme.bg(context),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: DouyinTheme.bg(context),
         foregroundColor: DouyinTheme.text(context),
         elevation: 0,
         surfaceTintColor: Colors.transparent,
@@ -518,9 +538,9 @@ class _AddressTabs extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(top: 0),
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 14),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF4F4F4),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: DouyinTheme.bg(context),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Wrap(
         spacing: 26,
@@ -574,7 +594,7 @@ class _AddressCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: DouyinTheme.card(context),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Padding(
@@ -611,7 +631,7 @@ class _AddressCard extends StatelessWidget {
             Text(
               address.fullAddress,
               style: context.typo.body.copyWith(
-                color: const Color(0xFF5F636C),
+                color: DouyinTheme.sub(context),
                 fontSize: 17,
                 height: 1.35,
               ),
@@ -629,15 +649,15 @@ class _AddressCard extends StatelessWidget {
                             ? Icons.check_box
                             : Icons.check_box_outline_blank,
                         color: address.defaultStatus
-                            ? const Color(0xFF4A4F59)
-                            : const Color(0xFFD2D6DD),
+                            ? DouyinTheme.text(context)
+                            : DouyinTheme.line(context),
                         size: 22,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         address.defaultStatus ? '已设购物默认' : '设为购物默认',
                         style: context.typo.caption.copyWith(
-                          color: const Color(0xFF6B6F78),
+                          color: DouyinTheme.sub(context),
                           fontSize: 15,
                         ),
                       ),
@@ -668,7 +688,7 @@ class _EditCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: DouyinTheme.card(context),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Padding(
@@ -726,7 +746,7 @@ class _TextInputRow extends StatelessWidget {
             style: TextStyle(fontSize: 18, color: DouyinTheme.text(context)),
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: const TextStyle(color: Color(0xFFB0B3BA)),
+              hintStyle: TextStyle(color: DouyinTheme.sub(context)),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(vertical: 15),
             ),
@@ -777,12 +797,12 @@ class _TapRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 18,
                   color: placeholder
-                      ? const Color(0xFFB0B3BA)
+                      ? DouyinTheme.sub(context)
                       : DouyinTheme.text(context),
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xFF7A7D84)),
+            Icon(Icons.chevron_right, color: DouyinTheme.sub(context)),
           ],
         ),
       ),
@@ -819,7 +839,10 @@ class _DefaultRow extends StatelessWidget {
                   SizedBox(height: 6),
                   Text(
                     '提醒：下单时会优先使用该地址',
-                    style: TextStyle(fontSize: 15, color: Color(0xFF8F9299)),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: DouyinTheme.sub(context),
+                    ),
                   ),
                 ],
               ),
@@ -829,10 +852,12 @@ class _DefaultRow extends StatelessWidget {
               width: 28,
               height: 28,
               decoration: BoxDecoration(
-                color: value ? DouyinTheme.accent : Colors.white,
+                color: value
+                    ? DouyinTheme.accent
+                    : DouyinTheme.chip(context),
                 borderRadius: BorderRadius.circular(999),
                 border: Border.all(
-                  color: value ? DouyinTheme.accent : const Color(0xFFD9DCE2),
+                  color: value ? DouyinTheme.accent : DouyinTheme.line(context),
                 ),
               ),
               child: value
@@ -888,12 +913,12 @@ class _ChoiceSection extends StatelessWidget {
                   label: Text(options[i]),
                   selected: selected == i,
                   showCheckmark: false,
-                  selectedColor: const Color(0xFFFFECEC),
-                  backgroundColor: const Color(0xFFF6F6F6),
+                  selectedColor: _AddressUi.chipSelectedBg(context),
+                  backgroundColor: DouyinTheme.chip(context),
                   side: BorderSide(
                     color: selected == i
                         ? DouyinTheme.accent
-                        : const Color(0xFFF6F6F6),
+                        : DouyinTheme.line(context),
                   ),
                   labelStyle: TextStyle(
                     color: selected == i
@@ -981,7 +1006,7 @@ class _BottomButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
+      color: AppActionColors.surface(context),
       child: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 760),
@@ -994,7 +1019,9 @@ class _BottomButton extends StatelessWidget {
                 onPressed: onPressed,
                 style: FilledButton.styleFrom(
                   backgroundColor: DouyinTheme.accent,
-                  disabledBackgroundColor: const Color(0xFFFF9AA8),
+                  disabledBackgroundColor: DouyinTheme.accent.withValues(
+                    alpha: 0.45,
+                  ),
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -1026,7 +1053,7 @@ class _MiniTag extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: strong ? Colors.white : const Color(0xFFFFF3EA),
+        color: _AddressUi.tagBg(context, strong: strong),
         borderRadius: BorderRadius.circular(4),
         border: Border.all(color: DouyinTheme.accent),
       ),
@@ -1059,7 +1086,10 @@ class _TextAction extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         child: Text(
           text,
-          style: const TextStyle(color: Color(0xFF5F636C), fontSize: 15),
+          style: TextStyle(
+            color: DouyinTheme.sub(context),
+            fontSize: 15,
+          ),
         ),
       ),
     );
@@ -1071,9 +1101,12 @@ class _ActionSep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8),
-      child: Text('|', style: TextStyle(color: Color(0xFFE9EBEF))),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Text(
+        '|',
+        style: TextStyle(color: DouyinTheme.line(context)),
+      ),
     );
   }
 }
@@ -1083,6 +1116,10 @@ class _DividerLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Divider(height: 1, thickness: 0.7, color: Color(0xFFEDEDED));
+    return Divider(
+      height: 1,
+      thickness: 0.7,
+      color: DouyinTheme.line(context),
+    );
   }
 }
