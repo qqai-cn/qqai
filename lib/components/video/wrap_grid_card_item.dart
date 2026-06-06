@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:qqai/components/blog/blog_follow_button.dart';
+import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
@@ -108,7 +108,7 @@ class WrapGridCardItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 10),
-                child: BlogFollowButton(
+                child: FollowButton(
                   followed: followed,
                   onTap: onFollowTap,
                 ),

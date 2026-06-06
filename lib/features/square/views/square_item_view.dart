@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/follow_button.dart';
 
 import '../../../router/app_routes.dart';
 import '../../../util/format_count.dart';
@@ -402,101 +403,17 @@ class _SquareFooter extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            _FollowControl(
-              density: density,
+            FollowButton(
               followed: followed,
               onTap: onFollowTap,
+              size: density == SquareTileDensity.compact
+                  ? FollowButtonSize.compactIcon
+                  : FollowButtonSize.standard,
+              horizontalPadding:
+                  density == SquareTileDensity.comfortable ? 18 : 14,
+              fontSize: 11.5,
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _FollowControl extends StatelessWidget {
-  const _FollowControl({
-    required this.density,
-    required this.followed,
-    required this.onTap,
-  });
-
-  final SquareTileDensity density;
-  final bool followed;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    if (density == SquareTileDensity.compact) {
-      return _FollowIconButton(followed: followed, onTap: onTap, size: 30);
-    }
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(999),
-        child: Ink(
-          decoration: BoxDecoration(
-            color: followed ? Colors.white : const Color(0xFF3578E5),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: followed ? const Color(0xFFCBD5E1) : const Color(0xFF3578E5),
-            ),
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: density == SquareTileDensity.normal ? 10 : 14,
-              vertical: 5,
-            ),
-            child: Text(
-              followed ? '已关注' : '+ 关注',
-              style: TextStyle(
-                color: followed ? const Color(0xFF64748B) : Colors.white,
-                fontSize: 11.5,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FollowIconButton extends StatelessWidget {
-  const _FollowIconButton({
-    required this.followed,
-    required this.onTap,
-    required this.size,
-  });
-
-  final bool followed;
-  final VoidCallback onTap;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: Ink(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: followed ? Colors.white : const Color(0xFF3578E5),
-            border: Border.all(
-              color: followed ? const Color(0xFFCBD5E1) : const Color(0xFF3578E5),
-            ),
-          ),
-          child: Icon(
-            followed ? Icons.check_rounded : Icons.add_rounded,
-            size: size * 0.52,
-            color: followed ? const Color(0xFF64748B) : Colors.white,
-          ),
         ),
       ),
     );

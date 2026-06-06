@@ -4,6 +4,7 @@ import 'package:qqai/components/default_asset_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/level_icon.dart';
+import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/my/data/models/profile_models.dart';
 import 'package:qqai/features/my/providers/my_followers_providers.dart';
@@ -424,15 +425,14 @@ class _FollowMemberTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
         style: context.typo.caption,
       ),
-      trailing: TextButton(
-        onPressed: isActionLoading ? null : onAction,
-        child: isActionLoading
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Text(actionLabel),
+      trailing: FollowButton(
+        followed: actionLabel == '已关注' || actionLabel == '取消关注',
+        followLabel: actionLabel == '回关' ? '回关' : '关注',
+        followedLabel: actionLabel,
+        onTap: isActionLoading ? null : onAction,
+        loading: isActionLoading,
+        fontSize: 12,
+        horizontalPadding: 14,
       ),
     );
   }

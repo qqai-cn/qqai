@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/profile/profile_banner_overlay_buttons.dart';
 import 'package:qqai/components/label.dart';
+import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
@@ -369,15 +370,10 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ElevatedButton(
-            onPressed: _followLoading ? null : _toggleFollow,
-            child: _followLoading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(followed ? '已关注' : '关注'),
+          FollowButton(
+            followed: followed,
+            onTap: _followLoading ? null : _toggleFollow,
+            loading: _followLoading,
           ),
           const SizedBox(height: 8),
           OutlinedButton(

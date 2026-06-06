@@ -4,10 +4,10 @@ import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/constant/constant.dart';
 import 'package:qqai/config/theme/my_fonts.dart';
 
-import '../../../constant/color_constant.dart';
+import 'package:qqai/components/follow_button.dart';
+import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/video/views/video_item_view.dart';
-import 'package:qqai/config/theme/app_typography.dart';
 
 const String _kMeDetailVideoPlaceholderCover =
     Constant.DEFAULT_IMAGE_PLACEHOLDER;
@@ -139,32 +139,9 @@ class _MeDetailPage extends State<MeDetailPage>
                           alignment: Alignment.centerRight,
                           child: Padding(
                             padding: EdgeInsets.only(right: 10),
-                            child: ElevatedButton(
-                              style: _care
-                                  ? ElevatedButton.styleFrom(
-                                      minimumSize: const Size(20, 35),
-                                      padding: EdgeInsets.only(
-                                        left: 10,
-                                        right: 10,
-                                      ),
-                                    )
-                                  : ElevatedButton.styleFrom(
-                                      minimumSize: const Size(20, 35),
-                                      padding: EdgeInsets.only(
-                                        left: 13,
-                                        right: 13,
-                                      ),
-                                      backgroundColor: ColorConstant.ThemeGreen,
-                                    ),
-                              child: _care
-                                  ? Text(
-                                      "已关注",
-                                      style: context.typo.button.copyWith(
-                                        color: Colors.grey,
-                                      ),
-                                    )
-                                  : Text("关注", style: context.typo.button),
-                              onPressed: () {
+                            child: FollowButton(
+                              followed: _care,
+                              onTap: () {
                                 setState(() {
                                   _care = !_care;
                                 });

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/watchvideo/wait_play_video_list.dart';
 import 'package:qqai/constant/constant.dart';
-import '../../../constant/color_constant.dart';
 import '../../components/video_player_detail/detail_video_player.dart';
 import 'component_item.dart';
 import 'mytabbar_video.dart';
@@ -215,33 +215,10 @@ class _PlayVideoPage extends State<PlayVideoPage>
                   ),
                   trailing: Padding(
                     padding: EdgeInsets.only(right: 10),
-                    child: ElevatedButton(
-                      style: _care
-                          ? ElevatedButton.styleFrom(
-                              minimumSize: const Size(20, 35),
-                              padding: EdgeInsets.only(left: 10, right: 10),
-                            )
-                          : ElevatedButton.styleFrom(
-                              minimumSize: const Size(20, 35),
-                              padding: EdgeInsets.only(left: 13, right: 13),
-                              backgroundColor: ColorConstant.ThemeGreen,
-                            ),
-                      child: _care
-                          ? Text(
-                              "已关注",
-                              style: context.typo.button.copyWith(
-                                fontSize: 13,
-                                color: Colors.grey,
-                              ),
-                            )
-                          : Text(
-                              "关注",
-                              style: context.typo.button.copyWith(
-                                fontSize: 13,
-                                color: Colors.white,
-                              ),
-                            ),
-                      onPressed: () {
+                    child: FollowButton(
+                      followed: _care,
+                      fontSize: 13,
+                      onTap: () {
                         setState(() {
                           _care = !_care;
                         });

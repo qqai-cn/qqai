@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/components/blog/blog_follow_button.dart';
+import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/util/media_url.dart';
 
@@ -78,7 +78,7 @@ class CreatorHeaderRow extends StatelessWidget {
         if (showCareButton)
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: BlogFollowButton(
+            child: FollowButton(
               followed: care == 1,
               onTap: onCareTap,
             ),
