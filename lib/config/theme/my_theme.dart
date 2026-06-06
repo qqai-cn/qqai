@@ -26,6 +26,12 @@ class MyTheme {
                 : DarkThemeColors.backgroundColor,
             brightness: isLight ? Brightness.light : Brightness.dark,
           ).copyWith(
+            primary: isLight
+                ? LightThemeColors.actionButtonForegroundColor
+                : DarkThemeColors.actionButtonForegroundColor,
+            onPrimary: isLight
+                ? LightThemeColors.buttonTextColor
+                : DarkThemeColors.buttonTextColor,
             secondary: isLight
                 ? LightThemeColors.accentColor
                 : DarkThemeColors.accentColor,
@@ -77,6 +83,13 @@ class MyTheme {
       elevatedButtonTheme: MyStyles.getElevatedButtonTheme(
         isLightTheme: isLight,
       ),
+
+      // icon / outline / filled button themes
+      iconButtonTheme: MyStyles.getIconButtonTheme(isLightTheme: isLight),
+      outlinedButtonTheme: MyStyles.getOutlinedButtonTheme(
+        isLightTheme: isLight,
+      ),
+      filledButtonTheme: MyStyles.getFilledButtonTheme(isLightTheme: isLight),
 
       // text button theme (feed actions, share, etc.)
       textButtonTheme: MyStyles.getTextButtonTheme(isLightTheme: isLight),

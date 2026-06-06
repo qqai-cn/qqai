@@ -21,7 +21,7 @@ class DarkThemeColors
   //ICONS
   static const Color actionButtonForegroundColor = Color(0xFFE0E0E0);
   static const Color appBarIconsColor = actionButtonForegroundColor;
-  static const Color iconColor = primaryColor;
+  static const Color iconColor = actionButtonForegroundColor;
 
   //BUTTON
   static const Color buttonColor = primaryColor;

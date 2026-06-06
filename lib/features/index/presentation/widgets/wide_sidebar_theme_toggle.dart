@@ -24,7 +24,7 @@ class WideSidebarThemeToggle extends ConsumerWidget {
       child: Align(
         alignment: isExtended ? Alignment.centerLeft : Alignment.center,
         child: Tooltip(
-          message: isLight ? '切换到夜间' : '切换到浅色',
+          message: isLight ? '切换到夜间' : '切换到白天',
           child: Transform.scale(
             scale: 0.72,
             alignment: isExtended ? Alignment.centerLeft : Alignment.center,

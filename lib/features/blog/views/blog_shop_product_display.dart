@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/config/theme/light_theme_colors.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -46,6 +47,7 @@ void showBlogShopProductsSheet(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
+    backgroundColor: AppActionColors.surface(context),
     builder: (ctx) {
       final bottom = MediaQuery.paddingOf(ctx).bottom;
       return SafeArea(
@@ -55,7 +57,12 @@ void showBlogShopProductsSheet(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('团购商品', style: context.typo.sectionTitle),
+              Text(
+                '团购商品',
+                style: context.typo.sectionTitle.copyWith(
+                  color: AppActionColors.strong(context),
+                ),
+              ),
               const SizedBox(height: 12),
               Flexible(
                 child: ListView.separated(
@@ -105,24 +112,31 @@ class BlogShopProductCartButton extends StatelessWidget {
     final iconColor = overlay
         ? Colors.white
         : AppActionColors.foreground(context);
-    final button = IconButton(
-      tooltip: '商品',
-      onPressed: () => showBlogShopProductsSheet(context, products: products),
-      icon: Icon(Icons.shopping_cart_outlined, color: iconColor, size: 22),
-    );
+    final onPressed = () => showBlogShopProductsSheet(context, products: products);
     if (!overlay) {
-      return Align(alignment: Alignment.centerLeft, child: button);
+      return TextButton.icon(
+        onPressed: onPressed,
+        icon: Icon(Icons.shopping_cart_outlined, color: iconColor),
+        label: const Text('商品'),
+      );
     }
     return Material(
       color: Colors.black.withValues(alpha: 0.42),
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
-      child: SizedBox(width: 40, height: 40, child: button),
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: IconButton(
+          tooltip: '商品',
+          onPressed: onPressed,
+          icon: Icon(Icons.shopping_cart_outlined, color: iconColor, size: 22),
+        ),
+      ),
     );
   }
 }
 
-/// 详情页左下角横向商品条（视频/图文共用）。
 class BlogShopProductStrip extends StatelessWidget {
   const BlogShopProductStrip({
     super.key,
@@ -265,8 +279,16 @@ class BlogShopProductListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final coverUrl = resolveMediaUrl(product.coverUrl);
     final priceText = formatBlogShopProductPrice(product.price);
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    final tileBg = isLight
+        ? LightThemeColors.chipBackground
+        : Theme.of(context).colorScheme.surfaceContainerHighest;
+    final placeholderBg = isLight
+        ? Colors.white
+        : Theme.of(context).colorScheme.surface;
+    final iconColor = AppActionColors.muted(context);
     return Material(
-      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      color: tileBg,
       borderRadius: BorderRadius.circular(10),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -282,16 +304,22 @@ class BlogShopProductListTile extends StatelessWidget {
                   height: 52,
                   child: coverUrl == null
                       ? ColoredBox(
-                          color: Theme.of(context).colorScheme.surface,
-                          child: const Icon(Icons.shopping_bag_outlined),
+                          color: placeholderBg,
+                          child: Icon(
+                            Icons.shopping_bag_outlined,
+                            color: iconColor,
+                          ),
                         )
                       : Image.network(
                           coverUrl,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
                               ColoredBox(
-                                color: Theme.of(context).colorScheme.surface,
-                                child: const Icon(Icons.shopping_bag_outlined),
+                                color: placeholderBg,
+                                child: Icon(
+                                  Icons.shopping_bag_outlined,
+                                  color: iconColor,
+                                ),
                               ),
                         ),
                 ),
@@ -308,6 +336,7 @@ class BlogShopProductListTile extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: context.typo.body.copyWith(
+                        color: AppActionColors.strong(context),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -324,7 +353,7 @@ class BlogShopProductListTile extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right),
+              Icon(Icons.chevron_right, color: iconColor),
             ],
           ),
         ),

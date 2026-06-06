@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -17,6 +18,22 @@ import '../../../my/providers/my_page_profile.dart';
 /// Drawer 头部用户头像尺寸（[DrawerHeader] 内容区约 136px 高）。
 const double _drawerAvatarSize = 80;
 const double _drawerAvatarRingWidth = 3.5;
+const String _defaultCover = 'https://file.qqai.cn/qqai/2025/09/1.webp';
+
+BoxDecoration _drawerHeaderDecoration(String coverUrl) {
+  return BoxDecoration(
+    image: DecorationImage(
+      image: CachedNetworkImageProvider(coverUrl),
+      fit: BoxFit.cover,
+    ),
+  );
+}
+
+String _resolveCoverUrl(String? backgroundUrl) {
+  final url = backgroundUrl?.trim();
+  if (url != null && url.isNotEmpty) return url;
+  return _defaultCover;
+}
 
 Widget _drawerHeaderAvatar({
   required BuildContext context,
@@ -70,7 +87,7 @@ class _DrawerGuestHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerHeader(
-      decoration: const BoxDecoration(color: Colors.blue),
+      decoration: _drawerHeaderDecoration(_defaultCover),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -161,12 +178,16 @@ class _DrawerLoggedInHeader extends ConsumerWidget {
       data: (page) => page.avatar,
       orElse: () => null,
     );
+    final coverUrl = profileAsync.maybeWhen(
+      data: (page) => _resolveCoverUrl(page.backgroundUrl),
+      orElse: () => _defaultCover,
+    );
     final qqId =
         profileAsync.maybeWhen(data: (page) => page.id, orElse: () => null) ??
         int.tryParse(auth.userId ?? '');
 
     return DrawerHeader(
-      decoration: const BoxDecoration(color: Colors.blue),
+      decoration: _drawerHeaderDecoration(coverUrl),
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,

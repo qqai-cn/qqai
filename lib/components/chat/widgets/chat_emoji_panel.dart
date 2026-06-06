@@ -32,9 +32,16 @@ typedef ChatEmojiSelected = void Function(String emoji);
 
 /// 聊天输入框上方的表情选择面板。
 class ChatEmojiPanel extends StatefulWidget {
-  const ChatEmojiPanel({super.key, required this.onEmojiSelected});
+  const ChatEmojiPanel({
+    super.key,
+    required this.onEmojiSelected,
+    this.darkOverlay = false,
+  });
 
   final ChatEmojiSelected onEmojiSelected;
+
+  /// 深色背景（弹幕、视频浮层等）下使用浅色控件。
+  final bool darkOverlay;
 
   @override
   State<ChatEmojiPanel> createState() => _ChatEmojiPanelState();
@@ -52,9 +59,13 @@ class _ChatEmojiPanelState extends State<ChatEmojiPanel> {
   @override
   Widget build(BuildContext context) {
     final emojis = kChatEmojiCategories[_category] ?? const <String>[];
+    final dark = widget.darkOverlay;
+    final bg = dark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Theme.of(context).colorScheme.surfaceContainerLow;
 
     return Material(
-      color: Theme.of(context).colorScheme.surfaceContainerLow,
+      color: bg,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -72,9 +83,17 @@ class _ChatEmojiPanelState extends State<ChatEmojiPanel> {
                     selected: selected,
                     onSelected: (_) => setState(() => _category = name),
                     visualDensity: VisualDensity.compact,
+                    selectedColor: dark
+                        ? Colors.white.withValues(alpha: 0.22)
+                        : null,
+                    backgroundColor: dark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : null,
                     labelStyle: TextStyle(
                       fontSize: 13,
-                      color: selected ? Colors.white : Colors.black,
+                      color: dark
+                          ? (selected ? Colors.white : Colors.white70)
+                          : (selected ? Colors.white : Colors.black),
                     ),
                   ),
                 );

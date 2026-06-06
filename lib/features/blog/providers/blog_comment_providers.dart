@@ -28,8 +28,20 @@ class BlogCommentThread {
     List<BlogComment>? replies,
     this.loadingReplies = false,
     this.repliesPage = 0,
-    this.hasMoreReplies = true,
-  }) : replies = replies ?? List<BlogComment>.from(root.previewReplies);
+    bool? hasMoreReplies,
+  }) : replies = List<BlogComment>.from(replies ?? root.previewReplies),
+       hasMoreReplies =
+           hasMoreReplies ??
+           _initialHasMoreReplies(root, replies ?? root.previewReplies);
+
+  static bool _initialHasMoreReplies(
+    BlogComment root,
+    List<BlogComment> loaded,
+  ) {
+    final total = root.replyCount;
+    if (total == null) return false;
+    return loaded.length < total;
+  }
 
   final BlogComment root;
   final List<BlogComment> replies;
@@ -37,9 +49,13 @@ class BlogCommentThread {
   final int repliesPage;
   final bool hasMoreReplies;
 
-  int get replyTotal => root.replyCount ?? replies.length;
+  int get replyTotal {
+    final count = root.replyCount;
+    if (count != null && count >= 0) return count;
+    return replies.length;
+  }
 
-  bool get canExpandMore => replyTotal > replies.length || hasMoreReplies;
+  bool get canExpandMore => !loadingReplies && replies.length < replyTotal;
 
   BlogCommentThread copyWith({
     BlogComment? root,
@@ -193,35 +209,91 @@ class BlogComments extends _$BlogComments {
     }
   }
 
-  Future<void> expandReplies(int threadIndex) async {
-    if (threadIndex < 0 || threadIndex >= state.threads.length) return;
-    final thread = state.threads[threadIndex];
-    final rootId = thread.root.id;
-    if (rootId == null || thread.loadingReplies) return;
+  Future<void> expandReplies(int rootCommentId) async {
+    final threadIndex = state.threads.indexWhere(
+      (thread) => thread.root.id == rootCommentId,
+    );
+    if (threadIndex < 0) return;
 
-    final nextPage = thread.repliesPage + 1;
-    final threads = [...state.threads];
-    threads[threadIndex] = thread.copyWith(loadingReplies: true);
-    state = state.copyWith(threads: threads);
+    final thread = state.threads[threadIndex];
+    if (thread.loadingReplies || !thread.canExpandMore) return;
+
+    final targetTotal = thread.replyTotal;
+    _setThread(
+      rootCommentId,
+      (current) => current.copyWith(loadingReplies: true),
+    );
 
     try {
-      final page = await _repo.getRepliesPage(
-        rootId: rootId,
-        pageNo: nextPage,
+      var merged = List<BlogComment>.from(thread.replies);
+      var pageNo = 1;
+      const pageSize = 200;
+      int? serverTotal;
+
+      while (merged.length < targetTotal && pageNo <= 10) {
+        final page = await _repo.getRepliesPage(
+          rootId: rootCommentId,
+          pageNo: pageNo,
+          pageSize: pageSize,
+        );
+        serverTotal ??= page.total;
+        final incoming = page.list ?? const <BlogComment>[];
+        if (incoming.isEmpty) break;
+
+        final nextMerged = _mergeReplies(merged, incoming);
+        if (nextMerged.length == merged.length) {
+          if (incoming.length < pageSize) break;
+          pageNo++;
+          continue;
+        }
+        merged = nextMerged;
+        final total = serverTotal ?? targetTotal;
+        if (merged.length >= total || incoming.length < pageSize) break;
+        pageNo++;
+      }
+
+      merged.sort((a, b) => (a.id ?? 0).compareTo(b.id ?? 0));
+      final total = serverTotal ?? targetTotal;
+
+      _setThread(rootCommentId, (current) {
+        return current.copyWith(
+          replies: merged,
+          loadingReplies: false,
+          repliesPage: pageNo,
+          hasMoreReplies: merged.length < total,
+        );
+      });
+
+      final updatedIndex = state.threads.indexWhere(
+        (item) => item.root.id == rootCommentId,
       );
-      final newList = page.list ?? [];
-      final merged = _mergeReplies(thread.replies, newList);
-      threads[threadIndex] = thread.copyWith(
-        replies: merged,
-        loadingReplies: false,
-        repliesPage: nextPage,
-        hasMoreReplies: newList.length >= 20,
-      );
-      state = state.copyWith(threads: threads);
+      if (updatedIndex >= 0) {
+        final updated = state.threads[updatedIndex];
+        if (updated.replies.length < targetTotal &&
+            updated.replies.length == thread.replies.length) {
+          state = state.copyWith(error: '回复加载失败，请稍后重试');
+        }
+      }
     } catch (e) {
-      threads[threadIndex] = thread.copyWith(loadingReplies: false);
-      state = state.copyWith(threads: threads, error: e.toString());
+      _setThread(
+        rootCommentId,
+        (current) => current.copyWith(loadingReplies: false),
+      );
+      state = state.copyWith(error: e.toString());
     }
+  }
+
+  void _setThread(
+    int rootCommentId,
+    BlogCommentThread Function(BlogCommentThread current) update,
+  ) {
+    final index = state.threads.indexWhere(
+      (thread) => thread.root.id == rootCommentId,
+    );
+    if (index < 0) return;
+    final threads = [...state.threads];
+    threads[index] = update(threads[index]);
+    state = state.copyWith(threads: threads);
   }
 
   List<BlogComment> _mergeReplies(

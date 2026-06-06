@@ -20,7 +20,7 @@ class LightThemeColors
   //ICONS
   static const Color actionButtonForegroundColor = Color(0xFF424242);
   static const Color appBarIconsColor = actionButtonForegroundColor;
-  static const Color iconColor = Colors.black;
+  static const Color iconColor = actionButtonForegroundColor;
 
   //BUTTON
   static const Color buttonColor = primaryColor;

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/components/chat/widgets/floating_emoji_picker.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_danmaku_model.dart';
 import 'package:qqai/features/blog/data/repos/blog_danmaku_repo.dart';
@@ -332,12 +333,55 @@ class BlogDanmakuComposer extends ConsumerStatefulWidget {
 
 class _BlogDanmakuComposerState extends ConsumerState<BlogDanmakuComposer> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+  final _emojiButtonKey = GlobalKey();
+  late final FloatingEmojiPickerController _emojiPicker;
   bool _submitting = false;
 
   @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChange);
+    _emojiPicker = FloatingEmojiPickerController(
+      darkOverlay: true,
+      onEmojiSelected: _insertEmoji,
+      onVisibilityChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
+  }
+
+  void _onFocusChange() {
+    if (_focusNode.hasFocus && _emojiPicker.isVisible && mounted) {
+      _emojiPicker.hide();
+      setState(() {});
+    }
+  }
+
+  @override
   void dispose() {
+    _emojiPicker.dispose();
+    _focusNode.removeListener(_onFocusChange);
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _toggleEmojiPanel() {
+    if (_emojiPicker.isVisible) {
+      _emojiPicker.hide();
+      _focusNode.requestFocus();
+      setState(() {});
+      return;
+    }
+    _emojiPicker.show(context, _emojiButtonKey);
+    _focusNode.unfocus();
+    setState(() {});
+  }
+
+  void _insertEmoji(String emoji) {
+    if (!insertTextAtSelection(_controller, emoji, maxLength: 80)) return;
+    _focusNode.requestFocus();
   }
 
   Future<void> _submit() async {
@@ -380,16 +424,27 @@ class _BlogDanmakuComposerState extends ConsumerState<BlogDanmakuComposer> {
             ),
             child: Row(
               children: [
-                const SizedBox(width: 14),
-                const Icon(
-                  Icons.sentiment_satisfied_alt_outlined,
-                  color: Colors.white70,
-                  size: 22,
+                IconButton(
+                  key: _emojiButtonKey,
+                  onPressed: _toggleEmojiPanel,
+                  tooltip: _emojiPicker.isVisible ? '键盘' : '表情',
+                  icon: Icon(
+                    _emojiPicker.isVisible
+                        ? Icons.keyboard_outlined
+                        : Icons.emoji_emotions_outlined,
+                    color: Colors.white70,
+                    size: 22,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 40,
+                    minHeight: 40,
+                  ),
                 ),
-                const SizedBox(width: 8),
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    focusNode: _focusNode,
                     minLines: 1,
                     maxLines: 1,
                     maxLength: 80,
@@ -407,6 +462,7 @@ class _BlogDanmakuComposerState extends ConsumerState<BlogDanmakuComposer> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
               ],
             ),
           ),
@@ -418,7 +474,10 @@ class _BlogDanmakuComposerState extends ConsumerState<BlogDanmakuComposer> {
             backgroundColor: Colors.white.withValues(alpha: 0.18),
             foregroundColor: Colors.white,
             disabledBackgroundColor: Colors.white.withValues(alpha: 0.1),
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 14,
+            ),
           ),
           child: _submitting
               ? const SizedBox(

@@ -580,26 +580,14 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                 ],
                               ),
                               const SizedBox(height: 5),
-                              Expanded(
-                                child: Align(
-                                  alignment: Alignment.topLeft,
-                                  child: GestureDetector(
-                                    onTap: hasCustomIntro
-                                        ? () => _showFullIntroSheet(
-                                            context,
-                                            intro,
-                                          )
-                                        : null,
-                                    behavior: HitTestBehavior.opaque,
-                                    child: Text(
-                                      intro,
-                                      style: context.typo.body,
-                                      maxLines: _isSelf ? 3 : 4,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ),
+                              _ProfileIntroText(
+                                text: intro,
+                                maxLines: 2,
+                                expandable: hasCustomIntro,
+                                onTapExpand: () =>
+                                    _showFullIntroSheet(context, intro),
                               ),
+                              const Spacer(),
                               if (hasProfileMeta) ...[
                                 const SizedBox(height: 5),
                                 Row(
@@ -691,6 +679,100 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 主页个性签名：最多 [maxLines] 行，超出右侧省略；溢出时显示「展开」。
+class _ProfileIntroText extends StatefulWidget {
+  const _ProfileIntroText({
+    required this.text,
+    required this.maxLines,
+    required this.expandable,
+    required this.onTapExpand,
+  });
+
+  final String text;
+  final int maxLines;
+  final bool expandable;
+  final VoidCallback onTapExpand;
+
+  @override
+  State<_ProfileIntroText> createState() => _ProfileIntroTextState();
+}
+
+class _ProfileIntroTextState extends State<_ProfileIntroText> {
+  bool _overflow = false;
+
+  static const _expandLabel = '更多';
+
+  TextStyle _linkStyle(BuildContext context, TextStyle base) {
+    return base.copyWith(
+      color: AppActionColors.foreground(context),
+      fontWeight: FontWeight.w600,
+    );
+  }
+
+  void _measureOverflow(double maxWidth, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(text: widget.text, style: style),
+      maxLines: widget.maxLines,
+      textDirection: Directionality.of(context),
+      ellipsis: '…',
+    )..layout(maxWidth: maxWidth);
+
+    final overflow = painter.didExceedMaxLines;
+    if (overflow != _overflow && mounted) {
+      setState(() => _overflow = overflow);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProfileIntroText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text ||
+        oldWidget.maxLines != widget.maxLines ||
+        oldWidget.expandable != widget.expandable) {
+      _overflow = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = context.typo.body;
+    final linkStyle = _linkStyle(context, style);
+    final showExpand = _overflow && widget.expandable;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          _measureOverflow(constraints.maxWidth, style);
+        });
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Text(
+                widget.text,
+                style: style,
+                maxLines: widget.maxLines,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (showExpand)
+              Padding(
+                padding: const EdgeInsets.only(left: 4),
+                child: GestureDetector(
+                  onTap: widget.onTapExpand,
+                  behavior: HitTestBehavior.opaque,
+                  child: Text(_expandLabel, style: linkStyle),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

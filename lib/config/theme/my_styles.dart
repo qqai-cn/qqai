@@ -257,10 +257,68 @@ class MyStyles {
           {required bool isLightTheme}) =>
       ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          foregroundColor: isLightTheme
+              ? LightThemeColors.buttonTextColor
+              : DarkThemeColors.buttonTextColor,
+          backgroundColor: isLightTheme
+              ? LightThemeColors.actionButtonForegroundColor
+              : DarkThemeColors.actionButtonForegroundColor,
+          elevation: 0,
+          shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(10))),
         ),
       );
+
+  /// IconButton（顶栏、发送、更多等）与列表操作色一致。
+  static IconButtonThemeData getIconButtonTheme({required bool isLightTheme}) {
+    final foreground = isLightTheme
+        ? LightThemeColors.actionButtonForegroundColor
+        : DarkThemeColors.actionButtonForegroundColor;
+    return IconButtonThemeData(
+      style: IconButton.styleFrom(foregroundColor: foreground),
+    );
+  }
+
+  /// OutlinedButton 与列表页 TextButton 操作色一致。
+  static OutlinedButtonThemeData getOutlinedButtonTheme(
+      {required bool isLightTheme}) {
+    final foreground = isLightTheme
+        ? LightThemeColors.actionButtonForegroundColor
+        : DarkThemeColors.actionButtonForegroundColor;
+    final border = isLightTheme
+        ? Colors.black12
+        : Colors.white.withValues(alpha: 0.12);
+    return OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: foreground,
+        side: BorderSide(color: border),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+      ),
+    );
+  }
+
+  /// FilledButton 默认与操作按钮色一致（页面可局部 override）。
+  static FilledButtonThemeData getFilledButtonTheme({required bool isLightTheme}) {
+    final background = isLightTheme
+        ? LightThemeColors.actionButtonForegroundColor
+        : DarkThemeColors.actionButtonForegroundColor;
+    final foreground = isLightTheme
+        ? LightThemeColors.buttonTextColor
+        : DarkThemeColors.buttonTextColor;
+    return FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: background,
+        foregroundColor: foreground,
+        elevation: 0,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+      ),
+    );
+  }
 
   /// 列表/顶栏 TextButton.icon（喜欢、评论、分享等）统一前景色。
   static TextButtonThemeData getTextButtonTheme({required bool isLightTheme}) {
@@ -274,6 +332,10 @@ class MyStyles {
         padding: const EdgeInsets.symmetric(horizontal: 8),
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: MyFonts.buttonTextStyle.copyWith(
+          color: foreground,
+          fontSize: MyFonts.buttonTextSize,
+        ),
       ),
     );
   }
@@ -349,12 +411,14 @@ class MyStyles {
   }
 
   static BottomSheetThemeData getBottomSheetTheme({required bool isLightTheme}) {
+    final sheetColor = isLightTheme
+        ? LightThemeColors.cardColor
+        : DarkThemeColors.cardColor;
     return BottomSheetThemeData(
-      backgroundColor: isLightTheme
-          ? LightThemeColors.cardColor
-          : DarkThemeColors.cardColor,
+      backgroundColor: sheetColor,
       surfaceTintColor: Colors.transparent,
-      modalBackgroundColor: Colors.black54,
+      modalBackgroundColor: sheetColor,
+      dragHandleColor: isLightTheme ? Colors.black26 : Colors.white38,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),

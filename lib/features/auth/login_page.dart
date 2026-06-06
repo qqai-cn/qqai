@@ -568,7 +568,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             right: 0,
             child: SafeArea(
               child: IconButton(
-                tooltip: c.isDark ? '切换到浅色' : '切换到夜间',
+                tooltip: c.isDark ? '切换到白天' : '切换到夜间',
                 icon: Icon(
                   c.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                   color: c.bodyText.withValues(alpha: 0.82),

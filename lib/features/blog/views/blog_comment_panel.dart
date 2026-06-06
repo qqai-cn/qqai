@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/chat/widgets/floating_emoji_picker.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/config/theme/my_fonts.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
@@ -12,6 +15,21 @@ import 'package:qqai/util/media_url.dart';
 import '../data/models/blog_comment_model.dart';
 import '../data/models/blog_page_model.dart';
 import '../providers/blog_comment_providers.dart';
+
+TextStyle _blogCommentContentStyle(BuildContext context) {
+  final wide = MyFonts.isWideScreen(context);
+  return context.typo.body.copyWith(
+    fontSize: wide ? 14 : 13,
+    height: 1.35,
+  );
+}
+
+TextStyle _blogCommentMetaStyle(BuildContext context) {
+  final wide = MyFonts.isWideScreen(context);
+  return context.typo.caption.copyWith(
+    fontSize: wide ? 12 : 11,
+  );
+}
 
 void showBlogCommentSheet(BuildContext context, BlogItem blog) {
   final blogId = blog.id;
@@ -69,9 +87,65 @@ class BlogCommentPanel extends ConsumerStatefulWidget {
 class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
   final TextEditingController _input = TextEditingController();
   final FocusNode _focusNode = FocusNode();
+  final GlobalKey _emojiButtonKey = GlobalKey();
+  late final FloatingEmojiPickerController _emojiPicker;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChange);
+    _focusNode.onKeyEvent = _handleCommentKey;
+    _emojiPicker = FloatingEmojiPickerController(
+      onEmojiSelected: _insertEmoji,
+      onVisibilityChanged: () {
+        if (mounted) setState(() {});
+      },
+    );
+  }
+
+  void _onFocusChange() {
+    if (_focusNode.hasFocus && _emojiPicker.isVisible && mounted) {
+      _emojiPicker.hide();
+      setState(() {});
+    }
+  }
+
+  KeyEventResult _handleCommentKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final isEnter = event.logicalKey == LogicalKeyboardKey.enter ||
+        event.logicalKey == LogicalKeyboardKey.numpadEnter;
+    if (!isEnter || HardwareKeyboard.instance.isShiftPressed) {
+      return KeyEventResult.ignored;
+    }
+    if (!mounted) return KeyEventResult.handled;
+    final feed = ref.read(blogCommentsProvider(widget.blogId));
+    if (feed.sending) return KeyEventResult.handled;
+    final notifier = ref.read(blogCommentsProvider(widget.blogId).notifier);
+    _submit(context, notifier);
+    return KeyEventResult.handled;
+  }
+
+  void _toggleEmojiPanel() {
+    if (_emojiPicker.isVisible) {
+      _emojiPicker.hide();
+      _focusNode.requestFocus();
+      setState(() {});
+      return;
+    }
+    _emojiPicker.show(context, _emojiButtonKey);
+    _focusNode.unfocus();
+    setState(() {});
+  }
+
+  void _insertEmoji(String emoji) {
+    insertTextAtSelection(_input, emoji);
+    _focusNode.requestFocus();
+  }
 
   @override
   void dispose() {
+    _emojiPicker.dispose();
+    _focusNode.removeListener(_onFocusChange);
     _input.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -175,7 +249,12 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
     }
     if (!feed.loading && feed.threads.isEmpty) {
       return Center(
-        child: Text('暂无评论，快来抢沙发', style: context.typo.body),
+        child: Text(
+          '暂无评论，快来抢沙发',
+          style: _blogCommentContentStyle(context).copyWith(
+            color: AppActionColors.muted(context),
+          ),
+        ),
       );
     }
 
@@ -208,7 +287,10 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
               notifier.replyToRoot(feed.threads[index].root);
               _focusNode.requestFocus();
             },
-            onExpandReplies: () => notifier.expandReplies(index),
+            onExpandReplies: () {
+              final rootId = feed.threads[index].root.id;
+              if (rootId != null) notifier.expandReplies(rootId);
+            },
             onReplyComment: (reply) {
               notifier.replyToComment(
                 feed.threads[index].root,
@@ -262,6 +344,17 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
             padding: const EdgeInsets.fromLTRB(12, 6, 12, 8),
             child: Row(
               children: [
+                IconButton(
+                  key: _emojiButtonKey,
+                  onPressed: _toggleEmojiPanel,
+                  tooltip: _emojiPicker.isVisible ? '键盘' : '表情',
+                  icon: Icon(
+                    _emojiPicker.isVisible
+                        ? Icons.keyboard_outlined
+                        : Icons.emoji_emotions_outlined,
+                    color: AppActionColors.foreground(context),
+                  ),
+                ),
                 Expanded(
                   child: TextField(
                     controller: _input,
@@ -292,7 +385,7 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
                         borderSide: BorderSide(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: AppActionColors.foreground(context),
                         ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
@@ -357,6 +450,7 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
     final ok = await notifier.submitComment(_input.text);
     if (ok) {
       _input.clear();
+      _emojiPicker.hide();
       if (mounted) _focusNode.unfocus();
     }
   }
@@ -483,7 +577,7 @@ class _RootCommentTile extends StatelessWidget {
                       )
                     : Text(
                         _expandRepliesLabel(thread),
-                        style: context.typo.caption.copyWith(
+                        style: _blogCommentMetaStyle(context).copyWith(
                           color: Colors.blue,
                         ),
                       ),
@@ -525,7 +619,7 @@ class _CommentRow extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Avatar(url: avatarUrl, size: isRoot ? 40 : 32),
+        _Avatar(url: avatarUrl, size: isRoot ? 36 : 30),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -536,7 +630,7 @@ class _CommentRow extends StatelessWidget {
                   Flexible(
                     child: Text(
                       comment.nickname ?? '用户',
-                      style: context.typo.caption.copyWith(
+                      style: _blogCommentMetaStyle(context).copyWith(
                         color: AppActionColors.muted(context),
                         fontWeight: FontWeight.w600,
                       ),
@@ -601,13 +695,13 @@ class _CommentRow extends StatelessWidget {
                       children: [
                         TextSpan(
                           text: '回复 ',
-                          style: context.typo.caption.copyWith(
+                          style: _blogCommentMetaStyle(context).copyWith(
                             color: AppActionColors.subtle(context),
                           ),
                         ),
                         TextSpan(
                           text: comment.replyNickname,
-                          style: context.typo.caption.copyWith(
+                          style: _blogCommentMetaStyle(context).copyWith(
                             color: Colors.blue,
                           ),
                         ),
@@ -617,14 +711,14 @@ class _CommentRow extends StatelessWidget {
                 ),
               SelectableText(
                 comment.content ?? '',
-                style: context.typo.body,
+                style: _blogCommentContentStyle(context),
               ),
               const SizedBox(height: 4),
               Row(
                 children: [
                   Text(
                     _formatTime(comment.createTime),
-                    style: context.typo.caption.copyWith(
+                    style: _blogCommentMetaStyle(context).copyWith(
                       color: AppActionColors.subtle(context),
                     ),
                   ),
@@ -633,7 +727,7 @@ class _CommentRow extends StatelessWidget {
                     onTap: onReply,
                     child: Text(
                       '回复',
-                      style: context.typo.caption.copyWith(
+                      style: _blogCommentMetaStyle(context).copyWith(
                         color: AppActionColors.muted(context),
                       ),
                     ),
@@ -649,7 +743,7 @@ class _CommentRow extends StatelessWidget {
                           comment.liked == true
                               ? Icons.favorite
                               : Icons.favorite_border,
-                          size: 16,
+                          size: 14,
                           color: comment.liked == true
                               ? Colors.red
                               : AppActionColors.subtle(context),
@@ -659,7 +753,7 @@ class _CommentRow extends StatelessWidget {
                           (comment.likeCount ?? 0) > 0
                               ? formatCompactCount(comment.likeCount)
                               : '',
-                          style: context.typo.caption.copyWith(
+                          style: _blogCommentMetaStyle(context).copyWith(
                             color: AppActionColors.subtle(context),
                           ),
                         ),
