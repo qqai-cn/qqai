@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 import '../../components/qq_tab_bar.dart';
 import '../../router/app_routes.dart';
@@ -393,12 +394,14 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
     return InputDecoration(
       labelText: label,
       hintText: hintText,
+      labelStyle: TextStyle(color: AppActionColors.muted(context)),
+      hintStyle: TextStyle(color: AppActionColors.subtle(context)),
       filled: true,
-      fillColor: const Color(0xFFF8F9FB),
+      fillColor: GoodsPageStyle.imageBg(context),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        borderSide: BorderSide(color: GoodsPageStyle.border(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -415,7 +418,9 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFFEFF6FF)
+                : const Color(0xFF3578E5).withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Icon(
@@ -450,7 +455,10 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
         IconButton(
           tooltip: '关闭',
           onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close),
+          icon: Icon(
+            Icons.close,
+            color: AppActionColors.foreground(context),
+          ),
         ),
       ],
     );
@@ -482,11 +490,16 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
         constraints: const BoxConstraints(maxWidth: 480),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppActionColors.surface(context),
             borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: GoodsPageStyle.border(context)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.light
+                      ? 0.12
+                      : 0.35,
+                ),
                 blurRadius: 30,
                 offset: const Offset(0, 14),
               ),
@@ -506,6 +519,7 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     textInputAction: TextInputAction.next,
+                    style: TextStyle(color: AppActionColors.strong(context)),
                     decoration: _fieldDecoration(
                       '千千号 *',
                       hintText: '输入对方千千号',
@@ -516,6 +530,7 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
                     controller: _msgCtrl,
                     minLines: 2,
                     maxLines: 4,
+                    style: TextStyle(color: AppActionColors.strong(context)),
                     decoration: _fieldDecoration(
                       '验证消息',
                       hintText: '简单介绍一下自己（可选）',
@@ -527,6 +542,9 @@ class _ApplyFriendDialogState extends State<_ApplyFriendDialog> {
                       minimumSize: const Size.fromHeight(46),
                       backgroundColor: const Color(0xFF3578E5),
                       foregroundColor: Colors.white,
+                      disabledBackgroundColor:
+                          AppActionColors.borderSubtle(context),
+                      disabledForegroundColor: AppActionColors.subtle(context),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(23),
                       ),

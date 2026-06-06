@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lpinyin/lpinyin.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/constant/constant.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 import '../../../util/media_url.dart';
 import '../../../util/utils.dart';
@@ -29,6 +31,33 @@ class FriendsPage extends ConsumerStatefulWidget {
 
 class _FriendsPageState extends ConsumerState<FriendsPage> {
   int indexSel = 0;
+
+  static Color _selectedTileColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? Constant.SELECT_COLOR
+        : Colors.white.withValues(alpha: 0.08);
+  }
+
+  Widget _susItem(BuildContext context, String tag, {double susHeight = 40}) {
+    if (tag == '★') {
+      tag = '★ 热门城市';
+    }
+    return Container(
+      height: susHeight,
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.only(left: 16.0),
+      color: GoodsPageStyle.sectionBg(context),
+      alignment: Alignment.centerLeft,
+      child: Text(
+        tag,
+        softWrap: false,
+        style: TextStyle(
+          fontSize: 14.0,
+          color: AppActionColors.muted(context),
+        ),
+      ),
+    );
+  }
 
   final List<ContactInfo> _topList = [
     ContactInfo(
@@ -236,7 +265,11 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('$e', textAlign: TextAlign.center),
+              Text(
+                '$e',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: AppActionColors.muted(context)),
+              ),
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: _onRefresh,
@@ -278,7 +311,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
                     return getWeChatListItem(
                       context,
                       model,
-                      defHeaderBgColor: const Color(0xFFE5E5E5),
+                      defHeaderBgColor: GoodsPageStyle.imageBg(context),
                     );
                   },
                   physics: const AlwaysScrollableScrollPhysics(
@@ -289,7 +322,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
                     if ('↑' == model.getSuspensionTag()) {
                       return Container();
                     }
-                    return Utils.getSusItem(context, model.getSuspensionTag());
+                    return _susItem(context, model.getSuspensionTag());
                   },
                   indexBarData: ['↑', '☆', ...kIndexBarData],
                   indexBarOptions: IndexBarOptions(
@@ -327,8 +360,13 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
                 flex: 5,
                 child: showDetail
                     ? FriendsDetailView(userId: indexSel, showAppBar: false)
-                    : const Center(
-                        child: Text('请选择好友'),
+                    : Center(
+                        child: Text(
+                          '请选择好友',
+                          style: TextStyle(
+                            color: AppActionColors.muted(context),
+                          ),
+                        ),
                       ),
               ),
           ],
@@ -353,7 +391,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   }) {
     return ListTile(
       selected: model.id != null && indexSel == model.id,
-      selectedTileColor: Constant.SELECT_COLOR,
+      selectedTileColor: _selectedTileColor(context),
       leading: _buildFriendLeading(context, model, defHeaderBgColor: defHeaderBgColor),
       title: Text(_contactTitle(model)),
       trailing: model.id == 12
@@ -418,7 +456,9 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
   Widget _letterLeading(BuildContext context, ContactInfo model) {
     return Text(
       PinyinHelper.getPinyinE(model.name).substring(0, 1).toUpperCase(),
-      style: context.typo.bodyStrong.copyWith(color: Colors.blue),
+      style: context.typo.bodyStrong.copyWith(
+        color: Theme.of(context).colorScheme.secondary,
+      ),
     );
   }
 }

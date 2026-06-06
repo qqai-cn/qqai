@@ -44,9 +44,7 @@ class DouyinServiceStrip extends StatelessWidget {
     // 固定高度，保证横向 ScrollView 有明确竖直约束，避免图标与文字叠在一起
     return SizedBox(
       width: double.infinity,
-      child: DecoratedBox(
-        decoration: BoxDecoration(color: DouyinTheme.bg(context)),
-        child: SingleChildScrollView(
+      child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             spacing: 20,
@@ -60,14 +58,12 @@ class DouyinServiceStrip extends StatelessWidget {
                   onPress: () {
                     context.push(items[i].route);
                   },
-                  textColor: Colors.black,
                 ),
                 // if (i < items.length - 1) SizedBox(width: 12.w),
               ],
             ],
           ),
         ),
-      ),
     );
   }
 }

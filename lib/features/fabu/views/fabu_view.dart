@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../components/qq_tab_bar.dart';
@@ -122,14 +123,15 @@ class _FabuViewState extends ConsumerState<FabuView>
   Widget build(BuildContext context) {
     final fabuState = ref.watch(fabuProvider);
     return Scaffold(
+      backgroundColor: GoodsPageStyle.pageBg(context),
       appBar: AppBar(
         backgroundColor: AppActionColors.surface(context),
         surfaceTintColor: AppActionColors.surface(context),
         elevation: 0,
-        title: const Text(
+        title: Text(
           '发布',
           style: TextStyle(
-            color: Color(0xFF202124),
+            color: AppActionColors.strong(context),
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -143,8 +145,8 @@ class _FabuViewState extends ConsumerState<FabuView>
                 padding: const EdgeInsets.symmetric(horizontal: 18),
                 backgroundColor: const Color(0xFF3578E5),
                 foregroundColor: Colors.white,
-                disabledBackgroundColor: const Color(0xFFE5E7EB),
-                disabledForegroundColor: const Color(0xFF9CA3AF),
+                disabledBackgroundColor: AppActionColors.borderSubtle(context),
+                disabledForegroundColor: AppActionColors.subtle(context),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(18),
                 ),

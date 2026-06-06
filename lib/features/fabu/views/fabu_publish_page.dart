@@ -9,6 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/components/video_player/local_qqai_player.dart';
 import 'package:qqai/util/media_url.dart';
 
@@ -30,6 +31,36 @@ enum FabuPublishType {
 
   final String title;
   final bool allowImages;
+}
+
+abstract final class _FabuPublishColors {
+  static Color panelBg(BuildContext context) => GoodsPageStyle.imageBg(context);
+
+  static Color border(BuildContext context) => GoodsPageStyle.border(context);
+
+  static Color text(BuildContext context) => GoodsPageStyle.text(context);
+
+  static Color accentTintBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFEAF2FF)
+        : const Color(0xFF3578E5).withValues(alpha: 0.18);
+  }
+
+  static double cardShadowAlpha(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light ? 0.05 : 0.35;
+  }
+
+  static Color rewardSelectedBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFFFF3D7)
+        : const Color(0xFFFFC54D).withValues(alpha: 0.18);
+  }
+
+  static Color dragHandle(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFD6D6D6)
+        : Colors.white.withValues(alpha: 0.24);
+  }
 }
 
 class FabuPublishPage extends ConsumerStatefulWidget {
@@ -132,10 +163,12 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
             decoration: BoxDecoration(
               color: AppActionColors.surface(context),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFECEEF2)),
+              border: Border.all(color: _FabuPublishColors.border(context)),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
+                  color: Colors.black.withValues(
+                    alpha: _FabuPublishColors.cardShadowAlpha(context),
+                  ),
                   blurRadius: 24,
                   offset: const Offset(0, 10),
                 ),
@@ -154,8 +187,8 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     borderRadius: BorderRadius.circular(14),
                     child: DecoratedBox(
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF8F9FB),
-                        border: Border.all(color: const Color(0xFFECEEF2)),
+                        color: _FabuPublishColors.panelBg(context),
+                        border: Border.all(color: _FabuPublishColors.border(context)),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Column(
@@ -303,9 +336,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     ? BoxConstraints(minHeight: 180.h)
                     : null,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FB),
+                  color: _FabuPublishColors.panelBg(context),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFE1E5EB)),
+                  border: Border.all(color: _FabuPublishColors.border(context)),
                 ),
                 child: AspectRatio(
                   aspectRatio: widget.type == FabuPublishType.video
@@ -320,7 +353,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
+                              color: Colors.black.withValues(
+                                alpha: _FabuPublishColors.cardShadowAlpha(context),
+                              ),
                               blurRadius: 10,
                               offset: const Offset(0, 4),
                             ),
@@ -405,7 +440,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                     ? '分段视频（${videoFiles.length} 段，可左右滑动预览）'
                     : '视频预览',
                 style: context.typo.body.copyWith(
-                  color: const Color(0xFF202124),
+                  color: _FabuPublishColors.text(context),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -482,9 +517,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final musicName = state.backgroundMusicName?.trim();
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FB),
+        color: _FabuPublishColors.panelBg(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE1E5EB)),
+        border: Border.all(color: _FabuPublishColors.border(context)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -495,10 +530,10 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               onTap: () => _showBackgroundMusicSheet(notifier),
               child: Row(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 17,
-                    backgroundColor: Color(0xFFEAF2FF),
-                    child: Icon(
+                    backgroundColor: _FabuPublishColors.accentTintBg(context),
+                    child: const Icon(
                       Icons.music_note_outlined,
                       color: Color(0xFF3578E5),
                       size: 20,
@@ -513,7 +548,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.typo.body.copyWith(
-                        color: const Color(0xFF202124),
+                        color: _FabuPublishColors.text(context),
                         fontWeight: hasMusic
                             ? FontWeight.w700
                             : FontWeight.w500,
@@ -532,7 +567,10 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
               ),
             ),
             if (widget.type == FabuPublishType.video && hasMusic) ...[
-              const Divider(height: 14, color: Color(0xFFECEEF2)),
+              Divider(
+                height: 14,
+                color: _FabuPublishColors.border(context),
+              ),
               InkWell(
                 borderRadius: BorderRadius.circular(12),
                 onTap: () => _showSoundModeSheet(state, notifier),
@@ -631,9 +669,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FB),
+        color: _FabuPublishColors.panelBg(context),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE1E5EB)),
+        border: Border.all(color: _FabuPublishColors.border(context)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -649,7 +687,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       Text(
                         hasDisplay ? '视频封面预览' : '视频封面',
                         style: context.typo.body.copyWith(
-                          color: const Color(0xFF202124),
+                          color: _FabuPublishColors.text(context),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -703,11 +741,11 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                       });
                     }
                   },
-                  selectedColor: const Color(0xFFEAF2FF),
+                  selectedColor: _FabuPublishColors.accentTintBg(context),
                   side: BorderSide(
                     color: selected
                         ? const Color(0xFF3578E5)
-                        : const Color(0xFFE1E5EB),
+                        : _FabuPublishColors.border(context),
                   ),
                   labelStyle: context.typo.caption.copyWith(
                     color: selected
@@ -1190,8 +1228,10 @@ class _RewardSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: Color(0xFFECEEF2))),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(color: _FabuPublishColors.border(context)),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.only(top: 16),
@@ -1213,21 +1253,21 @@ class _RewardSelector extends StatelessWidget {
                 Text(
                   '悬赏金额',
                   style: context.typo.sectionTitle.copyWith(
-                    color: const Color(0xFF202124),
+                    color: _FabuPublishColors.text(context),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(width: 6),
-                const Icon(
+                Icon(
                   Icons.help_outline,
                   size: 18,
-                  color: Color(0xFFB5BAC3),
+                  color: AppActionColors.subtle(context),
                 ),
                 const Spacer(),
                 Text(
                   '账户余额',
                   style: context.typo.body.copyWith(
-                    color: const Color(0xFF9CA3AF),
+                    color: AppActionColors.subtle(context),
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -1238,13 +1278,18 @@ class _RewardSelector extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Color(0xFF9CA3AF)),
+                Icon(
+                  Icons.chevron_right,
+                  color: AppActionColors.subtle(context),
+                ),
               ],
             ),
             6.verticalSpace,
             Text(
               '悬赏越高，召唤的吧友越多哦',
-              style: context.typo.body.copyWith(color: const Color(0xFFA7ADB7)),
+              style: context.typo.body.copyWith(
+                color: AppActionColors.subtle(context),
+              ),
             ),
             14.verticalSpace,
             Row(
@@ -1556,12 +1601,18 @@ class _VideoCoverPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return DecoratedBox(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [Color(0xFFECEFF3), Color(0xFFD7DCE3)],
+          colors: isLight
+              ? const [Color(0xFFECEFF3), Color(0xFFD7DCE3)]
+              : [
+                  _FabuPublishColors.panelBg(context),
+                  AppActionColors.surface(context),
+                ],
         ),
       ),
       child: Column(
@@ -1569,14 +1620,16 @@ class _VideoCoverPlaceholder extends StatelessWidget {
         children: [
           DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.72),
+              color: isLight
+                  ? Colors.white.withValues(alpha: 0.72)
+                  : Colors.white.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
-            child: const Padding(
-              padding: EdgeInsets.all(14),
+            child: Padding(
+              padding: const EdgeInsets.all(14),
               child: Icon(
                 Icons.image_outlined,
-                color: Color(0xFF9CA3AF),
+                color: AppActionColors.subtle(context),
                 size: 32,
               ),
             ),
@@ -1593,7 +1646,7 @@ class _VideoCoverPlaceholder extends StatelessWidget {
           Text(
             '点击「生成预览」查看效果',
             style: context.typo.caption.copyWith(
-              color: const Color(0xFF9CA3AF),
+              color: AppActionColors.subtle(context),
             ),
           ),
         ],
@@ -1683,7 +1736,7 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
               width: 42,
               height: 5,
               decoration: BoxDecoration(
-                color: const Color(0xFFD6D6D6),
+                color: _FabuPublishColors.dragHandle(context),
                 borderRadius: BorderRadius.circular(99),
               ),
             ),
@@ -1693,17 +1746,21 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
               child: Container(
                 height: 46,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F2F5),
+                  color: _FabuPublishColors.panelBg(context),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: TextField(
                   controller: _searchController,
                   onChanged: _onSearchChanged,
                   textInputAction: TextInputAction.search,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(Icons.search, color: Color(0xFF8C8F99)),
+                  style: TextStyle(color: _FabuPublishColors.text(context)),
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color: AppActionColors.subtle(context),
+                    ),
                     hintText: '搜索歌名/歌手/歌词/情绪',
-                    hintStyle: TextStyle(color: Color(0xFF9CA3AF)),
+                    hintStyle: TextStyle(color: AppActionColors.subtle(context)),
                     border: InputBorder.none,
                   ),
                 ),
@@ -1736,7 +1793,7 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
                     icon: const Icon(Icons.library_music_outlined, size: 18),
                     label: const Text('导入音频'),
                     style: TextButton.styleFrom(
-                      foregroundColor: const Color(0xFF202124),
+                      foregroundColor: _FabuPublishColors.text(context),
                       padding: EdgeInsets.zero,
                     ),
                   ),
@@ -1773,8 +1830,11 @@ class _BackgroundMusicSheetState extends State<_BackgroundMusicSheet> {
     return ListView.separated(
       padding: EdgeInsets.fromLTRB(16.w, 4, 16.w, 16),
       itemCount: _items.length,
-      separatorBuilder: (_, __) =>
-          const Divider(height: 1, indent: 56, color: Color(0xFFECEEF2)),
+      separatorBuilder: (_, __) => Divider(
+        height: 1,
+        indent: 56,
+        color: _FabuPublishColors.border(context),
+      ),
       itemBuilder: (context, index) {
         final item = _items[index];
         return _BackgroundMusicRow(
@@ -1810,7 +1870,9 @@ class _MusicTabButton extends StatelessWidget {
             Text(
               title,
               style: context.typo.body.copyWith(
-                color: const Color(0xFF202124),
+                color: selected
+                    ? _FabuPublishColors.text(context)
+                    : AppActionColors.muted(context),
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
               ),
             ),
@@ -1820,7 +1882,9 @@ class _MusicTabButton extends StatelessWidget {
               width: selected ? 26 : 0,
               height: 2,
               decoration: BoxDecoration(
-                color: const Color(0xFF202124),
+                color: selected
+                    ? _FabuPublishColors.text(context)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(99),
               ),
             ),
@@ -1862,16 +1926,19 @@ class _BackgroundMusicRow extends StatelessWidget {
                 width: 46,
                 height: 46,
                 child: coverUrl == null
-                    ? const ColoredBox(
-                        color: Color(0xFFEAF2FF),
-                        child: Icon(Icons.music_note, color: Color(0xFFFF2D65)),
+                    ? ColoredBox(
+                        color: _FabuPublishColors.accentTintBg(context),
+                        child: const Icon(
+                          Icons.music_note,
+                          color: Color(0xFFFF2D65),
+                        ),
                       )
                     : Image.network(
                         coverUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const ColoredBox(
-                          color: Color(0xFFEAF2FF),
-                          child: Icon(
+                        errorBuilder: (_, __, ___) => ColoredBox(
+                          color: _FabuPublishColors.accentTintBg(context),
+                          child: const Icon(
                             Icons.music_note,
                             color: Color(0xFFFF2D65),
                           ),
@@ -1894,7 +1961,7 @@ class _BackgroundMusicRow extends StatelessWidget {
                           style: context.typo.body.copyWith(
                             color: selected
                                 ? const Color(0xFFFF2D65)
-                                : const Color(0xFF202124),
+                                : _FabuPublishColors.text(context),
                             fontWeight: FontWeight.w800,
                           ),
                         ),
@@ -1913,7 +1980,7 @@ class _BackgroundMusicRow extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: context.typo.caption.copyWith(
-                      color: const Color(0xFF8C8F99),
+                      color: AppActionColors.subtle(context),
                     ),
                   ),
                 ],
@@ -1922,7 +1989,10 @@ class _BackgroundMusicRow extends StatelessWidget {
             10.horizontalSpace,
             IconButton(
               onPressed: onTap,
-              icon: const Icon(Icons.content_cut, color: Color(0xFF202124)),
+              icon: Icon(
+                Icons.content_cut,
+                color: _FabuPublishColors.text(context),
+              ),
             ),
             IconButton(
               onPressed: onTap,
@@ -1995,8 +2065,7 @@ class _RewardOptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedColor = const Color(0xFFFFF3D7);
-    final selectedBorder = const Color(0xFFFFC54D);
+    const selectedBorder = Color(0xFFFFC54D);
 
     return InkWell(
       borderRadius: BorderRadius.circular(18),
@@ -2006,7 +2075,9 @@ class _RewardOptionButton extends StatelessWidget {
         height: 36,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: selected ? selectedColor : const Color(0xFFF6F6FA),
+          color: selected
+              ? _FabuPublishColors.rewardSelectedBg(context)
+              : _FabuPublishColors.panelBg(context),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: selected ? selectedBorder : Colors.transparent,
@@ -2015,7 +2086,9 @@ class _RewardOptionButton extends StatelessWidget {
         child: Text(
           label,
           style: context.typo.body.copyWith(
-            color: selected ? const Color(0xFFE58A00) : const Color(0xFFB8BBC3),
+            color: selected
+                ? const Color(0xFFE58A00)
+                : AppActionColors.subtle(context),
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
           ),
         ),
@@ -2046,19 +2119,23 @@ class _TextBox extends StatelessWidget {
       minLines: minLines,
       maxLines: maxLines,
       maxLength: maxLength,
-      style: context.typo.inputText,
+      style: context.typo.inputText.copyWith(
+        color: _FabuPublishColors.text(context),
+      ),
       decoration: InputDecoration(
         filled: true,
-        fillColor: const Color(0xFFF8F9FB),
+        fillColor: _FabuPublishColors.panelBg(context),
         hintText: hintText,
-        hintStyle: context.typo.inputHint,
+        hintStyle: context.typo.inputHint.copyWith(
+          color: AppActionColors.subtle(context),
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+          borderSide: BorderSide(color: _FabuPublishColors.border(context)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -2096,7 +2173,9 @@ class _ActionRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             border: showDivider
-                ? const Border(bottom: BorderSide(color: Color(0xFFECEEF2)))
+                ? Border(
+                    bottom: BorderSide(color: _FabuPublishColors.border(context)),
+                  )
                 : null,
           ),
           child: Row(
@@ -2108,7 +2187,11 @@ class _ActionRow extends StatelessWidget {
                   color: AppActionColors.surface(context),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(icon, color: const Color(0xFF4B5563), size: 20),
+                child: Icon(
+                  icon,
+                  color: AppActionColors.muted(context),
+                  size: 20,
+                ),
               ),
               12.horizontalSpace,
               Expanded(
@@ -2117,7 +2200,7 @@ class _ActionRow extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: context.typo.body.copyWith(
-                    color: const Color(0xFF202124),
+                    color: _FabuPublishColors.text(context),
                   ),
                 ),
               ),

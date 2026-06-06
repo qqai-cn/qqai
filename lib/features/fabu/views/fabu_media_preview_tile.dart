@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/components/video_player/item_controls.dart';
 import 'package:qqai/components/video_player/local_qqai_player.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 class FabuMediaPreviewTile extends StatelessWidget {
   const FabuMediaPreviewTile({
@@ -77,7 +79,11 @@ class FabuMediaPreviewTile extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.08),
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.light
+                      ? 0.08
+                      : 0.35,
+                ),
                 blurRadius: 14,
                 offset: const Offset(0, 6),
               ),
@@ -125,11 +131,11 @@ class FabuMediaPreviewTile extends StatelessWidget {
     StackTrace? stackTrace,
   ) {
     return Container(
-      color: const Color(0xFFF3F5F8),
+      color: GoodsPageStyle.imageBg(context),
       alignment: Alignment.center,
-      child: const Icon(
+      child: Icon(
         Icons.broken_image_outlined,
-        color: Color(0xFF9CA3AF),
+        color: AppActionColors.subtle(context),
         size: 30,
       ),
     );

@@ -20,7 +20,9 @@ class DouyinAnchorCenterPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         title: Text(
           '主播中心',
-          style: context.typo.sectionTitle.copyWith(fontSize: 17.sp, fontWeight: FontWeight.w600),
+          style: context.typo.appBarTitle.copyWith(
+            color: DouyinTheme.text(context),
+          ),
         ),
       ),
       body: ListView(
@@ -47,19 +49,43 @@ class DouyinAnchorCenterPage extends StatelessWidget {
       child: Material(
         color: DouyinTheme.card(context),
         borderRadius: BorderRadius.circular(12.r),
-        child: ListTile(
-          contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-          leading: Icon(icon, color: DouyinTheme.text(context)),
-          title: Text(
-            title,
-            style: context.typo.bodyStrong.copyWith(color: DouyinTheme.text(context), fontSize: 15.sp),
-          ),
-          subtitle: Text(
-            sub,
-            style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 12.sp),
-          ),
-          trailing: Icon(Icons.chevron_right, color: DouyinTheme.sub(context), size: 20.sp),
+        child: InkWell(
           onTap: () {},
+          borderRadius: BorderRadius.circular(12.r),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            child: Row(
+              children: [
+                Icon(icon, color: DouyinTheme.text(context), size: 22),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: context.typo.cardTitle2.copyWith(
+                          color: DouyinTheme.text(context),
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        sub,
+                        style: context.typo.caption.copyWith(
+                          color: DouyinTheme.sub(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: DouyinTheme.sub(context),
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -77,7 +103,10 @@ class _SectionTitle extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 10.h),
       child: Text(
         text,
-        style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 13.sp, fontWeight: FontWeight.w500),
+        style: context.typo.caption.copyWith(
+          color: DouyinTheme.sub(context),
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -127,7 +156,7 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             stat.label,
-            style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 12.sp),
+            style: context.typo.caption.copyWith(color: DouyinTheme.sub(context)),
           ),
           SizedBox(height: 8.h),
           Row(
@@ -136,14 +165,19 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 stat.value,
-                style: context.typo.heroTitle.copyWith(color: DouyinTheme.text(context), fontSize: 20.sp, fontWeight: FontWeight.bold),
+                style: context.typo.pageTitle.copyWith(
+                  color: DouyinTheme.text(context),
+                  fontSize: 20,
+                ),
               ),
               if (stat.unit.isNotEmpty)
                 Padding(
                   padding: EdgeInsets.only(left: 2.w, bottom: 2.h),
                   child: Text(
                     stat.unit,
-                    style: context.typo.caption.copyWith(color: DouyinTheme.sub(context), fontSize: 12.sp),
+                    style: context.typo.caption.copyWith(
+                      color: DouyinTheme.sub(context),
+                    ),
                   ),
                 ),
             ],

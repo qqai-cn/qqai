@@ -11,21 +11,22 @@ class IconButtonH extends StatelessWidget {
   final String text;
   final double textSize;
   final Color color;
-  final Color textColor;
+  final Color? textColor;
 
   const IconButtonH({
-    Key? key,
+    super.key,
     required this.onPress,
     required this.icon,
     required this.text,
     this.color = Colors.white,
-    required this.textColor,
+    this.textColor,
     this.textSize = 10,
     this.imgSize = 30,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
+    final labelColor = textColor ?? DouyinTheme.sub(context);
     return TextButton(
       onPressed: onPress,
       child: Column(
@@ -44,7 +45,10 @@ class IconButtonH extends StatelessWidget {
           ),
           Text(
             text,
-            style: context.typo.body.copyWith(color: textColor, fontSize: textSize),
+            style: context.typo.body.copyWith(
+              color: labelColor,
+              fontSize: textSize,
+            ),
           ),
         ],
       ),

@@ -146,7 +146,7 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
                             : Icons.radio_button_unchecked,
                         color: selected
                             ? const Color(0xFF3578E5)
-                            : const Color(0xFF9CA3AF),
+                            : AppActionColors.subtle(context),
                       ),
                       title: Text(item.name ?? '合集'),
                       subtitle: Text(
@@ -175,6 +175,9 @@ class _CollectionPickerSheetState extends ConsumerState<_CollectionPickerSheet> 
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFF3578E5),
+                      disabledBackgroundColor:
+                          AppActionColors.borderSubtle(context),
+                      disabledForegroundColor: AppActionColors.subtle(context),
                     ),
                     onPressed: () => Navigator.pop(context, _selected),
                     child: Text(

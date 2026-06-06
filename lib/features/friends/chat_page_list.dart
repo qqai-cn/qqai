@@ -31,6 +31,23 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
   int? _selectedConversationId;
   final String useDefault = 'imgs/user_default.png';
 
+  static Color _selectedTileBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFE3F2FD)
+        : const Color(0xFF1E3A5F);
+  }
+
+  static Color _selectedTitleColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFF1565C0)
+        : const Color(0xFF90CAF9);
+  }
+
+  static Color _avatarShadowColor(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return Colors.black.withValues(alpha: isLight ? 0.08 : 0.35);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -201,7 +218,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     }
   }
 
-  Widget _unreadBadge(int count) {
+  Widget _unreadBadge(BuildContext context, int count) {
     final label = count > 99 ? '99+' : '$count';
     return Container(
       constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
@@ -209,7 +226,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
       decoration: BoxDecoration(
         color: const Color(0xFFE53935),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(color: AppActionColors.surface(context), width: 2),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFE53935).withValues(alpha: 0.3),
@@ -257,7 +274,11 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
               error: (e, _) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Text('$e', textAlign: TextAlign.center),
+                  child: Text(
+                    '$e',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: AppActionColors.muted(context)),
+                  ),
                 ),
               ),
               data: (convs) {
@@ -388,7 +409,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: selected ? const Color(0xFFE3F2FD) : Colors.transparent,
+        color: selected ? _selectedTileBg(context) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: GestureDetector(
@@ -411,7 +432,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
+                            color: _avatarShadowColor(context),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -443,13 +464,13 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                       Positioned(
                         top: -7,
                         left: -14,
-                        child: _sourceBadge(c.listSourceBadge!),
+                        child: _sourceBadge(context, c.listSourceBadge!),
                       ),
                     if (hasUnread)
                       Positioned(
                         top: -2,
                         right: -4,
-                        child: _unreadBadge(unreadCount),
+                        child: _unreadBadge(context, unreadCount),
                       ),
                   ],
                 ),
@@ -472,10 +493,10 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                                     ? FontWeight.bold
                                     : FontWeight.w500,
                                 color: selected
-                                    ? const Color(0xFF1565C0)
+                                    ? _selectedTitleColor(context)
                                     : (hasUnread
-                                          ? const Color(0xFF212121)
-                                          : const Color(0xFF424242)),
+                                          ? AppActionColors.strong(context)
+                                          : AppActionColors.muted(context)),
                               ),
                             ),
                           ),
@@ -504,7 +525,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                               style: TextStyle(
                                 fontSize: 14,
                                 color: hasUnread
-                                    ? const Color(0xFF616161)
+                                    ? AppActionColors.muted(context)
                                     : AppActionColors.subtle(context),
                                 fontWeight: hasUnread
                                     ? FontWeight.w500
@@ -539,7 +560,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     );
   }
 
-  Widget _sourceBadge(String label) {
+  Widget _sourceBadge(BuildContext context, String label) {
     final color = label == '广场'
         ? const Color(0xFF7B1FA2)
         : const Color(0xFFE65100);
@@ -548,7 +569,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: Colors.white, width: 1),
+        border: Border.all(color: AppActionColors.surface(context), width: 1),
       ),
       child: Text(
         label,

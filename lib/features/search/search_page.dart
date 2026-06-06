@@ -16,6 +16,9 @@ const double _kNarrowContentMaxWidth = 600;
 /// 大于等于此宽度时：左侧落地 + 右侧结果，贴边分栏。
 const double _kWideSplitBreakpoint = 1200;
 
+/// 宽屏分栏时单栏内容最大宽度（避免半屏过宽显得空）。
+const double _kWidePanelMaxWidth = 640;
+
 /// 对齐京东搜索落地页：AI 搜索条、搜索历史、搜索发现（双列）、分类 Tab、热度榜单、反馈浮标。
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -162,8 +165,14 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
 
   bool _isWideSplit(double width) => width >= _kWideSplitBreakpoint;
 
-  /// 窄屏：居中 + 限宽；宽屏分栏：横向铺满。
-  Widget _narrowContent(Widget child) {
+  double _pageHorizontalGap(double width) {
+    if (width >= _kWideSplitBreakpoint) return 16;
+    return 10.w;
+  }
+
+  /// 窄屏：居中 + 限宽；宽屏分栏单栏：居中 + 限宽；宽屏 AppBar：横向铺满。
+  Widget _narrowContent(Widget child, {bool centerPanel = true}) {
+    if (!centerPanel) return child;
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
@@ -173,10 +182,33 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     );
   }
 
+  Widget _widePanelContent(Widget child) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: _kWidePanelMaxWidth),
+        child: child,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final wideSplit = _isWideSplit(MediaQuery.sizeOf(context).width);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final wideSplit = _isWideSplit(screenWidth);
     final guardResultView = _showResult && !wideSplit;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final appBarSearch = Padding(
+      padding: EdgeInsets.only(right: wideSplit ? 8.w : 0),
+      child: Row(
+        children: [
+          Expanded(child: _buildTopSearchBar()),
+          SizedBox(width: 8.w),
+          _buildRedSearchButton(),
+        ],
+      ),
+    );
 
     return PopScope(
       canPop: !guardResultView,
@@ -185,7 +217,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         _handleBack();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF7F7F7),
+        backgroundColor: JdGoodsTheme.pageBgColor(context),
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -194,56 +226,61 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
           automaticallyImplyLeading: false,
           elevation: 0,
           scrolledUnderElevation: 0,
-          backgroundColor: JdGoodsTheme.white,
-          foregroundColor: JdGoodsTheme.text,
-          systemOverlayStyle: SystemUiOverlayStyle.dark,
-          title: _narrowContent(
-          Row(
-            children: [
-              Expanded(child: _buildTopSearchBar()),
-              SizedBox(width: 8.w),
-              _buildRedSearchButton(),
-            ],
-          ),
+          backgroundColor: JdGoodsTheme.surfaceColor(context),
+          foregroundColor: JdGoodsTheme.textColor(context),
+          systemOverlayStyle: isDark
+              ? SystemUiOverlayStyle.light
+              : SystemUiOverlayStyle.dark,
+          title: wideSplit ? appBarSearch : _narrowContent(appBarSearch),
         ),
-      ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final w = constraints.maxWidth;
-          final split = _isWideSplit(w);
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            final split = _isWideSplit(w);
+            final hGap = _pageHorizontalGap(w);
 
-          final Widget mainContent;
-          if (split) {
-            mainContent = Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+            final Widget mainContent;
+            if (split) {
+              mainContent = Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: hGap, right: hGap / 2),
+                      child: _widePanelContent(_buildLandingBody(screenWidth: w)),
+                    ),
+                  ),
+                  Container(width: 1, color: JdGoodsTheme.lineColor(context)),
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(left: hGap / 2, right: hGap),
+                      child: _widePanelContent(
+                        _showResult ? _buildResultBody() : _buildWideEmptyResult(),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              mainContent = _narrowContent(
+                _showResult ? _buildResultBody() : _buildLandingBody(screenWidth: w),
+              );
+            }
+
+            final fabRight = MediaQuery.paddingOf(context).right + 12.w;
+
+            return Stack(
               children: [
-                Expanded(child: _buildLandingBody()),
-                Container(width: 1, color: JdGoodsTheme.line),
-                Expanded(
-                  child: _showResult ? _buildResultBody() : _buildWideEmptyResult(),
+                Positioned.fill(child: mainContent),
+                Positioned(
+                  right: fabRight,
+                  bottom: MediaQuery.paddingOf(context).bottom + 80.h,
+                  child: _feedbackFab(),
                 ),
               ],
             );
-          } else {
-            mainContent = _narrowContent(
-              _showResult ? _buildResultBody() : _buildLandingBody(),
-            );
-          }
-
-          final fabRight = MediaQuery.paddingOf(context).right + 12.w;
-
-          return Stack(
-            children: [
-              Positioned.fill(child: mainContent),
-              Positioned(
-                right: fabRight,
-                bottom: MediaQuery.paddingOf(context).bottom + 80.h,
-                child: _feedbackFab(),
-              ),
-            ],
-          );
-        },
-      ),
+          },
+        ),
       ),
     );
   }
@@ -253,14 +290,18 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
       height: 38.h,
       padding: EdgeInsets.only(left: 8.w, right: 6.w),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2),
+        color: JdGoodsTheme.searchBarBgColor(context),
         borderRadius: BorderRadius.circular(19.r),
       ),
       child: Row(
         children: [
           Text(
             'AI搜索',
-            style: context.typo.label.copyWith(fontSize: 11, color: JdGoodsTheme.sub, fontWeight: FontWeight.w500),
+            style: context.typo.label.copyWith(
+              fontSize: 11,
+              color: JdGoodsTheme.subColor(context),
+              fontWeight: FontWeight.w500,
+            ),
           ),
           Transform.scale(
             scale: 0.65,
@@ -278,12 +319,17 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               focusNode: _focusNode,
               textInputAction: TextInputAction.search,
               onSubmitted: (_) => _onSearch(),
-              style: context.typo.body.copyWith(fontSize: 14, color: JdGoodsTheme.text),
-
+              style: context.typo.body.copyWith(
+                fontSize: 14,
+                color: JdGoodsTheme.textColor(context),
+              ),
               decoration: InputDecoration(
                 isDense: true,
                 hintText: '爱玛电动车尾箱',
-                hintStyle: context.typo.inputHint.copyWith(fontSize: 14, color: JdGoodsTheme.sub),
+                hintStyle: context.typo.inputHint.copyWith(
+                  fontSize: 14,
+                  color: JdGoodsTheme.subColor(context),
+                ),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
               ),
@@ -293,7 +339,11 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
             clipBehavior: Clip.none,
             children: [
               IconButton(
-                icon: Icon(Icons.photo_camera_outlined, size: 22, color: JdGoodsTheme.sub),
+                icon: Icon(
+                  Icons.photo_camera_outlined,
+                  size: 22,
+                  color: JdGoodsTheme.subColor(context),
+                ),
                 onPressed: () {},
                 padding: EdgeInsets.zero,
                 constraints: BoxConstraints(minWidth: 36.w, minHeight: 36.h),
@@ -343,7 +393,9 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildLandingBody() {
+  Widget _buildLandingBody({required double screenWidth}) {
+    final discoverColumns = screenWidth < 360 ? 1 : 2;
+
     return SingleChildScrollView(
       padding: EdgeInsets.only(bottom: 24.h),
       child: Column(
@@ -356,7 +408,11 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                 _sectionTitleRow(
                   title: '搜索历史',
                   trailing: IconButton(
-                    icon: Icon(Icons.delete_outline, size: 22, color: JdGoodsTheme.sub),
+                    icon: Icon(
+                      Icons.delete_outline,
+                      size: 22,
+                      color: JdGoodsTheme.subColor(context),
+                    ),
                     onPressed: _clearHistory,
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
@@ -371,14 +427,18 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                       ..._historyShown.map(_historyChip),
                       if (_historyAll.length > 6 && !_historyExpanded)
                         Material(
-                          color: const Color(0xFFF2F2F2),
+                          color: JdGoodsTheme.chipBgColor(context),
                           borderRadius: BorderRadius.circular(4.r),
                           child: InkWell(
                             onTap: () => setState(() => _historyExpanded = true),
                             borderRadius: BorderRadius.circular(4.r),
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 7.h),
-                              child: Icon(Icons.keyboard_arrow_down, size: 20, color: JdGoodsTheme.sub),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                size: 20,
+                                color: JdGoodsTheme.subColor(context),
+                              ),
                             ),
                           ),
                         ),
@@ -399,7 +459,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                     icon: Icon(
                       _discoverVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined,
                       size: 22,
-                      color: JdGoodsTheme.sub,
+                      color: JdGoodsTheme.subColor(context),
                     ),
                     onPressed: () => setState(() => _discoverVisible = !_discoverVisible),
                     padding: EdgeInsets.zero,
@@ -412,11 +472,10 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
+                      crossAxisCount: discoverColumns,
                       mainAxisSpacing: 6,
                       crossAxisSpacing: 12,
-                      // 略增大比例，降低每行高度，避免格内留白像「行距过大」
-                      childAspectRatio: 8.8,
+                      childAspectRatio: discoverColumns == 1 ? 16 : 8.8,
                     ),
                     itemCount: _discoverItems.length,
                     itemBuilder: (context, i) {
@@ -450,7 +509,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                                   style: context.typo.body.copyWith(
                                     fontSize: 13,
                                     height: 1.25,
-                                    color: JdGoodsTheme.text,
+                                    color: JdGoodsTheme.textColor(context),
                                   ),
                                 ),
                               ),
@@ -477,7 +536,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                   padding: EdgeInsets.symmetric(horizontal: 12.w),
                   labelPadding: EdgeInsets.only(right: 20.w),
                   labelColor: JdGoodsTheme.red,
-                  unselectedLabelColor: JdGoodsTheme.sub,
+                  unselectedLabelColor: JdGoodsTheme.subColor(context),
                   labelStyle: context.typo.sectionTitle.copyWith(fontSize: 14, fontWeight: FontWeight.w600),
                   unselectedLabelStyle: context.typo.sectionTitle.copyWith(fontSize: 14, fontWeight: FontWeight.normal),
                   indicatorColor: JdGoodsTheme.red,
@@ -486,7 +545,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                   dividerHeight: 0,
                   tabs: _rankTabs.map((t) => Tab(text: t)).toList(),
                 ),
-                Divider(height: 1, color: const Color(0xFFEEEEEE)),
+                Divider(height: 1, color: JdGoodsTheme.lineColor(context)),
                 Padding(
                   padding: EdgeInsets.fromLTRB(12.w, 4.h, 12.w, 12.h),
                   child: SizedBox(
@@ -506,13 +565,17 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
   }
 
   Widget _sectionCard({required Widget child, EdgeInsetsGeometry? padding}) {
+    final w = MediaQuery.sizeOf(context).width;
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 10.w),
+      margin: EdgeInsets.symmetric(horizontal: _pageHorizontalGap(w)),
       padding: padding ?? EdgeInsets.all(12.w),
       decoration: BoxDecoration(
-        color: JdGoodsTheme.white,
+        color: JdGoodsTheme.surfaceColor(context),
         borderRadius: BorderRadius.circular(10.r),
+        border: Theme.of(context).brightness == Brightness.dark
+            ? Border.all(color: JdGoodsTheme.lineColor(context))
+            : null,
       ),
       child: child,
     );
@@ -523,7 +586,11 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
       children: [
         Text(
           title,
-          style: context.typo.sectionTitle.copyWith(fontSize: 15, fontWeight: FontWeight.w600, color: JdGoodsTheme.text),
+          style: context.typo.sectionTitle.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: JdGoodsTheme.textColor(context),
+          ),
         ),
         const Spacer(),
         trailing,
@@ -533,7 +600,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
 
   Widget _historyChip(String text) {
     return Material(
-      color: const Color(0xFFF2F2F2),
+      color: JdGoodsTheme.chipBgColor(context),
       borderRadius: BorderRadius.circular(4.r),
       child: InkWell(
         onTap: () => _fillQuery(text),
@@ -542,7 +609,10 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
           padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 7.h),
           child: Text(
             text,
-            style: context.typo.body.copyWith(fontSize: 13, color: JdGoodsTheme.text),
+            style: context.typo.body.copyWith(
+              fontSize: 13,
+              color: JdGoodsTheme.textColor(context),
+            ),
           ),
         ),
       ),
@@ -560,8 +630,8 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                const Color(0xFFFFF9F5),
-                JdGoodsTheme.white,
+                JdGoodsTheme.rankPanelGradientTop(context),
+                JdGoodsTheme.surfaceColor(context),
               ],
             ),
           ),
@@ -573,7 +643,12 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   _rankRow(e.value),
-                  if (!last) Divider(height: 1, indent: 36.w, color: const Color(0xFFF0F0F0)),
+                  if (!last)
+                    Divider(
+                      height: 1,
+                      indent: 36.w,
+                      color: JdGoodsTheme.lineColor(context),
+                    ),
                 ],
               );
             }).toList(),
@@ -596,13 +671,20 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
               row.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: context.typo.body.copyWith(fontSize: 14, color: const Color(0xFF5C4033), height: 1.25),
+              style: context.typo.body.copyWith(
+                fontSize: 14,
+                color: JdGoodsTheme.rankTitleColor(context),
+                height: 1.25,
+              ),
             ),
           ),
           SizedBox(width: 8.w),
           Text(
             '热度 ${row.heat}万',
-            style: context.typo.caption.copyWith(fontSize: 11, color: JdGoodsTheme.sub),
+            style: context.typo.caption.copyWith(
+              fontSize: 11,
+              color: JdGoodsTheme.subColor(context),
+            ),
           ),
         ],
       ),
@@ -642,7 +724,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
         textAlign: TextAlign.center,
         style: context.typo.body.copyWith(
           fontSize: 14,
-          color: const Color(0xFF8D6E63),
+          color: JdGoodsTheme.rankIndexMutedColor(context),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -676,24 +758,35 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
 
   Widget _buildWideEmptyResult() {
     return ColoredBox(
-      color: JdGoodsTheme.white,
+      color: JdGoodsTheme.surfaceColor(context),
       child: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.manage_search_outlined, size: 48, color: JdGoodsTheme.sub),
+              Icon(
+                Icons.manage_search_outlined,
+                size: 48,
+                color: JdGoodsTheme.subColor(context),
+              ),
               SizedBox(height: 12.h),
               Text(
                 '搜索结果',
-                style: context.typo.sectionTitle.copyWith(fontSize: 16, fontWeight: FontWeight.w600, color: JdGoodsTheme.text),
+                style: context.typo.sectionTitle.copyWith(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: JdGoodsTheme.textColor(context),
+                ),
               ),
               SizedBox(height: 8.h),
               Text(
                 '在左侧输入关键词并点击搜索',
                 textAlign: TextAlign.center,
-                style: context.typo.pageSubtitle.copyWith(fontSize: 13, color: JdGoodsTheme.sub),
+                style: context.typo.pageSubtitle.copyWith(
+                  fontSize: 13,
+                  color: JdGoodsTheme.subColor(context),
+                ),
               ),
             ],
           ),
@@ -707,25 +800,33 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     return ListView.separated(
       padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 10.w),
       itemCount: 12,
-      separatorBuilder: (context, index) => Divider(height: 1, color: JdGoodsTheme.line),
+      separatorBuilder: (context, index) =>
+          Divider(height: 1, color: JdGoodsTheme.lineColor(context)),
       itemBuilder: (context, index) {
         return ListTile(
-          tileColor: JdGoodsTheme.white,
+          tileColor: JdGoodsTheme.surfaceColor(context),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.r)),
           leading: Container(
             width: 56.w,
             height: 56.w,
             decoration: BoxDecoration(
-              color: JdGoodsTheme.pageBg,
+              color: JdGoodsTheme.pageBgColor(context),
               borderRadius: BorderRadius.circular(4.r),
             ),
-            child: Icon(Icons.image_outlined, color: JdGoodsTheme.sub, size: 28),
+            child: Icon(
+              Icons.image_outlined,
+              color: JdGoodsTheme.subColor(context),
+              size: 28,
+            ),
           ),
           title: Text(
             '示例商品 ${index + 1} · 「$q」',
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: context.typo.body.copyWith(fontSize: 14, color: JdGoodsTheme.text),
+            style: context.typo.body.copyWith(
+              fontSize: 14,
+              color: JdGoodsTheme.textColor(context),
+            ),
           ),
           subtitle: Padding(
             padding: EdgeInsets.only(top: 6.h),
@@ -742,7 +843,10 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
                 SizedBox(width: 8.w),
                 Text(
                   '自营',
-                  style: context.typo.caption.copyWith(fontSize: 11, color: JdGoodsTheme.sub),
+                  style: context.typo.caption.copyWith(
+                    fontSize: 11,
+                    color: JdGoodsTheme.subColor(context),
+                  ),
                 ),
               ],
             ),

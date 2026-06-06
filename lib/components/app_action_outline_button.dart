@@ -19,11 +19,10 @@ class AppActionOutlineButton extends StatelessWidget {
   final double horizontalPadding;
   final double fontSize;
 
-  static const Color borderColor = Color(0xFFD1D5DB);
-
   @override
   Widget build(BuildContext context) {
     final textColor = AppActionColors.foreground(context);
+    final borderColor = AppActionColors.borderSubtle(context);
     final labelStyle = context.typo.button.copyWith(
       fontSize: fontSize,
       fontWeight: FontWeight.w500,

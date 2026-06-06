@@ -282,13 +282,13 @@ class MyStyles {
       tileColor: isLightTheme
           ? LightThemeColors.listTileBackgroundColor
           : DarkThemeColors.listTileBackgroundColor,
-      titleTextStyle: TextStyle(
+      titleTextStyle: MyFonts.bodyTextStyle.copyWith(
         fontSize: MyFonts.listTileTitleSize,
         color: isLightTheme
             ? LightThemeColors.listTileTitleColor
             : DarkThemeColors.listTileTitleColor,
       ),
-      subtitleTextStyle: TextStyle(
+      subtitleTextStyle: MyFonts.bodyTextStyle.copyWith(
         fontSize: MyFonts.listTileSubtitleSize,
         color: isLightTheme
             ? LightThemeColors.listTileSubtitleColor
