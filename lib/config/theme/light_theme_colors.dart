@@ -47,6 +47,14 @@ class LightThemeColors
   static const Color listTileBackgroundColor = Color(0xFFF8F8F8);
   static const Color listTileIconColor = Color(0xFF575757);
 
+  // SWITCH
+  static const Color switchTrackOff = Color(0xFFBDBDBD);
+  static const Color switchTrackOutlineOff = Color(0xFF8E8E8E);
+  static const Color switchTrackOn = actionButtonForegroundColor;
+  static const Color switchThumb = Colors.white;
+  static const Color switchTrackDisabled = Color(0xFFE0E0E0);
+  static const Color switchThumbDisabled = Color(0xFFF5F5F5);
+
   //------------------- custom theme (extensions) ------------------- //
   // header containers
   static const Color headerContainerBackgroundColor = Color(0XFF38B6F0);

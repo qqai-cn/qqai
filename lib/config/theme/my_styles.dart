@@ -226,12 +226,6 @@ class MyStyles {
     );
   }
 
-  static InputDecorationTheme getInputDecorationTheme() {
-    return InputDecorationTheme(
-      hintStyle: MyFonts.bodyTextStyle.copyWith(fontSize: MyFonts.bodySmallTextSize, color: Colors.grey),
-    );
-  }
-
   /// list tile theme data
   static ListTileThemeData getListTileThemeData({required bool isLightTheme}) {
     return ListTileThemeData(
@@ -256,6 +250,61 @@ class MyStyles {
             ? LightThemeColors.listTileSubtitleColor
             : DarkThemeColors.listTileSubtitleColor,
       ),
+    );
+  }
+
+  static InputDecorationTheme getInputDecorationTheme() {
+    return InputDecorationTheme(
+      hintStyle: MyFonts.bodyTextStyle.copyWith(
+        fontSize: MyFonts.bodySmallTextSize,
+        color: Colors.grey,
+      ),
+    );
+  }
+
+  /// Switch / SwitchListTile 统一对比度（个人中心夜间模式等）。
+  static SwitchThemeData getSwitchTheme({required bool isLightTheme}) {
+    final trackOff = isLightTheme
+        ? LightThemeColors.switchTrackOff
+        : DarkThemeColors.switchTrackOff;
+    final trackOutlineOff = isLightTheme
+        ? LightThemeColors.switchTrackOutlineOff
+        : DarkThemeColors.switchTrackOutlineOff;
+    final trackOn = isLightTheme
+        ? LightThemeColors.switchTrackOn
+        : DarkThemeColors.switchTrackOn;
+    final thumb = isLightTheme
+        ? LightThemeColors.switchThumb
+        : DarkThemeColors.switchThumb;
+    final trackDisabled = isLightTheme
+        ? LightThemeColors.switchTrackDisabled
+        : DarkThemeColors.switchTrackDisabled;
+    final thumbDisabled = isLightTheme
+        ? LightThemeColors.switchThumbDisabled
+        : DarkThemeColors.switchThumbDisabled;
+
+    return SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return thumbDisabled;
+        }
+        return thumb;
+      }),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.disabled)) {
+          return trackDisabled;
+        }
+        if (states.contains(WidgetState.selected)) {
+          return trackOn;
+        }
+        return trackOff;
+      }),
+      trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.transparent;
+        }
+        return trackOutlineOff;
+      }),
     );
   }
 }

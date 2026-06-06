@@ -86,6 +86,7 @@ class MyTheme {
 
       // list tile theme
       listTileTheme: MyStyles.getListTileThemeData(isLightTheme: isLight),
+      switchTheme: MyStyles.getSwitchTheme(isLightTheme: isLight),
       inputDecorationTheme: MyStyles.getInputDecorationTheme(),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,

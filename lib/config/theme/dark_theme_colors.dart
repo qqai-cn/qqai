@@ -48,6 +48,14 @@ class DarkThemeColors
   static const Color listTileBackgroundColor = Color(0xFF414141);
   static const Color listTileIconColor = Colors.white;
 
+  // SWITCH
+  static const Color switchTrackOff = Color(0xFF616161);
+  static const Color switchTrackOutlineOff = Color(0xFF9E9E9E);
+  static const Color switchTrackOn = actionButtonForegroundColor;
+  static const Color switchThumb = Colors.white;
+  static const Color switchTrackDisabled = Color(0xFF424242);
+  static const Color switchThumbDisabled = Color(0xFFBDBDBD);
+
   //------------------- custom theme (extensions) ------------------- //
   // header containers
   static const Color headerContainerBackgroundColor = Color(0XFFf8a319);
