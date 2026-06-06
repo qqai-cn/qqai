@@ -63,6 +63,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   bool _showWidgetCoverPreview = false;
   int _coverDurationSeconds = 60;
   final _videoSegmentsPageController = PageController();
+  int _currentVideoSegmentIndex = 0;
 
   @override
   void initState() {
@@ -72,12 +73,20 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     _contentController.addListener(_syncContent);
     _titleController.addListener(_syncContent);
     _targetController.addListener(_syncContent);
+    _videoSegmentsPageController.addListener(_onVideoSegmentPageChanged);
     if (widget.type == FabuPublishType.video) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) return;
         _fabuNotifier.setWidgetCoverCapture(_captureWidgetCoverForPublish);
       });
     }
+  }
+
+  void _onVideoSegmentPageChanged() {
+    final page = _videoSegmentsPageController.page?.round();
+    if (page == null || page == _currentVideoSegmentIndex) return;
+    if (!mounted) return;
+    setState(() => _currentVideoSegmentIndex = page);
   }
 
   Future<Uint8List?> _captureWidgetCoverForPublish() async {
@@ -93,6 +102,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     if (widget.type == FabuPublishType.video) {
       _fabuNotifier.setWidgetCoverCapture(null);
     }
+    _videoSegmentsPageController.removeListener(_onVideoSegmentPageChanged);
     _videoPreviewController.detach();
     _videoSegmentsPageController.dispose();
     _contentFocusNode.dispose();
@@ -497,7 +507,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
           _WebInlineField(
             controller: _titleController,
             hintText: '填写标题，为作品获得更多流量',
-            maxLength: 30,
+            maxLength: _maxTitleLength,
             maxLines: 1,
           ),
           const SizedBox(height: 8),
@@ -713,6 +723,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                         child: FabuMediaPreviewTile(
                           file: file,
                           isVideo: true,
+                          enableVideoPlayer: index == _currentVideoSegmentIndex,
                           videoPlayerController: index == 0
                               ? _videoPreviewController
                               : null,
@@ -1169,12 +1180,42 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     final videoFiles = files.where(_isVideoFile).toList();
     if (videoFiles.isNotEmpty) {
       await notifier.addVideoFiles(videoFiles);
+      _fillTitleFromFileIfEmpty(videoFiles.first);
       return;
     }
 
     if (widget.type.allowImages) {
       await notifier.selectFile(files, context);
     }
+  }
+
+  static const int _maxTitleLength = 30;
+
+  void _fillTitleFromFileIfEmpty(XFile file) {
+    if (widget.type != FabuPublishType.video) return;
+    if (_titleController.text.trim().isNotEmpty) return;
+
+    var name = file.name.trim();
+    if (name.isEmpty) {
+      final path = file.path.trim();
+      if (path.isNotEmpty) {
+        name = path.split(RegExp(r'[/\\]')).last;
+      }
+    }
+    if (name.isEmpty) return;
+
+    final dot = name.lastIndexOf('.');
+    if (dot > 0) {
+      name = name.substring(0, dot);
+    }
+    name = name.trim();
+    if (name.isEmpty) return;
+
+    if (name.length > _maxTitleLength) {
+      name = name.substring(0, _maxTitleLength);
+    }
+
+    _titleController.text = name;
   }
 
   bool _isVideoFile(XFile file) {

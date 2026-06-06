@@ -9,4 +9,6 @@ void downloadUint8ListAsFile(
   String? mimeType,
 }) {}
 
+void revokeBlobUrlIfNeeded(String url) {}
+
 Future<Uint8List?> encodeWebpViaBrowserCanvas(img.Image image) async => null;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/features/goods/theme/goods_page_style.dart';
@@ -23,8 +24,26 @@ Future<bool> showCreateCollectionDialog(
   return true;
 }
 
+Future<bool> showEditCollectionDialog(
+  BuildContext parentContext,
+  WidgetRef ref, {
+  required BlogCollectionResp collection,
+}) async {
+  final updated = await showDialog<bool>(
+    context: parentContext,
+    builder: (ctx) => _CreateCollectionForm(collection: collection),
+  );
+  if (updated != true || !parentContext.mounted) return false;
+  ScaffoldMessenger.of(parentContext).showSnackBar(
+    const SnackBar(content: Text('合集已更新')),
+  );
+  return true;
+}
+
 class _CreateCollectionForm extends ConsumerStatefulWidget {
-  const _CreateCollectionForm();
+  const _CreateCollectionForm({this.collection});
+
+  final BlogCollectionResp? collection;
 
   @override
   ConsumerState<_CreateCollectionForm> createState() =>
@@ -36,8 +55,24 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
   final _introCtrl = TextEditingController();
   final _picker = ImagePicker();
   XFile? _imgFile;
+  String? _existingCoverUrl;
+  bool _coverRemoved = false;
   bool _submitting = false;
   int _visible = 1;
+
+  bool get _isEdit => widget.collection?.id != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final collection = widget.collection;
+    if (collection != null) {
+      _nameCtrl.text = collection.name ?? '';
+      _introCtrl.text = collection.intro ?? '';
+      _visible = collection.visible ?? 1;
+      _existingCoverUrl = collection.coverUrl;
+    }
+  }
 
   @override
   void dispose() {
@@ -53,7 +88,10 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
       imageQuality: 85,
     );
     if (file == null || !mounted) return;
-    setState(() => _imgFile = file);
+    setState(() {
+      _imgFile = file;
+      _coverRemoved = false;
+    });
   }
 
   Future<void> _submit() async {
@@ -66,26 +104,26 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
     }
     setState(() => _submitting = true);
     try {
-      String? coverUrl;
-      if (_imgFile != null) {
-        coverUrl = await ApiBaseClient.uploadFile(file: _imgFile!);
+      final req = BlogCollectionSaveReq(
+        name: name,
+        visible: _visible,
+        intro: _introCtrl.text.trim().isEmpty ? null : _introCtrl.text.trim(),
+        coverUrl: await _resolveCoverUrlForSubmit(),
+      );
+      if (_isEdit) {
+        await ref.read(profileRepoProvider).updateCollection(
+              widget.collection!.id!,
+              req,
+            );
+      } else {
+        await ref.read(profileRepoProvider).createCollection(req);
       }
-      await ref.read(profileRepoProvider).createCollection(
-            BlogCollectionSaveReq(
-              name: name,
-              visible: _visible,
-              intro: _introCtrl.text.trim().isEmpty
-                  ? null
-                  : _introCtrl.text.trim(),
-              coverUrl: coverUrl,
-            ),
-          );
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop(true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('创建失败：$e')),
+          SnackBar(content: Text('${_isEdit ? '更新' : '创建'}失败：$e')),
         );
       }
     } finally {
@@ -93,14 +131,33 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
     }
   }
 
-  Widget _imagePickRow({
-    required XFile? file,
-    required VoidCallback onPick,
-    required VoidCallback onClear,
-  }) {
+  Future<String?> _resolveCoverUrlForSubmit() async {
+    if (_imgFile != null) {
+      return ApiBaseClient.uploadFile(file: _imgFile!);
+    }
+    if (_coverRemoved) return '';
+    return _existingCoverUrl;
+  }
+
+  void _clearCover() {
+    setState(() {
+      _imgFile = null;
+      _existingCoverUrl = null;
+      _coverRemoved = true;
+    });
+  }
+
+  Widget _imagePickRow() {
+    final remoteCoverUrl =
+        !_coverRemoved &&
+            _imgFile == null &&
+            (_existingCoverUrl?.isNotEmpty ?? false)
+        ? _existingCoverUrl
+        : null;
+
     return InkWell(
       borderRadius: BorderRadius.circular(16),
-      onTap: _submitting ? null : onPick,
+      onTap: _submitting ? null : _pickImage,
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: DecoratedBox(
@@ -111,46 +168,12 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
-            child: file == null
-                ? Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: AppActionColors.surface(context),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.add_photo_alternate_outlined,
-                          color: Color(0xFF3578E5),
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Text(
-                        '上传合集封面',
-                        style: TextStyle(
-                          color: AppActionColors.strong(context),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '建议使用横向图片',
-                        style: TextStyle(
-                          color: AppActionColors.subtle(context),
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  )
-                : Stack(
+            child: _imgFile != null
+                ? Stack(
                     fit: StackFit.expand,
                     children: [
                       FutureBuilder(
-                        future: file.readAsBytes(),
+                        future: _imgFile!.readAsBytes(),
                         builder: (context, snap) {
                           if (!snap.hasData) {
                             return const Center(
@@ -166,30 +189,78 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                           return Image.memory(snap.data!, fit: BoxFit.cover);
                         },
                       ),
-                      Positioned(
-                        right: 10,
-                        top: 10,
-                        child: IconButton.filled(
-                          style: IconButton.styleFrom(
-                            backgroundColor: Colors.black.withValues(
-                              alpha: 0.56,
-                            ),
-                            minimumSize: const Size(34, 34),
-                            fixedSize: const Size(34, 34),
-                          ),
-                          onPressed: _submitting ? null : onClear,
-                          icon: const Icon(
-                            Icons.close,
-                            color: Colors.white,
-                            size: 18,
-                          ),
-                        ),
-                      ),
+                      _coverClearButton(onClear: _clearCover),
                     ],
-                  ),
+                  )
+                : remoteCoverUrl != null
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: remoteCoverUrl,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) => _coverPlaceholder(),
+                      ),
+                      _coverClearButton(onClear: _clearCover),
+                    ],
+                  )
+                : _coverPlaceholder(),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _coverClearButton({required VoidCallback onClear}) {
+    return Positioned(
+      right: 10,
+      top: 10,
+      child: IconButton.filled(
+        style: IconButton.styleFrom(
+          backgroundColor: Colors.black.withValues(alpha: 0.56),
+          minimumSize: const Size(34, 34),
+          fixedSize: const Size(34, 34),
+        ),
+        onPressed: _submitting ? null : onClear,
+        icon: const Icon(Icons.close, color: Colors.white, size: 18),
+      ),
+    );
+  }
+
+  Widget _coverPlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: AppActionColors.surface(context),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.add_photo_alternate_outlined,
+            color: Color(0xFF3578E5),
+            size: 28,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          '上传合集封面',
+          style: TextStyle(
+            color: AppActionColors.strong(context),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          '建议使用横向图片',
+          style: TextStyle(
+            color: AppActionColors.subtle(context),
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 
@@ -237,7 +308,7 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '创建合集',
+                _isEdit ? '编辑合集' : '创建合集',
                 style: TextStyle(
                   color: AppActionColors.strong(context),
                   fontSize: 20,
@@ -246,7 +317,7 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
               ),
               SizedBox(height: 2),
               Text(
-                '把作品整理成系列，方便观众连续观看',
+                _isEdit ? '修改合集名称、封面与可见性' : '把作品整理成系列，方便观众连续观看',
                 style: TextStyle(
                   color: AppActionColors.muted(context),
                   fontSize: 13,
@@ -372,7 +443,7 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '创建合集',
+                          _isEdit ? '保存修改' : '创建合集',
                           style: TextStyle(
                             color: enabled
                                 ? Colors.white
@@ -449,11 +520,7 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  _imagePickRow(
-                    file: _imgFile,
-                    onPick: _pickImage,
-                    onClear: () => setState(() => _imgFile = null),
-                  ),
+                  _imagePickRow(),
                   const SizedBox(height: 14),
                   _visibilityRow(),
                   const SizedBox(height: 20),

@@ -26,14 +26,12 @@ class FabuView extends ConsumerStatefulWidget {
 class _FabuViewState extends ConsumerState<FabuView>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  late final List<FabuPublishType> _tabTypes = [
+  int _formGeneration = 0;
+  final List<FabuPublishType> _tabTypes = const [
     FabuPublishType.dynamic,
     FabuPublishType.video,
     FabuPublishType.help,
   ];
-  late final List<Widget> _tabBoby = _tabTypes
-      .map((type) => FabuPublishPage(type: type))
-      .toList();
 
   @override
   void initState() {
@@ -82,6 +80,7 @@ class _FabuViewState extends ConsumerState<FabuView>
       );
 
       if (mounted) {
+        setState(() => _formGeneration++);
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
@@ -182,7 +181,17 @@ class _FabuViewState extends ConsumerState<FabuView>
       ),
       body: Stack(
         children: [
-          TabBarView(controller: _tabController, children: _tabBoby),
+          TabBarView(
+            controller: _tabController,
+            children: _tabTypes
+                .map(
+                  (type) => FabuPublishPage(
+                    key: ValueKey('fabu-${type.name}-$_formGeneration'),
+                    type: type,
+                  ),
+                )
+                .toList(),
+          ),
           if (fabuState.isUploading)
             FabuAiPublishOverlay(
               progress: fabuState.publishProgress,

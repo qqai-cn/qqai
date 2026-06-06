@@ -18,6 +18,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../../../util/api_base_client.dart';
 import '../../../util/image_bytes_xfile.dart';
+import '../../../util/web_blob_helpers.dart';
 import '../../../components/blog/network_image_carousel_pages.dart';
 import '../../../components/video_player/local_qqai_player.dart';
 import '../../data/models/address_entity.dart';
@@ -382,11 +383,8 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   void clearVideo() {
-    final path = state.videoFiles.isEmpty ? null : state.videoFiles.first.path;
+    _revokePublishBlobUrls();
     _resetVideoDurationCache();
-    if (path != null) {
-      clearLocalVideoAspectRatioCache(path);
-    }
     _coverPreviewGeneration++;
     state = state.copyWith(
       files: [],
@@ -617,6 +615,33 @@ class FabuNotifier extends _$FabuNotifier {
     state = state.copyWith(aixinType: amount ?? 0);
   }
 
+  void _revokePublishBlobUrls() {
+    final paths = <String>[
+      ...state.videoFiles.map((file) => file.path),
+      ...state.files.map((file) => file.path),
+      if (state.coverFile != null) state.coverFile!.path,
+      if (state.backgroundMusicFile != null) state.backgroundMusicFile!.path,
+    ];
+    for (final path in paths) {
+      revokeBlobUrlIfNeeded(path);
+      clearLocalVideoAspectRatioCache(path);
+    }
+  }
+
+  /// 发布成功或需要清空草稿时释放本地视频/图片资源，避免 Web 端 blob 与内存累积。
+  void resetPublishForm() {
+    _revokePublishBlobUrls();
+    _resetVideoDurationCache();
+    _coverPreviewGeneration++;
+    _widgetCoverCapture = null;
+    state = FabuState(
+      items: state.items,
+      addressList: state.addressList,
+      topicList: state.topicList,
+      whoCanSee: state.whoCanSee,
+    );
+  }
+
   Future<void> publishBlog({
     int? squareId,
     String? topicIds,
@@ -721,6 +746,7 @@ class FabuNotifier extends _$FabuNotifier {
         req,
         rewardAmount: rewardAmount ?? (categary == 2 ? state.aixinType : null),
       );
+      resetPublishForm();
       state = state.copyWith(
         isLoading: false,
         isUploading: false,

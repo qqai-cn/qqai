@@ -24,6 +24,12 @@ void downloadUint8ListAsFile(
   URL.revokeObjectURL(url);
 }
 
+void revokeBlobUrlIfNeeded(String url) {
+  if (url.startsWith('blob:')) {
+    URL.revokeObjectURL(url);
+  }
+}
+
 /// Encode to WebP using browser canvas (`toDataURL`), for targets without `dart:html`.
 Future<Uint8List?> encodeWebpViaBrowserCanvas(img.Image image) async {
   final pngBytes = img.encodePng(image);

@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/video_player/flick_web_support.dart';
 import 'package:qqai/components/video_player/item_controls.dart';
 import 'package:qqai/components/video_player/local_qqai_player.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
@@ -16,22 +17,27 @@ class FabuMediaPreviewTile extends StatelessWidget {
     required this.isVideo,
     required this.onRemove,
     this.videoPlayerController,
+    this.enableVideoPlayer = true,
   });
 
   final XFile file;
   final bool isVideo;
   final VoidCallback onRemove;
   final LocalQqaiPlayerController? videoPlayerController;
+  final bool enableVideoPlayer;
 
   @override
   Widget build(BuildContext context) {
     final media = isVideo
+        ? enableVideoPlayer
         ? LocalQqaiPlayer(
             key: ValueKey(file.path),
             file: file,
             playerController: videoPlayerController,
             controls: const ItemControls(),
+            webKeyDownHandler: flickWebKeyDownHandlerWithoutSpacePlay,
           )
+        : _buildVideoPlaceholder(context)
         : kIsWeb
         ? Image.network(
             file.path,
@@ -122,6 +128,18 @@ class FabuMediaPreviewTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(right: 10, bottom: 10),
       child: SizedBox(width: imageSize, height: imageSize, child: preview),
+    );
+  }
+
+  Widget _buildVideoPlaceholder(BuildContext context) {
+    return Container(
+      color: const Color(0xFF1F2937),
+      alignment: Alignment.center,
+      child: Icon(
+        Icons.play_circle_outline,
+        color: Colors.white.withValues(alpha: 0.72),
+        size: 48,
+      ),
     );
   }
 

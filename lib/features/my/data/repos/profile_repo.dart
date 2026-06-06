@@ -52,6 +52,8 @@ abstract class IProfileRepo {
 
   Future<int> createCollection(BlogCollectionSaveReq req);
 
+  Future<bool> updateCollection(int id, BlogCollectionSaveReq req);
+
   Future<BlogShopProductPageData> getMyShopProductsPage(
     int pageNo, {
     int pageSize = 12,
@@ -325,6 +327,21 @@ class ProfileRepo implements IProfileRepo {
     final id = data['data'];
     if (id is num) return id.toInt();
     throw '未返回合集 id';
+  }
+
+  @override
+  Future<bool> updateCollection(int id, BlogCollectionSaveReq req) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.profileCollectionDetailPath(id),
+      RequestType.put,
+      data: req.toJson(),
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '更新合集返回格式错误';
+    }
+    _ensureEnvelope(data);
+    return data['data'] == true;
   }
 
   @override

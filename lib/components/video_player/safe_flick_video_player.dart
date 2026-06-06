@@ -61,6 +61,7 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
   double? _videoHeight;
   bool _managerInitialized = false;
   final FocusNode _focusNode = FocusNode(skipTraversal: true);
+  FlickWebDocumentListenersHandle? _webDocumentListeners;
 
   @override
   void initState() {
@@ -88,7 +89,8 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
     }
 
     if (kIsWeb) {
-      setupFlickWebDocumentListeners(
+      _webDocumentListeners?.dispose();
+      _webDocumentListeners = setupFlickWebDocumentListeners(
         onFullscreenChange: _webFullscreenListener,
         onKeyDown: _webKeyListener,
       );
@@ -97,6 +99,8 @@ class _SafeFlickVideoPlayerState extends State<SafeFlickVideoPlayer>
 
   @override
   void dispose() {
+    _webDocumentListeners?.dispose();
+    _webDocumentListeners = null;
     if (_managerInitialized) {
       flickManager.flickControlManager!.removeListener(listener);
     }

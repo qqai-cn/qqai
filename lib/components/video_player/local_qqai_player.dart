@@ -4,6 +4,7 @@ import 'package:file_selector/file_selector.dart';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/video_player/flick_web_support.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:video_player/video_player.dart';
@@ -43,6 +44,7 @@ class LocalQqaiPlayer extends StatefulWidget {
     this.autoPlay = false,
     this.videoFit = BoxFit.contain,
     this.fallbackAspectRatio = 15 / 9,
+    this.webKeyDownHandler,
   });
 
   final XFile file;
@@ -51,6 +53,7 @@ class LocalQqaiPlayer extends StatefulWidget {
   final bool autoPlay;
   final BoxFit videoFit;
   final double fallbackAspectRatio;
+  final FlickWebKeyHandler? webKeyDownHandler;
 
   @override
   State<LocalQqaiPlayer> createState() => _LocalQqaiPlayerState();
@@ -146,6 +149,7 @@ class _LocalQqaiPlayerState extends State<LocalQqaiPlayer> {
     final player = SafeFlickVideoPlayer(
       flickManager: manager,
       wakelockEnabled: false,
+      webKeyDownHandler: widget.webKeyDownHandler,
       flickVideoWithControls: FlickVideoWithControls(
         videoFit: widget.videoFit,
         playerLoadingFallback: const ColoredBox(
