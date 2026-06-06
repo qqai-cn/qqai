@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../providers/auth_providers.dart';
 import '../../../router/app_routes.dart';
+import '../data/models/chat_models.dart';
 import '../data/repos/chat_repo.dart';
 import '../providers/chat_providers.dart';
 
@@ -11,8 +12,9 @@ import '../providers/chat_providers.dart';
 Future<void> openMemberConversationChat(
   BuildContext context,
   WidgetRef ref,
-  int memberUserId,
-) async {
+  int memberUserId, {
+  int? sourceType,
+}) async {
   if (!ref.read(authProvider).isAuthenticated) {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('请先登录')),
@@ -24,7 +26,10 @@ Future<void> openMemberConversationChat(
   try {
     final conversation = await ref
         .read(chatRepoProvider)
-        .getOrCreateSingleConversation(memberUserId);
+        .getOrCreateSingleConversation(
+          memberUserId,
+          sourceType: sourceType,
+        );
     final conversationId = conversation.id;
     if (conversationId == null) {
       throw Exception('无会话编号');

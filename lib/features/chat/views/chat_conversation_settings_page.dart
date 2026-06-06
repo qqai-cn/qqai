@@ -351,7 +351,7 @@ class _ChatConversationSettingsPageState
                   _buildGroupMembersSection(),
                   const SizedBox(height: 12),
                 ],
-                _section([
+                _switchSection([
                   SwitchListTile(
                     title: const Text('置顶聊天'),
                     secondary: const Icon(Icons.push_pin_outlined),
@@ -519,6 +519,41 @@ class _ChatConversationSettingsPageState
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(children: children),
+    );
+  }
+
+  Widget _switchSection(List<Widget> children) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      elevation: 0,
+      color: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: SwitchTheme(
+        data: SwitchThemeData(
+          thumbColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return Colors.grey.shade100;
+            }
+            return Colors.white;
+          }),
+          trackColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.disabled)) {
+              return Colors.grey.shade300;
+            }
+            if (states.contains(WidgetState.selected)) {
+              return const Color(0xFF3578E5);
+            }
+            return const Color(0xFFBDBDBD);
+          }),
+          trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return Colors.transparent;
+            }
+            return const Color(0xFF8E8E8E);
+          }),
+        ),
+        child: Column(children: children),
+      ),
     );
   }
 }

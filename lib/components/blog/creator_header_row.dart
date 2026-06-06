@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/level_icon.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/constant/color_constant.dart';
+import 'package:qqai/components/blog/blog_follow_button.dart';
 import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/util/media_url.dart';
 
@@ -78,26 +78,9 @@ class CreatorHeaderRow extends StatelessWidget {
         if (showCareButton)
           Padding(
             padding: const EdgeInsets.only(right: 10),
-            child: ElevatedButton(
-              style: care == 1
-                  ? ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 35),
-                      padding: const EdgeInsets.only(left: 10, right: 10),
-                    )
-                  : ElevatedButton.styleFrom(
-                      minimumSize: const Size(20, 35),
-                      padding: const EdgeInsets.only(left: 13, right: 13),
-                      backgroundColor: ColorConstant.ThemeGreen,
-                    ),
-              onPressed: onCareTap,
-              child: care == 1
-                  ? Text(
-                      '已关注',
-                      style: context.typo.button.copyWith(
-                        color: ColorConstant.ThemeGreen,
-                      ),
-                    )
-                  : Text('关注', style: context.typo.button),
+            child: BlogFollowButton(
+              followed: care == 1,
+              onTap: onCareTap,
             ),
           ),
       ],

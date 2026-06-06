@@ -38,6 +38,12 @@ class ChatMessageDto {
   }
 }
 
+class ChatConversationSourceType {
+  static const int normal = 0;
+  static const int square = 1;
+  static const int product = 2;
+}
+
 class ChatConversationDto {
   ChatConversationDto({
     this.id,
@@ -52,6 +58,8 @@ class ChatConversationDto {
     this.pinned,
     this.memberCount,
     this.creatorId,
+    this.joinMode,
+    this.sourceType,
     this.updateTime,
   });
 
@@ -67,6 +75,8 @@ class ChatConversationDto {
   final bool? pinned;
   final int? memberCount;
   final int? creatorId;
+  final int? joinMode;
+  final int? sourceType;
   final String? updateTime;
 
   factory ChatConversationDto.fromJson(Map<String, dynamic> json) {
@@ -83,6 +93,8 @@ class ChatConversationDto {
       pinned: json['pinned'] as bool?,
       memberCount: (json['memberCount'] as num?)?.toInt(),
       creatorId: (json['creatorId'] as num?)?.toInt(),
+      joinMode: (json['joinMode'] as num?)?.toInt(),
+      sourceType: (json['sourceType'] as num?)?.toInt(),
       updateTime: json['updateTime'] as String?,
     );
   }
@@ -117,6 +129,16 @@ class ChatConversationDto {
 
   String get displayTitle =>
       (name != null && name!.isNotEmpty) ? name! : '会话 ${id ?? ''}';
+
+  /// 消息列表左上角来源标记文案（广场 / 商品）。
+  String? get listSourceBadge {
+    if (sourceType == ChatConversationSourceType.product) return '商品';
+    if (sourceType == ChatConversationSourceType.square ||
+        (isGroup && joinMode == 2)) {
+      return '广场';
+    }
+    return null;
+  }
 }
 
 class GroupInvitationPendingDto {

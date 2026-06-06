@@ -11,6 +11,7 @@ class BlogShareButton extends StatelessWidget {
   final VoidCallback? onShareChannelTap;
   final double? iconWidth;
   final Color? iconColor;
+  final double? tapTargetSize;
   final bool showCount;
   final String countLabel;
   final TextStyle? countStyle;
@@ -21,6 +22,7 @@ class BlogShareButton extends StatelessWidget {
     this.onShareChannelTap,
     this.iconWidth,
     this.iconColor,
+    this.tapTargetSize,
     this.showCount = false,
     this.countLabel = '0',
     this.countStyle,
@@ -29,6 +31,7 @@ class BlogShareButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final w = iconWidth ?? ((180.w > 80 ? 80 : 180.w) / 2);
+    final target = tapTargetSize ?? w;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -37,12 +40,19 @@ class BlogShareButton extends StatelessWidget {
             context,
             onShareChannelTap: onShareChannelTap,
           ),
-          child: SvgPicture.asset(
-            'imgs/forward.svg',
-            width: w,
-            colorFilter: iconColor != null
-                ? ColorFilter.mode(iconColor!, BlendMode.srcIn)
-                : null,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: target,
+            height: target,
+            child: Center(
+              child: SvgPicture.asset(
+                'imgs/forward.svg',
+                width: w,
+                colorFilter: iconColor != null
+                    ? ColorFilter.mode(iconColor!, BlendMode.srcIn)
+                    : null,
+              ),
+            ),
           ),
         ),
         if (showCount)

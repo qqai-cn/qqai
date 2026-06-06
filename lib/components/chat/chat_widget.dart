@@ -27,6 +27,7 @@ import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
 import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/chat_message_time_format.dart';
 import 'package:uuid/uuid.dart';
 
 import 'chat_file_download.dart';
@@ -68,6 +69,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   final _uuid = const Uuid();
 
   StreamSubscription<GlobalChatMessageEvent>? _socketMessageSubscription;
+  ProviderSubscription<int>? _historyRevisionSub;
   late final ChatController _chatController;
   final _systemUser = const User(id: 'system');
   late final User _meUser;
@@ -81,6 +83,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   bool _hasMoreOlder = true;
   bool _loadingOlder = false;
   bool _initialHistoryReady = false;
+  late final ChatMessageTimeFormat _messageTimeFormat = ChatMessageTimeFormat();
 
   @override
   void initState() {
@@ -95,6 +98,14 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       _connectToGlobalSocket();
     }
     _composerFocusNode.addListener(_onComposerFocusChange);
+    _historyRevisionSub = ref.listenManual<int>(
+      chatHistoryRevisionProvider(widget.conversationId),
+      (previous, next) {
+        if (previous != next) {
+          Future.microtask(_loadInitialHistory);
+        }
+      },
+    );
     Future.microtask(_loadInitialHistory);
   }
 
@@ -108,6 +119,15 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   void didUpdateWidget(covariant ChatWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.conversationId != widget.conversationId) {
+      _historyRevisionSub?.close();
+      _historyRevisionSub = ref.listenManual<int>(
+        chatHistoryRevisionProvider(widget.conversationId),
+        (previous, next) {
+          if (previous != next) {
+            Future.microtask(_loadInitialHistory);
+          }
+        },
+      );
       _nextOlderPage = 2;
       _hasMoreOlder = true;
       _loadingOlder = false;
@@ -130,23 +150,6 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
           ),
     );
     return messages;
-  }
-
-  List<Message> _mergeById(List<Message> a, List<Message> b) {
-    final map = <String, Message>{};
-    for (final m in a) {
-      map[m.id] = m;
-    }
-    for (final m in b) {
-      map[m.id] = m;
-    }
-    final out = map.values.toList();
-    out.sort((x, y) {
-      final tx = x.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      final ty = y.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
-      return tx.toUtc().compareTo(ty.toUtc());
-    });
-    return out;
   }
 
   Future<void> _loadInitialHistory() async {
@@ -201,7 +204,12 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   }
 
   Future<void> _loadOlderHistory() async {
-    if (!mounted || _loadingOlder || !_hasMoreOlder) return;
+    if (!mounted ||
+        _loadingOlder ||
+        !_hasMoreOlder ||
+        !_initialHistoryReady) {
+      return;
+    }
     _loadingOlder = true;
     try {
       final page = await ref
@@ -213,28 +221,35 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
           );
       final batch = [...?page.list];
       if (batch.isEmpty) {
-        if (mounted) {
-          _hasMoreOlder = false;
-          setState(() {});
-        }
+        _hasMoreOlder = false;
         return;
       }
-      final newMessages = _messagesFromDtos(batch);
-      if (!mounted) return;
-      final merged = _mergeById(_chatController.messages, newMessages);
-      await _chatController.setMessages(merged);
+
+      final existingIds = _chatController.messages.map((m) => m.id).toSet();
+      final newMessages = _messagesFromDtos(batch)
+          .where((m) => !existingIds.contains(m.id))
+          .toList();
+      if (newMessages.isEmpty) {
+        _hasMoreOlder = false;
+        return;
+      }
+
+      await _chatController.insertAllMessages(
+        newMessages,
+        index: 0,
+      );
       _nextOlderPage++;
       _hasMoreOlder = batch.length >= _historyPageSize;
-      if (mounted) setState(() {});
     } catch (e) {
       debugPrint('chat older history: $e');
     } finally {
-      if (mounted) _loadingOlder = false;
+      _loadingOlder = false;
     }
   }
 
   @override
   void dispose() {
+    _historyRevisionSub?.close();
     _socketMessageSubscription?.cancel();
     _composerFocusNode.removeListener(_onComposerFocusChange);
     _composerController.dispose();
@@ -246,15 +261,6 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<int>(chatHistoryRevisionProvider(widget.conversationId), (
-      previous,
-      next,
-    ) {
-      if (previous != next) {
-        _loadInitialHistory();
-      }
-    });
-
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -262,6 +268,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       body: Stack(
         children: [
           Chat(
+            timeFormat: _messageTimeFormat,
             builders: Builders(
               chatAnimatedListBuilder: (context, itemBuilder) {
                 final list = ChatAnimatedList(
@@ -270,11 +277,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                     if (message is SystemMessage) return Duration.zero;
                     return null;
                   },
-                  onEndReached: (_initialHistoryReady && _hasMoreOlder)
-                      ? () async {
-                          await _loadOlderHistory();
-                        }
-                      : null,
+                  onEndReached: _initialHistoryReady ? _loadOlderHistory : null,
                 );
                 if (!_showEmojiPanel) return list;
                 return GestureDetector(

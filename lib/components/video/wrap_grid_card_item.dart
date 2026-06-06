@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/components/blog/blog_follow_button.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
-import 'package:qqai/constant/color_constant.dart';
 
 /// 网格卡片底部信息行：头像 + 标题/作者/元信息 + 关注 + 更多。
 class WrapGridCardItem extends StatelessWidget {
@@ -108,26 +108,9 @@ class WrapGridCardItem extends StatelessWidget {
             children: <Widget>[
               Padding(
                 padding: const EdgeInsets.only(right: 10),
-                child: ElevatedButton(
-                  style: followed
-                      ? ElevatedButton.styleFrom(
-                          minimumSize: const Size(20, 35),
-                          padding: const EdgeInsets.only(left: 10, right: 10),
-                        )
-                      : ElevatedButton.styleFrom(
-                          minimumSize: const Size(20, 35),
-                          padding: const EdgeInsets.only(left: 13, right: 13),
-                          backgroundColor: ColorConstant.ThemeGreen,
-                        ),
-                  onPressed: onFollowTap,
-                  child: followed
-                      ? Text(
-                          '已关注',
-                          style: context.typo.button.copyWith(
-                            color: Colors.grey,
-                          ),
-                        )
-                      : Text('关注', style: context.typo.button),
+                child: BlogFollowButton(
+                  followed: followed,
+                  onTap: onFollowTap,
                 ),
               ),
               PopupMenuButton<String>(

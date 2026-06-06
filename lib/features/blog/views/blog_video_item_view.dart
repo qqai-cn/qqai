@@ -12,6 +12,7 @@ import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
+import '../../../../constant/constant.dart';
 import '../../../../providers/auth_providers.dart';
 import '../../../../router/app_routes.dart';
 import '../data/blog_display_text.dart';
@@ -192,7 +193,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
       child: SizedBox(
         height: _videoItemHeightWithAspectRatio(aspectRatio),
         child: Padding(
-          padding: const EdgeInsets.all(2),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -205,6 +206,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 ),
                 avatarUrl: avatarUrl,
                 creatorLevel: blogCreatorLevel(widget.blogItem),
+                avatarSize: Constant.HEAD_IMG_SEZE,
                 showCareButton: showCareButton,
                 onCareTap: () => blogNotifier.onCareTap(widget.blogItem),
                 avatarHeroTag: avatarHeroTag,
@@ -348,7 +350,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     final displayAspectRatio = aspectRatio < 1
         ? _portraitDisplayAspectRatio
         : 15 / 9;
-    return widthItem / displayAspectRatio + 150;
+    return widthItem / displayAspectRatio + 162;
   }
 
   double? _validVideoAspectRatio(double? value) {

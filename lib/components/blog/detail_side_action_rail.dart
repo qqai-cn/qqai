@@ -5,7 +5,16 @@ import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/views/blog_share_button.dart';
 
 /// 详情页右侧竖向操作条：头像/关注、点赞、评论、收藏（五角星）、分享。
+///
+/// 尺寸对齐抖音视频详情页右侧操作栏。
 class DetailSideActionRail extends StatelessWidget {
+  static const double avatarSize = 48;
+  static const double followButtonSize = 18;
+  static const double actionIconSize = 34;
+  static const double actionGroupSpacing = 18;
+  static const double iconLabelGap = 2;
+  static const double tapTargetSize = 44;
+
   final String? avatarUrl;
   final bool showFollowButton;
   final bool isFollowing;
@@ -47,11 +56,35 @@ class DetailSideActionRail extends StatelessWidget {
     this.shareBlog,
   });
 
+  Widget _buildActionItem({
+    required VoidCallback onTap,
+    required Widget icon,
+    required String label,
+    required TextStyle labelStyle,
+  }) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        InkWell(
+          onTap: onTap,
+          customBorder: const CircleBorder(),
+          child: SizedBox(
+            width: tapTargetSize,
+            height: tapTargetSize,
+            child: Center(child: icon),
+          ),
+        ),
+        SizedBox(height: iconLabelGap),
+        Text(label, style: labelStyle),
+      ],
+    );
+  }
+
   Widget _buildAvatarWithHero(BuildContext context) {
     final url = avatarUrl;
     var avatar = buildDetailAvatar(
       avatarUrl: url,
-      size: 50,
+      size: avatarSize,
       context: context,
     );
     if (avatarHeroTag != null &&
@@ -65,52 +98,58 @@ class DetailSideActionRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final caption = context.typo.caption.copyWith(color: Colors.white);
+    final labelStyle = context.typo.caption.copyWith(
+      color: Colors.white,
+      fontSize: 12,
+      height: 1.1,
+      fontWeight: FontWeight.w500,
+    );
     return Positioned(
-      right: 10,
+      right: 8,
       bottom: bottomOffset,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: 50,
-            height: 60,
+            width: avatarSize,
+            height: avatarSize + 6,
             child: Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.topCenter,
               children: [
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(1000),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(2),
-                      child: InkWell(
-                        onTap: onAvatarTap,
-                        child: _buildAvatarWithHero(context),
-                      ),
+                Container(
+                  width: avatarSize,
+                  height: avatarSize,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(1000),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(2),
+                    child: InkWell(
+                      onTap: onAvatarTap,
+                      customBorder: const CircleBorder(),
+                      child: _buildAvatarWithHero(context),
                     ),
                   ),
                 ),
                 if (showFollowButton && !isFollowing)
                   Positioned(
                     bottom: 0,
-                    child: SizedBox(
-                      width: 40,
-                      child: Center(
-                        child: Container(
-                          width: 25,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.red,
-                          ),
-                          child: InkWell(
-                            onTap: onFollowTap ?? () {},
-                            child: const Icon(Icons.add, color: Colors.white),
-                          ),
+                    child: Container(
+                      width: followButtonSize,
+                      height: followButtonSize,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFFFE2C55),
+                      ),
+                      child: InkWell(
+                        onTap: onFollowTap ?? () {},
+                        customBorder: const CircleBorder(),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 14,
                         ),
                       ),
                     ),
@@ -118,40 +157,54 @@ class DetailSideActionRail extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 5),
-          IconButton(
-            iconSize: 40,
-            onPressed: onLikeTap ?? () {},
+          SizedBox(height: actionGroupSpacing),
+          _buildActionItem(
+            onTap: onLikeTap ?? () {},
+            label: likeCountLabel,
+            labelStyle: labelStyle,
             icon: Icon(
-              liked ? Icons.favorite : Icons.favorite_border,
-              color: liked ? Colors.red : Colors.white,
+              Icons.favorite,
+              size: actionIconSize,
+              color: liked ? const Color(0xFFFE2C55) : Colors.white,
             ),
           ),
-          Text(likeCountLabel, style: caption),
-          const SizedBox(height: 5),
-          IconButton(
-            iconSize: 40,
-            onPressed: onCommentTap,
-            color: Colors.white,
-            icon: const Icon(Icons.comment),
+          SizedBox(height: actionGroupSpacing),
+          _buildActionItem(
+            onTap: onCommentTap,
+            label: commentCountLabel,
+            labelStyle: labelStyle,
+            icon: const Icon(
+              Icons.mode_comment,
+              size: actionIconSize,
+              color: Colors.white,
+            ),
           ),
-          Text(commentCountLabel, style: caption),
-          const SizedBox(height: 5),
-          IconButton(
-            iconSize: 40,
-            onPressed: onCollectTap ?? () {},
-            color: collected ? Colors.amber : Colors.white,
-            icon: Icon(collected ? Icons.star : Icons.star_border),
+          SizedBox(height: actionGroupSpacing),
+          _buildActionItem(
+            onTap: onCollectTap ?? () {},
+            label: collectCountLabel,
+            labelStyle: labelStyle,
+            icon: Icon(
+              Icons.star,
+              size: actionIconSize,
+              color: collected ? Colors.amber : Colors.white,
+            ),
           ),
-          Text(collectCountLabel, style: caption),
-          const SizedBox(height: 5),
-          BlogShareButton(
-            blog: shareBlog,
-            onShareChannelTap: onShareTap,
-            iconWidth: 40,
-            iconColor: Colors.white,
+          SizedBox(height: actionGroupSpacing),
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              BlogShareButton(
+                blog: shareBlog,
+                onShareChannelTap: onShareTap,
+                iconWidth: actionIconSize,
+                iconColor: Colors.white,
+                tapTargetSize: tapTargetSize,
+              ),
+              SizedBox(height: iconLabelGap),
+              Text(shareCountLabel, style: labelStyle),
+            ],
           ),
-          Text(shareCountLabel, style: caption),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:provider/provider.dart';
+import 'package:qqai/util/chat_message_time_format.dart';
 
 /// 轻量文本消息气泡，用 [SelectableText] 替代 GptMarkdown，避免 KaTeX 字体进包。
 class QqaiChatTextMessage extends StatelessWidget {
@@ -201,14 +202,12 @@ class _TimeAndStatus extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final timeFormat = context.watch<DateFormat>();
-
     return Row(
       spacing: 2,
       mainAxisSize: MainAxisSize.min,
       children: [
         if (showTime && time != null)
-          Text(timeFormat.format(time!.toLocal()), style: textStyle),
+          Text(formatChatMessageTime(time!.toLocal()), style: textStyle),
         if (showStatus && status != null)
           if (status == MessageStatus.sending)
             SizedBox(

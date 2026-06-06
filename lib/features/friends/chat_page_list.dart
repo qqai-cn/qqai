@@ -431,6 +431,12 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                               ),
                       ),
                     ),
+                    if (c.listSourceBadge != null)
+                      Positioned(
+                        top: -7,
+                        left: -14,
+                        child: _sourceBadge(c.listSourceBadge!),
+                      ),
                     if (hasUnread)
                       Positioned(
                         top: -2,
@@ -520,6 +526,29 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _sourceBadge(String label) {
+    final color = label == '广场'
+        ? const Color(0xFF7B1FA2)
+        : const Color(0xFFE65100);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.white, width: 1),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 9,
+          height: 1.1,
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

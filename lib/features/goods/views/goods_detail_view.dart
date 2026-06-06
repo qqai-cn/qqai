@@ -15,6 +15,7 @@ import '../models/goods_comment_item.dart';
 import '../providers/cart_session.dart';
 import '../providers/goods_comments.dart';
 import '../widgets/coupon_claim_entry.dart';
+import '../../chat/data/models/chat_models.dart';
 import '../../chat/utils/open_member_conversation_chat.dart';
 import '../widgets/goods_comment_submit_sheet.dart';
 import '../widgets/goods_page_layout.dart';
@@ -195,7 +196,12 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     }
     setState(() => _serviceLoading = true);
     try {
-      await openMemberConversationChat(context, ref, memberUserId);
+      await openMemberConversationChat(
+        context,
+        ref,
+        memberUserId,
+        sourceType: ChatConversationSourceType.product,
+      );
     } finally {
       if (mounted) {
         setState(() => _serviceLoading = false);

@@ -11,7 +11,10 @@ abstract class IChatRepo {
 
   Future<ChatConversationDto> getConversation(int id);
 
-  Future<ChatConversationDto> getOrCreateSingleConversation(int otherUserId);
+  Future<ChatConversationDto> getOrCreateSingleConversation(
+    int otherUserId, {
+    int? sourceType,
+  });
 
   Future<ChatConversationDto> createGroupConversation({
     String? name,
@@ -148,12 +151,16 @@ class ChatRepo implements IChatRepo {
 
   @override
   Future<ChatConversationDto> getOrCreateSingleConversation(
-    int otherUserId,
-  ) async {
+    int otherUserId, {
+    int? sourceType,
+  }) async {
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.CHAT_CONVERSATION_SINGLE,
       RequestType.post,
-      queryParameters: {'otherUserId': otherUserId},
+      queryParameters: {
+        'otherUserId': otherUserId,
+        if (sourceType != null) 'sourceType': sourceType,
+      },
     );
     final root = Map<String, dynamic>.from(response.data as Map);
     _throwIfBadEnvelope(root);
