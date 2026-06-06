@@ -573,7 +573,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   c.isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                   color: c.bodyText.withValues(alpha: 0.82),
                 ),
-                onPressed: () => ref.read(appThemeModeProvider.notifier).toggle(),
+                onPressed: () => ref
+                    .read(appThemeModeProvider.notifier)
+                    .toggleForPlatform(
+                      MediaQuery.platformBrightnessOf(context),
+                    ),
               ),
             ),
           ),

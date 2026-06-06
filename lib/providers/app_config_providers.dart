@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../util/my_shared_pref.dart';
+import 'app_theme_preference.dart';
 
 part 'app_config_providers.g.dart';
 
@@ -11,12 +11,17 @@ part 'app_config_providers.g.dart';
 @riverpod
 class AppThemeMode extends _$AppThemeMode {
   @override
-  bool build() => MySharedPref.getThemeIsLight();
+  AppThemePreference build() => MySharedPref.getThemePreference();
 
-  void toggle() {
-    final newMode = !state;
-    MySharedPref.setThemeIsLight(newMode);
-    state = newMode;
+  Future<void> setPreference(AppThemePreference preference) async {
+    await MySharedPref.setThemePreference(preference);
+    state = preference;
+  }
+
+  Future<void> toggleForPlatform(Brightness platformBrightness) async {
+    await setPreference(
+      oppositeThemePreference(state, platformBrightness),
+    );
   }
 }
 
@@ -34,7 +39,9 @@ class AppLocale extends _$AppLocale {
 
 // 工具函数：切换主题（保持向后兼容）
 void toggleTheme(WidgetRef ref) {
-  ref.read(appThemeModeProvider.notifier).toggle();
+  final brightness =
+      WidgetsBinding.instance.platformDispatcher.platformBrightness;
+  ref.read(appThemeModeProvider.notifier).toggleForPlatform(brightness);
 }
 
 // 工具函数：切换语言（保持向后兼容）

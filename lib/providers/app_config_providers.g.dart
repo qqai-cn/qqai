@@ -12,7 +12,8 @@ part of 'app_config_providers.dart';
 @ProviderFor(AppThemeMode)
 const appThemeModeProvider = AppThemeModeProvider._();
 
-final class AppThemeModeProvider extends $NotifierProvider<AppThemeMode, bool> {
+final class AppThemeModeProvider
+    extends $NotifierProvider<AppThemeMode, AppThemePreference> {
   const AppThemeModeProvider._()
     : super(
         from: null,
@@ -32,28 +33,28 @@ final class AppThemeModeProvider extends $NotifierProvider<AppThemeMode, bool> {
   AppThemeMode create() => AppThemeMode();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
+  Override overrideWithValue(AppThemePreference value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
+      providerOverride: $SyncValueProvider<AppThemePreference>(value),
     );
   }
 }
 
-String _$appThemeModeHash() => r'f5c4b6ec02b8aa0bd1bf473469d4db929002555c';
+String _$appThemeModeHash() => r'6833399f777cbc3823614ef13fd5e3cf5608e42c';
 
-abstract class _$AppThemeMode extends $Notifier<bool> {
-  bool build();
+abstract class _$AppThemeMode extends $Notifier<AppThemePreference> {
+  AppThemePreference build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<bool, bool>;
+    final ref = this.ref as $Ref<AppThemePreference, AppThemePreference>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
+              AnyNotifier<AppThemePreference, AppThemePreference>,
+              AppThemePreference,
               Object?,
               Object?
             >;

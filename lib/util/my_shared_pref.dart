@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../config/translations/localization_service.dart';
+import '../providers/app_theme_preference.dart';
 
 class MySharedPref {
   // prevent making instance
@@ -18,6 +19,7 @@ class MySharedPref {
   static const String _watchHistoryKey = 'watch_history_v1';
   static const String _currentLocalKey = 'current_local';
   static const String _lightThemeKey = 'is_theme_light';
+  static const String _themePreferenceKey = 'theme_preference';
 
   /// init get storage services
   static Future<void> init() async {
@@ -29,12 +31,40 @@ class MySharedPref {
   }
 
   /// set theme current type as light theme
+  @Deprecated('Use setThemePreference instead')
   static Future<void> setThemeIsLight(bool lightTheme) =>
-      _sharedPreferences.setBool(_lightThemeKey, lightTheme);
+      setThemePreference(
+        lightTheme ? AppThemePreference.light : AppThemePreference.dark,
+      );
 
   /// get if the current theme type is light
-  static bool getThemeIsLight() =>
-      _sharedPreferences.getBool(_lightThemeKey) ?? true; // todo set the default theme (true for light, false for dark)
+  @Deprecated('Use getThemePreference instead')
+  static bool getThemeIsLight() {
+    final preference = getThemePreference();
+    if (preference == AppThemePreference.system) {
+      final brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      return brightness == Brightness.light;
+    }
+    return preference == AppThemePreference.light;
+  }
+
+  static Future<void> setThemePreference(AppThemePreference preference) =>
+      _sharedPreferences.setString(_themePreferenceKey, preference.name);
+
+  static AppThemePreference getThemePreference() {
+    final stored = _sharedPreferences.getString(_themePreferenceKey);
+    if (stored != null) {
+      for (final preference in AppThemePreference.values) {
+        if (preference.name == stored) return preference;
+      }
+    }
+    if (_sharedPreferences.containsKey(_lightThemeKey)) {
+      final isLight = _sharedPreferences.getBool(_lightThemeKey)!;
+      return isLight ? AppThemePreference.light : AppThemePreference.dark;
+    }
+    return AppThemePreference.system;
+  }
 
   /// save current locale
   static Future<void> setCurrentLanguage(String languageCode) =>

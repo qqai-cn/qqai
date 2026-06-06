@@ -15,6 +15,7 @@ import 'util/api_base_client.dart';
 import 'util/api_messenger.dart';
 import 'providers/auth_providers.dart';
 import 'providers/app_config_providers.dart';
+import 'providers/app_theme_preference.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +52,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    final themeIsLight = ref.watch(appThemeModeProvider);
+    final themePreference = ref.watch(appThemeModeProvider);
     final locale = ref.watch(appLocaleProvider);
     // watch：登录态变化或路由表更新后使用新的 GoRouter，避免一直用首次创建的实例
     final router = ref.watch(appRouterProvider);
@@ -81,11 +82,13 @@ class _MyAppState extends ConsumerState<MyApp> {
           ],
           theme: MyTheme.getThemeData(isLight: true),
           darkTheme: MyTheme.getThemeData(isLight: false),
-          themeMode: themeIsLight ? ThemeMode.light : ThemeMode.dark,
+          themeMode: themeModeFor(themePreference),
           routerConfig: router,
           builder: (context, widget) {
+            final platformBrightness = MediaQuery.platformBrightnessOf(context);
+            final isLight = appThemeIsLight(themePreference, platformBrightness);
             return Theme(
-              data: MyTheme.getThemeData(isLight: themeIsLight),
+              data: MyTheme.getThemeData(isLight: isLight),
               child: MediaQuery(
                 data: MediaQuery.of(
                   context,

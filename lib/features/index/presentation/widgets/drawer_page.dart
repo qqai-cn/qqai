@@ -9,6 +9,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/format_count.dart';
 
 import '../../../../providers/app_config_providers.dart';
+import '../../../../providers/app_theme_preference.dart';
 import '../../../../providers/auth_providers.dart';
 import '../../../../router/app_routes.dart';
 import '../../../my/providers/my_page_profile.dart';
@@ -226,6 +227,22 @@ class _DrawerLoggedInHeader extends ConsumerWidget {
   }
 }
 
+bool _effectiveThemeIsLight(BuildContext context, WidgetRef ref) {
+  final preference = ref.watch(appThemeModeProvider);
+  final platformBrightness = MediaQuery.platformBrightnessOf(context);
+  return appThemeIsLight(preference, platformBrightness);
+}
+
+String _themeSubtitle(BuildContext context, WidgetRef ref) {
+  final preference = ref.watch(appThemeModeProvider);
+  final isLight = _effectiveThemeIsLight(context, ref);
+  final modeLabel = isLight ? '浅色' : '深色';
+  if (preference == AppThemePreference.system) {
+    return '当前：$modeLabel（跟随系统）';
+  }
+  return '当前：$modeLabel';
+}
+
 List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
   const imgPath = 'imgs/';
   final auth = ref.watch(authProvider);
@@ -344,14 +361,17 @@ List<Widget> _drawerMenuTiles(BuildContext context, WidgetRef ref) {
       ),
       title: const Text('夜间模式'),
       subtitle: Text(
-        ref.watch(appThemeModeProvider) ? '当前：浅色' : '当前：深色',
+        _themeSubtitle(context, ref),
         style: context.typo.caption,
       ),
-      value: !ref.watch(appThemeModeProvider),
+      value: !_effectiveThemeIsLight(context, ref),
       onChanged: (wantDark) {
-        final isLight = ref.read(appThemeModeProvider);
-        if (wantDark == isLight) {
-          ref.read(appThemeModeProvider.notifier).toggle();
+        final platformBrightness = MediaQuery.platformBrightnessOf(context);
+        final currentlyLight = _effectiveThemeIsLight(context, ref);
+        if (wantDark == currentlyLight) {
+          ref
+              .read(appThemeModeProvider.notifier)
+              .toggleForPlatform(platformBrightness);
         }
       },
     ),
