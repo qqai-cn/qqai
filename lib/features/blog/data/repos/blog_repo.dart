@@ -95,6 +95,9 @@ abstract class IBlogRepo {
   /// 记录分享，返回是否成功。
   Future<bool> recordBlogShare(int blogId);
 
+  /// 按编号获取公开博客详情。
+  Future<BlogItem?> fetchBlogItemById(int blogId);
+
   /// 收藏博客（POST）。
   Future<bool> favoriteBlog(int blogId);
 
@@ -328,6 +331,23 @@ class BlogRepo implements IBlogRepo {
     );
     _parseBooleanData(response.data, errorHint: '分享失败');
     return true;
+  }
+
+  @override
+  Future<BlogItem?> fetchBlogItemById(int blogId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogDetailPath(blogId),
+      RequestType.get,
+    );
+    final raw = response.data;
+    if (raw is! Map<String, dynamic>) return null;
+    final code = raw['code'];
+    if (code != null && code != 0 && code != '0') {
+      return null;
+    }
+    final data = raw['data'];
+    if (data is! Map<String, dynamic>) return null;
+    return BlogItem.fromJson(normalizeBlogItemJson(data));
   }
 
   @override

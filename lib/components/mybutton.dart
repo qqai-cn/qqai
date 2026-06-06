@@ -10,6 +10,7 @@ class MyFlatButton extends StatelessWidget {
   final double textSize;
   final Color color;
   final Color textColor;
+  final bool circularImage;
 
   const MyFlatButton({
     Key? key,
@@ -20,16 +21,28 @@ class MyFlatButton extends StatelessWidget {
     required this.textColor,
     this.textSize = 10,
     this.imgSize = 30,
+    this.circularImage = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    Widget image = Image.asset(
+      img,
+      width: imgSize,
+      height: imgSize,
+      fit: BoxFit.cover,
+    );
+    if (circularImage) {
+      image = ClipOval(
+        child: SizedBox(width: imgSize, height: imgSize, child: image),
+      );
+    }
     return TextButton(
       onPressed: onPress,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Image.asset(img, width: imgSize, height: imgSize),
+          image,
           Text(
             text,
             style: context.typo.body.copyWith(color: textColor, fontSize: textSize),

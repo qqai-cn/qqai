@@ -160,7 +160,7 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
                 icon: Icon(Icons.comment),
                 label: Text('评论'),
               ),
-              MySharePage(),
+              MySharePage(blog: widget.blogItem),
               Spacer(),
               PopupMenuButton(
                 tooltip: '',

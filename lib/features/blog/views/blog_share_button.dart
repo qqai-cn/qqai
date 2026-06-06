@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/share/share_to_friend_sheet.dart';
+import 'package:qqai/util/content_share_service.dart';
 
 import '../../../components/mybutton.dart';
 import '../data/models/blog_page_model.dart';
@@ -40,6 +43,7 @@ class BlogShareButton extends StatelessWidget {
         InkWell(
           onTap: () => showBlogShareSheet(
             context,
+            blog: blog,
             onShareChannelTap: onShareChannelTap,
           ),
           customBorder: const CircleBorder(),
@@ -73,48 +77,79 @@ class BlogShareButton extends StatelessWidget {
 /// 分享渠道底部弹层；选择渠道后触发 [onShareChannelTap]（用于上报分享次数）。
 void showBlogShareSheet(
   BuildContext context, {
+  BlogItem? blog,
   VoidCallback? onShareChannelTap,
 }) {
   showModalBottomSheet<void>(
-    constraints: BoxConstraints(maxHeight: 350.h),
     context: context,
     builder: (ctx) {
-      void onChannel() {
+      final muted = AppActionColors.muted(ctx);
+      final payload = blog == null ? null : buildBlogSharePayload(blog);
+
+      Future<void> onChannel(Future<bool> Function() action) async {
+        if (payload == null) {
+          if (ctx.mounted) {
+            ScaffoldMessenger.maybeOf(ctx)
+              ?..hideCurrentSnackBar()
+              ..showSnackBar(
+                const SnackBar(
+                  content: Text('无法分享：缺少内容信息'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+          }
+          return;
+        }
         Navigator.pop(ctx);
-        onShareChannelTap?.call();
+        final ok = await action();
+        if (ok) {
+          onShareChannelTap?.call();
+        }
       }
 
-      final muted = AppActionColors.muted(ctx);
-      return Center(
-        child: SizedBox(
-          width: 1.sw,
-          height: 350.h,
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 16.h),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               MyFlatButton(
                 text: '微信好友',
                 img: 'imgs/wechat.png',
                 textColor: muted,
-                onPress: onChannel,
+                onPress: () => onChannel(
+                  () => shareToWechatFriend(context, payload!),
+                ),
               ),
               MyFlatButton(
                 text: 'qq好友',
                 img: 'imgs/qq.png',
                 textColor: muted,
-                onPress: onChannel,
+                onPress: () => onChannel(
+                  () => shareToQqFriend(context, payload!),
+                ),
               ),
               MyFlatButton(
                 text: '好友',
-                img: 'imgs/send_friend.png',
+                img: 'imgs/qqai_site_icon.png',
+                circularImage: true,
                 textColor: muted,
-                onPress: onChannel,
+                onPress: () => onChannel(() async {
+                  final container = ProviderScope.containerOf(context);
+                  return showShareToFriendSheet(
+                    context,
+                    container,
+                    payload!,
+                  );
+                }),
               ),
               MyFlatButton(
                 text: '复制链接',
                 img: 'imgs/link.png',
                 textColor: muted,
-                onPress: onChannel,
+                onPress: () => onChannel(
+                  () => copyShareLink(context, payload!),
+                ),
               ),
             ],
           ),

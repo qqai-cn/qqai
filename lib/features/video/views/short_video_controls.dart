@@ -240,7 +240,7 @@ class _ShortVideoControls extends ConsumerState<ShortVideoControls> {
                       icon: const Icon(Icons.star),
                     ),
                     const Text('20kw'),
-                    VideoShareView(),
+                    VideoShareView(blog: widget.blogItem),
                     const Text('2'),
                     Spring.rotate(
                       springController: springController,

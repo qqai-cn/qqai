@@ -218,6 +218,9 @@ class ApiConstant {
   /// 记录分享（分享次数 +1）
   static String blogSharePath(int blogId) => '/app-api/blog/qqai/$blogId/share';
 
+  /// 获取博客详情（公开内容）
+  static String blogDetailPath(int blogId) => '/app-api/blog/qqai/$blogId';
+
   /// 收藏 POST、取消收藏 DELETE：`/app-api/blog/qqai/{blogId}/favorite`
   static String blogFavoritePath(int blogId) =>
       '/app-api/blog/qqai/$blogId/favorite';

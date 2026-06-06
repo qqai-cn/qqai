@@ -17,6 +17,7 @@ import '../components/video_player/qqai_player.dart';
 import '../components/video_player/video_loading_placeholder.dart';
 import '../features/blog/data/blog_route_extra.dart';
 import '../features/blog/data/models/blog_page_model.dart';
+import '../features/blog/views/blog_detail_by_id_loader.dart';
 import '../features/blog/views/blog_detail_video_toolbar.dart';
 import '../features/comment/providers/comment_providers.dart';
 import '../features/friends/friends_detail_view.dart' deferred as friend_detail;
@@ -413,20 +414,24 @@ GoRouter appRouter(Ref ref) {
         name: 'blogImgDetailView',
         builder: (c, s) {
           final detailExtra = parseBlogDetailRouteExtra(s.extra);
-          if (detailExtra == null) {
-            return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
+          if (detailExtra != null) {
+            return AppDeferredWidget(
+              libraryLoader: route_pages.loadLibrary,
+              placeholder: _DeferredImageDetailPlaceholder(
+                mediaHeroTag: detailExtra.mediaHeroTag,
+                imageUrl: _detailImageUrl(detailExtra.blogItem),
+              ),
+              builder: () => route_pages.BlogImgDetailView(
+                blogItem: detailExtra.blogItem,
+                mediaHeroTag: detailExtra.mediaHeroTag,
+              ),
+            );
           }
-          return AppDeferredWidget(
-            libraryLoader: route_pages.loadLibrary,
-            placeholder: _DeferredImageDetailPlaceholder(
-              mediaHeroTag: detailExtra.mediaHeroTag,
-              imageUrl: _detailImageUrl(detailExtra.blogItem),
-            ),
-            builder: () => route_pages.BlogImgDetailView(
-              blogItem: detailExtra.blogItem,
-              mediaHeroTag: detailExtra.mediaHeroTag,
-            ),
-          );
+          final blogId = int.tryParse(s.uri.queryParameters['id'] ?? '');
+          if (blogId != null && blogId > 0) {
+            return BlogDetailByIdLoader(blogId: blogId);
+          }
+          return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
         },
       ),
       GoRoute(
@@ -434,22 +439,26 @@ GoRouter appRouter(Ref ref) {
         name: 'blogVideoDetailView',
         builder: (c, s) {
           final detailExtra = parseBlogDetailRouteExtra(s.extra);
-          if (detailExtra == null) {
-            return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
+          if (detailExtra != null) {
+            return AppDeferredWidget(
+              libraryLoader: route_pages.loadLibrary,
+              placeholder: _DeferredVideoDetailPlaceholder(
+                mediaHeroTag: detailExtra.mediaHeroTag,
+                videoUrl: _detailVideoUrl(detailExtra.blogItem.resources),
+                posterUrl: _detailPosterUrl(detailExtra.blogItem),
+              ),
+              builder: () => route_pages.BlogVideoDetailView(
+                blogItem: detailExtra.blogItem,
+                mediaHeroTag: detailExtra.mediaHeroTag,
+                videoAdInitialState: detailExtra.videoAdState,
+              ),
+            );
           }
-          return AppDeferredWidget(
-            libraryLoader: route_pages.loadLibrary,
-            placeholder: _DeferredVideoDetailPlaceholder(
-              mediaHeroTag: detailExtra.mediaHeroTag,
-              videoUrl: _detailVideoUrl(detailExtra.blogItem.resources),
-              posterUrl: _detailPosterUrl(detailExtra.blogItem),
-            ),
-            builder: () => route_pages.BlogVideoDetailView(
-              blogItem: detailExtra.blogItem,
-              mediaHeroTag: detailExtra.mediaHeroTag,
-              videoAdInitialState: detailExtra.videoAdState,
-            ),
-          );
+          final blogId = int.tryParse(s.uri.queryParameters['id'] ?? '');
+          if (blogId != null && blogId > 0) {
+            return BlogDetailByIdLoader(blogId: blogId);
+          }
+          return const Scaffold(body: Center(child: Text('博客数据无效，请返回重试')));
         },
       ),
       GoRoute(

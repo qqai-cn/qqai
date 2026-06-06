@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qqai/components/myshare_page.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/views/blog_share_button.dart';
 import 'package:qqai/util/format_count.dart';
 
@@ -13,6 +14,7 @@ class FeedActionBar extends StatelessWidget {
   final VoidCallback onLike;
   final VoidCallback onComment;
   final VoidCallback? onShare;
+  final BlogItem? shareBlog;
   final List<PopupMenuEntry<String>> Function(BuildContext context) menuBuilder;
   final Widget? shareButton;
   final Widget? afterShare;
@@ -28,6 +30,7 @@ class FeedActionBar extends StatelessWidget {
     this.commentCount,
     this.shareCount,
     this.onShare,
+    this.shareBlog,
     this.shareButton,
     this.afterShare,
     this.onMenuSelected,
@@ -52,8 +55,11 @@ class FeedActionBar extends StatelessWidget {
         ),
         if (onShare != null)
           TextButton.icon(
-            onPressed: () =>
-                showBlogShareSheet(context, onShareChannelTap: onShare),
+            onPressed: () => showBlogShareSheet(
+              context,
+              blog: shareBlog,
+              onShareChannelTap: onShare,
+            ),
             icon: Icon(Icons.share, color: actionColor),
             label: Text(_shareLabel()),
           )

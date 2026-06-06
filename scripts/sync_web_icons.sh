@@ -58,6 +58,7 @@ gen_icon 1024 "$ICONS_DIR/icon-1024.png" false
 
 cp "$ICONS_DIR/icon-192.png" "$ICONS_DIR/Icon-maskable-192.png"
 cp "$ICONS_DIR/icon-512.png" "$ICONS_DIR/Icon-maskable-512.png"
+cp "$ICONS_DIR/icon-192.png" "imgs/qqai_site_icon.png"
 
 cp "$ICONS_DIR/favicon-32x32.png" "$ICONS_DIR/favicon.png"
 cp "$ICONS_DIR/favicon-32x32.png" "web/favicon.png"
