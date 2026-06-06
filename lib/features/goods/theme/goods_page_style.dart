@@ -53,4 +53,57 @@ abstract final class GoodsPageStyle {
         ? imageBgLight
         : DarkThemeColors.listTileBackgroundColor;
   }
+
+  /// 相册区、顶栏留白等区块背景。
+  static Color sectionBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFF7F7F7)
+        : DarkThemeColors.listTileBackgroundColor;
+  }
+
+  static Color cardShadow(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
+    return Colors.black.withValues(alpha: isLight ? 0.03 : 0.35);
+  }
+
+  /// 评价摘要条、筛选 chip 等非卡片浅底。
+  static Color tintedSurface(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFF5F4FF)
+        : cardBg(context);
+  }
+
+  static Color chipInactiveBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFF2F4F8)
+        : imageBg(context);
+  }
+
+  static Color chipActiveBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFFFF2E5)
+        : const Color(0xFF3D2E20);
+  }
+
+  static Color chipInactiveText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFF4F5561)
+        : sub(context);
+  }
+
+  static Color chipActiveText(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFA46C2B)
+        : const Color(0xFFE8A86E);
+  }
+
+  static Color skuChipActiveBg(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFFFEEE9)
+        : const Color(0xFF3D2520);
+  }
+
+  static const skuAccent = Color(0xFFE6462D);
+  static const commentAccent = Color(0xFFE85B43);
+  static const starColor = Color(0xFFFFC54D);
 }

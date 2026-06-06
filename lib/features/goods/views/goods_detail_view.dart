@@ -449,7 +449,7 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
     final galleryHeight = screenWidth < 600 ? 360.0 : 420.0;
 
     return GoodsPageTopSection(
-      sectionColor: const Color(0xFFF7F7F7),
+      sectionColor: GoodsPageStyle.sectionBg(context),
       padding: EdgeInsets.zero,
       borderRadius: const BorderRadius.vertical(bottom: Radius.circular(18)),
       child: SizedBox(
@@ -462,17 +462,20 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.white, const Color(0xFFF7F7F7)],
+                    colors: [
+                      GoodsPageStyle.cardBg(context),
+                      GoodsPageStyle.sectionBg(context),
+                    ],
                   ),
                 ),
               ),
             ),
             if (galleryUrls.isEmpty)
-              const Center(
+              Center(
                 child: Icon(
                   Icons.shopping_bag_outlined,
                   size: 64,
-                  color: Color(0xFF9CA3AF),
+                  color: GoodsPageStyle.sub(context),
                 ),
               )
             else
@@ -489,11 +492,11 @@ class _GoodsDetailPageState extends ConsumerState<_GoodsDetailPage> {
                     child: Image.network(
                       galleryUrls[index],
                       fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const Center(
+                      errorBuilder: (_, _, _) => Center(
                         child: Icon(
                           Icons.broken_image_outlined,
                           size: 64,
-                          color: Color(0xFF9CA3AF),
+                          color: GoodsPageStyle.sub(context),
                         ),
                       ),
                     ),
@@ -555,7 +558,7 @@ class _PriceCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
+            color: GoodsPageStyle.cardShadow(context),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -655,7 +658,7 @@ class _CellCard extends StatelessWidget {
     return Material(
       color: GoodsPageStyle.cardBg(context),
       borderRadius: BorderRadius.circular(12),
-      shadowColor: Colors.black.withValues(alpha: 0.025),
+      shadowColor: GoodsPageStyle.cardShadow(context),
       elevation: 1,
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -713,7 +716,7 @@ class _SingleSpecCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
+            color: GoodsPageStyle.cardShadow(context),
             blurRadius: 10,
             offset: const Offset(0, 3),
           ),
@@ -771,7 +774,7 @@ class _SpecMetricItem extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 11, 12, 11),
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F8FA),
+        color: GoodsPageStyle.imageBg(context),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -779,13 +782,13 @@ class _SpecMetricItem extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Color(0xFF9AA0AE), fontSize: 12.5),
+            style: TextStyle(color: GoodsPageStyle.sub(context), fontSize: 12.5),
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
-              color: Color(0xFF303133),
+            style: TextStyle(
+              color: GoodsPageStyle.text(context),
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -829,7 +832,7 @@ class _CommentsCardError extends StatelessWidget {
         children: [
           Text(
             message,
-            style: const TextStyle(color: Color(0xFF999999), fontSize: 13),
+            style: TextStyle(color: GoodsPageStyle.sub(context), fontSize: 13),
           ),
           const SizedBox(height: 8),
           TextButton(onPressed: onRetry, child: const Text('重新加载')),
@@ -850,11 +853,11 @@ class _CommentsCardShell extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
+            color: GoodsPageStyle.cardShadow(context),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -892,7 +895,7 @@ class _CommentsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final previewCount = comments.length > 2 ? 2 : comments.length;
     return Material(
-      color: Colors.white,
+      color: GoodsPageStyle.cardBg(context),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -901,11 +904,11 @@ class _CommentsCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.fromLTRB(14, 13, 14, 14),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: GoodsPageStyle.cardBg(context),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.025),
+                color: GoodsPageStyle.cardShadow(context),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
@@ -920,15 +923,15 @@ class _CommentsCard extends StatelessWidget {
                     width: 3,
                     height: 18,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE6462D),
+                      color: GoodsPageStyle.skuAccent,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
                   const SizedBox(width: 10),
-                  const Text(
+                  Text(
                     '评价',
                     style: TextStyle(
-                      color: Color(0xFF202124),
+                      color: GoodsPageStyle.text(context),
                       fontSize: 15.5,
                       fontWeight: FontWeight.w700,
                     ),
@@ -936,8 +939,8 @@ class _CommentsCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Text(
                     '(${comments.length})',
-                    style: const TextStyle(
-                      color: Color(0xFF9E9E9E),
+                    style: TextStyle(
+                      color: GoodsPageStyle.sub(context),
                       fontSize: 13,
                     ),
                   ),
@@ -945,7 +948,7 @@ class _CommentsCard extends StatelessWidget {
                   Text(
                     recentPraiseText,
                     style: const TextStyle(
-                      color: Color(0xFFE85B43),
+                      color: GoodsPageStyle.commentAccent,
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
@@ -953,16 +956,19 @@ class _CommentsCard extends StatelessWidget {
                   const SizedBox(width: 2),
                   const Icon(
                     Icons.chevron_right_rounded,
-                    color: Color(0xFFE85B43),
+                    color: GoodsPageStyle.commentAccent,
                     size: 17,
                   ),
                 ],
               ),
               const SizedBox(height: 14),
               if (comments.isEmpty)
-                const Text(
+                Text(
                   '暂无评价',
-                  style: TextStyle(color: Color(0xFF999999), fontSize: 14),
+                  style: TextStyle(
+                    color: GoodsPageStyle.sub(context),
+                    fontSize: 14,
+                  ),
                 )
               else
                 Column(
@@ -978,8 +984,10 @@ class _CommentsCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           border: index == previewCount - 1
                               ? null
-                              : const Border(
-                                  bottom: BorderSide(color: Color(0xFFF1F1F1)),
+                              : Border(
+                                  bottom: BorderSide(
+                                    color: GoodsPageStyle.border(context),
+                                  ),
                                 ),
                         ),
                         child: Column(
@@ -990,31 +998,31 @@ class _CommentsCard extends StatelessWidget {
                                 Container(
                                   width: 30,
                                   height: 30,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFFF6F6F6),
+                                  decoration: BoxDecoration(
+                                    color: GoodsPageStyle.imageBg(context),
                                     shape: BoxShape.circle,
                                   ),
                                   alignment: Alignment.center,
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.person_rounded,
                                     size: 18,
-                                    color: Color(0xFF8E8E8E),
+                                    color: GoodsPageStyle.sub(context),
                                   ),
                                 ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Text(
                                     item.author,
-                                    style: const TextStyle(
-                                      color: Color(0xFF555555),
+                                    style: TextStyle(
+                                      color: GoodsPageStyle.text(context),
                                       fontSize: 13.5,
                                     ),
                                   ),
                                 ),
                                 Text(
                                   _formatTime(item.createdAt),
-                                  style: const TextStyle(
-                                    color: Color(0xFFB2B2B2),
+                                  style: TextStyle(
+                                    color: GoodsPageStyle.sub(context),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -1030,7 +1038,7 @@ class _CommentsCard extends StatelessWidget {
                                         ? Icons.star_rounded
                                         : Icons.star_border_rounded,
                                     size: 17,
-                                    color: const Color(0xFFFFC54D),
+                                    color: GoodsPageStyle.starColor,
                                   ),
                                 ),
                                 if ((item.skuLabel ?? '')
@@ -1040,8 +1048,8 @@ class _CommentsCard extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       item.skuLabel!.trim(),
-                                      style: const TextStyle(
-                                        color: Color(0xFF9A9A9A),
+                                      style: TextStyle(
+                                        color: GoodsPageStyle.sub(context),
                                         fontSize: 12,
                                       ),
                                     ),
@@ -1054,8 +1062,8 @@ class _CommentsCard extends StatelessWidget {
                               item.content,
                               maxLines: 3,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Color(0xFF2B2B2B),
+                              style: TextStyle(
+                                color: GoodsPageStyle.text(context),
                                 fontSize: 14.5,
                                 height: 1.5,
                               ),
@@ -1083,12 +1091,12 @@ class _GoodsCommentsPage extends ConsumerWidget {
     return Row(
       children: [
         GoodsBackButton(onTap: () => Navigator.of(context).maybePop()),
-        const Expanded(
+        Expanded(
           child: Text(
             '评价',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF202124),
+              color: GoodsPageStyle.text(context),
               fontSize: 18,
               fontWeight: FontWeight.w700,
             ),
@@ -1232,7 +1240,7 @@ class _GoodsCommentsPage extends ConsumerWidget {
                                 14,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF5F4FF),
+                                color: GoodsPageStyle.tintedSurface(context),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Column(
@@ -1240,8 +1248,8 @@ class _GoodsCommentsPage extends ConsumerWidget {
                                 children: [
                                   Text(
                                     _summaryText(comments, recentPraiseText),
-                                    style: const TextStyle(
-                                      color: Color(0xFF596172),
+                                    style: TextStyle(
+                                      color: GoodsPageStyle.text(context),
                                       fontSize: 14,
                                       height: 1.75,
                                     ),
@@ -1249,8 +1257,8 @@ class _GoodsCommentsPage extends ConsumerWidget {
                                   const SizedBox(height: 8),
                                   Text(
                                     '共 ${state.total} 条真实买家评价',
-                                    style: const TextStyle(
-                                      color: Color(0xFF9AA0AE),
+                                    style: TextStyle(
+                                      color: GoodsPageStyle.sub(context),
                                       fontSize: 13,
                                     ),
                                   ),
@@ -1285,7 +1293,7 @@ class _GoodsCommentListTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Column(
@@ -1296,12 +1304,15 @@ class _GoodsCommentListTile extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 19,
-                backgroundColor: const Color(0xFFF3F3F3),
+                backgroundColor: GoodsPageStyle.imageBg(context),
                 backgroundImage: (item.avatarUrl ?? '').isNotEmpty
                     ? NetworkImage(item.avatarUrl!)
                     : null,
                 child: (item.avatarUrl ?? '').isEmpty
-                    ? const Icon(Icons.person_rounded, color: Color(0xFF8D8D8D))
+                    ? Icon(
+                        Icons.person_rounded,
+                        color: GoodsPageStyle.sub(context),
+                      )
                     : null,
               ),
               const SizedBox(width: 10),
@@ -1311,8 +1322,8 @@ class _GoodsCommentListTile extends StatelessWidget {
                   children: [
                     Text(
                       item.author,
-                      style: const TextStyle(
-                        color: Color(0xFF202124),
+                      style: TextStyle(
+                        color: GoodsPageStyle.text(context),
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -1326,7 +1337,7 @@ class _GoodsCommentListTile extends StatelessWidget {
                               ? Icons.star_rounded
                               : Icons.star_border_rounded,
                           size: 17,
-                          color: const Color(0xFFFFC54D),
+                          color: GoodsPageStyle.starColor,
                         ),
                       ),
                     ),
@@ -1335,7 +1346,10 @@ class _GoodsCommentListTile extends StatelessWidget {
               ),
               Text(
                 timeLabel,
-                style: const TextStyle(color: Color(0xFF9A9A9A), fontSize: 12),
+                style: TextStyle(
+                  color: GoodsPageStyle.sub(context),
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -1343,14 +1357,17 @@ class _GoodsCommentListTile extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               item.skuLabel!.trim(),
-              style: const TextStyle(color: Color(0xFF969696), fontSize: 13),
+              style: TextStyle(
+                color: GoodsPageStyle.sub(context),
+                fontSize: 13,
+              ),
             ),
           ],
           const SizedBox(height: 12),
           Text(
             item.content,
-            style: const TextStyle(
-              color: Color(0xFF242424),
+            style: TextStyle(
+              color: GoodsPageStyle.text(context),
               fontSize: 15,
               height: 1.7,
             ),
@@ -1370,10 +1387,12 @@ class _GoodsCommentListTile extends StatelessWidget {
                         width: 72,
                         height: 72,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const SizedBox(
+                        errorBuilder: (_, _, _) => SizedBox(
                           width: 72,
                           height: 72,
-                          child: ColoredBox(color: Color(0xFFF0F0F0)),
+                          child: ColoredBox(
+                            color: GoodsPageStyle.imageBg(context),
+                          ),
                         ),
                       ),
                     ),
@@ -1387,12 +1406,15 @@ class _GoodsCommentListTile extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F8F8),
+                color: GoodsPageStyle.imageBg(context),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '商家回复：${item.replyContent!.trim()}',
-                style: const TextStyle(color: Color(0xFF666666), fontSize: 13),
+                style: TextStyle(
+                  color: GoodsPageStyle.sub(context),
+                  fontSize: 13,
+                ),
               ),
             ),
           ],
@@ -1416,7 +1438,9 @@ class _CommentFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: active ? const Color(0xFFFFF2E5) : const Color(0xFFF2F4F8),
+      color: active
+          ? GoodsPageStyle.chipActiveBg(context)
+          : GoodsPageStyle.chipInactiveBg(context),
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -1426,7 +1450,9 @@ class _CommentFilterChip extends StatelessWidget {
           child: Text(
             text,
             style: TextStyle(
-              color: active ? const Color(0xFFA46C2B) : const Color(0xFF4F5561),
+              color: active
+                  ? GoodsPageStyle.chipActiveText(context)
+                  : GoodsPageStyle.chipInactiveText(context),
               fontSize: 14,
               fontWeight: active ? FontWeight.w700 : FontWeight.w500,
             ),
@@ -1498,11 +1524,11 @@ class _DetailTextCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: GoodsPageStyle.cardBg(context),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.025),
+            color: GoodsPageStyle.cardShadow(context),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -1511,10 +1537,10 @@ class _DetailTextCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             '商品详情',
             style: TextStyle(
-              color: Color(0xFF202124),
+              color: GoodsPageStyle.text(context),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -1522,8 +1548,8 @@ class _DetailTextCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             detailText.isEmpty ? '暂无商品详情' : detailText,
-            style: const TextStyle(
-              color: Color(0xFF666666),
+            style: TextStyle(
+              color: GoodsPageStyle.sub(context),
               fontSize: 14,
               height: 1.7,
             ),
@@ -1557,18 +1583,22 @@ class _BottomActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(8, 5, 8, 7),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 18,
-              offset: Offset(0, -4),
-            ),
-          ],
+        decoration: BoxDecoration(
+          color: GoodsPageStyle.cardBg(context),
+          border: Border(top: BorderSide(color: GoodsPageStyle.border(context))),
+          boxShadow: isLight
+              ? const [
+                  BoxShadow(
+                    color: Color(0x12000000),
+                    blurRadius: 18,
+                    offset: Offset(0, -4),
+                  ),
+                ]
+              : null,
         ),
         child: Row(
           children: [
@@ -1592,8 +1622,12 @@ class _BottomActionBar extends StatelessWidget {
             Expanded(
               child: _GradientButton(
                 text: '加入购物车',
-                colors: const [Color(0xFFFFEEE9), Color(0xFFFFD9CF)],
-                textColor: const Color(0xFFD7674F),
+                colors: isLight
+                    ? const [Color(0xFFFFEEE9), Color(0xFFFFD9CF)]
+                    : const [Color(0xFF4A2820), Color(0xFF5C3530)],
+                textColor: isLight
+                    ? const Color(0xFFD7674F)
+                    : const Color(0xFFE8A090),
                 borderRadius: 22,
                 height: 40,
                 onTap: onAddToCart,
@@ -1640,11 +1674,18 @@ class _BottomIconButton extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 22, color: iconColor ?? const Color(0xFF3B3B3B)),
+            Icon(
+              icon,
+              size: 22,
+              color: iconColor ?? GoodsPageStyle.text(context),
+            ),
             const SizedBox(height: 3),
             Text(
               label,
-              style: const TextStyle(color: Color(0xFF3B3B3B), fontSize: 10.5),
+              style: TextStyle(
+                color: GoodsPageStyle.text(context),
+                fontSize: 10.5,
+              ),
             ),
           ],
         ),
@@ -1732,9 +1773,9 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
     return SafeArea(
       top: false,
       child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: GoodsPageStyle.cardBg(context),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         child: Column(
@@ -1746,7 +1787,7 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0E0E0),
+                  color: GoodsPageStyle.border(context),
                   borderRadius: BorderRadius.circular(999),
                 ),
               ),
@@ -1761,21 +1802,21 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
                     width: 86,
                     height: 86,
                     child: coverUrl == null
-                        ? const ColoredBox(
-                            color: Color(0xFFF3F5F8),
+                        ? ColoredBox(
+                            color: GoodsPageStyle.imageBg(context),
                             child: Icon(
                               Icons.shopping_bag_outlined,
-                              color: Color(0xFF9CA3AF),
+                              color: GoodsPageStyle.sub(context),
                             ),
                           )
                         : Image.network(
                             coverUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const ColoredBox(
-                              color: Color(0xFFF3F5F8),
+                            errorBuilder: (_, _, _) => ColoredBox(
+                              color: GoodsPageStyle.imageBg(context),
                               child: Icon(
                                 Icons.broken_image_outlined,
-                                color: Color(0xFF9CA3AF),
+                                color: GoodsPageStyle.sub(context),
                               ),
                             ),
                           ),
@@ -1789,7 +1830,7 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
                       Text(
                         '¥ ${sku.priceYuan.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          color: Color(0xFFE6462D),
+                          color: GoodsPageStyle.skuAccent,
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
                         ),
@@ -1799,8 +1840,8 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
                         widget.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF202124),
+                        style: TextStyle(
+                          color: GoodsPageStyle.text(context),
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1808,8 +1849,8 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
                       const SizedBox(height: 4),
                       Text(
                         '已选 ${sku.label}  库存 ${sku.stock ?? 0}',
-                        style: const TextStyle(
-                          color: Color(0xFF8C8C8C),
+                        style: TextStyle(
+                          color: GoodsPageStyle.sub(context),
                           fontSize: 13,
                         ),
                       ),
@@ -1818,15 +1859,18 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: GoodsPageStyle.text(context),
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 18),
-            const Text(
+            Text(
               '规格',
               style: TextStyle(
-                color: Color(0xFF202124),
+                color: GoodsPageStyle.text(context),
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
               ),
@@ -1847,21 +1891,21 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
                     ),
                     decoration: BoxDecoration(
                       color: active
-                          ? const Color(0xFFFFEEE9)
-                          : const Color(0xFFF7F7F7),
+                          ? GoodsPageStyle.skuChipActiveBg(context)
+                          : GoodsPageStyle.imageBg(context),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: active
-                            ? const Color(0xFFE6462D)
-                            : const Color(0xFFE5E5E5),
+                            ? GoodsPageStyle.skuAccent
+                            : GoodsPageStyle.border(context),
                       ),
                     ),
                     child: Text(
                       item.label,
                       style: TextStyle(
                         color: active
-                            ? const Color(0xFFE6462D)
-                            : const Color(0xFF333333),
+                            ? GoodsPageStyle.skuAccent
+                            : GoodsPageStyle.text(context),
                         fontSize: 13,
                         fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                       ),
@@ -1873,10 +1917,10 @@ class _SkuSelectorSheetState extends State<_SkuSelectorSheet> {
             const SizedBox(height: 18),
             Row(
               children: [
-                const Text(
+                Text(
                   '数量',
                   style: TextStyle(
-                    color: Color(0xFF202124),
+                    color: GoodsPageStyle.text(context),
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -1930,7 +1974,7 @@ class _QuantityStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F6F6),
+        color: GoodsPageStyle.imageBg(context),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
@@ -1944,8 +1988,8 @@ class _QuantityStepper extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14),
             child: Text(
               '$value',
-              style: const TextStyle(
-                color: Color(0xFF202124),
+              style: TextStyle(
+                color: GoodsPageStyle.text(context),
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
@@ -1979,8 +2023,8 @@ class _StepperIconButton extends StatelessWidget {
           icon,
           size: 18,
           color: onTap == null
-              ? const Color(0xFFCCCCCC)
-              : const Color(0xFF202124),
+              ? GoodsPageStyle.border(context)
+              : GoodsPageStyle.text(context),
         ),
       ),
     );

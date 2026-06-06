@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../data/models/blog_page_model.dart';
@@ -82,11 +83,11 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
       return const Center(child: Text('无效的博客'));
     }
 
-    return Column(
-      children: [
-        Material(
-          color: Colors.white,
-          child: SafeArea(
+    return ColoredBox(
+      color: AppActionColors.surface(context),
+      child: Column(
+        children: [
+          SafeArea(
             bottom: false,
             child: Row(
               children: [
@@ -94,6 +95,9 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
                   child: TabBar(
                     controller: _tabController,
                     indicatorSize: TabBarIndicatorSize.label,
+                    labelColor: AppActionColors.strong(context),
+                    unselectedLabelColor: AppActionColors.muted(context),
+                    indicatorColor: Theme.of(context).colorScheme.primary,
                     labelStyle: context.typo.sectionTitle.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -105,38 +109,44 @@ class _BlogDetailSidePanelState extends State<BlogDetailSidePanel>
                 ),
                 if (widget.onClose != null)
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: Icon(
+                      Icons.close,
+                      color: AppActionColors.foreground(context),
+                    ),
                     onPressed: widget.onClose,
                   ),
               ],
             ),
           ),
-        ),
-        const Divider(height: 1),
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              BlogCommentPanel(
-                blogId: blogId,
-                blogAuthorUserId: widget.blog.userId,
-                initialCommentCount: widget.blog.commentCount,
-                showTopHeader: false,
-              ),
-              BlogRelatedRecommendView(
-                currentBlog: widget.blog,
-                detailRoute: widget.collectionVideoDetailRoute,
-              ),
-              if (_hasCollection)
-                BlogCollectionVideosView(
+          Divider(
+            height: 1,
+            color: AppActionColors.borderSubtle(context),
+          ),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                BlogCommentPanel(
+                  blogId: blogId,
+                  blogAuthorUserId: widget.blog.userId,
+                  initialCommentCount: widget.blog.commentCount,
+                  showTopHeader: false,
+                ),
+                BlogRelatedRecommendView(
                   currentBlog: widget.blog,
-                  collection: widget.collection,
                   detailRoute: widget.collectionVideoDetailRoute,
                 ),
-            ],
+                if (_hasCollection)
+                  BlogCollectionVideosView(
+                    currentBlog: widget.blog,
+                    collection: widget.collection,
+                    detailRoute: widget.collectionVideoDetailRoute,
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

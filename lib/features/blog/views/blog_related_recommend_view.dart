@@ -109,7 +109,10 @@ class _BlogRelatedRecommendViewState
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: _items.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
+        separatorBuilder: (_, _) => Divider(
+          height: 1,
+          color: AppActionColors.borderSubtle(context),
+        ),
         itemBuilder: (context, index) {
           final item = _items[index];
           return _RecommendTile(item: item, onTap: () => _openBlog(item));
@@ -243,7 +246,10 @@ class _BlogCollectionVideosViewState
         itemCount: _items.length + (name?.isNotEmpty == true ? 1 : 0),
         separatorBuilder: (_, index) => index == 0 && name?.isNotEmpty == true
             ? const SizedBox.shrink()
-            : const Divider(height: 1),
+            : Divider(
+                height: 1,
+                color: AppActionColors.borderSubtle(context),
+              ),
         itemBuilder: (context, index) {
           if (name?.isNotEmpty == true && index == 0) {
             return Padding(
@@ -287,7 +293,11 @@ class _RecommendTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        color: selected ? const Color(0xFFFFF3E0) : null,
+        color: selected
+            ? (Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFFFFF3E0)
+                : Colors.orange.withValues(alpha: 0.15))
+            : null,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,7 +316,9 @@ class _RecommendTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: selected
                         ? context.typo.bodyStrong.copyWith(
-                            color: const Color(0xFFE65100),
+                            color: Theme.of(context).brightness == Brightness.light
+                                ? const Color(0xFFE65100)
+                                : Colors.orange.shade300,
                           )
                         : context.typo.body,
                   ),

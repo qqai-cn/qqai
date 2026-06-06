@@ -32,13 +32,13 @@ class GoodsPageMainCard extends StatelessWidget {
     required this.child,
     this.padding,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
-    this.color = Colors.white,
+    this.color,
   });
 
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final BorderRadius borderRadius;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +49,7 @@ class GoodsPageMainCard extends StatelessWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          color: color,
+          color: color ?? GoodsPageStyle.cardBg(context),
           borderRadius: borderRadius,
         ),
         padding: padding,
@@ -132,14 +132,14 @@ class GoodsPageScaffold extends StatelessWidget {
     required this.main,
     this.bottomBar,
     this.topBar,
-    this.backgroundColor = const Color(0xFFF4F4F4),
+    this.backgroundColor,
     this.mainPadding,
   });
 
   final Widget main;
   final Widget? bottomBar;
   final Widget? topBar;
-  final Color backgroundColor;
+  final Color? backgroundColor;
   final EdgeInsets? mainPadding;
 
   @override
@@ -150,7 +150,7 @@ class GoodsPageScaffold extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: backgroundColor ?? GoodsPageStyle.pageBg(context),
       body: Stack(
         children: [
           Center(
@@ -223,11 +223,12 @@ class GoodsTopRoundButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLight = Theme.of(context).brightness == Brightness.light;
     return Material(
-      color: Colors.white.withValues(alpha: 0.96),
+      color: GoodsPageStyle.cardBg(context).withValues(alpha: isLight ? 0.96 : 0.92),
       borderRadius: BorderRadius.circular(15),
-      elevation: 2,
-      shadowColor: const Color(0x16000000),
+      elevation: isLight ? 2 : 0,
+      shadowColor: GoodsPageStyle.cardShadow(context),
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
         onTap: onTap,

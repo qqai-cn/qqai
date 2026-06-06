@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/features/index/data/home_tab_config.dart';
 import 'package:qqai/features/index/presentation/widgets/app_bar_publish_search_actions.dart';
 import 'package:qqai/features/index/presentation/widgets/brand_drawer_leading.dart';
@@ -9,6 +12,7 @@ import 'package:qqai/features/index/presentation/widgets/app_bar_user_avatar.dar
 import 'package:qqai/features/index/providers/home_providers.dart';
 import 'package:qqai/features/index/providers/home_index_tab_navigate_provider.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
+import 'package:qqai/router/app_routes.dart';
 
 import '../widgets/lazy_tab_slot.dart';
 import '../widgets/slide_transition_x.dart';
@@ -39,6 +43,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
     onLazyTabChanged(_tabController);
     if (!_tabController.indexIsChanging) {
       _activeHomeTabIndex = _tabController.index;
+      FocusManager.instance.primaryFocus?.unfocus();
     }
   }
 
@@ -91,6 +96,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
     });
 
     final isWideScreen = 1.sw > 800;
+    final onRecommendTab = _tabController.index == 0;
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -102,8 +108,8 @@ class _IndexPageState extends ConsumerState<IndexPage>
         leadingWidth: isWideScreen ? 148 : 48,
         leading: BrandDrawerLeading(isWideScreen: isWideScreen),
         automaticallyImplyLeading: false,
-        centerTitle: false,
-        titleSpacing: 0,
+        centerTitle: onRecommendTab,
+        titleSpacing: onRecommendTab ? null : 0,
         title: animatedTitle(),
         actions: [animateActions()],
       ),
@@ -143,9 +149,15 @@ class _IndexPageState extends ConsumerState<IndexPage>
   }
 
   Widget getTitleWidget() {
+    if (_tabController.index == 0) {
+      return _RecommendSearchTitle(
+        key: const ValueKey('home_search_title'),
+        onTap: () => context.push(Routes.searchPage),
+      );
+    }
     return Align(
       alignment: Alignment.centerLeft,
-      key: ValueKey('home_tab_bar_title_${_tabController.index}'),
+      key: const ValueKey('home_tab_bar_title'),
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
@@ -176,11 +188,24 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   Widget getActions() {
     final isWideScreen = 1.sw > 800;
+    final onRecommendTab = _tabController.index == 0;
     return Row(
       key: ValueKey('home_actions_${_tabController.index}'),
       mainAxisSize: MainAxisSize.min,
       children: [
-        const AppBarPublishSearchActions(),
+        if (onRecommendTab)
+          IconButton(
+            tooltip: '切换频道',
+            icon: Icon(
+              Icons.switch_right,
+              color: AppActionColors.foreground(context),
+            ),
+            onPressed: () {
+              lazyTabMount(1);
+              _tabController.animateTo(1);
+            },
+          ),
+        AppBarPublishSearchActions(showSearch: !onRecommendTab),
         if (isWideScreen) _avatarEndDrawerAction(),
       ],
     );
@@ -190,6 +215,58 @@ class _IndexPageState extends ConsumerState<IndexPage>
     return Builder(
       builder: (ctx) => AppBarUserAvatarButton(
         onPressed: () => Scaffold.of(ctx).openEndDrawer(),
+      ),
+    );
+  }
+}
+
+/// 推荐 Tab 顶栏：可点击的搜索条（进入全站搜索页）。
+class _RecommendSearchTitle extends StatelessWidget {
+  const _RecommendSearchTitle({super.key, required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(15),
+          child: Container(
+            width: 0.55.sw,
+            height: 40,
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: AppActionColors.surface(context),
+              border: Border.all(color: GoodsPageStyle.border(context)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.search,
+                  size: 20,
+                  color: AppActionColors.subtle(context),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '搜索内容、用户、商品',
+                    style: TextStyle(
+                      color: AppActionColors.subtle(context),
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

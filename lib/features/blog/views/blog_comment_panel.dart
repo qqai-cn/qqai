@@ -26,6 +26,7 @@ void showBlogCommentSheet(BuildContext context, BlogItem blog) {
       maxChildSize: 0.92,
       expand: false,
       builder: (_, scrollController) => Material(
+        color: AppActionColors.surface(context),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         clipBehavior: Clip.antiAlias,
         child: BlogCommentPanel(
@@ -267,11 +268,32 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
                     focusNode: _focusNode,
                     minLines: 1,
                     maxLines: 4,
+                    style: TextStyle(color: AppActionColors.strong(context)),
                     decoration: InputDecoration(
                       hintText: target == null ? '说点什么…' : '写下你的回复…',
+                      hintStyle: TextStyle(
+                        color: AppActionColors.subtle(context),
+                      ),
                       isDense: true,
+                      filled: true,
+                      fillColor: AppActionColors.borderSubtle(context),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                          color: AppActionColors.borderSubtle(context),
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                          color: AppActionColors.borderSubtle(context),
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                       ),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14,
@@ -291,7 +313,10 @@ class _BlogCommentPanelState extends ConsumerState<BlogCommentPanel> {
                         ),
                       )
                     : IconButton(
-                        icon: const Icon(Icons.send),
+                        icon: Icon(
+                          Icons.send,
+                          color: AppActionColors.foreground(context),
+                        ),
                         onPressed: () => _submit(context, notifier),
                       ),
               ],
@@ -350,20 +375,21 @@ class _SortChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           color: selected
-              ? AppActionColors.strong(context)
+              ? scheme.primary
               : AppActionColors.borderSubtle(context),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
           style: context.typo.caption.copyWith(
-            color: selected ? Colors.white : AppActionColors.muted(context),
+            color: selected ? scheme.onPrimary : AppActionColors.muted(context),
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -525,7 +551,9 @@ class _CommentRow extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.orange.shade100,
+                        color: Theme.of(context).brightness == Brightness.light
+                            ? Colors.orange.shade100
+                            : Colors.orange.withValues(alpha: 0.22),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -540,7 +568,11 @@ class _CommentRow extends StatelessWidget {
                   const Spacer(),
                   if (id != null)
                     PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_horiz, size: 18),
+                      icon: Icon(
+                        Icons.more_horiz,
+                        size: 18,
+                        color: AppActionColors.muted(context),
+                      ),
                       onSelected: (v) {
                         if (v == 'delete') onDelete(id);
                         if (v == 'pin') onPin(id);
@@ -592,7 +624,9 @@ class _CommentRow extends StatelessWidget {
                 children: [
                   Text(
                     _formatTime(comment.createTime),
-                    style: context.typo.caption,
+                    style: context.typo.caption.copyWith(
+                      color: AppActionColors.subtle(context),
+                    ),
                   ),
                   const SizedBox(width: 16),
                   GestureDetector(
@@ -625,7 +659,9 @@ class _CommentRow extends StatelessWidget {
                           (comment.likeCount ?? 0) > 0
                               ? formatCompactCount(comment.likeCount)
                               : '',
-                          style: context.typo.caption,
+                          style: context.typo.caption.copyWith(
+                            color: AppActionColors.subtle(context),
+                          ),
                         ),
                       ],
                     ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 import '../../../router/app_routes.dart';
 import '../../../util/api_base_client.dart';
@@ -178,14 +179,14 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: hasValue
-                      ? const Color(0xFF202124)
-                      : const Color(0xFF9CA3AF),
+                      ? AppActionColors.strong(context)
+                      : AppActionColors.subtle(context),
                 ),
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: Color(0xFF9CA3AF),
+              color: AppActionColors.subtle(context),
             ),
           ],
         ),
@@ -205,9 +206,9 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
         aspectRatio: 16 / 9,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: const Color(0xFFF8F9FB),
+            color: GoodsPageStyle.imageBg(context),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE1E5EB)),
+            border: Border.all(color: GoodsPageStyle.border(context)),
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
@@ -218,8 +219,8 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
                       Container(
                         width: 52,
                         height: 52,
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
+                        decoration: BoxDecoration(
+                          color: AppActionColors.surface(context),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -229,18 +230,18 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
+                      Text(
                         '上传广场封面',
                         style: TextStyle(
-                          color: Color(0xFF202124),
+                          color: AppActionColors.strong(context),
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         '建议使用横向图片',
                         style: TextStyle(
-                          color: Color(0xFF9CA3AF),
+                          color: AppActionColors.subtle(context),
                           fontSize: 12,
                         ),
                       ),
@@ -297,12 +298,14 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
     return InputDecoration(
       labelText: label,
       hintText: hintText,
+      labelStyle: TextStyle(color: AppActionColors.muted(context)),
+      hintStyle: TextStyle(color: AppActionColors.subtle(context)),
       filled: true,
-      fillColor: const Color(0xFFF8F9FB),
+      fillColor: GoodsPageStyle.imageBg(context),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+        borderSide: BorderSide(color: GoodsPageStyle.border(context)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -319,7 +322,9 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: const Color(0xFFEFF6FF),
+            color: Theme.of(context).brightness == Brightness.light
+                ? const Color(0xFFEFF6FF)
+                : const Color(0xFF3578E5).withValues(alpha: 0.18),
             borderRadius: BorderRadius.circular(14),
           ),
           child: const Icon(Icons.grid_view_rounded, color: Color(0xFF3578E5)),
@@ -351,7 +356,10 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
         IconButton(
           tooltip: '关闭',
           onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close),
+          icon: Icon(
+            Icons.close,
+            color: AppActionColors.foreground(context),
+          ),
         ),
       ],
     );
@@ -363,8 +371,8 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
         minimumSize: const Size.fromHeight(46),
         backgroundColor: const Color(0xFF3578E5),
         foregroundColor: Colors.white,
-        disabledBackgroundColor: const Color(0xFFE5E7EB),
-        disabledForegroundColor: const Color(0xFF9CA3AF),
+        disabledBackgroundColor: AppActionColors.borderSubtle(context),
+        disabledForegroundColor: AppActionColors.subtle(context),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(23)),
       ),
       onPressed: _submitting ? null : _submit,
@@ -390,11 +398,16 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
         constraints: const BoxConstraints(maxWidth: 480),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppActionColors.surface(context),
             borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: GoodsPageStyle.border(context)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.12),
+                color: Colors.black.withValues(
+                  alpha: Theme.of(context).brightness == Brightness.light
+                      ? 0.12
+                      : 0.35,
+                ),
                 blurRadius: 30,
                 offset: const Offset(0, 14),
               ),
@@ -413,6 +426,7 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
                     controller: _nameCtrl,
                     enabled: !_submitting,
                     textInputAction: TextInputAction.next,
+                    style: TextStyle(color: AppActionColors.strong(context)),
                     decoration: _fieldDecoration('广场名称 *', hintText: '给广场取个名字'),
                   ),
                   const SizedBox(height: 12),
@@ -421,6 +435,7 @@ class _CreateSquareFormState extends State<_CreateSquareForm> {
                     enabled: !_submitting,
                     minLines: 2,
                     maxLines: 4,
+                    style: TextStyle(color: AppActionColors.strong(context)),
                     decoration: _fieldDecoration('广场描述', hintText: '简单介绍这个广场'),
                   ),
                   const SizedBox(height: 12),
