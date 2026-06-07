@@ -31,8 +31,17 @@ class SharedVideoPlaybackSession {
     _refCount--;
     if (_refCount > 0 || _disposed) return;
     _disposeTimer?.cancel();
+    if (videoController.value.hasError) {
+      dispose();
+      return;
+    }
     _disposeTimer = Timer(const Duration(seconds: 30), dispose);
   }
+
+  bool get isIdleWithError =>
+      _refCount == 0 && !_disposed && videoController.value.hasError;
+
+  bool get isIdle => _refCount == 0 && !_disposed;
 
   void dispose() {
     if (_disposed) return;
@@ -46,7 +55,19 @@ class SharedVideoPlaybackSession {
 final Map<String, SharedVideoPlaybackSession> _sessions = {};
 
 SharedVideoPlaybackSession acquireSharedVideoPlaybackSession(String url) {
+  final existing = _sessions[url];
+  if (existing != null && existing.isIdleWithError) {
+    existing.dispose();
+    _sessions.remove(url);
+  }
   final session = _sessions[url] ??= SharedVideoPlaybackSession._(url);
   session.retain();
   return session;
+}
+
+/// 丢弃空闲中的共享会话（例如加载失败后重试）。
+void invalidateSharedVideoPlaybackSession(String url) {
+  final session = _sessions[url];
+  if (session == null || !session.isIdle) return;
+  session.dispose();
 }

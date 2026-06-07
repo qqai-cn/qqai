@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/blog/blog_danmaku.dart';
@@ -224,45 +226,109 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   SharedVideoPlaybackSession? _sharedSession;
   bool _isDisposed = false;
   bool _didNotifyCompleted = false;
+  bool _initializing = false;
+
+  /// Hero 过渡才复用共享会话；推荐流等场景独立初始化，避免滑动时复用失败控制器。
+  bool get _usesSharedPlaybackSession {
+    final tag = widget.mediaHeroTag;
+    return tag != null && tag.isNotEmpty;
+  }
 
   @override
   void initState() {
     super.initState();
-    final videoUrl = widget.videoUrl;
-    _sharedSession = videoUrl.isEmpty
-        ? null
-        : acquireSharedVideoPlaybackSession(videoUrl);
-    videoController =
-        _sharedSession?.videoController ??
-        VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+    _attachPlayback();
     videoController.addListener(_videoListener);
-    flickManager =
-        _sharedSession?.flickManager ??
-        FlickManager(
-          videoPlayerController: videoController,
-          autoPlay: widget.isActive,
-          autoInitialize: true,
-        );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _resumeIfActive();
+    });
+  }
+
+  void _attachPlayback() {
+    final videoUrl = widget.videoUrl;
+    if (_usesSharedPlaybackSession && videoUrl.isNotEmpty) {
+      _sharedSession = acquireSharedVideoPlaybackSession(videoUrl);
+      videoController = _sharedSession!.videoController;
+      flickManager = _sharedSession!.flickManager;
+      return;
+    }
+
+    _sharedSession = null;
+    videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+    flickManager = FlickManager(
+      videoPlayerController: videoController,
+      autoPlay: false,
+      autoInitialize: false,
+    );
+  }
+
+  void _detachPlayback() {
+    videoController.removeListener(_videoListener);
+    final session = _sharedSession;
+    if (session != null) {
+      session.release();
+      _sharedSession = null;
+    } else {
+      flickManager.dispose();
+    }
+  }
+
+  Future<void> _ensureInitialized() async {
+    if (_isDisposed || !mounted || !widget.isActive) return;
+    if (videoController.value.isInitialized || _initializing) return;
+    if (videoController.value.hasError) return;
+
+    _initializing = true;
+    try {
+      await videoController.initialize();
       if (!_isDisposed && mounted && widget.isActive) {
-        flickManager.flickControlManager?.autoResume();
+        flickManager.flickControlManager?.play();
         _setVolumeIfNeeded();
       }
-    });
+    } catch (_) {
+      // [VideoPlayerController] 会写入 hasError。
+    } finally {
+      _initializing = false;
+      if (mounted) setState(() {});
+    }
+  }
+
+  void _resumeIfActive() {
+    if (_isDisposed || !mounted || !widget.isActive) return;
+    unawaited(_ensureInitialized());
+    flickManager.flickControlManager?.autoResume();
+    _setVolumeIfNeeded();
+  }
+
+  Future<void> _retryPlayback() async {
+    if (_isDisposed || !mounted) return;
+    _didNotifyCompleted = false;
+    _detachPlayback();
+    if (_usesSharedPlaybackSession) {
+      invalidateSharedVideoPlaybackSession(widget.videoUrl);
+    }
+    _attachPlayback();
+    videoController.addListener(_videoListener);
+    setState(() {});
+    _resumeIfActive();
   }
 
   @override
   void didUpdateWidget(_SingleVideoDetailPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (oldWidget.videoUrl != widget.videoUrl ||
+        oldWidget.mediaHeroTag != widget.mediaHeroTag) {
+      _detachPlayback();
+      _didNotifyCompleted = false;
+      _attachPlayback();
+      videoController.addListener(_videoListener);
+      WidgetsBinding.instance.addPostFrameCallback((_) => _resumeIfActive());
+      return;
+    }
     if (oldWidget.isActive != widget.isActive) {
       if (widget.isActive) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!_isDisposed && mounted && widget.isActive) {
-            flickManager.flickControlManager?.autoResume();
-            _setVolumeIfNeeded();
-          }
-        });
+        WidgetsBinding.instance.addPostFrameCallback((_) => _resumeIfActive());
       } else {
         _pause();
       }
@@ -270,6 +336,10 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   }
 
   void _videoListener() {
+    if (!_isDisposed && mounted && videoController.value.hasError) {
+      setState(() {});
+      return;
+    }
     if (!_isDisposed &&
         mounted &&
         widget.isActive &&
@@ -308,14 +378,43 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   @override
   void dispose() {
     _isDisposed = true;
-    videoController.removeListener(_videoListener);
-    final session = _sharedSession;
-    if (session != null) {
-      session.release();
-    } else {
-      flickManager.dispose();
-    }
+    _detachPlayback();
     super.dispose();
+  }
+
+  Widget _buildPlayerErrorFallback(String? poster) {
+    return Positioned.fill(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (poster != null && poster.isNotEmpty)
+            VideoLoadingPlaceholder(
+              imageUrl: poster,
+              showPoster: true,
+              showIndicator: false,
+              coverFitMode: widget.coverFitMode,
+            )
+          else
+            const ColoredBox(color: Colors.black),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '视频加载失败',
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+                const SizedBox(height: 12),
+                FilledButton.tonal(
+                  onPressed: _retryPlayback,
+                  child: const Text('重试'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -336,6 +435,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
         if (!_isDisposed && mounted) {
           final fraction = safeVisibleFraction(visibility);
           if (widget.isActive && fraction > 0.9) {
+            unawaited(_ensureInitialized());
             flickManager.flickControlManager?.autoResume();
             _setVolumeIfNeeded();
           }
@@ -378,6 +478,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                             coverFitMode: widget.coverFitMode,
                           ),
                         ),
+                        playerErrorFallback: _buildPlayerErrorFallback(poster),
                         controls: const BlogDetailVideoSurfaceControls(),
                       ),
                       flickVideoWithControlsFullscreen: FlickVideoWithControls(
@@ -388,6 +489,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                           showIndicator: false,
                           coverFitMode: widget.coverFitMode,
                         ),
+                        playerErrorFallback: _buildPlayerErrorFallback(poster),
                         controls: FlickLandscapeControls(),
                         iconThemeData: const IconThemeData(
                           size: 40,
