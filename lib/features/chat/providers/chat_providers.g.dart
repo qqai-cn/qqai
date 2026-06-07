@@ -8,6 +8,91 @@ part of 'chat_providers.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// 单个会话详情（竖屏聊天页 AppBar 标题等）。
+
+@ProviderFor(chatConversation)
+const chatConversationProvider = ChatConversationFamily._();
+
+/// 单个会话详情（竖屏聊天页 AppBar 标题等）。
+
+final class ChatConversationProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<ChatConversationDto>,
+          ChatConversationDto,
+          FutureOr<ChatConversationDto>
+        >
+    with
+        $FutureModifier<ChatConversationDto>,
+        $FutureProvider<ChatConversationDto> {
+  /// 单个会话详情（竖屏聊天页 AppBar 标题等）。
+  const ChatConversationProvider._({
+    required ChatConversationFamily super.from,
+    required int super.argument,
+  }) : super(
+         retry: null,
+         name: r'chatConversationProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$chatConversationHash();
+
+  @override
+  String toString() {
+    return r'chatConversationProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<ChatConversationDto> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<ChatConversationDto> create(Ref ref) {
+    final argument = this.argument as int;
+    return chatConversation(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ChatConversationProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$chatConversationHash() => r'1d70941ab678ab3e137863d9aa5be9cc3f3d2709';
+
+/// 单个会话详情（竖屏聊天页 AppBar 标题等）。
+
+final class ChatConversationFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<ChatConversationDto>, int> {
+  const ChatConversationFamily._()
+    : super(
+        retry: null,
+        name: r'chatConversationProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 单个会话详情（竖屏聊天页 AppBar 标题等）。
+
+  ChatConversationProvider call(int conversationId) =>
+      ChatConversationProvider._(argument: conversationId, from: this);
+
+  @override
+  String toString() => r'chatConversationProvider';
+}
 
 @ProviderFor(chatConversations)
 const chatConversationsProvider = ChatConversationsProvider._();

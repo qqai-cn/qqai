@@ -11,6 +11,12 @@ final chatHistoryRevisionProvider = StateProvider.family<int, int>(
   (ref, conversationId) => 0,
 );
 
+/// 单个会话详情（竖屏聊天页 AppBar 标题等）。
+@riverpod
+Future<ChatConversationDto> chatConversation(Ref ref, int conversationId) async {
+  return ref.watch(chatRepoProvider).getConversation(conversationId);
+}
+
 @riverpod
 Future<List<ChatConversationDto>> chatConversations(Ref ref) async {
   return ref.watch(chatRepoProvider).listConversations();

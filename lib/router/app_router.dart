@@ -30,7 +30,6 @@ import '../features/index/presentation/views/message_page.dart';
 import '../features/index/presentation/views/video_page.dart';
 import '../features/index/presentation/widgets/lazy_shell_tab.dart';
 import '../providers/auth_providers.dart';
-import '../util/api_base_client.dart';
 import '../util/media_url.dart';
 import 'app_routes.dart';
 import 'deferred_route_pages.dart' deferred as route_pages;
@@ -593,23 +592,7 @@ GoRouter appRouter(Ref ref) {
           }
           return AppDeferredWidget(
             libraryLoader: route_pages.loadLibrary,
-            builder: () => Consumer(
-              builder: (context, ref, _) {
-                final auth = ref.watch(authProvider);
-                return Scaffold(
-                  appBar: AppBar(title: const Text('聊天')),
-                  body: route_pages.ChatWidget(
-                    key: ValueKey<int>(id),
-                    currentUserId: auth.userId ?? '0',
-                    conversationId: id,
-                    initialMessages: const [],
-                    dio: ApiBaseClient.dio,
-                    token: auth.token,
-                    enableSocket: true,
-                  ),
-                );
-              },
-            ),
+            builder: () => route_pages.ChatDetailPage(conversationId: id),
           );
         },
         routes: [

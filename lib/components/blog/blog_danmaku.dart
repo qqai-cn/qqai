@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/chat/widgets/floating_emoji_picker.dart';
+import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_danmaku_model.dart';
 import 'package:qqai/features/blog/data/repos/blog_danmaku_repo.dart';
@@ -173,48 +174,40 @@ class _BlogDanmakuOverlayState extends ConsumerState<BlogDanmakuOverlay> {
   }
 }
 
-/// 竖屏视频详情左下角：抖音式胶囊「发布弹幕」入口。
-class BlogDanmakuLaunchBar extends ConsumerWidget {
-  const BlogDanmakuLaunchBar({
+/// 竖屏视频详情：抖音式圆形「弹」入口。
+class BlogDanmakuLaunchButton extends ConsumerWidget {
+  const BlogDanmakuLaunchButton({
     super.key,
     required this.blogId,
-    this.label = '发布弹幕',
+    this.size = 30,
   });
 
   final int? blogId;
-  final String label;
+  final double size;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final id = blogId;
     if (id == null || id <= 0) return const SizedBox.shrink();
     return Material(
-      color: Colors.white.withValues(alpha: 0.15),
-      borderRadius: BorderRadius.circular(999),
+      color: Colors.black.withValues(alpha: 0.35),
+      shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => showBlogDanmakuComposerSheet(context, ref, id),
-        borderRadius: BorderRadius.circular(999),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.subtitles_outlined,
-                color: Colors.white.withValues(alpha: 0.72),
-                size: 18,
+        customBorder: const CircleBorder(),
+        child: SizedBox(
+          width: size,
+          height: size,
+          child: Center(
+            child: Text(
+              '弹',
+              style: context.typo.bodyStrong.copyWith(
+                color: Colors.white,
+                fontSize: size * 0.5,
+                height: 1,
               ),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: context.typo.body.copyWith(
-                  color: Colors.white.withValues(alpha: 0.72),
-                  fontSize: 14,
-                  height: 1.1,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -283,19 +276,40 @@ class BlogDanmakuShareSheetToggle extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final visible = ref.watch(blogDanmakuVisibleProvider(blogId));
-    return SwitchListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-      title: const Text('弹幕'),
-      subtitle: Text(visible ? '当前显示视频弹幕' : '当前不显示视频弹幕'),
-      value: visible,
-      onChanged: (_) {
-        onToggle?.call();
-        toggleBlogDanmakuVisibility(
-          snackBarContext ?? context,
-          ref,
-          blogId,
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+      child: Row(
+        children: [
+          Icon(
+            Icons.subtitles_outlined,
+            size: 22,
+            color: AppActionColors.muted(context),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              '弹幕',
+              style: context.typo.bodyStrong.copyWith(
+                color: AppActionColors.strong(context),
+                fontSize: 15,
+                height: 1.2,
+              ),
+            ),
+          ),
+          Switch(
+            value: visible,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            onChanged: (_) {
+              onToggle?.call();
+              toggleBlogDanmakuVisibility(
+                snackBarContext ?? context,
+                ref,
+                blogId,
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

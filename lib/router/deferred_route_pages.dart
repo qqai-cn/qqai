@@ -5,6 +5,7 @@ export '../components/chat/chat_widget.dart';
 export '../components/imgpreview/image_detail_page.dart';
 export '../features/blog/views/blog_img_detail_view.dart';
 export '../features/blog/views/blog_video_detail_view.dart';
+export '../features/chat/views/chat_detail_page.dart';
 export '../features/chat/views/chat_conversation_settings_page.dart';
 export '../features/chat/views/chat_message_search_page.dart';
 export '../features/chat/views/chat_video_call_page.dart';

@@ -64,7 +64,7 @@ class BlogDetailBottomInfo extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (showDanmakuLaunch) ...[
-            BlogDanmakuLaunchBar(blogId: item.id),
+            BlogDanmakuLaunchButton(blogId: item.id),
             const SizedBox(height: 8),
           ],
           Row(

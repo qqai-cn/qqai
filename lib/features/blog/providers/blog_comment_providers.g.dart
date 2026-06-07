@@ -58,7 +58,7 @@ final class BlogCommentsProvider
   }
 }
 
-String _$blogCommentsHash() => r'401f7ad741f652b7a4d8389893fed78acc935161';
+String _$blogCommentsHash() => r'9ee741686782613e86c2726dac56ba3bba9d5019';
 
 final class BlogCommentsFamily extends $Family
     with

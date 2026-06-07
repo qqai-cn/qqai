@@ -39,9 +39,11 @@ class QqTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scrollable = shrinkWrap || isScrollable;
-    final tabAlign =
-        shrinkWrap ? TabAlignment.start : tabAlignment;
+    final equalWidthTabs = shrinkWrap && items.length <= 4;
+    final scrollable = !equalWidthTabs && (shrinkWrap || isScrollable);
+    final tabAlign = equalWidthTabs
+        ? TabAlignment.fill
+        : (shrinkWrap ? TabAlignment.start : tabAlignment);
 
     Widget bar = DecoratedBox(
       decoration: BoxDecoration(
@@ -56,35 +58,37 @@ class QqTabBar extends StatelessWidget {
           onTap: onTap,
           isScrollable: scrollable,
           tabAlignment: tabAlign,
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              labelColor: AppActionColors.strong(context),
-              unselectedLabelColor: AppActionColors.muted(context),
-              labelStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-              ),
-              indicator: BoxDecoration(
-                color: AppActionColors.surface(context),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              tabs: items.map(_buildTab).toList(),
-            ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          dividerColor: Colors.transparent,
+          labelColor: AppActionColors.strong(context),
+          unselectedLabelColor: AppActionColors.muted(context),
+          labelStyle: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
           ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+          indicator: BoxDecoration(
+            color: AppActionColors.surface(context),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          tabs: items.map(_buildTab).toList(),
+        ),
+      ),
     );
 
-    if (shrinkWrap) {
+    if (equalWidthTabs) {
+      bar = SizedBox(width: _equalTabBarWidth(items), child: bar);
+    } else if (shrinkWrap) {
       bar = IntrinsicWidth(child: bar);
     } else {
       bar = ConstrainedBox(
@@ -96,17 +100,25 @@ class QqTabBar extends StatelessWidget {
     return Align(alignment: alignment, child: bar);
   }
 
+  double _equalTabBarWidth(List<QqTabItem> items) {
+    const textTabWidth = 74.0;
+    const iconTabWidth = 88.0;
+    return items.fold<double>(
+      0,
+      (sum, item) => sum + (item.icon == null ? textTabWidth : iconTabWidth),
+    );
+  }
+
   Widget _buildTab(QqTabItem item) {
     final icon = item.icon;
     if (icon == null) {
       return Tab(
         height: 38,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Center(
           child: Text(
             item.label,
             maxLines: 1,
-            overflow: TextOverflow.visible,
+            overflow: TextOverflow.ellipsis,
             softWrap: false,
           ),
         ),

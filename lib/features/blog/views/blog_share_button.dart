@@ -89,6 +89,7 @@ void showBlogShareSheet(
 }) {
   showModalBottomSheet<void>(
     context: context,
+    backgroundColor: AppActionColors.surface(context),
     builder: (ctx) {
       final muted = AppActionColors.muted(ctx);
       final payload = blog == null ? null : buildBlogSharePayload(blog);
@@ -208,7 +209,11 @@ void showBlogShareSheet(
                 ],
               ),
               if (showDanmakuToggle) ...[
-                Divider(height: 20.h),
+                Divider(
+                  height: 8.h,
+                  thickness: 0.5,
+                  color: AppActionColors.borderSubtle(ctx).withValues(alpha: 0.35),
+                ),
                 BlogDanmakuShareSheetToggle(
                   blogId: danmakuBlogId,
                   snackBarContext: context,
@@ -216,7 +221,11 @@ void showBlogShareSheet(
                 ),
               ],
               if (showDelete) ...[
-                Divider(height: 20.h),
+                Divider(
+                  height: 8.h,
+                  thickness: 0.5,
+                  color: AppActionColors.borderSubtle(ctx).withValues(alpha: 0.35),
+                ),
                 TextButton.icon(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline, color: Colors.red),

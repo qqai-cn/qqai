@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
@@ -287,15 +288,20 @@ class _ChatConversationSettingsPageState
   }
 
   Widget _buildAvatar(ChatConversationDto conversation) {
-    final avatar = conversation.avatar;
-    if (avatar != null && avatar.isNotEmpty) {
-      return CircleAvatar(
-        radius: 36,
-        backgroundImage: CachedNetworkImageProvider(avatar),
-      );
-    }
+    return buildDetailAvatar(
+      avatarUrl: conversation.avatar,
+      size: 72,
+      context: context,
+    );
+  }
 
-    return const CircleAvatar(radius: 36, child: DefaultAssetImage());
+  Widget _sectionDivider(BuildContext context) {
+    return Divider(
+      height: 1,
+      thickness: 0.5,
+      indent: 16,
+      color: AppActionColors.borderSubtle(context).withValues(alpha: 0.35),
+    );
   }
 
   @override
@@ -361,7 +367,7 @@ class _ChatConversationSettingsPageState
                         ? null
                         : (value) => _togglePin(value),
                   ),
-                  const Divider(height: 1, indent: 16),
+                  _sectionDivider(context),
                   SwitchListTile(
                     title: const Text('消息免打扰'),
                     secondary: const Icon(CupertinoIcons.bell_slash),
@@ -412,7 +418,7 @@ class _ChatConversationSettingsPageState
                     trailing: const Icon(Icons.chevron_right),
                     onTap: _saving ? null : _openMessageSearch,
                   ),
-                  const Divider(height: 1, indent: 16),
+                  _sectionDivider(context),
                   ListTile(
                     leading: const Icon(
                       Icons.delete_outline,

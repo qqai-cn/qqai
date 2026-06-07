@@ -388,6 +388,37 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     );
   }
 
+  double _profileInfoHeight(
+    BuildContext context, {
+    required bool hasProfileMeta,
+  }) {
+    if (_isSelf) {
+      return MediaQuery.sizeOf(context).width > 800 ? 240.0 : 220.0;
+    }
+
+    final bodyStyle = context.typo.body;
+    final fontSize = bodyStyle.fontSize ?? 16;
+    final lineHeight = bodyStyle.height ?? 1.4;
+    const statsRowHeight = 58.0;
+    const verticalPadding = 18.0;
+    const gapAfterStats = 5.0;
+    const introMaxLines = 2;
+    const expandReserve = 6.0;
+
+    var height =
+        verticalPadding +
+        statsRowHeight +
+        gapAfterStats +
+        fontSize * lineHeight * introMaxLines +
+        expandReserve;
+
+    if (hasProfileMeta) {
+      height += 5 + 24;
+    }
+
+    return height.ceilToDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
     final pageAsync = _isSelf
@@ -417,10 +448,10 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     const bannerHeight = 180.0;
     final hasProfileMeta =
         page?.address?.trim().isNotEmpty == true || page?.age != null;
-    // 本人主页含 Douyin 入口需更高；他人主页内容较少，避免签名与 Tab 之间留白过大。
-    final infoHeight = _isSelf
-        ? 220.0
-        : (hasProfileMeta ? 156.0 : 132.0);
+    final infoHeight = _profileInfoHeight(
+      context,
+      hasProfileMeta: hasProfileMeta,
+    );
     final expandedHeight =
         bannerHeight + infoHeight + toolbarHeight + tabBarHeight;
 
@@ -587,7 +618,6 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                 onTapExpand: () =>
                                     _showFullIntroSheet(context, intro),
                               ),
-                              const Spacer(),
                               if (hasProfileMeta) ...[
                                 const SizedBox(height: 5),
                                 Row(
@@ -751,7 +781,7 @@ class _ProfileIntroTextState extends State<_ProfileIntroText> {
         });
 
         return Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Text(
@@ -763,7 +793,7 @@ class _ProfileIntroTextState extends State<_ProfileIntroText> {
             ),
             if (showExpand)
               Padding(
-                padding: const EdgeInsets.only(left: 4),
+                padding: const EdgeInsets.only(left: 4, top: 2),
                 child: GestureDetector(
                   onTap: widget.onTapExpand,
                   behavior: HitTestBehavior.opaque,
