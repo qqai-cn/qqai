@@ -89,7 +89,8 @@ class _VideoListViewState extends ConsumerState<VideoListView> {
   Widget build(BuildContext context) {
     final filmState = ref.watch(videoFilmProvider);
     final filmNotifier = ref.read(videoFilmProvider.notifier);
-    final isWideScreen = 1.sw > 800;
+    final isWideGrid = 1.sw > kFilmListWideBreakpoint;
+    final isWideThumb = 1.sw > kFilmGridThumbWideBreakpoint;
     final topInset = MediaQuery.paddingOf(context).top + kToolbarHeight;
 
     ref.listen(videoFilmProvider.select((s) => s.allItems.length), (
@@ -168,13 +169,13 @@ class _VideoListViewState extends ConsumerState<VideoListView> {
                   padding: EdgeInsets.fromLTRB(10, topInset + 10, 10, 16),
                   sliver: SliverLayoutBuilder(
                     builder: (context, constraints) {
-                      final cross = isWideScreen ? 3 : 2;
+                      final cross = isWideGrid ? 3 : 2;
                       const spacing = 8.0;
                       final maxW = constraints.crossAxisExtent;
                       final cellW = (maxW - spacing * (cross - 1)) / cross;
                       final aspect = filmGridChildAspectRatio(
                         cellW,
-                        isWideScreen: isWideScreen,
+                        isWideScreen: isWideThumb,
                       );
                       return SliverGrid(
                         gridDelegate:
@@ -193,7 +194,7 @@ class _VideoListViewState extends ConsumerState<VideoListView> {
                             key: ValueKey('film_${blog.id ?? index}'),
                             item: blog,
                             defaultCover: _defaultVideoCover,
-                            isWideScreen: isWideScreen,
+                            isWideScreen: isWideThumb,
                           );
                         }, childCount: items.length),
                       );

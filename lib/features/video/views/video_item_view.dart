@@ -19,6 +19,11 @@ import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
 /// 与影视网格 [SliverGrid] 的 [childAspectRatio] 计算保持一致。
+/// 影视列表列数临界（逻辑宽 > 此值 3 列，否则 2 列）。
+const double kFilmListWideBreakpoint = 1000;
+/// 影视网格封面比例临界（逻辑宽 > 此值横版 3:2，否则竖版 2:3）。
+const double kFilmGridThumbWideBreakpoint = 800;
+
 const double kFilmGridTextBlockHeight = 54;
 const double kFilmGridThumbTextGap = 8;
 const int _filmHeroCategory = -1001;
@@ -77,7 +82,7 @@ class VideoItemView extends ConsumerStatefulWidget {
   final BlogItem item;
   final String defaultCover;
 
-  /// 为 null 时按 [ScreenUtil] 宽度是否大于 800 判断。
+  /// 为 null 时按 [ScreenUtil] 宽度是否大于 [kFilmGridThumbWideBreakpoint] 判断封面比例。
   final bool? isWideScreen;
 
   @override
@@ -179,7 +184,8 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
 
   @override
   Widget build(BuildContext context) {
-    final isWideScreen = widget.isWideScreen ?? 1.sw > 800;
+    final isWideScreen =
+        widget.isWideScreen ?? 1.sw > kFilmGridThumbWideBreakpoint;
     final thumbAspect = filmGridThumbAspectRatio(isWideScreen: isWideScreen);
     final cover = resolveBlogCoverUrl(item, fallback: widget.defaultCover);
     final videoUrl = resolveMediaUrl(
