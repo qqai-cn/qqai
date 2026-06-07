@@ -66,7 +66,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       minTextAdapt: true,
       splitScreenMode: true,
       useInheritedMediaQuery: true,
-      rebuildFactor: (old, data) => true,
+      rebuildFactor: _screenUtilRebuildFactor,
       builder: (context, child) {
         return MaterialApp.router(
           scaffoldMessengerKey: ApiMessenger.scaffoldMessengerKey,
@@ -88,7 +88,10 @@ class _MyAppState extends ConsumerState<MyApp> {
           routerConfig: router,
           builder: (context, widget) {
             final platformBrightness = MediaQuery.platformBrightnessOf(context);
-            final isLight = appThemeIsLight(themePreference, platformBrightness);
+            final isLight = appThemeIsLight(
+              themePreference,
+              platformBrightness,
+            );
             return Theme(
               data: MyTheme.getThemeData(isLight: isLight),
               child: MediaQuery(
@@ -102,5 +105,22 @@ class _MyAppState extends ConsumerState<MyApp> {
         );
       },
     );
+  }
+
+  bool _screenUtilRebuildFactor(MediaQueryData old, MediaQueryData data) {
+    if (old.orientation != data.orientation) return true;
+    if (_screenWidthBucket(old.size.width) !=
+        _screenWidthBucket(data.size.width)) {
+      return true;
+    }
+    final widthDelta = (old.size.width - data.size.width).abs();
+    final heightDelta = (old.size.height - data.size.height).abs();
+    return widthDelta >= 120 || heightDelta >= 160;
+  }
+
+  int _screenWidthBucket(double width) {
+    if (width < 800) return 0;
+    if (width < 1100) return 1;
+    return 2;
   }
 }

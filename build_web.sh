@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# Wasm 发布包（含 dart2js 回退）。线上默认请用 ./build_web.sh（纯 dart2js，无 --wasm）。
+# dart2js 发布包（不用 --wasm，线上默认走此脚本，避免 WASM resize 栈溢出）。
 #
 # 用法：
-#   ./build_web_wasm.sh              # 默认 local：本站 /canvaskit/ + --no-web-resources-cdn
-#   ./build_web_wasm.sh cdn          # gstatic 拉 skwasm，部署包更小
-#   WEB_RENDERER_MODE=cdn ./build_web_wasm.sh
-#   ./build_web_wasm.sh local -- --dart-define=FOO=bar   # 额外参数写在 -- 之后
+#   ./build_web.sh              # 默认 local：本站 /canvaskit/ + --no-web-resources-cdn
+#   ./build_web.sh cdn          # canvaskit 走 gstatic，部署包更小
+#   WEB_RENDERER_MODE=cdn ./build_web.sh
+#   ./build_web.sh local -- --dart-define=FOO=bar
 #
-# 产物标记：build/web/.web-renderer-mode（local|cdn）
+# 产物：build/web/main.dart.js（无 main.dart.wasm）
+# 标记：build/web/.web-renderer-mode（local|cdn）、.web-build-target=js
 set -euo pipefail
 cd "$(dirname "$0")"
 # shellcheck source=scripts/qqai_dart_defines.sh
@@ -56,10 +57,10 @@ cleanup() {
 trap cleanup EXIT
 
 bash web/scripts/apply_web_renderer_mode.sh "$MODE"
+bash web/scripts/strip_wasm_index_preloads.sh web/index.html
 
-BUILD_ARGS=(build web --release --wasm -O4)
+BUILD_ARGS=(build web --release)
 if [[ "$MODE" == "local" ]]; then
-  # 把 canvaskit/skwasm 打进 build/web/canvaskit/，由本站提供
   BUILD_ARGS+=(--no-web-resources-cdn)
 fi
 
@@ -71,18 +72,20 @@ else
   flutter "${BUILD_ARGS[@]}" "${QQAI_DART_DEFINES[@]}"
 fi
 
-echo "$MODE" > build/web/.web-renderer-mode
+# dart2js 构建后删除残留的 wasm/mjs，避免 zip 误带上旧产物
+rm -f build/web/main.dart.wasm build/web/main.dart.wasm.* build/web/main.dart.mjs*
 
-if [[ -x web/compress_web_assets.sh ]]; then
-  WEB_RENDERER_MODE="$MODE" web/compress_web_assets.sh
-fi
+echo "$MODE" > build/web/.web-renderer-mode
+echo "js" > build/web/.web-build-target
+
+bash web/compress_web_assets.sh
 
 echo ""
-echo "完成: renderer=${MODE}, 标记 build/web/.web-renderer-mode"
+echo "完成: target=js, renderer=${MODE}, 标记 build/web/.web-build-target"
 if [[ "$MODE" == "local" ]]; then
-  echo "  skwasm: https://<你的域名>/canvaskit/skwasm.wasm"
-  echo "  部署: ./web/deploy/deploy_web.sh"
+  echo "  canvaskit: https://<你的域名>/canvaskit/"
+  echo "  部署: ./web/deploy/deploy_web.sh 或 expect deploy.exp"
 else
-  echo "  skwasm: https://www.gstatic.com/flutter-canvaskit/<engineRevision>/skwasm.wasm"
-  echo "  部署: 无需上传 build/web/canvaskit/；./web/deploy/deploy_web.sh"
+  echo "  canvaskit: https://www.gstatic.com/flutter-canvaskit/<engineRevision>/"
+  echo "  部署: expect deploy.exp（无需上传 build/web/canvaskit/）"
 fi
