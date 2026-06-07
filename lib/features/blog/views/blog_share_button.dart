@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:qqai/components/blog/blog_danmaku.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/features/share/share_to_friend_sheet.dart';
 import 'package:qqai/providers/auth_providers.dart';
@@ -94,6 +95,8 @@ void showBlogShareSheet(
       final container = ProviderScope.containerOf(context);
       final currentUserId = container.read(authProvider).userId;
       final showDelete = blog != null && isOwnBlogPost(blog, currentUserId);
+      final danmakuBlogId = blog?.blogType == 2 ? blog?.id : null;
+      final showDanmakuToggle = danmakuBlogId != null && danmakuBlogId > 0;
 
       Future<void> onChannel(Future<bool> Function() action) async {
         if (payload == null) {
@@ -204,6 +207,14 @@ void showBlogShareSheet(
                   ),
                 ],
               ),
+              if (showDanmakuToggle) ...[
+                Divider(height: 20.h),
+                BlogDanmakuShareSheetToggle(
+                  blogId: danmakuBlogId,
+                  snackBarContext: context,
+                  onToggle: () => Navigator.pop(ctx),
+                ),
+              ],
               if (showDelete) ...[
                 Divider(height: 20.h),
                 TextButton.icon(

@@ -173,143 +173,129 @@ class _BlogDanmakuOverlayState extends ConsumerState<BlogDanmakuOverlay> {
   }
 }
 
-class BlogDanmakuActionButtons extends StatelessWidget {
-  const BlogDanmakuActionButtons({
+/// 竖屏视频详情左下角：抖音式胶囊「发布弹幕」入口。
+class BlogDanmakuLaunchBar extends ConsumerWidget {
+  const BlogDanmakuLaunchBar({
     super.key,
     required this.blogId,
-    this.size = 44,
+    this.label = '发布弹幕',
   });
 
   final int? blogId;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    final id = blogId;
-    if (id == null || id <= 0) return const SizedBox.shrink();
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        BlogDanmakuLaunchButton(blogId: id, size: size),
-        const SizedBox(width: 8),
-        BlogDanmakuVisibilityButton(blogId: id, size: size),
-      ],
-    );
-  }
-}
-
-class BlogDanmakuLaunchButton extends ConsumerWidget {
-  const BlogDanmakuLaunchButton({
-    super.key,
-    required this.blogId,
-    this.size = 44,
-  });
-
-  final int? blogId;
-  final double size;
+  final String label;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final id = blogId;
     if (id == null || id <= 0) return const SizedBox.shrink();
     return Material(
-      color: Colors.black.withValues(alpha: 0.42),
-      borderRadius: BorderRadius.circular(12),
+      color: Colors.white.withValues(alpha: 0.15),
+      borderRadius: BorderRadius.circular(999),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: () => _showComposer(context, ref, id),
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: Center(
-            child: Text(
-              '弹/',
-              style: context.typo.bodyStrong.copyWith(
-                color: Colors.white,
-                fontSize: 20,
-                height: 1,
+        onTap: () => showBlogDanmakuComposerSheet(context, ref, id),
+        borderRadius: BorderRadius.circular(999),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.subtitles_outlined,
+                color: Colors.white.withValues(alpha: 0.72),
+                size: 18,
               ),
-            ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: context.typo.body.copyWith(
+                  color: Colors.white.withValues(alpha: 0.72),
+                  fontSize: 14,
+                  height: 1.1,
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
+}
 
-  void _showComposer(BuildContext context, WidgetRef ref, int blogId) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.black.withValues(alpha: 0.92),
-      builder: (ctx) {
-        final bottom = MediaQuery.viewInsetsOf(ctx).bottom;
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(14, 14, 14, bottom + 14),
-            child: BlogDanmakuComposer(
-              blogId: blogId,
-              positionMillisGetter: () =>
-                  ref.read(blogDanmakuCurrentPositionProvider(blogId)),
-            ),
+void showBlogDanmakuComposerSheet(
+  BuildContext context,
+  WidgetRef ref,
+  int blogId,
+) {
+  showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.black.withValues(alpha: 0.92),
+    builder: (ctx) {
+      final bottom = MediaQuery.viewInsetsOf(ctx).bottom;
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(14, 14, 14, bottom + 14),
+          child: BlogDanmakuComposer(
+            blogId: blogId,
+            positionMillisGetter: () =>
+                ref.read(blogDanmakuCurrentPositionProvider(blogId)),
           ),
+        ),
+      );
+    },
+  );
+}
+
+void toggleBlogDanmakuVisibility(
+  BuildContext context,
+  WidgetRef ref,
+  int blogId, {
+  bool? visible,
+}) {
+  final next =
+      visible ?? !ref.read(blogDanmakuVisibleProvider(blogId));
+  ref.read(blogDanmakuVisibleProvider(blogId).notifier).state = next;
+  ScaffoldMessenger.maybeOf(context)
+    ?..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(next ? '弹幕已开启' : '弹幕已关闭'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(milliseconds: 1500),
+      ),
+    );
+}
+
+/// 分享面板内：弹幕显示开关（仅视频作品）。
+class BlogDanmakuShareSheetToggle extends ConsumerWidget {
+  const BlogDanmakuShareSheetToggle({
+    super.key,
+    required this.blogId,
+    this.snackBarContext,
+    this.onToggle,
+  });
+
+  final int blogId;
+  final BuildContext? snackBarContext;
+  final VoidCallback? onToggle;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final visible = ref.watch(blogDanmakuVisibleProvider(blogId));
+    return SwitchListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+      title: const Text('弹幕'),
+      subtitle: Text(visible ? '当前显示视频弹幕' : '当前不显示视频弹幕'),
+      value: visible,
+      onChanged: (_) {
+        onToggle?.call();
+        toggleBlogDanmakuVisibility(
+          snackBarContext ?? context,
+          ref,
+          blogId,
         );
       },
-    );
-  }
-}
-
-class BlogDanmakuVisibilityButton extends ConsumerWidget {
-  const BlogDanmakuVisibilityButton({
-    super.key,
-    required this.blogId,
-    this.size = 44,
-  });
-
-  final int? blogId;
-  final double size;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final id = blogId;
-    if (id == null || id <= 0) return const SizedBox.shrink();
-    final visible = ref.watch(blogDanmakuVisibleProvider(id));
-    return Material(
-      color: Colors.black.withValues(alpha: 0.42),
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          ref.read(blogDanmakuVisibleProvider(id).notifier).state = !visible;
-        },
-        child: SizedBox(
-          width: size,
-          height: size,
-          child: Center(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                Text(
-                  '弹',
-                  style: context.typo.bodyStrong.copyWith(
-                    color: visible ? Colors.white : Colors.white54,
-                    fontSize: 20,
-                    height: 1,
-                  ),
-                ),
-                Positioned(
-                  right: 6,
-                  bottom: 7,
-                  child: Icon(
-                    visible ? Icons.block : Icons.visibility_outlined,
-                    color: visible ? Colors.white : Colors.white54,
-                    size: 15,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

@@ -419,21 +419,10 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
               segmentIndex: widget.segmentIndex,
               onSegmentSelected: widget.onSegmentSelected,
               danmakuComposer: showToolbarDanmakuComposer
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: BlogDanmakuComposer(
-                            blogId: widget.blog.id,
-                            positionMillisGetter: () =>
-                                videoController.value.position.inMilliseconds,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        BlogDanmakuVisibilityButton(
-                          blogId: widget.blog.id,
-                          size: 42,
-                        ),
-                      ],
+                  ? BlogDanmakuComposer(
+                      blogId: widget.blog.id,
+                      positionMillisGetter: () =>
+                          videoController.value.position.inMilliseconds,
                     )
                   : null,
             ),
