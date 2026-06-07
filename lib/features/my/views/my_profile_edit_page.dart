@@ -25,7 +25,6 @@ class MyProfileEditPage extends ConsumerStatefulWidget {
 class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
-  static const double _contentMaxWidth = 600;
 
   bool _loading = true;
   String? _nickname;
@@ -342,113 +341,360 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     await _refreshHomeProfile();
   }
 
-  Widget _buildHeader() {
-    const coverHeight = 200.0;
-    const avatarRadius = 44.0;
+  Color get _pageBackground {
+    final scheme = Theme.of(context).colorScheme;
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color.alphaBlend(Colors.white.withValues(alpha: 0.03), scheme.surface)
+        : const Color(0xFFF6F7F9);
+  }
 
-    return SizedBox(
-      height: coverHeight + avatarRadius,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
+  Color get _panelColor {
+    final scheme = Theme.of(context).colorScheme;
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color.alphaBlend(Colors.white.withValues(alpha: 0.05), scheme.surface)
+        : scheme.surface;
+  }
+
+  Color get _softPanelColor {
+    final scheme = Theme.of(context).colorScheme;
+    return Theme.of(context).brightness == Brightness.dark
+        ? Color.alphaBlend(Colors.white.withValues(alpha: 0.04), scheme.surface)
+        : const Color(0xFFF9FAFB);
+  }
+
+  Color get _dividerColor => AppActionColors.borderSubtle(context);
+
+  List<BoxShadow> get _panelShadow {
+    if (Theme.of(context).brightness == Brightness.dark) return const [];
+    return [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.05),
+        blurRadius: 18,
+        offset: const Offset(0, 8),
+      ),
+    ];
+  }
+
+  String get _nicknameDisplay =>
+      _nickname?.trim().isNotEmpty == true ? _nickname!.trim() : '未设置昵称';
+
+  String get _introDisplay =>
+      _intro?.trim().isNotEmpty == true ? _intro!.trim() : '这个人很懒，还没有写签名。';
+
+  Widget _buildTopBar({required bool wide}) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(wide ? 8 : 4, 8, wide ? 8 : 4, 10),
+      child: Row(
+        children: [
+          IconButton(
+            tooltip: '返回',
+            onPressed: () => context.pop(),
+            icon: const Icon(Icons.arrow_back_ios_new),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Text(
+              '编辑主页',
+              style: context.typo.pageTitle.copyWith(
+                color: AppActionColors.strong(context),
+              ),
+            ),
+          ),
+          _buildCompletionPill(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompletionPill() {
+    final color = Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: color.withValues(alpha: 0.16)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.verified_outlined, size: 16, color: color),
+          const SizedBox(width: 5),
+          Text(
+            '$_completionPercent%',
+            style: context.typo.caption.copyWith(
+              color: color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewPanel({required bool wide}) {
+    final coverHeight = wide ? 260.0 : 190.0;
+    final avatarRadius = wide ? 46.0 : 42.0;
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: _panelColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _dividerColor),
+        boxShadow: _panelShadow,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           SizedBox(
             height: coverHeight,
-            width: double.infinity,
             child: Stack(
               fit: StackFit.expand,
               children: [
                 CachedNetworkImage(imageUrl: _coverDisplay, fit: BoxFit.cover),
-                Positioned(
-                  left: 8,
-                  top: MediaQuery.paddingOf(context).top + 4,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Colors.white,
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.10),
+                        Colors.black.withValues(alpha: 0.54),
+                      ],
                     ),
-                    onPressed: () => context.pop(),
                   ),
                 ),
                 Positioned(
-                  right: 12,
-                  top: MediaQuery.paddingOf(context).top + 12,
-                  child: TextButton.icon(
-                    onPressed: _pickAndUploadCover,
-                    icon: const Icon(
-                      Icons.photo_camera_outlined,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                    label: Text(
-                      '更换封面',
-                      style: context.typo.body.copyWith(color: Colors.white),
-                    ),
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.black38,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 6,
+                  right: 14,
+                  top: 14,
+                  child: _glassButton(
+                    icon: Icons.photo_camera_outlined,
+                    label: '封面',
+                    onTap: _pickAndUploadCover,
+                  ),
+                ),
+                Positioned(
+                  left: 18,
+                  right: 18,
+                  bottom: 18,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      _buildAvatar(radius: avatarRadius),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 3),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _nicknameDisplay,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.typo.pageTitle.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                _introDisplay,
+                                maxLines: wide ? 2 : 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.typo.caption.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.84),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
-          Positioned(
-            top: coverHeight - avatarRadius,
-            child: GestureDetector(
-              onTap: _pickAndUploadAvatar,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircleAvatar(
-                    radius: avatarRadius,
-                    backgroundColor: AppActionColors.surface(context),
-                    child: CircleAvatar(
-                      radius: avatarRadius - 2,
-                      backgroundImage: _avatarUrl?.trim().isNotEmpty == true
-                          ? CachedNetworkImageProvider(_avatarUrl!.trim())
-                          : null,
-                      child: _avatarUrl?.trim().isNotEmpty == true
-                          ? null
-                          : DefaultAssetImage(
-                              width: (avatarRadius - 2) * 2,
-                              height: (avatarRadius - 2) * 2,
-                              fit: BoxFit.cover,
-                            ),
-                    ),
-                  ),
-                  Container(
-                    width: avatarRadius * 2,
-                    height: avatarRadius * 2,
-                    decoration: BoxDecoration(
-                      color: Colors.black26,
-                      shape: BoxShape.circle,
-                    ),
-                    alignment: Alignment.center,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.photo_camera_outlined,
-                          color: Colors.white,
-                          size: 22,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 18, 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '主页资料',
+                        style: context.typo.sectionTitle.copyWith(
+                          color: AppActionColors.strong(context),
                         ),
-                        Text(
-                          '更换头像',
-                          style: context.typo.caption.copyWith(
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
+                    Text(
+                      '千千号 ${_qqId?.toString() ?? '--'}',
+                      style: context.typo.caption.copyWith(
+                        color: AppActionColors.subtle(context),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(999),
+                  child: LinearProgressIndicator(
+                    minHeight: 7,
+                    value: _completionPercent / 100,
+                    backgroundColor: scheme.primary.withValues(alpha: 0.12),
+                    valueColor: AlwaysStoppedAnimation<Color>(scheme.primary),
                   ),
-                ],
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _infoChip(Icons.person_outline, _sexLabel(_sex)),
+                    _infoChip(
+                      Icons.cake_outlined,
+                      _birthday?.trim().isNotEmpty == true
+                          ? _birthday!.trim()
+                          : '生日未设置',
+                    ),
+                    _infoChip(Icons.place_outlined, _addressDisplay),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAvatar({required double radius}) {
+    return GestureDetector(
+      onTap: _pickAndUploadAvatar,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircleAvatar(
+            radius: radius,
+            backgroundColor: _panelColor,
+            child: CircleAvatar(
+              radius: radius - 2,
+              backgroundImage: _avatarUrl?.trim().isNotEmpty == true
+                  ? CachedNetworkImageProvider(_avatarUrl!.trim())
+                  : null,
+              child: _avatarUrl?.trim().isNotEmpty == true
+                  ? null
+                  : DefaultAssetImage(
+                      width: (radius - 2) * 2,
+                      height: (radius - 2) * 2,
+                      fit: BoxFit.cover,
+                    ),
+            ),
+          ),
+          Container(
+            width: radius * 2,
+            height: radius * 2,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.24),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.photo_camera_outlined,
+              color: Colors.white,
+              size: 22,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _glassButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.black.withValues(alpha: 0.34),
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: Colors.white, size: 17),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: context.typo.caption.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _infoChip(IconData icon, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: _softPanelColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: _dividerColor),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: AppActionColors.subtle(context)),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: context.typo.caption.copyWith(
+              color: AppActionColors.muted(context),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _section({required String title, required List<Widget> children}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _panelColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: _dividerColor),
+        boxShadow: _panelShadow,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+            child: Text(
+              title,
+              style: context.typo.sectionTitle.copyWith(
+                color: AppActionColors.strong(context),
               ),
             ),
           ),
+          ...children,
         ],
       ),
     );
@@ -460,26 +706,141 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
     VoidCallback? onTap,
     bool showChevron = true,
   }) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            SizedBox(width: 72, child: Text(label, style: context.typo.body)),
-            Expanded(
-              child: Text(
-                value,
-                style: context.typo.body.copyWith(
-                  color: AppActionColors.strong(context),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 78,
+                child: Text(
+                  label,
+                  style: context.typo.body.copyWith(
+                    color: AppActionColors.muted(context),
+                  ),
                 ),
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
               ),
+              Expanded(
+                child: Text(
+                  value,
+                  style: context.typo.body.copyWith(
+                    color: AppActionColors.strong(context),
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (showChevron)
+                Icon(
+                  Icons.chevron_right,
+                  color: AppActionColors.subtle(context),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _divider() {
+    return Divider(height: 1, indent: 16, color: _dividerColor);
+  }
+
+  Widget _buildEditSections() {
+    return Column(
+      children: [
+        _section(
+          title: '基础资料',
+          children: [
+            _row(label: '名字', value: _nicknameDisplay, onTap: _editNickname),
+            _divider(),
+            _row(label: '简介', value: _introDisplay, onTap: _editIntro),
+            _divider(),
+            _row(label: '性别', value: _sexLabel(_sex), onTap: _editSex),
+            _divider(),
+            _row(
+              label: '生日',
+              value: _birthday?.trim().isNotEmpty == true
+                  ? _birthday!.trim()
+                  : '未设置',
+              onTap: _editBirthday,
             ),
-            if (showChevron)
-              Icon(Icons.chevron_right, color: AppActionColors.subtle(context)),
+            _divider(),
+            _row(label: '所在地', value: _addressDisplay, onTap: _editArea),
+            _divider(),
+            _row(
+              label: '千千号',
+              value: _qqId?.toString() ?? '--',
+              showChevron: false,
+            ),
           ],
+        ),
+        const SizedBox(height: 14),
+        _section(
+          title: '主页展示',
+          children: [
+            _row(label: '服务挂件', value: '团购橱窗、直播预告、公开群', onTap: () {}),
+            _divider(),
+            _row(label: '合作设置', value: '主页展示「找我官方合作」', onTap: () {}),
+            _divider(),
+            _row(label: '挂件中心', value: '管理头像挂件', onTap: () {}),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNarrowLayout() {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 28),
+      children: [
+        _buildTopBar(wide: false),
+        _buildPreviewPanel(wide: false),
+        const SizedBox(height: 14),
+        _buildEditSections(),
+      ],
+    );
+  }
+
+  Widget _buildWideLayout() {
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1120),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 30),
+          child: Column(
+            children: [
+              _buildTopBar(wide: true),
+              Expanded(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 400, child: _buildPreviewPanel(wide: true)),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 620),
+                          child: ListView(
+                            padding: EdgeInsets.zero,
+                            children: [
+                              _buildEditSections(),
+                              const SizedBox(height: 28),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -488,98 +849,21 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: _pageBackground,
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Align(
-        alignment: Alignment.topCenter,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: _contentMaxWidth),
-          child: Column(
-            children: [
-              _buildHeader(),
-              Padding(
-                padding: const EdgeInsets.only(top: 8, right: 16),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.check_circle_outline,
-                        size: 16,
-                        color: AppActionColors.muted(context),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '资料完成度 $_completionPercent%',
-                        style: context.typo.caption.copyWith(
-                          color: AppActionColors.muted(context),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  children: [
-                    const Divider(height: 1),
-                    _row(
-                      label: '名字',
-                      value: _nickname?.trim().isNotEmpty == true
-                          ? _nickname!.trim()
-                          : '未设置',
-                      onTap: _editNickname,
-                    ),
-                    const Divider(height: 1, indent: 16),
-                    _row(
-                      label: '简介',
-                      value: _intro?.trim().isNotEmpty == true
-                          ? _intro!.trim()
-                          : '这个人很懒，还没有写签名。',
-                      onTap: _editIntro,
-                    ),
-                    const Divider(height: 1, indent: 16),
-                    _row(label: '性别', value: _sexLabel(_sex), onTap: _editSex),
-                    const Divider(height: 1, indent: 16),
-                    _row(
-                      label: '生日',
-                      value: _birthday?.trim().isNotEmpty == true
-                          ? _birthday!.trim()
-                          : '未设置',
-                      onTap: _editBirthday,
-                    ),
-                    const Divider(height: 1, indent: 16),
-                    _row(
-                      label: '所在地',
-                      value: _addressDisplay,
-                      onTap: _editArea,
-                    ),
-                    const Divider(height: 1, indent: 16),
-                    _row(
-                      label: '千千号',
-                      value: _qqId?.toString() ?? '',
-                      showChevron: false,
-                    ),
-                    const Divider(
-                      height: 24,
-                      thickness: 8,
-                      color: Color(0xFFF5F5F5),
-                    ),
-                    _row(label: '服务挂件', value: '团购橱窗、直播预告、公开群', onTap: () {}),
-                    const Divider(height: 1, indent: 16),
-                    _row(label: '合作设置', value: '主页展示「找我官方合作」', onTap: () {}),
-                    const Divider(height: 1, indent: 16),
-                    _row(label: '挂件中心', value: '管理头像挂件', onTap: () {}),
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
-            ],
-          ),
+      backgroundColor: _pageBackground,
+      body: SafeArea(
+        bottom: false,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 840;
+            return wide ? _buildWideLayout() : _buildNarrowLayout();
+          },
         ),
       ),
     );
