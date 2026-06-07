@@ -132,7 +132,7 @@ class _VideoViewState extends ConsumerState<VideoView>
       drawer: isWideScreen ? null : const DrawerPage(),
       body: TabBarView(
         controller: _tabController,
-        physics: const AlwaysScrollableScrollPhysics(),
+        physics: const NeverScrollableScrollPhysics(),
         children: List.generate(2, _tabBody),
       ),
     );
@@ -277,6 +277,9 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
         return PageView.builder(
           controller: _pageController,
           scrollDirection: Axis.vertical,
+          physics: widget.isActive
+              ? const AlwaysScrollableScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
           itemCount: playable.length,
           onPageChanged: (index) {
             if (index < playable.length) {

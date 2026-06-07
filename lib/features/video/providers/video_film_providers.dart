@@ -29,23 +29,54 @@ sealed class VideoFilmState with _$VideoFilmState {
   }) = _VideoFilmState;
 }
 
-@riverpod
+@Riverpod(keepAlive: true)
 class VideoFilmNotifier extends _$VideoFilmNotifier
     implements BlogFeedListActions {
   static const int _pageSize = 12;
 
   late final IBlogRepo _repo;
   late final IProfileRepo _profileRepo;
+  bool _loading = false;
 
   @override
   VideoFilmState build() {
     _repo = ref.read(blogRepoProvider);
     _profileRepo = ref.read(profileRepoProvider);
-    Future.microtask(load);
+    Future.microtask(() {
+      if (ref.mounted) loadIfNeeded();
+    });
     return const VideoFilmState();
   }
 
+  Future<void> loadIfNeeded() async {
+    if (_loading) return;
+    if (state.blogPageData.hasValue || state.blogPageData.hasError) return;
+    await load();
+  }
+
+  bool _hasMorePages(BlogPageModelData page, int loadedCount) {
+    final total = page.total;
+    if (total != null && total > 0) {
+      return loadedCount < total;
+    }
+    return (page.list?.length ?? 0) >= _pageSize;
+  }
+
+  List<BlogItem> _mergeUniqueItems(List<BlogItem> existing, List<BlogItem> incoming) {
+    if (incoming.isEmpty) return existing;
+    final seen = {for (final item in existing) if (item.id != null) item.id};
+    final merged = List<BlogItem>.from(existing);
+    for (final item in incoming) {
+      final id = item.id;
+      if (id != null && !seen.add(id)) continue;
+      merged.add(item);
+    }
+    return merged;
+  }
+
   Future<void> load() async {
+    if (_loading) return;
+    _loading = true;
     state = state.copyWith(blogPageData: const AsyncLoading(), error: null);
     try {
       final items = await _repo.getBlogPageModelDataWithPage(
@@ -53,17 +84,22 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
         pageSize: _pageSize,
         blogType: BlogContentType.video,
       );
+      if (!ref.mounted) return;
+      final list = items.list ?? [];
       state = state.copyWith(
         blogPageData: AsyncData(items),
-        allItems: items.list ?? [],
+        allItems: list,
         currentPage: 1,
-        hasMore: (items.list?.length ?? 0) >= _pageSize,
+        hasMore: _hasMorePages(items, list.length),
       );
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncError(e, st),
         error: e.toString(),
       );
+    } finally {
+      _loading = false;
     }
   }
 
@@ -74,13 +110,16 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
         pageSize: _pageSize,
         blogType: BlogContentType.video,
       );
+      if (!ref.mounted) return;
+      final list = items.list ?? [];
       state = state.copyWith(
         blogPageData: AsyncData(items),
-        allItems: items.list ?? [],
+        allItems: list,
         currentPage: 1,
-        hasMore: (items.list?.length ?? 0) >= _pageSize,
+        hasMore: _hasMorePages(items, list.length),
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: e.toString());
     }
   }
@@ -95,14 +134,21 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
         pageSize: _pageSize,
         blogType: BlogContentType.video,
       );
+      if (!ref.mounted) return;
       final newItems = items.list ?? [];
+      final merged = _mergeUniqueItems(state.allItems, newItems);
+      if (newItems.isNotEmpty && merged.length == state.allItems.length) {
+        state = state.copyWith(isLoadingMore: false, hasMore: false);
+        return;
+      }
       state = state.copyWith(
-        allItems: [...state.allItems, ...newItems],
+        allItems: merged,
         currentPage: nextPage,
-        hasMore: newItems.length >= _pageSize,
+        hasMore: _hasMorePages(items, merged.length),
         isLoadingMore: false,
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
@@ -112,6 +158,7 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
     required AsyncValue<BlogPageModelData> blogPageData,
     String? error,
   }) {
+    if (!ref.mounted) return;
     state = state.copyWith(
       allItems: allItems,
       blogPageData: blogPageData,
@@ -152,6 +199,7 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
       state.blogPageData,
       id,
     );
+    if (!ref.mounted) return;
     state = state.copyWith(
       allItems: patched.allItems,
       blogPageData: patched.blogPageData,

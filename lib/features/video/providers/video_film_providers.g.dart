@@ -20,7 +20,7 @@ final class VideoFilmNotifierProvider
         argument: null,
         retry: null,
         name: r'videoFilmProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );

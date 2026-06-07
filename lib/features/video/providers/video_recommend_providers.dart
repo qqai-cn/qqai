@@ -41,7 +41,9 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
   VideoRecommendState build() {
     _repo = ref.read(blogRepoProvider);
     _profileRepo = ref.read(profileRepoProvider);
-    Future.microtask(load);
+    Future.microtask(() {
+      if (ref.mounted) load();
+    });
     return const VideoRecommendState();
   }
 
@@ -53,6 +55,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
         pageSize: _pageSize,
         blogType: BlogContentType.video,
       );
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -60,6 +63,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
         hasMore: (items.list?.length ?? 0) >= _pageSize,
       );
     } catch (e, st) {
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncError(e, st),
         error: e.toString(),
@@ -74,6 +78,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
         pageSize: _pageSize,
         blogType: BlogContentType.video,
       );
+      if (!ref.mounted) return;
       state = state.copyWith(
         blogPageData: AsyncData(items),
         allItems: items.list ?? [],
@@ -81,6 +86,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
         hasMore: (items.list?.length ?? 0) >= _pageSize,
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(error: e.toString());
     }
   }
@@ -95,6 +101,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
         pageSize: _pageSize,
         blogType: BlogContentType.video,
       );
+      if (!ref.mounted) return;
       final newItems = items.list ?? [];
       state = state.copyWith(
         allItems: [...state.allItems, ...newItems],
@@ -103,6 +110,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
         isLoadingMore: false,
       );
     } catch (e) {
+      if (!ref.mounted) return;
       state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
@@ -112,6 +120,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
     required AsyncValue<BlogPageModelData> blogPageData,
     String? error,
   }) {
+    if (!ref.mounted) return;
     state = state.copyWith(
       allItems: allItems,
       blogPageData: blogPageData,
@@ -152,6 +161,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
       state.blogPageData,
       id,
     );
+    if (!ref.mounted) return;
     state = state.copyWith(
       allItems: patched.allItems,
       blogPageData: patched.blogPageData,

@@ -31,6 +31,10 @@ class SharedVideoPlaybackSession {
     _refCount--;
     if (_refCount > 0 || _disposed) return;
     _disposeTimer?.cancel();
+    flickManager.flickControlManager?.autoPause();
+    if (videoController.value.isInitialized) {
+      videoController.pause();
+    }
     if (videoController.value.hasError) {
       dispose();
       return;

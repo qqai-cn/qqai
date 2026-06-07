@@ -34,7 +34,14 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
-    <meta name="theme-color" content="#0B1A2E"><title>千千Ai</title>    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0B1A2E">
+    <!-- Wasm 首屏关键路径：与 skwasm 并行预载（须 crossorigin） -->
+    <link rel="modulepreload" href="main.dart.mjs">
+    <link rel="preload" href="main.dart.wasm" as="fetch" type="application/wasm" crossorigin>    <title>千千Ai</title>
+    <!-- web-renderer:skwasm-preload -->
+    <link rel="preload" href="canvaskit/skwasm.wasm" as="fetch" type="application/wasm" crossorigin>
+    <!-- /web-renderer:skwasm-preload -->
+    <link rel="manifest" href="manifest.json">
 
     <style>
         html,

@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/components/video_player/qqai_player.dart';
+import 'package:qqai/features/blog/data/blog_display_text.dart';
 import 'package:qqai/features/blog/data/blog_route_extra.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/views/blog_detail_ui.dart';
 import 'package:qqai/features/comment/providers/comment_providers.dart';
@@ -21,8 +23,18 @@ const double kFilmGridTextBlockHeight = 54;
 const double kFilmGridThumbTextGap = 8;
 const int _filmHeroCategory = -1001;
 
-double filmGridChildAspectRatio(double cellWidth) {
-  final thumbH = cellWidth * 2 / 3;
+/// 宽屏网格封面：横版 3:2；窄屏：竖版 2:3。
+const double kFilmGridThumbAspectWide = 3 / 2;
+const double kFilmGridThumbAspectNarrow = 2 / 3;
+
+double filmGridThumbAspectRatio({required bool isWideScreen}) =>
+    isWideScreen ? kFilmGridThumbAspectWide : kFilmGridThumbAspectNarrow;
+
+double filmGridChildAspectRatio(
+  double cellWidth, {
+  required bool isWideScreen,
+}) {
+  final thumbH = cellWidth / filmGridThumbAspectRatio(isWideScreen: isWideScreen);
   return cellWidth /
       (thumbH + kFilmGridThumbTextGap + kFilmGridTextBlockHeight);
 }
@@ -53,16 +65,20 @@ String _formatFooterTime(String? raw) {
 
 /// 影视 Tab 网格卡片：圆角封面 + 左下角点赞 + 双行标题 + `@作者 · 日期`。
 ///
-/// Web：鼠标在卡片上停留约 2 秒后，在封面区域静音自动循环预览视频。
+/// Web：鼠标在封面停留约 3 秒后静音预览视频。
 class VideoItemView extends ConsumerStatefulWidget {
   const VideoItemView({
     super.key,
     required this.item,
     required this.defaultCover,
+    this.isWideScreen,
   });
 
   final BlogItem item;
   final String defaultCover;
+
+  /// 为 null 时按 [ScreenUtil] 宽度是否大于 800 判断。
+  final bool? isWideScreen;
 
   @override
   ConsumerState<VideoItemView> createState() => _VideoItemViewState();
@@ -80,9 +96,13 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
   BlogItem get item => widget.item;
 
   String get _description {
-    final c = item.content?.trim();
-    if (c == null || c.isEmpty) return '未命名';
-    return c;
+    final preview = blogVideoListPreview(item).trim();
+    if (preview.isNotEmpty) return preview;
+    for (final collection in _namedCollections) {
+      final name = collection.name?.trim();
+      if (name != null && name.isNotEmpty) return name;
+    }
+    return '未命名';
   }
 
   @override
@@ -95,18 +115,24 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
     if (!kIsWeb) return;
     _hovering = true;
     _hoverTimer?.cancel();
-    _hoverTimer = Timer(const Duration(seconds: 1), () {
+    _hoverTimer = Timer(const Duration(seconds: 3), () {
       if (!mounted || !_hovering) return;
       unawaited(_startPreview());
     });
   }
 
   void _onHoverExit() {
-    if (!kIsWeb) return;
     _hovering = false;
     _hoverTimer?.cancel();
     _hoverTimer = null;
     _stopPreview();
+  }
+
+  void _onVisibilityChanged(VisibilityInfo info) {
+    final fraction = safeVisibleFraction(info);
+    if (fraction < 0.05) {
+      _onHoverExit();
+    }
   }
 
   void _stopPreview() {
@@ -117,12 +143,11 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
     }
   }
 
-  void _onVisibilityChanged(VisibilityInfo info) {
-    if (safeVisibleFraction(info) == 0) {
-      _hovering = false;
-      _hoverTimer?.cancel();
-      _hoverTimer = null;
-      _stopPreview();
+  @override
+  void didUpdateWidget(VideoItemView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.item.id != widget.item.id) {
+      _onHoverExit();
     }
   }
 
@@ -154,6 +179,8 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
 
   @override
   Widget build(BuildContext context) {
+    final isWideScreen = widget.isWideScreen ?? 1.sw > 800;
+    final thumbAspect = filmGridThumbAspectRatio(isWideScreen: isWideScreen);
     final cover = resolveBlogCoverUrl(item, fallback: widget.defaultCover);
     final videoUrl = resolveMediaUrl(
       firstPlayableVideoUrlFromResources(item.resources),
@@ -170,80 +197,91 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
       tag: mediaHeroTag,
       transitionOnUserGestures: true,
       child: AspectRatio(
-        aspectRatio: 3 / 2,
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Positioned.fill(child: VideoCoverFit(url: cover, mode: VideoCoverFitMode.showFull)),
-              if (_showPreview && videoUrl != null)
+        aspectRatio: thumbAspect,
+        child: MouseRegion(
+          onEnter: (_) => _onHoverEnter(),
+          onExit: (_) => _onHoverExit(),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
                 Positioned.fill(
-                  child: IgnorePointer(
-                    child: QqaiPlayer(
-                      controls: const SizedBox.shrink(),
-                      image: cover,
-                      url: videoUrl,
-                      autoPlay: true,
-                      showLoadingPoster: true,
-                      coverFitMode: VideoCoverFitMode.showFull,
-                      sharedPlaybackKey: videoUrl,
-                      videoFit: BoxFit.contain,
-                      fallbackAspectRatio: 3 / 2,
-                    ),
+                  child: VideoCoverFit(
+                    url: cover,
+                    mode: VideoCoverFitMode.showFull,
                   ),
                 ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.72),
-                      ],
-                      stops: const [0.45, 1],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 8,
-                bottom: 8,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.favorite_border,
-                      size: 15,
-                      color: Colors.white.withValues(alpha: 0.92),
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      _formatLikeCount(item.zan),
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.92),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        shadows: const [
-                          Shadow(blurRadius: 6, color: Colors.black54),
-                        ],
+                if (_showPreview && _hovering && videoUrl != null)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: QqaiPlayer(
+                        key: ValueKey('film_preview_${item.id}_$videoUrl'),
+                        controls: const SizedBox.shrink(),
+                        image: cover,
+                        url: videoUrl,
+                        autoPlay: true,
+                        isActive: _hovering && _showPreview,
+                        showLoadingPoster: true,
+                        coverFitMode: VideoCoverFitMode.showFull,
+                        videoFit: BoxFit.contain,
+                        fallbackAspectRatio: thumbAspect,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              if (primaryCollection != null)
-                Positioned(
-                  left: 8,
-                  bottom: 8,
-                  child: BlogCollectionChip(
-                    collection: primaryCollection,
-                    maxLabelWidth: 96,
-                    onTap: () => _openDetail(openCollection: primaryCollection),
+                  ),
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.72),
+                        ],
+                        stops: const [0.45, 1],
+                      ),
+                    ),
                   ),
                 ),
-            ],
+                Positioned(
+                  right: 8,
+                  bottom: 8,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.favorite_border,
+                        size: 15,
+                        color: Colors.white.withValues(alpha: 0.92),
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        _formatLikeCount(item.zan),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.92),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          shadows: const [
+                            Shadow(blurRadius: 6, color: Colors.black54),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (primaryCollection != null)
+                  Positioned(
+                    left: 8,
+                    bottom: 8,
+                    child: BlogCollectionChip(
+                      collection: primaryCollection,
+                      maxLabelWidth: 96,
+                      onTap: () =>
+                          _openDetail(openCollection: primaryCollection),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -256,12 +294,9 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
         color: _cardBg,
         borderRadius: BorderRadius.circular(10),
         clipBehavior: Clip.antiAlias,
-        child: MouseRegion(
-          onEnter: (_) => _onHoverEnter(),
-          onExit: (_) => _onHoverExit(),
-          child: InkWell(
-            onTap: () => _openDetail(),
-            child: Column(
+        child: InkWell(
+          onTap: () => _openDetail(),
+          child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -305,7 +340,6 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
             ),
           ),
         ),
-      ),
     );
   }
 }

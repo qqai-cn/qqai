@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -21,10 +23,66 @@ class VideoListView extends ConsumerStatefulWidget {
 }
 
 class _VideoListViewState extends ConsumerState<VideoListView> {
+  final ScrollController _scrollController = ScrollController();
+  bool _loadMoreGuard = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   List<BlogItem> _gridItems(List<BlogItem> raw) {
     return raw
         .where((e) => firstPlayableVideoUrlFromResources(e.resources) != null)
         .toList();
+  }
+
+  void _onScroll() {
+    _maybeLoadMore(fromScroll: true);
+  }
+
+  void _maybeLoadMore({bool fromScroll = false}) {
+    final filmState = ref.read(videoFilmProvider);
+    if (!filmState.hasMore || filmState.isLoadingMore || _loadMoreGuard) {
+      return;
+    }
+    if (!_scrollController.hasClients) return;
+
+    final metrics = _scrollController.position;
+    if (!metrics.hasContentDimensions) return;
+
+    final nearBottom =
+        metrics.maxScrollExtent <= 0 ||
+        metrics.pixels >= metrics.maxScrollExtent - 240;
+    if (!nearBottom) return;
+
+    _loadMoreGuard = true;
+    unawaited(
+      ref.read(videoFilmProvider.notifier).loadMore().whenComplete(() {
+        _loadMoreGuard = false;
+        if (!mounted) return;
+        if (!fromScroll) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) _maybeLoadMore();
+          });
+        }
+      }),
+    );
+  }
+
+  void _schedulePrefetchIfShort() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _maybeLoadMore();
+    });
   }
 
   @override
@@ -32,6 +90,16 @@ class _VideoListViewState extends ConsumerState<VideoListView> {
     final filmState = ref.watch(videoFilmProvider);
     final filmNotifier = ref.read(videoFilmProvider.notifier);
     final isWideScreen = 1.sw > 800;
+    final topInset = MediaQuery.paddingOf(context).top + kToolbarHeight;
+
+    ref.listen(videoFilmProvider.select((s) => s.allItems.length), (
+      previous,
+      next,
+    ) {
+      if (previous != next) {
+        _schedulePrefetchIfShort();
+      }
+    });
 
     return filmState.blogPageData.when(
       loading: () => const ColoredBox(
@@ -92,68 +160,63 @@ class _VideoListViewState extends ConsumerState<VideoListView> {
             color: const Color(0xFF6B6B78),
             backgroundColor: const Color(0xFF1C1C28),
             onRefresh: () => filmNotifier.refresh(),
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (n) {
-                final m = n.metrics;
-                if (m.maxScrollExtent > 0 &&
-                    m.pixels >= m.maxScrollExtent - 240) {
-                  filmNotifier.loadMore();
-                }
-                return false;
-              },
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 16),
-                    sliver: SliverLayoutBuilder(
-                      builder: (context, constraints) {
-                        final cross = isWideScreen ? 3 : 2;
-                        const spacing = 8.0;
-                        final maxW = constraints.crossAxisExtent;
-                        final cellW = (maxW - spacing * (cross - 1)) / cross;
-                        final aspect = filmGridChildAspectRatio(cellW);
-                        return SliverGrid(
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: cross,
-                                mainAxisSpacing: spacing,
-                                crossAxisSpacing: spacing,
-                                childAspectRatio: aspect,
-                              ),
-                          delegate: SliverChildBuilderDelegate((
-                            context,
-                            index,
-                          ) {
-                            final blog = items[index];
-                            return VideoItemView(
-                              key: ValueKey('film_${blog.id ?? index}'),
-                              item: blog,
-                              defaultCover: _defaultVideoCover,
-                            );
-                          }, childCount: items.length),
-                        );
-                      },
-                    ),
-                  ),
-                  if (filmState.isLoadingMore)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(
-                          child: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Color(0xFF6B6B78),
+            child: CustomScrollView(
+              controller: _scrollController,
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: EdgeInsets.fromLTRB(10, topInset + 10, 10, 16),
+                  sliver: SliverLayoutBuilder(
+                    builder: (context, constraints) {
+                      final cross = isWideScreen ? 3 : 2;
+                      const spacing = 8.0;
+                      final maxW = constraints.crossAxisExtent;
+                      final cellW = (maxW - spacing * (cross - 1)) / cross;
+                      final aspect = filmGridChildAspectRatio(
+                        cellW,
+                        isWideScreen: isWideScreen,
+                      );
+                      return SliverGrid(
+                        gridDelegate:
+                            SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: cross,
+                              mainAxisSpacing: spacing,
+                              crossAxisSpacing: spacing,
+                              childAspectRatio: aspect,
                             ),
+                        delegate: SliverChildBuilderDelegate((
+                          context,
+                          index,
+                        ) {
+                          final blog = items[index];
+                          return VideoItemView(
+                            key: ValueKey('film_${blog.id ?? index}'),
+                            item: blog,
+                            defaultCover: _defaultVideoCover,
+                            isWideScreen: isWideScreen,
+                          );
+                        }, childCount: items.length),
+                      );
+                    },
+                  ),
+                ),
+                if (filmState.isLoadingMore)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Color(0xFF6B6B78),
                           ),
                         ),
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
         );
