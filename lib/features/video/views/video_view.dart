@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/views/blog_detail_ui.dart';
@@ -301,6 +302,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
                     adTopInset: adTopInset,
                     isActive: widget.isActive && index == _currentPage,
                     showToolbarControlsRow: isWideScreen,
+                    coverFitMode: VideoCoverFitMode.showFull,
                     onCompleted: () => _openNextCollectionVideo(item),
                   ),
                   BlogDetailMediaOverlay(

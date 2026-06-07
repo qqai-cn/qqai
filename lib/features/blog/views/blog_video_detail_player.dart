@@ -2,6 +2,8 @@ import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/components/blog/blog_danmaku.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
+import 'package:qqai/components/letterbox_backdrop.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/components/video_player/shared_video_playback_session.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
@@ -32,6 +34,9 @@ class BlogVideoDetailPlayer extends StatefulWidget {
   /// 为 false 时底部工具条仅保留进度条（窄屏推荐流等）。
   final bool showToolbarControlsRow;
 
+  /// 留区域用模糊/灰黑底完整展示封面与视频（影视 Tab 推荐流等）。
+  final VideoCoverFitMode coverFitMode;
+
   const BlogVideoDetailPlayer({
     super.key,
     required this.blog,
@@ -43,6 +48,7 @@ class BlogVideoDetailPlayer extends StatefulWidget {
     this.videoAdInitialState,
     this.onVideoAdStateChanged,
     this.showToolbarControlsRow = true,
+    this.coverFitMode = VideoCoverFitMode.fill,
   });
 
   @override
@@ -131,6 +137,7 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
         videoAdInitialState: widget.videoAdInitialState,
         onVideoAdStateChanged: widget.onVideoAdStateChanged,
         showToolbarControlsRow: widget.showToolbarControlsRow,
+        coverFitMode: widget.coverFitMode,
         segmentCount: 1,
         segmentIndex: 0,
       );
@@ -160,6 +167,7 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
                   ? widget.onVideoAdStateChanged
                   : null,
               showToolbarControlsRow: widget.showToolbarControlsRow,
+              coverFitMode: widget.coverFitMode,
               segmentCount: videoUrls.length,
               segmentIndex: _segmentIndex,
               onSegmentSelected: _switchToSegment,
@@ -184,6 +192,7 @@ class _SingleVideoDetailPlayer extends StatefulWidget {
     this.videoAdInitialState,
     this.onVideoAdStateChanged,
     this.showToolbarControlsRow = true,
+    this.coverFitMode = VideoCoverFitMode.fill,
     this.segmentCount = 0,
     this.segmentIndex = 0,
     this.onSegmentSelected,
@@ -199,6 +208,7 @@ class _SingleVideoDetailPlayer extends StatefulWidget {
   final VideoAdPlaybackState? videoAdInitialState;
   final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
   final bool showToolbarControlsRow;
+  final VideoCoverFitMode coverFitMode;
   final int segmentCount;
   final int segmentIndex;
   final ValueChanged<int>? onSegmentSelected;
@@ -318,6 +328,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
     }
     final poster = resolveMediaUrl(resolveBlogCoverUrl(widget.blog));
     final showToolbarDanmakuComposer = MediaQuery.sizeOf(context).width > 900;
+    final letterboxShowFull = widget.coverFitMode == VideoCoverFitMode.showFull;
 
     return VisibilityDetector(
       key: ObjectKey(flickManager),
@@ -354,10 +365,17 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                       flickManager: flickManager,
                       flickVideoWithControls: FlickVideoWithControls(
                         videoFit: BoxFit.contain,
+                        blurredBackdrop: letterboxShowFull,
+                        letterboxBackdropMode:
+                            resolveVideoLetterboxBackdropMode(),
+                        backgroundColor: letterboxShowFull
+                            ? Colors.transparent
+                            : Colors.black,
                         playerLoadingFallback: Positioned.fill(
                           child: VideoLoadingPlaceholder(
                             imageUrl: poster,
                             showPoster: true,
+                            coverFitMode: widget.coverFitMode,
                           ),
                         ),
                         controls: const BlogDetailVideoSurfaceControls(),
@@ -368,6 +386,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                           imageUrl: poster,
                           showPoster: true,
                           showIndicator: false,
+                          coverFitMode: widget.coverFitMode,
                         ),
                         controls: FlickLandscapeControls(),
                         iconThemeData: const IconThemeData(

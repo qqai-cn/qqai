@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/components/video_player/video_loading_placeholder.dart';
@@ -20,6 +21,7 @@ class VisibilityVideoSlot extends StatefulWidget {
   final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
   final VoidCallback? onCompleted;
   final bool autoPlay;
+  final VideoCoverFitMode coverFitMode;
 
   const VisibilityVideoSlot({
     super.key,
@@ -32,6 +34,7 @@ class VisibilityVideoSlot extends StatefulWidget {
     this.onVideoAdStateChanged,
     this.onCompleted,
     this.autoPlay = false,
+    this.coverFitMode = VideoCoverFitMode.fill,
   });
 
   @override
@@ -102,11 +105,13 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
           onVideoAdStateChanged: widget.onVideoAdStateChanged,
           onCompleted: widget.onCompleted,
           autoPlay: widget.autoPlay,
+          coverFitMode: widget.coverFitMode,
         );
       } else {
         slotChild = VideoLoadingPlaceholder(
           imageUrl: widget.imgUrl,
           showPoster: true,
+          coverFitMode: widget.coverFitMode,
         );
       }
 

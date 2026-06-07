@@ -7,6 +7,7 @@ import 'package:qqai/components/blog/creator_header_row.dart';
 import 'package:qqai/components/blog/feed_action_bar.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
 import 'package:qqai/components/blog/visibility_video_slot.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
@@ -268,6 +269,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                         onCompleted: () =>
                             _playNextSegmentIfAvailable(videoUrls.length),
                         autoPlay: _autoPlaySelectedSegment,
+                        coverFitMode: VideoCoverFitMode.showFull,
                       ),
                     ),
                     if (videoUrls.length > 1)

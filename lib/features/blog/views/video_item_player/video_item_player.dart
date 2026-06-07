@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../components/blog/blog_danmaku.dart';
+import '../../../../components/blog/video_cover_fit.dart';
 import '../../../../components/video_player/item_controls.dart';
 import '../../../../components/video_player/qqai_player.dart';
 import '../../../../components/video_player/video_ad_overlay.dart';
@@ -14,6 +15,7 @@ class VideoItemPlayer extends StatefulWidget {
   final ValueChanged<VideoAdPlaybackState>? onVideoAdStateChanged;
   final VoidCallback? onCompleted;
   final bool autoPlay;
+  final VideoCoverFitMode coverFitMode;
 
   const VideoItemPlayer({
     super.key,
@@ -25,6 +27,7 @@ class VideoItemPlayer extends StatefulWidget {
     this.onVideoAdStateChanged,
     this.onCompleted,
     this.autoPlay = false,
+    this.coverFitMode = VideoCoverFitMode.fill,
   });
 
   @override
@@ -51,6 +54,7 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           videoId: widget.videoId,
           fallbackAspectRatio: widget.fallbackAspectRatio,
           showLoadingPoster: true,
+          coverFitMode: widget.coverFitMode,
           sharedPlaybackKey: widget.url,
           videoAdInitialState: widget.videoAdInitialState,
           onVideoAdStateChanged: widget.onVideoAdStateChanged,

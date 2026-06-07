@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/components/blog/video_cover_fit.dart';
+import 'package:qqai/components/letterbox_backdrop.dart';
 import 'package:qqai/components/video_player/safe_flick_video_player.dart';
 import 'package:qqai/components/video_player/shared_video_playback_session.dart';
 import 'package:qqai/components/video_player/video_aspect_ratio.dart';
@@ -23,6 +25,7 @@ class QqaiPlayer extends StatefulWidget {
     this.videoId,
     this.isActive = true,
     this.showLoadingPoster = true,
+    this.coverFitMode = VideoCoverFitMode.fill,
     this.sharedPlaybackKey,
 
     /// 默认 [BoxFit.contain]：父区域横竖与视频横竖不一致时仍完整显示（留边不裁切）。
@@ -42,6 +45,7 @@ class QqaiPlayer extends StatefulWidget {
   final int? videoId;
   final bool isActive;
   final bool showLoadingPoster;
+  final VideoCoverFitMode coverFitMode;
   final String? sharedPlaybackKey;
   final BoxFit videoFit;
   final double fallbackAspectRatio;
@@ -245,6 +249,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
       child: VideoLoadingPlaceholder(
         imageUrl: widget.image,
         showPoster: widget.showLoadingPoster,
+        coverFitMode: widget.coverFitMode,
       ),
     );
   }
@@ -254,6 +259,37 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
       imageUrl: widget.image,
       showPoster: widget.showLoadingPoster,
       showIndicator: false,
+      coverFitMode: widget.coverFitMode,
+    );
+  }
+
+  bool get _useBlurredVideoBackdrop =>
+      widget.coverFitMode == VideoCoverFitMode.showFull &&
+      widget.videoFit == BoxFit.contain;
+
+  Widget _buildFlickPlayer({required bool transparentBackground}) {
+    final controlsShell = FlickVideoWithControls(
+      videoFit: widget.videoFit,
+      blurredBackdrop: _useBlurredVideoBackdrop,
+      letterboxBackdropMode: resolveVideoLetterboxBackdropMode(),
+      backgroundColor: transparentBackground ? Colors.transparent : Colors.black,
+      playerLoadingFallback: _buildLoadingFallback(),
+      controls: widget.controls,
+    );
+
+    return SafeFlickVideoPlayer(
+      flickManager: flickManager,
+      flickVideoWithControls: controlsShell,
+      flickVideoWithControlsFullscreen: FlickVideoWithControls(
+        videoFit: widget.videoFit,
+        playerLoadingFallback: _buildFullscreenLoadingFallback(),
+        controls: FlickLandscapeControls(),
+        iconThemeData: IconThemeData(size: 40, color: Colors.white),
+        textStyle: context.typo.body.copyWith(
+          fontSize: 16,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 
@@ -293,24 +329,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
           onPlaybackStateChanged: widget.onVideoAdStateChanged,
           child: Stack(
             children: [
-              SafeFlickVideoPlayer(
-                flickManager: flickManager,
-                flickVideoWithControls: FlickVideoWithControls(
-                  videoFit: widget.videoFit,
-                  playerLoadingFallback: _buildLoadingFallback(),
-                  controls: widget.controls,
-                ),
-                flickVideoWithControlsFullscreen: FlickVideoWithControls(
-                  videoFit: widget.videoFit,
-                  playerLoadingFallback: _buildFullscreenLoadingFallback(),
-                  controls: FlickLandscapeControls(),
-                  iconThemeData: IconThemeData(size: 40, color: Colors.white),
-                  textStyle: context.typo.body.copyWith(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              _buildFlickPlayer(transparentBackground: _useBlurredVideoBackdrop),
               if (widget.overlayBuilder != null)
                 Positioned.fill(
                   child: widget.overlayBuilder!(context, videoController),

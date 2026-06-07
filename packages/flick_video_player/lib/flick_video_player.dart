@@ -25,7 +25,9 @@ export './src/widgets/flick_current_position.dart';
 export './src/widgets/flick_total_duration.dart';
 export './src/widgets/flick_auto_play_circular_progress.dart';
 export './src/widgets/flick_left_duration.dart';
+export './src/widgets/letterbox_backdrop.dart';
 export './src/widgets/flick_native_video_player.dart';
+export './src/widgets/flick_native_video_player_with_blurred_backdrop.dart';
 
 export './src/widgets/helpers/auto_play_timer_progress/auto_play_timer_progress.dart';
 export './src/widgets/helpers/auto_play_timer_progress/auto_play_timer_progress_colors.dart';

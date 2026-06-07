@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
@@ -40,6 +40,8 @@ class FlickVideoWithControls extends StatefulWidget {
     ),
     this.aspectRatioWhenLoading = 16 / 9,
     this.willVideoPlayerControllerChange = true,
+    this.blurredBackdrop = false,
+    this.letterboxBackdropMode = LetterboxBackdropMode.blur,
     this.closedCaptionTextStyle = const TextStyle(
       color: Colors.white,
       fontSize: 12,
@@ -88,6 +90,11 @@ class FlickVideoWithControls extends StatefulWidget {
   /// If false videoPlayerController will not be updated.
   final bool willVideoPlayerControllerChange;
 
+  /// [videoFit] 为 [BoxFit.contain] 时，用同一视频帧 cover 模糊或灰黑底填充留白。
+  final bool blurredBackdrop;
+
+  final LetterboxBackdropMode letterboxBackdropMode;
+
   get videoPlayerController => null;
 
   @override
@@ -109,6 +116,26 @@ class _FlickVideoWithControlsState extends State<FlickVideoWithControls> {
     super.didChangeDependencies();
   }
 
+  Widget _buildVideoPlayer() {
+    final controller = _videoPlayerController!;
+    if (widget.blurredBackdrop && widget.videoFit == BoxFit.contain) {
+      final backdropColor = widget.backgroundColor.a == 0
+          ? kLetterboxBackdropColor
+          : widget.backgroundColor;
+      return FlickNativeVideoPlayerWithBlurredBackdrop(
+        videoPlayerController: controller,
+        aspectRatioWhenLoading: widget.aspectRatioWhenLoading,
+        backgroundColor: backdropColor,
+        backdropMode: widget.letterboxBackdropMode,
+      );
+    }
+    return FlickNativeVideoPlayer(
+      videoPlayerController: controller,
+      fit: widget.videoFit,
+      aspectRatioWhenLoading: widget.aspectRatioWhenLoading,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     FlickControlManager controlManager =
@@ -125,11 +152,7 @@ class _FlickVideoWithControlsState extends State<FlickVideoWithControls> {
               children: <Widget>[
                 Center(
                   child: _videoPlayerController != null
-                      ? FlickNativeVideoPlayer(
-                          videoPlayerController: _videoPlayerController!,
-                          fit: widget.videoFit,
-                          aspectRatioWhenLoading: widget.aspectRatioWhenLoading,
-                        )
+                      ? _buildVideoPlayer()
                       : widget.playerLoadingFallback,
                 ),
                 Positioned.fill(

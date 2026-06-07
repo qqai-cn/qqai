@@ -7,11 +7,13 @@ class VideoLoadingPlaceholder extends StatelessWidget {
     this.imageUrl,
     this.showPoster = false,
     this.showIndicator = true,
+    this.coverFitMode = VideoCoverFitMode.fill,
   });
 
   final String? imageUrl;
   final bool showPoster;
   final bool showIndicator;
+  final VideoCoverFitMode coverFitMode;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,7 @@ class VideoLoadingPlaceholder extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         shouldShowPoster
-            ? VideoCoverFit(url: imageUrl!)
+            ? VideoCoverFit(url: imageUrl!, mode: coverFitMode)
             : const ColoredBox(color: Colors.black),
         if (showIndicator)
           const Positioned(

@@ -176,7 +176,7 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Positioned.fill(child: VideoCoverFit(url: cover)),
+              Positioned.fill(child: VideoCoverFit(url: cover, mode: VideoCoverFitMode.showFull)),
               if (_showPreview && videoUrl != null)
                 Positioned.fill(
                   child: IgnorePointer(
@@ -186,8 +186,9 @@ class _VideoItemViewState extends ConsumerState<VideoItemView> {
                       url: videoUrl,
                       autoPlay: true,
                       showLoadingPoster: true,
+                      coverFitMode: VideoCoverFitMode.showFull,
                       sharedPlaybackKey: videoUrl,
-                      videoFit: BoxFit.cover,
+                      videoFit: BoxFit.contain,
                       fallbackAspectRatio: 3 / 2,
                     ),
                   ),
