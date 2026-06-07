@@ -57,6 +57,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
   }
 
   Future<BlogPageModelData> _fetchPage(int page) async {
+    // 仅「推荐」按 blogType 过滤（只要图文）；热点 / 关注 / 本地混合展示图文与视频。
     if (_category == HomeBlogTab.hot) {
       return _repo.getHotBlogPageModelDataWithPage(
         page,
@@ -81,6 +82,13 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
         pageSize: _pageSize,
         categary: HomeBlogTab.mutualAid,
         shareType: blogShareTypePublic,
+      );
+    }
+    if (_category == HomeBlogTab.recommend) {
+      return _repo.getBlogPageModelDataWithPage(
+        page,
+        pageSize: _pageSize,
+        blogType: BlogContentType.image,
       );
     }
     return _repo.getBlogPageModelDataWithPage(page, pageSize: _pageSize);

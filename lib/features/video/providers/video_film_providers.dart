@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../components/video_player/video_ad_overlay.dart';
 import '../../blog/data/blog_feed_state_interactions.dart';
 import '../../blog/data/blog_list_patch.dart';
+import '../../blog/data/home_blog_tab.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/repos/blog_repo.dart';
 import '../../blog/providers/blog_feed_list_actions.dart';
@@ -15,7 +16,7 @@ import '../../my/data/repos/profile_repo.dart';
 part 'video_film_providers.freezed.dart';
 part 'video_film_providers.g.dart';
 
-/// 影视 Tab「影视」：SkuuBlog 分页 [/app-api/blog/qqai/page]，[blogType] = 2（视频）。
+/// 影视 Tab「影视」：SkuuBlog 分页，仅 [BlogContentType.video]。
 @freezed
 sealed class VideoFilmState with _$VideoFilmState {
   const factory VideoFilmState({
@@ -32,7 +33,6 @@ sealed class VideoFilmState with _$VideoFilmState {
 class VideoFilmNotifier extends _$VideoFilmNotifier
     implements BlogFeedListActions {
   static const int _pageSize = 12;
-  static const int _blogTypeVideo = 2;
 
   late final IBlogRepo _repo;
   late final IProfileRepo _profileRepo;
@@ -51,7 +51,7 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
       final items = await _repo.getBlogPageModelDataWithPage(
         1,
         pageSize: _pageSize,
-        blogType: _blogTypeVideo,
+        blogType: BlogContentType.video,
       );
       state = state.copyWith(
         blogPageData: AsyncData(items),
@@ -72,7 +72,7 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
       final items = await _repo.getBlogPageModelDataWithPage(
         1,
         pageSize: _pageSize,
-        blogType: _blogTypeVideo,
+        blogType: BlogContentType.video,
       );
       state = state.copyWith(
         blogPageData: AsyncData(items),
@@ -93,7 +93,7 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
       final items = await _repo.getBlogPageModelDataWithPage(
         nextPage,
         pageSize: _pageSize,
-        blogType: _blogTypeVideo,
+        blogType: BlogContentType.video,
       );
       final newItems = items.list ?? [];
       state = state.copyWith(

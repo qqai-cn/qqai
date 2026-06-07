@@ -14,3 +14,9 @@ const double blogNearbyRadiusKmDefault = 50;
 
 /// 分享类型：公开
 const int blogShareTypePublic = 1;
+
+/// 博客内容类型，与后端 [SkuuBlogPageReqVO.blogType] 一致。
+abstract final class BlogContentType {
+  static const int image = 1;
+  static const int video = 2;
+}
