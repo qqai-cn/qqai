@@ -98,6 +98,9 @@ abstract class IBlogRepo {
   /// 按编号获取公开博客详情。
   Future<BlogItem?> fetchBlogItemById(int blogId);
 
+  /// 删除自己的博客。
+  Future<bool> deleteMyBlog(int blogId);
+
   /// 收藏博客（POST）。
   Future<bool> favoriteBlog(int blogId);
 
@@ -348,6 +351,16 @@ class BlogRepo implements IBlogRepo {
     final data = raw['data'];
     if (data is! Map<String, dynamic>) return null;
     return BlogItem.fromJson(normalizeBlogItemJson(data));
+  }
+
+  @override
+  Future<bool> deleteMyBlog(int blogId) async {
+    final response = await ApiBaseClient.safeApiCall(
+      ApiConstant.blogDeletePath(blogId),
+      RequestType.delete,
+    );
+    _parseBooleanData(response.data, errorHint: '删除失败');
+    return true;
   }
 
   @override

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/config/theme/app_typography.dart';
@@ -31,6 +33,7 @@ class DetailSideActionRail extends StatelessWidget {
   final String collectCountLabel;
   final String shareCountLabel;
   final VoidCallback? onShareTap;
+  final FutureOr<void> Function(BlogItem blog)? onBlogDeleted;
   final BlogItem? shareBlog;
   final double bottomOffset;
 
@@ -53,6 +56,7 @@ class DetailSideActionRail extends StatelessWidget {
     this.collectCountLabel = '0',
     this.shareCountLabel = '0',
     this.onShareTap,
+    this.onBlogDeleted,
     this.shareBlog,
   });
 
@@ -197,6 +201,7 @@ class DetailSideActionRail extends StatelessWidget {
               BlogShareButton(
                 blog: shareBlog,
                 onShareChannelTap: onShareTap,
+                onBlogDeleted: onBlogDeleted,
                 iconWidth: actionIconSize,
                 iconColor: Colors.white,
                 tapTargetSize: tapTargetSize,

@@ -221,6 +221,9 @@ class ApiConstant {
   /// 获取博客详情（公开内容）
   static String blogDetailPath(int blogId) => '/app-api/blog/qqai/$blogId';
 
+  /// 删除自己的博客
+  static String blogDeletePath(int blogId) => '/app-api/blog/qqai/$blogId';
+
   /// 收藏 POST、取消收藏 DELETE：`/app-api/blog/qqai/{blogId}/favorite`
   static String blogFavoritePath(int blogId) =>
       '/app-api/blog/qqai/$blogId/favorite';

@@ -305,6 +305,7 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 onLike: () => blogNotifier.onZanTap(item),
                 shareCount: item.shareCount,
                 onShare: () => blogNotifier.onShareTap(item),
+                onBlogDeleted: (_) => blogNotifier.onBlogDeleted(item),
                 shareBlog: item,
                 afterShare: shopProducts.isEmpty
                     ? null

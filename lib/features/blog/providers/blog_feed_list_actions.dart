@@ -13,6 +13,8 @@ abstract interface class BlogFeedListActions {
 
   Future<void> onNotInterestedTap(BlogItem blogItem);
 
+  Future<void> onBlogDeleted(BlogItem blogItem);
+
   void onShareTap(BlogItem blogItem);
 
   void onBlogItemTap(

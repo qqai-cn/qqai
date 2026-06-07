@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../components/video_player/video_ad_overlay.dart';
 import '../../blog/data/blog_feed_state_interactions.dart';
+import '../../blog/data/blog_list_patch.dart';
 import '../../blog/data/models/blog_page_model.dart';
 import '../../blog/data/repos/blog_repo.dart';
 import '../../blog/providers/blog_feed_list_actions.dart';
@@ -139,6 +140,21 @@ class VideoFilmNotifier extends _$VideoFilmNotifier
       blogPageData: state.blogPageData,
       blogItem: blogItem,
       apply: _applyFeedPatch,
+    );
+  }
+
+  @override
+  Future<void> onBlogDeleted(BlogItem blogItem) async {
+    final id = blogItem.id;
+    if (id == null) return;
+    final patched = removeBlogFromFeedLists(
+      state.allItems,
+      state.blogPageData,
+      id,
+    );
+    state = state.copyWith(
+      allItems: patched.allItems,
+      blogPageData: patched.blogPageData,
     );
   }
 

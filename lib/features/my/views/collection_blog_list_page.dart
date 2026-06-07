@@ -193,7 +193,11 @@ class _CollectionBlogListPageState extends ConsumerState<CollectionBlogListPage>
   Future<void> _editCollection() async {
     final collection = _collection;
     if (collection == null) return;
-    final updated = await showEditCollectionDialog(context, ref, collection: collection);
+    final updated = await showEditCollectionDialog(
+      context,
+      ref,
+      collection: collection,
+    );
     if (!updated || !mounted) return;
     await _refresh();
   }
@@ -322,6 +326,20 @@ class _CollectionBlogListPageState extends ConsumerState<CollectionBlogListPage>
       blogItem: blogItem,
       apply: _applyFeedPatch,
     );
+  }
+
+  @override
+  Future<void> onBlogDeleted(BlogItem blogItem) async {
+    final id = blogItem.id;
+    if (id == null) return;
+    if (!mounted) return;
+    setState(() {
+      _allItems = _allItems.where((item) => item.id != id).toList();
+      _items = _filterItems(_allItems, _searchKeyword);
+      _blogPageData = AsyncData(
+        BlogPageModelData(list: _items, total: _items.length),
+      );
+    });
   }
 
   @override

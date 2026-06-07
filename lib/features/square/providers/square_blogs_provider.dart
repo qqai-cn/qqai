@@ -248,6 +248,21 @@ class SquareBlogsNotifier extends _$SquareBlogsNotifier
   Future<void> onNotInterestedTap(BlogItem blogItem) =>
       _markNotInterested(blogItem);
 
+  @override
+  Future<void> onBlogDeleted(BlogItem blogItem) async {
+    final id = blogItem.id;
+    if (id == null) return;
+    final patched = removeBlogFromFeedLists(
+      state.allItems,
+      state.blogPageData,
+      id,
+    );
+    state = state.copyWith(
+      allItems: patched.allItems,
+      blogPageData: patched.blogPageData,
+    );
+  }
+
   Future<void> _markNotInterested(BlogItem blogItem) async {
     try {
       final r = await markNotInterestedForFeedLists(

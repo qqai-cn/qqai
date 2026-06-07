@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/blog_danmaku.dart';
 import 'package:qqai/components/blog/detail_side_action_rail.dart';
 import 'package:qqai/config/theme/app_typography.dart';
@@ -293,6 +294,11 @@ class _BlogDetailMediaOverlayState
           onFollowTap: () => actions.onCareTap(item),
           onCollectTap: () => unawaited(_onCollectTap(item)),
           onShareTap: () => actions.onShareTap(item),
+          onBlogDeleted: (_) {
+            if (context.canPop()) {
+              context.pop();
+            }
+          },
           onCommentTap: widget.onCommentTap,
         ),
       ],

@@ -313,6 +313,21 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
     }
   }
 
+  @override
+  Future<void> onBlogDeleted(BlogItem blogItem) async {
+    final id = blogItem.id;
+    if (id == null) return;
+    final patched = removeBlogFromFeedLists(
+      state.allItems,
+      state.blogPageData,
+      id,
+    );
+    state = state.copyWith(
+      allItems: patched.allItems,
+      blogPageData: patched.blogPageData,
+    );
+  }
+
   Future<void> _toggleCollect(BlogItem blogItem) async {
     await runToggleCollectOnFeedState(
       repo: _repo,

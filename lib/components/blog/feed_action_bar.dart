@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:qqai/components/myshare_page.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
@@ -14,6 +16,7 @@ class FeedActionBar extends StatelessWidget {
   final VoidCallback onLike;
   final VoidCallback onComment;
   final VoidCallback? onShare;
+  final FutureOr<void> Function(BlogItem blog)? onBlogDeleted;
   final BlogItem? shareBlog;
   final List<PopupMenuEntry<String>> Function(BuildContext context) menuBuilder;
   final Widget? shareButton;
@@ -30,6 +33,7 @@ class FeedActionBar extends StatelessWidget {
     this.commentCount,
     this.shareCount,
     this.onShare,
+    this.onBlogDeleted,
     this.shareBlog,
     this.shareButton,
     this.afterShare,
@@ -59,12 +63,13 @@ class FeedActionBar extends StatelessWidget {
               context,
               blog: shareBlog,
               onShareChannelTap: onShare,
+              onBlogDeleted: onBlogDeleted,
             ),
             icon: Icon(Icons.share, color: actionColor),
             label: Text(_shareLabel()),
           )
         else
-          shareButton ?? MySharePage(),
+          shareButton ?? MySharePage(onBlogDeleted: onBlogDeleted),
         ?afterShare,
         const Spacer(),
         PopupMenuButton<String>(
