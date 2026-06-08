@@ -75,6 +75,7 @@ class MediaDetailShell extends StatelessWidget {
   Widget _buildSidePanel() {
     return sidePanelBlog != null
         ? BlogDetailSidePanel(
+            key: ValueKey('blog_side_panel_${sidePanelBlog!.id}'),
             blog: sidePanelBlog!,
             onClose: onCommentClose,
             initialTabIndex: sidePanelInitialTabIndex,

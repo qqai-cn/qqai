@@ -3,11 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
+import 'package:qqai/features/blog/data/blog_detail_swipe_playlist.dart';
 import 'package:qqai/features/blog/views/blog_video_detail_player.dart';
 
 import '../../blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/data/blog_browse_record.dart';
-import '../../my/data/repos/profile_repo.dart';
 import '../../../router/app_routes.dart';
 import 'package:qqai/components/blog/media_detail_shell.dart';
 
@@ -36,57 +36,111 @@ class BlogVideoDetailView extends ConsumerStatefulWidget {
 
 class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
   late final BlogDetailCommentSidePanelLifecycle _commentSidePanel;
-  bool _openingNextCollectionVideo = false;
-  bool _keepCommentPanelStateOnDispose = false;
   bool _wideCommentPanelClosed = false;
   bool _allowPopWithResult = false;
   VideoAdPlaybackState? _videoAdState;
 
+  List<BlogItem> _playlist = [];
+  bool _playlistLoading = true;
+  String? _playlistError;
+  PageController? _pageController;
+  int _currentPage = 0;
+  int? _entryBlogId;
+
   @override
   void initState() {
     super.initState();
+    _entryBlogId = widget.blogItem.id;
     _videoAdState = widget.videoAdInitialState;
     _commentSidePanel = BlogDetailCommentSidePanelLifecycle(
       ref.read(commentProvider.notifier),
     );
     _commentSidePanel.bind();
     recordBlogBrowseSilently(ref, widget.blogItem.id);
-    _selectCollectionTabOnEnter();
+    _loadPlaylist();
+  }
+
+  @override
+  void didUpdateWidget(BlogVideoDetailView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.blogItem.id != widget.blogItem.id) {
+      _entryBlogId = widget.blogItem.id;
+      _loadPlaylist();
+    }
   }
 
   @override
   void dispose() {
-    if (!_keepCommentPanelStateOnDispose) {
-      _commentSidePanel.unbind();
-    }
+    _pageController?.dispose();
+    _commentSidePanel.unbind();
     super.dispose();
+  }
+
+  Future<void> _loadPlaylist() async {
+    setState(() {
+      _playlistLoading = true;
+      _playlistError = null;
+    });
+    try {
+      final commentState = ref.read(commentProvider);
+      final collection = effectiveBlogDetailCollection(
+        widget.blogItem,
+        commentState.selectedCollection,
+      );
+      final items = await loadBlogDetailSwipePlaylist(
+        ref: ref,
+        currentBlog: widget.blogItem,
+        collection: collection,
+      );
+      if (!mounted) return;
+      final initialIndex = blogDetailSwipeInitialIndex(items, widget.blogItem);
+      _pageController?.dispose();
+      setState(() {
+        _playlist = items;
+        _playlistLoading = false;
+        _currentPage = initialIndex;
+        _pageController = PageController(initialPage: initialIndex);
+      });
+      _selectCollectionTabIfNeeded(items[initialIndex]);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _playlistLoading = false;
+        _playlistError = e.toString();
+        _playlist = [widget.blogItem];
+        _currentPage = 0;
+        _pageController?.dispose();
+        _pageController = PageController();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final commentState = ref.watch(commentProvider);
     final commentNotifier = ref.read(commentProvider.notifier);
-    final blog = widget.blogItem;
     final isWideScreen = 1.sw > 900;
     final showCommentPanel =
         commentState.showComment || (isWideScreen && !_wideCommentPanelClosed);
-    final sidePanelCollection = _effectiveCollection(
-      blog,
+    final currentBlog = _currentBlog;
+    final sidePanelCollection = effectiveBlogDetailCollection(
+      currentBlog,
       commentState.selectedCollection,
     );
     final showToolbarControlsRow = 1.sw > 800;
     final toolbarHeight = blogDetailVideoToolbarHeight(
       showControlsRow: showToolbarControlsRow,
     );
+
     return PopScope(
       canPop: _allowPopWithResult,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop || _keepCommentPanelStateOnDispose) return;
+        if (didPop) return;
         _popWithVideoAdState();
       },
       child: MediaDetailShell(
         showCommentPanel: showCommentPanel,
-        sidePanelBlog: blog,
+        sidePanelBlog: currentBlog,
         popResultBuilder: () => _videoAdState,
         onCommentClose: () => _toggleCommentPanel(
           commentNotifier,
@@ -96,38 +150,149 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
         sidePanelInitialTabIndex: commentState.selectedTabIndex,
         sidePanelCollection: sidePanelCollection,
         sidePanelCollectionVideoDetailRoute: widget.detailRoute,
-        content: Stack(
-          fit: StackFit.expand,
-          children: [
-            BlogVideoDetailPlayer(
-              blog: blog,
-              mediaHeroTag: widget.mediaHeroTag,
-              videoAdInitialState: widget.videoAdInitialState,
-              onVideoAdStateChanged: (state) {
-                _videoAdState = state;
-              },
-              showToolbarControlsRow: showToolbarControlsRow,
-              onCompleted: () => _openNextCollectionVideo(sidePanelCollection),
-            ),
-            BlogDetailMediaOverlay(
-              blog: blog,
-              bottomInset: toolbarHeight,
-              onCommentTap: () => _toggleCommentPanel(
-                commentNotifier,
-                panelVisible: showCommentPanel,
-                isWideScreen: isWideScreen,
-              ),
-            ),
-          ],
+        content: _buildContent(
+          commentNotifier: commentNotifier,
+          showCommentPanel: showCommentPanel,
+          isWideScreen: isWideScreen,
+          showToolbarControlsRow: showToolbarControlsRow,
+          toolbarHeight: toolbarHeight,
         ),
       ),
     );
   }
 
-  void _popWithVideoAdState() {
-    if (!_keepCommentPanelStateOnDispose) {
-      ref.read(commentProvider.notifier).dontShowComment();
+  BlogItem get _currentBlog {
+    if (_playlist.isEmpty) return widget.blogItem;
+    return _playlist[_currentPage.clamp(0, _playlist.length - 1)];
+  }
+
+  Widget _buildContent({
+    required CommentNotifier commentNotifier,
+    required bool showCommentPanel,
+    required bool isWideScreen,
+    required bool showToolbarControlsRow,
+    required double toolbarHeight,
+  }) {
+    if (_playlistLoading) {
+      return const Center(child: CircularProgressIndicator());
     }
+    if (_playlistError != null && _playlist.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                _playlistError!,
+                style: const TextStyle(color: Colors.white70),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            TextButton(onPressed: _loadPlaylist, child: const Text('重试')),
+          ],
+        ),
+      );
+    }
+
+    final controller = _pageController;
+    if (controller == null || _playlist.isEmpty) {
+      return _buildVideoPage(
+        blog: widget.blogItem,
+        pageIndex: 0,
+        commentNotifier: commentNotifier,
+        showCommentPanel: showCommentPanel,
+        isWideScreen: isWideScreen,
+        showToolbarControlsRow: showToolbarControlsRow,
+        toolbarHeight: toolbarHeight,
+      );
+    }
+
+    return PageView.builder(
+      controller: controller,
+      scrollDirection: Axis.vertical,
+      physics: _playlist.length > 1
+          ? const AlwaysScrollableScrollPhysics()
+          : const NeverScrollableScrollPhysics(),
+      itemCount: _playlist.length,
+      onPageChanged: _onPageChanged,
+      itemBuilder: (context, index) {
+        return _buildVideoPage(
+          blog: _playlist[index],
+          pageIndex: index,
+          commentNotifier: commentNotifier,
+          showCommentPanel: showCommentPanel,
+          isWideScreen: isWideScreen,
+          showToolbarControlsRow: showToolbarControlsRow,
+          toolbarHeight: toolbarHeight,
+        );
+      },
+    );
+  }
+
+  Widget _buildVideoPage({
+    required BlogItem blog,
+    required int pageIndex,
+    required CommentNotifier commentNotifier,
+    required bool showCommentPanel,
+    required bool isWideScreen,
+    required bool showToolbarControlsRow,
+    required double toolbarHeight,
+  }) {
+    final isActive = pageIndex == _currentPage;
+    final useEntryHero = isActive && blog.id != null && blog.id == _entryBlogId;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        BlogVideoDetailPlayer(
+          key: ValueKey('blog_detail_video_${blog.id ?? pageIndex}'),
+          blog: blog,
+          mediaHeroTag: useEntryHero ? widget.mediaHeroTag : null,
+          videoAdInitialState: useEntryHero ? widget.videoAdInitialState : null,
+          onVideoAdStateChanged: isActive
+              ? (state) {
+                  _videoAdState = state;
+                }
+              : null,
+          isActive: isActive,
+          showToolbarControlsRow: showToolbarControlsRow,
+          onCompleted: () => _goToNextPage(pageIndex),
+        ),
+        BlogDetailMediaOverlay(
+          blog: blog,
+          bottomInset: toolbarHeight,
+          onCommentTap: () => _toggleCommentPanel(
+            commentNotifier,
+            panelVisible: showCommentPanel,
+            isWideScreen: isWideScreen,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _onPageChanged(int index) {
+    if (index == _currentPage) return;
+    setState(() => _currentPage = index);
+    final blog = _playlist[index];
+    recordBlogBrowseSilently(ref, blog.id);
+    _selectCollectionTabIfNeeded(blog);
+  }
+
+  void _goToNextPage(int currentIndex) {
+    if (currentIndex + 1 >= _playlist.length) return;
+    final controller = _pageController;
+    if (controller == null || !controller.hasClients) return;
+    _showAutoPlayNextTip();
+    controller.animateToPage(
+      currentIndex + 1,
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _popWithVideoAdState() {
+    ref.read(commentProvider.notifier).dontShowComment();
     setState(() => _allowPopWithResult = true);
     context.pop(_videoAdState);
   }
@@ -148,69 +313,16 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
     notifier.changeShowComment();
   }
 
-  BlogItemCollection? _effectiveCollection(
-    BlogItem blog,
-    BlogItemCollection? selected,
-  ) {
+  void _selectCollectionTabIfNeeded(BlogItem blog) {
     final collections = blog.collections ?? const <BlogItemCollection>[];
-    if (collections.isEmpty) return null;
-    final selectedId = selected?.id;
-    if (selectedId != null) {
-      for (final collection in collections) {
-        if (collection.id == selectedId) return collection;
-      }
-    }
-    return collections.first;
-  }
-
-  void _selectCollectionTabOnEnter() {
-    final collections =
-        widget.blogItem.collections ?? const <BlogItemCollection>[];
     if (collections.isEmpty) return;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!context.mounted) return;
-      final commentState = ref.read(commentProvider);
-      final collection = _effectiveCollection(
-        widget.blogItem,
-        commentState.selectedCollection,
-      );
-      if (collection != null) {
-        ref.read(commentProvider.notifier).selectCollectionTab(collection);
-      }
-    });
-  }
-
-  Future<void> _openNextCollectionVideo(BlogItemCollection? collection) async {
-    final collectionId = collection?.id;
-    final currentId = widget.blogItem.id;
-    if (_openingNextCollectionVideo ||
-        collection == null ||
-        collectionId == null ||
-        currentId == null) {
-      return;
-    }
-    final currentCollection = collection;
-    _openingNextCollectionVideo = true;
-    try {
-      final detail = await ref
-          .read(profileRepoProvider)
-          .getCollectionDetail(collectionId);
-      final videos = (detail.blogs ?? [])
-          .where((b) => b.id != null && b.blogType == 2)
-          .toList();
-      final currentIndex = videos.indexWhere((b) => b.id == currentId);
-      if (!mounted || currentIndex < 0 || currentIndex + 1 >= videos.length) {
-        return;
-      }
-      final nextBlog = videos[currentIndex + 1].copyWith(
-        collections: [currentCollection],
-      );
-      _showAutoPlayNextTip();
-      _keepCommentPanelStateOnDispose = true;
-      context.pushReplacement(widget.detailRoute, extra: nextBlog);
-    } finally {
-      _openingNextCollectionVideo = false;
+    final commentState = ref.read(commentProvider);
+    final collection = effectiveBlogDetailCollection(
+      blog,
+      commentState.selectedCollection,
+    );
+    if (collection != null) {
+      ref.read(commentProvider.notifier).selectCollectionTab(collection);
     }
   }
 
@@ -220,9 +332,9 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: const Text('即将自动播放下一集'),
-          duration: const Duration(milliseconds: 1600),
+        const SnackBar(
+          content: Text('即将自动播放下一集'),
+          duration: Duration(milliseconds: 1600),
           behavior: SnackBarBehavior.floating,
         ),
       );

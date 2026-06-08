@@ -21,6 +21,14 @@ import '../../comment/providers/comment_providers.dart';
 import 'blog_avatar_preview.dart';
 import 'blog_shop_product_display.dart';
 
+/// 窄屏且底部评论栏打开时，隐藏视频上的作者/文案/右侧操作条。
+bool blogDetailShouldHideMediaOverlay({
+  required bool showComment,
+  required double screenWidth,
+  double wideScreenMinWidth = 900,
+}) =>
+    showComment && screenWidth <= wideScreenMinWidth;
+
 /// 详情侧栏操作数：只显示数字（无数量时显示 0）。
 String blogDetailCountLabel(int? count) {
   final n = count ?? 0;
@@ -214,11 +222,15 @@ class BlogDetailMediaOverlay extends ConsumerStatefulWidget {
   final VoidCallback onCommentTap;
   final double bottomInset;
 
+  /// 宽屏阈值（逻辑像素）；窄于此且评论打开时隐藏覆盖层。详情页默认 900，影视推荐流为 800。
+  final double wideScreenMinWidth;
+
   const BlogDetailMediaOverlay({
     super.key,
     required this.blog,
     required this.onCommentTap,
     this.bottomInset = 0,
+    this.wideScreenMinWidth = 900,
   });
 
   @override
@@ -256,6 +268,16 @@ class _BlogDetailMediaOverlayState
 
   @override
   Widget build(BuildContext context) {
+    final commentState = ref.watch(commentProvider);
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    if (blogDetailShouldHideMediaOverlay(
+      showComment: commentState.showComment,
+      screenWidth: screenWidth,
+      wideScreenMinWidth: widget.wideScreenMinWidth,
+    )) {
+      return const SizedBox.shrink();
+    }
+
     final item = _currentItem(ref);
     final auth = ref.watch(authProvider);
     final avatarUrl = blogCreatorAvatarUrl(item, currentUserId: auth.userId);

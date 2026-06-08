@@ -313,6 +313,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
                   BlogDetailMediaOverlay(
                     blog: item,
                     bottomInset: toolbarHeight,
+                    wideScreenMinWidth: 800,
                     onCommentTap: () =>
                         ref.read(commentProvider.notifier).changeShowComment(),
                   ),

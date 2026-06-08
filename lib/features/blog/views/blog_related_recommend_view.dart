@@ -180,7 +180,11 @@ class _BlogCollectionVideosViewState
           .read(profileRepoProvider)
           .getCollectionDetail(collectionId);
       final videos = (detail.blogs ?? [])
-          .where((b) => b.id != null && b.blogType == 2)
+          .where(
+            (b) =>
+                b.id != null &&
+                b.blogType == widget.currentBlog.blogType,
+          )
           .toList();
       if (!mounted) return;
       setState(() {
@@ -201,12 +205,14 @@ class _BlogCollectionVideosViewState
     if (collection != null) {
       ref.read(commentProvider.notifier).openCollectionPanel(collection);
     }
-    context.pushReplacement(
-      widget.detailRoute,
-      extra: item.copyWith(
-        collections: collection == null ? item.collections : [collection],
-      ),
+    final extra = item.copyWith(
+      collections: collection == null ? item.collections : [collection],
     );
+    if (item.blogType == 1) {
+      context.pushReplacement(Routes.blogImgDetailView, extra: extra);
+      return;
+    }
+    context.pushReplacement(widget.detailRoute, extra: extra);
   }
 
   @override
