@@ -65,6 +65,7 @@ abstract class IBlogRepo {
     int? squareId,
     int? userId,
     int? shareType,
+    String? keyword,
     double? latitude,
     double? longitude,
     double? radiusKm,
@@ -191,6 +192,7 @@ class BlogRepo implements IBlogRepo {
     int? squareId,
     int? userId,
     int? shareType,
+    String? keyword,
     double? latitude,
     double? longitude,
     double? radiusKm,
@@ -201,6 +203,10 @@ class BlogRepo implements IBlogRepo {
     if (squareId != null) query['squareId'] = squareId;
     if (userId != null) query['userId'] = userId;
     if (shareType != null) query['shareType'] = shareType;
+    final trimmedKeyword = keyword?.trim();
+    if (trimmedKeyword != null && trimmedKeyword.isNotEmpty) {
+      query['keyword'] = trimmedKeyword;
+    }
     if (latitude != null && longitude != null) {
       query['latitude'] = latitude;
       query['longitude'] = longitude;

@@ -17,6 +17,7 @@ class MySharedPref {
   static const String _refreshTokenKey = 'refresh_token';
   static const String _userIdKey = 'user_id';
   static const String _watchHistoryKey = 'watch_history_v1';
+  static const String _searchHistoryKey = 'search_history_v1';
   static const String _currentLocalKey = 'current_local';
   static const String _lightThemeKey = 'is_theme_light';
   static const String _themePreferenceKey = 'theme_preference';
@@ -129,5 +130,12 @@ class MySharedPref {
 
   static String getWatchHistoryJson() =>
       _sharedPreferences.getString(_watchHistoryKey) ?? '[]';
+
+  /// 商品搜索历史（最近在前，最多保留 20 条）
+  static List<String> getSearchHistory() =>
+      _sharedPreferences.getStringList(_searchHistoryKey) ?? const [];
+
+  static Future<void> setSearchHistory(List<String> history) =>
+      _sharedPreferences.setStringList(_searchHistoryKey, history);
 
 }
