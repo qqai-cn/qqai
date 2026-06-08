@@ -649,6 +649,33 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '图片预览',
+                style: context.typo.body.copyWith(
+                  color: FabuPublishTheme.text(context),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            _buildVideoMusicButton(state, notifier),
+            TextButton.icon(
+              onPressed: () => _pickMedia(notifier),
+              icon: Icon(
+                Icons.add,
+                size: 18,
+                color: FabuPublishTheme.infoBlue(context),
+              ),
+              label: const Text('继续添加'),
+              style: TextButton.styleFrom(
+                foregroundColor: FabuPublishTheme.infoBlue(context),
+              ),
+            ),
+          ],
+        ),
+        8.verticalSpace,
         Align(
           alignment: Alignment.centerLeft,
           child: Wrap(

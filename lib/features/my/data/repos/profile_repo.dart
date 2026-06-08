@@ -24,6 +24,7 @@ abstract class IProfileRepo {
     int pageNo, {
     int pageSize = 12,
     int? blogType,
+    int? categary,
   });
 
   Future<BlogPageModelData> getUserWorksPage(
@@ -31,6 +32,7 @@ abstract class IProfileRepo {
     int pageNo, {
     int pageSize = 12,
     int? blogType,
+    int? categary,
   });
 
   Future<BlogPageModelData> getMyLikesPage(int pageNo, {int pageSize = 12});
@@ -208,9 +210,11 @@ class ProfileRepo implements IProfileRepo {
     int pageNo, {
     int pageSize = 12,
     int? blogType,
+    int? categary,
   }) async {
     final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (blogType != null) query['blogType'] = blogType;
+    if (categary != null) query['categary'] = categary;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.PROFILE_MY_WORKS_PAGE,
       RequestType.get,
@@ -225,9 +229,11 @@ class ProfileRepo implements IProfileRepo {
     int pageNo, {
     int pageSize = 12,
     int? blogType,
+    int? categary,
   }) async {
     final query = <String, dynamic>{'pageNo': pageNo, 'pageSize': pageSize};
     if (blogType != null) query['blogType'] = blogType;
+    if (categary != null) query['categary'] = categary;
     final Response response = await ApiBaseClient.safeApiCall(
       ApiConstant.profileUserWorksPagePath(userId),
       RequestType.get,

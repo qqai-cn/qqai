@@ -16,7 +16,7 @@ import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_error_message.dart';
 
-/// 「日常」Tab：我的/他人作品分页，仅 [blogType] = 1（图文），按时间线分组展示。
+/// 「日常」Tab：我的/他人作品分页，仅 [BlogCategary.dynamic]（动态类），按时间线分组展示。
 class MyBlogView extends ConsumerStatefulWidget {
   final int tabIndex;
   final int currentIndex;
@@ -36,7 +36,6 @@ class MyBlogView extends ConsumerStatefulWidget {
 class _MyBlogViewState extends ConsumerState<MyBlogView>
     with AutomaticKeepAliveClientMixin {
   static const int _pageSize = 10;
-  static const int _blogTypeImage = 1;
   static const int _kCategory = 8;
   static const double _minColumnWidth = 400;
 
@@ -84,13 +83,13 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
         userId,
         pageNo,
         pageSize: _pageSize,
-        blogType: _blogTypeImage,
+        categary: BlogCategary.dynamic,
       );
     }
     return repo.getMyWorksPage(
       pageNo,
       pageSize: _pageSize,
-      blogType: _blogTypeImage,
+      categary: BlogCategary.dynamic,
     );
   }
 
@@ -321,7 +320,7 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
           ),
           SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(child: Text('暂无图文动态', style: context.typo.body)),
+            child: Center(child: Text('暂无日常动态', style: context.typo.body)),
           ),
         ],
       );
