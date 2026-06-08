@@ -366,25 +366,24 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
       );
     }
     final followed = _followed == true;
-    return SizedBox(
-      width: 96,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          FollowButton(
-            followed: followed,
-            onTap: _followLoading ? null : _toggleFollow,
-            loading: _followLoading,
-          ),
-          const SizedBox(height: 8),
-          AppActionOutlineButton(
-            label: '发消息',
-            onTap: _messageLoading ? null : _openSingleConversation,
-            loading: _messageLoading,
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        FollowButton(
+          followed: followed,
+          onTap: _followLoading ? null : _toggleFollow,
+          loading: _followLoading,
+          horizontalPadding: followed ? 12 : 10,
+        ),
+        const SizedBox(height: 8),
+        AppActionOutlineButton(
+          label: '发消息',
+          onTap: _messageLoading ? null : _openSingleConversation,
+          loading: _messageLoading,
+          horizontalPadding: 12,
+        ),
+      ],
     );
   }
 
@@ -646,10 +645,13 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                   ],
                                 ),
                               ],
-                              if (_isSelf) ...[
-                                const SizedBox(height: 5),
-                                const DouyinServiceStrip(),
-                              ],
+                              if (_isSelf)
+                                Expanded(
+                                  child: Align(
+                                    alignment: Alignment.center,
+                                    child: const DouyinServiceStrip(),
+                                  ),
+                                ),
                             ],
                           ),
                       ),

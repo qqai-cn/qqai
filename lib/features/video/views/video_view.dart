@@ -132,7 +132,9 @@ class _VideoViewState extends ConsumerState<VideoView>
       drawer: isWideScreen ? null : const DrawerPage(),
       body: TabBarView(
         controller: _tabController,
-        physics: const NeverScrollableScrollPhysics(),
+        physics: isWideScreen
+            ? const ClampingScrollPhysics()
+            : const NeverScrollableScrollPhysics(),
         children: List.generate(2, _tabBody),
       ),
     );

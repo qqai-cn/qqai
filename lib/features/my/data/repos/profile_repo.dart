@@ -61,6 +61,12 @@ abstract class IProfileRepo {
     int? status,
   });
 
+  /// 我的博客挂载商品分页（团购带货，按 SPU 去重）。
+  Future<BlogShopProductPageData> getMyBlogMountedProductsPage(
+    int pageNo, {
+    int pageSize = 12,
+  });
+
   Future<BlogShopProductPageData> getUserShopProductsPage(
     int userId,
     int pageNo, {
@@ -362,6 +368,28 @@ class ProfileRepo implements IProfileRepo {
     final data = response.data;
     if (data is! Map<String, dynamic>) {
       throw '商品接口返回格式错误';
+    }
+    _ensureEnvelope(data);
+    final inner = data['data'];
+    if (inner is! Map<String, dynamic>) {
+      return const BlogShopProductPageData(list: [], total: 0);
+    }
+    return BlogShopProductPageData.fromJson(inner);
+  }
+
+  @override
+  Future<BlogShopProductPageData> getMyBlogMountedProductsPage(
+    int pageNo, {
+    int pageSize = 12,
+  }) async {
+    final Response response = await ApiBaseClient.safeApiCall(
+      ApiConstant.PROFILE_MY_BLOG_MOUNTED_PRODUCTS_PAGE,
+      RequestType.get,
+      queryParameters: {'pageNo': pageNo, 'pageSize': pageSize},
+    );
+    final data = response.data;
+    if (data is! Map<String, dynamic>) {
+      throw '带货商品接口返回格式错误';
     }
     _ensureEnvelope(data);
     final inner = data['data'];

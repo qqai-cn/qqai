@@ -117,6 +117,8 @@ class ApiConstant {
       '/app-api/blog/qqai/profile/my/shop/products';
   static const String PROFILE_MY_SHOP_PRODUCTS_PAGE =
       '/app-api/blog/qqai/profile/my/shop/products/page';
+  static const String PROFILE_MY_BLOG_MOUNTED_PRODUCTS_PAGE =
+      '/app-api/blog/qqai/profile/my/blog-mounted-products/page';
   static const String MALL_PRODUCTS_PAGE = '/app-api/product/spu/page';
   static const String MALL_PRODUCT_MY_PAGE = '/app-api/product/spu/my/page';
   static String mallProductUserPagePath(int userId) =>
