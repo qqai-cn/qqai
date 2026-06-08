@@ -15,6 +15,7 @@ import 'package:qqai/util/media_url.dart';
 import '../../data/models/address_entity.dart';
 import '../../blog/data/repos/blog_repo.dart';
 import '../../tool/video_cover_style_preview.dart';
+import '../../tool/video_cover_sampling.dart';
 import '../../tool/video_cover_tool.dart';
 import '../providers/fabu_providers.dart';
 import '../theme/fabu_publish_theme.dart';
@@ -34,6 +35,16 @@ enum FabuPublishType {
 
   final String title;
   final bool allowImages;
+
+  /// 后端 categary：1 动态 / 2 视频 / 3 求助
+  int get categary => switch (this) {
+    FabuPublishType.dynamic => 1,
+    FabuPublishType.video => 2,
+    FabuPublishType.help => 3,
+  };
+
+  /// 后端 blogType：视频 Tab 为 2，其余为 1
+  int get blogType => this == FabuPublishType.video ? 2 : 1;
 }
 
 class FabuPublishPage extends ConsumerStatefulWidget {
@@ -62,6 +73,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
   final _videoPreviewController = LocalQqaiPlayerController();
   bool _showWidgetCoverPreview = false;
   int _coverDurationSeconds = 60;
+  int? _defaultVideoCoverSeekMs;
   final _videoSegmentsPageController = PageController();
   int _currentVideoSegmentIndex = 0;
 
@@ -727,6 +739,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                           videoPlayerController: index == 0
                               ? _videoPreviewController
                               : null,
+                          initialVideoSeekMs: index == 0
+                              ? _defaultVideoCoverSeekMs
+                              : null,
                           onRemove: () => notifier.removeVideoFile(file),
                         ),
                       ),
@@ -1181,6 +1196,16 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     if (videoFiles.isNotEmpty) {
       await notifier.addVideoFiles(videoFiles);
       _fillTitleFromFileIfEmpty(videoFiles.first);
+      final durationSeconds = await notifier.getVideoDurationSeconds(
+        videoFiles.first,
+      );
+      if (mounted && durationSeconds != null && durationSeconds > 0) {
+        setState(() {
+          _defaultVideoCoverSeekMs = defaultVideoCoverTimeMs(
+            durationSeconds * 1000,
+          );
+        });
+      }
       return;
     }
 

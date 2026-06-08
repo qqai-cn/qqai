@@ -16,7 +16,7 @@ import '../../my/data/repos/profile_repo.dart';
 part 'video_recommend_providers.freezed.dart';
 part 'video_recommend_providers.g.dart';
 
-/// 影视 Tab「推荐」：SkuuBlog 分页，仅 [BlogContentType.video]。
+/// 影视 Tab「推荐」：SkuuBlog 分页，仅 [BlogCategary.video]。
 @freezed
 sealed class VideoRecommendState with _$VideoRecommendState {
   const factory VideoRecommendState({
@@ -53,7 +53,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
       final items = await _repo.getBlogPageModelDataWithPage(
         1,
         pageSize: _pageSize,
-        blogType: BlogContentType.video,
+        categary: BlogCategary.video,
       );
       if (!ref.mounted) return;
       state = state.copyWith(
@@ -76,7 +76,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
       final items = await _repo.getBlogPageModelDataWithPage(
         1,
         pageSize: _pageSize,
-        blogType: BlogContentType.video,
+        categary: BlogCategary.video,
       );
       if (!ref.mounted) return;
       state = state.copyWith(
@@ -99,7 +99,7 @@ class VideoRecommendNotifier extends _$VideoRecommendNotifier
       final items = await _repo.getBlogPageModelDataWithPage(
         nextPage,
         pageSize: _pageSize,
-        blogType: BlogContentType.video,
+        categary: BlogCategary.video,
       );
       if (!ref.mounted) return;
       final newItems = items.list ?? [];

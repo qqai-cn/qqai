@@ -62,12 +62,8 @@ class _FabuViewState extends ConsumerState<FabuView>
     try {
       await fabuNotifier.publishBlog(
         squareId: widget.squareId,
-        categary: publishType == FabuPublishType.help ? 2 : 1,
-        blogType:
-            publishType == FabuPublishType.video ||
-                fabuState.videoFiles.isNotEmpty
-            ? 2
-            : 1,
+        categary: publishType.categary,
+        blogType: publishType.blogType,
         addressId: fabuState.selAddressEntity?.id,
         address: fabuState.selAddressEntity?.name,
         shareType: fabuState.whoCanSeeSel,

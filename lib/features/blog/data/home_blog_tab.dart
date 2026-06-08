@@ -5,8 +5,15 @@ abstract final class HomeBlogTab {
   static const int follow = 2;
   static const int local = 3;
 
-  /// 互助/求助分类，对应后端 `categary = 2`。
+  /// 首页「互助」Tab 的 [blogProvider] 分类键（关注流走独立 Provider）。
   static const int mutualAid = 2;
+}
+
+/// 后端博客 categary：1 动态 / 2 视频 / 3 求助。
+abstract final class BlogCategary {
+  static const int dynamic = 1;
+  static const int video = 2;
+  static const int help = 3;
 }
 
 /// 附近公开博客默认半径（千米），与接口默认一致。

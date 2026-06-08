@@ -22,6 +22,7 @@ import '../../../util/web_blob_helpers.dart';
 import '../../../components/blog/network_image_carousel_pages.dart';
 import '../../../components/video_player/local_qqai_player.dart';
 import '../../data/models/address_entity.dart';
+import '../../tool/video_cover_sampling.dart';
 import '../../tool/video_cover_tool.dart';
 import '../data/repos/fabu_repo.dart';
 import '../data/models/fabu_model.dart';
@@ -655,6 +656,18 @@ class FabuNotifier extends _$FabuNotifier {
     int? shareType,
     int? rewardAmount,
   }) async {
+    final blogTitle = (title ?? state.blogTitle).trim();
+    final blogContent = (content ?? state.textContent).trim();
+    final hasResources =
+        (resources?.trim().isNotEmpty ?? false) ||
+        state.files.isNotEmpty ||
+        state.videoFiles.isNotEmpty;
+    if (blogTitle.isEmpty && blogContent.isEmpty && !hasResources) {
+      const message = '请填写标题、内容或上传资源后再发布';
+      state = state.copyWith(error: message);
+      throw StateError(message);
+    }
+
     state = state.copyWith(
       isLoading: true,
       isUploading: true,
@@ -670,8 +683,6 @@ class FabuNotifier extends _$FabuNotifier {
         publishStage: 'AI 正在提交并发布内容...',
       );
       final blogRepo = ref.read(blogRepoProvider);
-      final blogContent = content ?? state.textContent;
-      final blogTitle = (title ?? state.blogTitle).trim();
       final blogResources = uploadResult.mediaUrls.isNotEmpty
           ? uploadResult.mediaUrls.join(',')
           : resources;
@@ -744,7 +755,7 @@ class FabuNotifier extends _$FabuNotifier {
       );
       await blogRepo.createBlog(
         req,
-        rewardAmount: rewardAmount ?? (categary == 2 ? state.aixinType : null),
+        rewardAmount: rewardAmount ?? (categary == 3 ? state.aixinType : null),
       );
       resetPublishForm();
       state = state.copyWith(
@@ -883,8 +894,8 @@ class FabuNotifier extends _$FabuNotifier {
   }
 
   Future<XFile?> _generateVideoCoverXFile(XFile video) async {
+    final durationMs = await _videoDurationMs(video);
     try {
-      final durationMs = await _videoDurationMs(video);
       final bytes = await generateStyledVideoCoverBytes(
         videoPath: video.path,
         durationMs: durationMs,
@@ -897,6 +908,7 @@ class FabuNotifier extends _$FabuNotifier {
     try {
       final bytes = await generateVideoCoverBytes(
         videoPath: video.path,
+        timeMs: defaultVideoCoverTimeMs(durationMs),
         imageFormat: ImageFormat.JPEG,
       );
       return _xFileFromCoverBytes(bytes);

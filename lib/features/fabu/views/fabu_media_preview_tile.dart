@@ -18,6 +18,7 @@ class FabuMediaPreviewTile extends StatelessWidget {
     required this.onRemove,
     this.videoPlayerController,
     this.enableVideoPlayer = true,
+    this.initialVideoSeekMs,
   });
 
   final XFile file;
@@ -25,6 +26,7 @@ class FabuMediaPreviewTile extends StatelessWidget {
   final VoidCallback onRemove;
   final LocalQqaiPlayerController? videoPlayerController;
   final bool enableVideoPlayer;
+  final int? initialVideoSeekMs;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class FabuMediaPreviewTile extends StatelessWidget {
             key: ValueKey(file.path),
             file: file,
             playerController: videoPlayerController,
+            initialSeekMs: initialVideoSeekMs,
             controls: const ItemControls(),
             webKeyDownHandler: flickWebKeyDownHandlerWithoutSpacePlay,
           )

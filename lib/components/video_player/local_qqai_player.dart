@@ -42,6 +42,7 @@ class LocalQqaiPlayer extends StatefulWidget {
     required this.controls,
     this.playerController,
     this.autoPlay = false,
+    this.initialSeekMs,
     this.videoFit = BoxFit.contain,
     this.fallbackAspectRatio = 15 / 9,
     this.webKeyDownHandler,
@@ -51,6 +52,9 @@ class LocalQqaiPlayer extends StatefulWidget {
   final Widget controls;
   final LocalQqaiPlayerController? playerController;
   final bool autoPlay;
+
+  /// 初始化后定位到此时间点（毫秒），用于发布页默认封面帧预览。
+  final int? initialSeekMs;
   final BoxFit videoFit;
   final double fallbackAspectRatio;
   final FlickWebKeyHandler? webKeyDownHandler;
@@ -87,6 +91,14 @@ class _LocalQqaiPlayerState extends State<LocalQqaiPlayer> {
       if (!mounted) {
         await controller.dispose();
         return;
+      }
+      final seekMs = widget.initialSeekMs;
+      if (seekMs != null && seekMs > 0) {
+        final durationMs = controller.value.duration.inMilliseconds;
+        if (durationMs > 0) {
+          final clamped = seekMs.clamp(0, durationMs - 1);
+          await controller.seekTo(Duration(milliseconds: clamped));
+        }
       }
       final manager = FlickManager(
         videoPlayerController: controller,

@@ -80,7 +80,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
       return _repo.getBlogPageModelDataWithPage(
         page,
         pageSize: _pageSize,
-        categary: HomeBlogTab.mutualAid,
+        categary: BlogCategary.help,
         shareType: blogShareTypePublic,
       );
     }
@@ -88,7 +88,7 @@ class BlogNotifier extends _$BlogNotifier implements BlogFeedListActions {
       return _repo.getBlogPageModelDataWithPage(
         page,
         pageSize: _pageSize,
-        blogType: BlogContentType.image,
+        categary: BlogCategary.dynamic,
       );
     }
     return _repo.getBlogPageModelDataWithPage(page, pageSize: _pageSize);
