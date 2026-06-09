@@ -41,7 +41,7 @@ final class FabuNotifierProvider
   }
 }
 
-String _$fabuNotifierHash() => r'50bf79f49853bb3f4139788331d3e3af87a3a8af';
+String _$fabuNotifierHash() => r'b0bf103d2353c72221ae4089836fecf93a943be7';
 
 abstract class _$FabuNotifier extends $Notifier<FabuState> {
   FabuState build();

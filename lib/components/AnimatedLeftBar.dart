@@ -10,6 +10,7 @@ import 'package:qqai/config/theme/shell_nav_colors.dart';
 
 class Animatedleftbar extends StatefulWidget {
   final List<BarItem> barItems;
+  final List<int>? badgeCounts;
   final Duration animationDuration;
   final Function onBarTap;
   final BarStyle barStyle;
@@ -19,6 +20,7 @@ class Animatedleftbar extends StatefulWidget {
 
   Animatedleftbar({
     required this.barItems,
+    this.badgeCounts,
     this.animationDuration = const Duration(milliseconds: 500),
     required this.onBarTap,
     required this.barStyle,
@@ -45,6 +47,10 @@ class _Animatedleftbar extends State<Animatedleftbar>
     for (int i = 0; i < widget.barItems.length; i++) {
       BarItem item = widget.barItems[i];
       bool isSelected = widget.selectedBarIndex == i;
+      final badgeCount = (widget.badgeCounts != null &&
+              i < widget.badgeCounts!.length)
+          ? widget.badgeCounts![i]
+          : 0;
       barItems.add(
         InkWell(
           splashColor: Colors.transparent,
@@ -73,19 +79,30 @@ class _Animatedleftbar extends State<Animatedleftbar>
             ),
             child: Row(
               children: <Widget>[
-                SvgPicture.asset(
-                  ShellNavColors.iconPath(
-                    context,
-                    isSelected: isSelected,
-                    selectPath: item.selectPath,
-                    unSelectPath: item.unSelectPath,
-                  ),
-                  width: 40,
-                  height: 40,
-                  colorFilter: ShellNavColors.iconColorFilter(
-                    context,
-                    isSelected: isSelected,
-                  ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    SvgPicture.asset(
+                      ShellNavColors.iconPath(
+                        context,
+                        isSelected: isSelected,
+                        selectPath: item.selectPath,
+                        unSelectPath: item.unSelectPath,
+                      ),
+                      width: 40,
+                      height: 40,
+                      colorFilter: ShellNavColors.iconColorFilter(
+                        context,
+                        isSelected: isSelected,
+                      ),
+                    ),
+                    if (badgeCount > 0)
+                      Positioned(
+                        right: -4,
+                        top: -4,
+                        child: _Badge(count: badgeCount),
+                      ),
+                  ],
                 ),
                 const SizedBox(width: 2.0),
                 Visibility(
@@ -146,5 +163,35 @@ class _Animatedleftbar extends State<Animatedleftbar>
     } else {
       throw 'Could not launch $url';
     }
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = count > 99 ? '99+' : '$count';
+    return Container(
+      constraints: const BoxConstraints(minWidth: 17, minHeight: 17),
+      padding: EdgeInsets.symmetric(horizontal: count > 9 ? 4 : 0),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE53935),
+        borderRadius: BorderRadius.circular(9),
+        border: Border.all(color: Colors.white, width: 1.5),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 9,
+          fontWeight: FontWeight.w700,
+          height: 1,
+        ),
+      ),
+    );
   }
 }

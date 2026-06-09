@@ -15,6 +15,7 @@ import '../widgets/lazy_tab_slot.dart';
 import '../../../friends/chat_page_list.dart';
 import '../../../friends/create_group_chat_dialog.dart';
 import '../../../friends/friends_page.dart';
+import '../../../friends/providers/friend_providers.dart';
 
 class MessagePage extends ConsumerStatefulWidget {
   const MessagePage({super.key, this.initialConversationId});
@@ -63,6 +64,8 @@ class _MessagePageState extends ConsumerState<MessagePage>
     if (_showBottomRefreshStatus) return;
     setState(() => _showBottomRefreshStatus = true);
     ref.invalidate(chatConversationsProvider);
+    ref.invalidate(friendPendingIncomingProvider);
+    ref.invalidate(groupInvitationPendingIncomingProvider);
     try {
       await Future<void>.delayed(const Duration(milliseconds: 650));
     } finally {

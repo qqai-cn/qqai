@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/chat/global_chat_socket_service.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
+import 'package:qqai/features/friends/providers/friend_providers.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_router.dart';
 import 'package:qqai/router/app_routes.dart';
@@ -22,6 +23,7 @@ class _GlobalChatRealtimeScopeState
     extends ConsumerState<GlobalChatRealtimeScope> {
   StreamSubscription<GlobalRtcSignalEvent>? _rtcSubscription;
   StreamSubscription<GlobalChatMessageEvent>? _messageSubscription;
+  StreamSubscription<GlobalSocketStatus>? _statusSubscription;
   final Set<String> _pendingInviteCallIds = <String>{};
   late final GlobalChatSocketService _socket;
   String? _connectedToken;
@@ -32,7 +34,19 @@ class _GlobalChatRealtimeScopeState
     _socket = ref.read(globalChatSocketServiceProvider);
     _rtcSubscription = _socket.rtcSignalStream.listen(_handleRtcSignal);
     _messageSubscription = _socket.messageStream.listen(_handleNewMessage);
+    _statusSubscription = _socket.statusStream.listen(_handleSocketStatus);
     _syncSocketWithAuth(ref.read(authProvider));
+  }
+
+  void _refreshMessageTabIndicators() {
+    ref.invalidate(chatConversationsProvider);
+    ref.invalidate(friendPendingIncomingProvider);
+    ref.invalidate(groupInvitationPendingIncomingProvider);
+  }
+
+  void _handleSocketStatus(GlobalSocketStatus status) {
+    if (!mounted || status != GlobalSocketStatus.connected) return;
+    _refreshMessageTabIndicators();
   }
 
   void _syncSocketWithAuth(AuthState auth) {
@@ -52,6 +66,7 @@ class _GlobalChatRealtimeScopeState
   void dispose() {
     _rtcSubscription?.cancel();
     _messageSubscription?.cancel();
+    _statusSubscription?.cancel();
     super.dispose();
   }
 
@@ -59,6 +74,10 @@ class _GlobalChatRealtimeScopeState
   Widget build(BuildContext context) {
     ref.listen(authProvider, (previous, next) {
       _syncSocketWithAuth(next);
+      if (next.isAuthenticated &&
+          (previous == null || !previous.isAuthenticated)) {
+        _refreshMessageTabIndicators();
+      }
     });
     return widget.child;
   }
@@ -74,7 +93,7 @@ class _GlobalChatRealtimeScopeState
     final conversationId = event.dto.conversationId;
     if (conversationId == null) return;
 
-    ref.invalidate(chatConversationsProvider);
+    _refreshMessageTabIndicators();
   }
 
   Future<void> _showIncomingVideoCall(GlobalRtcSignalEvent signal) async {

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../providers/auth_providers.dart';
+import '../../friends/providers/friend_providers.dart';
 import '../data/models/chat_models.dart';
 import '../data/repos/chat_repo.dart';
 
@@ -34,4 +36,32 @@ Future<List<GroupInvitationPendingDto>> groupInvitationPendingOutgoing(
   Ref ref,
 ) async {
   return ref.watch(chatRepoProvider).listPendingOutgoingGroupInvitations();
+}
+
+/// 底部「消息」Tab 未读：会话未读 + 待处理好友申请 + 待处理群邀请。
+@riverpod
+int messageTabUnreadCount(Ref ref) {
+  final auth = ref.watch(authProvider);
+  if (!auth.isAuthenticated) return 0;
+
+  final conversationUnread = ref.watch(chatConversationsProvider).maybeWhen(
+    data: (conversations) => conversations.fold<int>(
+      0,
+      (sum, conversation) => sum + (conversation.unreadCount ?? 0),
+    ),
+    orElse: () => 0,
+  );
+
+  final pendingFriends = ref.watch(friendPendingIncomingProvider).maybeWhen(
+    data: (list) => list.length,
+    orElse: () => 0,
+  );
+
+  final pendingGroups =
+      ref.watch(groupInvitationPendingIncomingProvider).maybeWhen(
+        data: (list) => list.length,
+        orElse: () => 0,
+      );
+
+  return conversationUnread + pendingFriends + pendingGroups;
 }

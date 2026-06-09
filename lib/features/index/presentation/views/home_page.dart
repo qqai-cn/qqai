@@ -9,7 +9,6 @@ import '../../../../config/theme/shell_nav_colors.dart';
 import '../../../../features/chat/providers/chat_providers.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/main_shell_tab_reselect_provider.dart';
-import '../../../../providers/auth_providers.dart';
 import '../widgets/drawer_page.dart';
 import '../widgets/lazy_shell_tab.dart';
 import '../widgets/wide_sidebar_profile_entry.dart';
@@ -48,14 +47,14 @@ class _HomePageState extends ConsumerState<HomePage> {
     final homeState = ref.watch(homeProvider);
     final bool isWideScreen = 1.sw > 800;
     final shell = widget.navigationShell;
-    final messageUnreadCount = _messageUnreadCount();
+    final messageUnreadCount = ref.watch(messageTabUnreadCountProvider);
 
     return MainShellIndexScope(
       currentIndex: shell.currentIndex,
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         drawer: isWideScreen ? const DrawerPage() : null,
-        body: isWideScreen ? getWideScreen(homeState, shell) : shell,
+        body: isWideScreen ? getWideScreen(homeState, shell, messageUnreadCount) : shell,
         bottomNavigationBar: !isWideScreen
             ? SafeArea(
                 child: AnimatedBottomBar(
@@ -72,23 +71,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  int _messageUnreadCount() {
-    final auth = ref.watch(authProvider);
-    if (!auth.isAuthenticated) {
-      return 0;
-    }
-    return ref
-        .watch(chatConversationsProvider)
-        .maybeWhen(
-          data: (conversations) => conversations.fold<int>(
-            0,
-            (sum, conversation) => sum + (conversation.unreadCount ?? 0),
-          ),
-          orElse: () => 0,
-        );
-  }
-
-  Widget getWideScreen(HomeState homeState, StatefulNavigationShell shell) {
+  Widget getWideScreen(
+    HomeState homeState,
+    StatefulNavigationShell shell,
+    int messageUnreadCount,
+  ) {
     return Row(
       children: [
         Drawer(
@@ -110,6 +97,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: Animatedleftbar(
                       selectedBarIndex: shell.currentIndex,
                       barItems: HomeNotifier.barItems,
+                      badgeCounts: [0, 0, messageUnreadCount, 0],
                       onBarTap: _onMainTabTap,
                       animationDuration: const Duration(milliseconds: 150),
                       barStyle: BarStyle(fontSize: 15.0, iconSize: 20.0),

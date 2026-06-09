@@ -220,3 +220,50 @@ final class GroupInvitationPendingOutgoingProvider
 
 String _$groupInvitationPendingOutgoingHash() =>
     r'ea6ce4c494ec317403a85d63eebcb4eff2dbed77';
+
+/// 底部「消息」Tab 未读：会话未读 + 待处理好友申请 + 待处理群邀请。
+
+@ProviderFor(messageTabUnreadCount)
+const messageTabUnreadCountProvider = MessageTabUnreadCountProvider._();
+
+/// 底部「消息」Tab 未读：会话未读 + 待处理好友申请 + 待处理群邀请。
+
+final class MessageTabUnreadCountProvider
+    extends $FunctionalProvider<int, int, int>
+    with $Provider<int> {
+  /// 底部「消息」Tab 未读：会话未读 + 待处理好友申请 + 待处理群邀请。
+  const MessageTabUnreadCountProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'messageTabUnreadCountProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$messageTabUnreadCountHash();
+
+  @$internal
+  @override
+  $ProviderElement<int> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  int create(Ref ref) {
+    return messageTabUnreadCount(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(int value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<int>(value),
+    );
+  }
+}
+
+String _$messageTabUnreadCountHash() =>
+    r'c454be7287b9e5844e6288005ad2d0d0405dea9b';
