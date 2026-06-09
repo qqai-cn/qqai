@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/blog/network_image_carousel_pages.dart';
 import 'package:qqai/components/blog/video_cover_fit.dart';
+import 'package:qqai/components/refresh_status_badge.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/blog/data/models/blog_page_model.dart';
 import 'package:qqai/features/blog/views/blog_detail_ui.dart';
@@ -18,6 +19,7 @@ import '../../index/presentation/widgets/brand_drawer_leading.dart';
 import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/presentation/widgets/lazy_tab_slot.dart';
 import '../../index/providers/home_providers.dart';
+import '../../index/providers/main_shell_tab_reselect_provider.dart';
 import '../providers/video_play_queue_provider.dart';
 import '../providers/video_recommend_providers.dart';
 
@@ -33,6 +35,7 @@ class VideoView extends ConsumerStatefulWidget {
 class _VideoViewState extends ConsumerState<VideoView>
     with TickerProviderStateMixin, LazyTabMountMixin {
   late TabController _tabController;
+  bool _showBottomRefreshStatus = false;
 
   static const _tabPlaceholder = ColoredBox(
     color: Colors.black,
@@ -71,9 +74,39 @@ class _VideoViewState extends ConsumerState<VideoView>
     super.dispose();
   }
 
+  Future<void> _refreshFirstTabWithStatus() async {
+    if (_showBottomRefreshStatus) return;
+    setState(() => _showBottomRefreshStatus = true);
+    try {
+      await Future.wait([
+        ref.read(videoRecommendProvider.notifier).refresh(),
+        Future<void>.delayed(const Duration(milliseconds: 650)),
+      ]);
+    } finally {
+      if (mounted) {
+        setState(() => _showBottomRefreshStatus = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isWideScreen = 1.sw > 800;
+
+    ref.listen(mainShellTabActivationProvider(1), (
+      MainShellTabActivation? previous,
+      next,
+    ) {
+      if (!context.mounted) return;
+      if (previous == null || next.nonce <= previous.nonce) return;
+      lazyTabMount(0);
+      if (_tabController.index != 0) {
+        _tabController.animateTo(0);
+      }
+      if (next.refresh) {
+        Future.microtask(_refreshFirstTabWithStatus);
+      }
+    });
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -100,20 +133,20 @@ class _VideoViewState extends ConsumerState<VideoView>
             labelPadding: const EdgeInsets.symmetric(horizontal: 10),
             padding: EdgeInsets.zero,
             onTap: lazyTabMount,
-          tabs: HomeNotifier.videoTabItems.map((e) {
-            return Tab(
-              child: Container(
-                height: 40,
-                alignment: Alignment.center,
-                child: Text(
-                  e,
-                  style: context.typo.sectionTitle.copyWith(
-                    color: Colors.white,
+            tabs: HomeNotifier.videoTabItems.map((e) {
+              return Tab(
+                child: Container(
+                  height: 40,
+                  alignment: Alignment.center,
+                  child: Text(
+                    e,
+                    style: context.typo.sectionTitle.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
           ),
         ),
         actions: [
@@ -130,12 +163,29 @@ class _VideoViewState extends ConsumerState<VideoView>
         ],
       ),
       drawer: isWideScreen ? null : const DrawerPage(),
-      body: TabBarView(
-        controller: _tabController,
-        physics: isWideScreen
-            ? const ClampingScrollPhysics()
-            : const NeverScrollableScrollPhysics(),
-        children: List.generate(2, _tabBody),
+      body: Stack(
+        children: [
+          TabBarView(
+            controller: _tabController,
+            physics: isWideScreen
+                ? const ClampingScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
+            children: List.generate(2, _tabBody),
+          ),
+          Positioned(
+            top: kToolbarHeight,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: _showBottomRefreshStatus
+                    ? const RefreshStatusBadge()
+                    : const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -210,8 +260,9 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
   @override
   Widget build(BuildContext context) {
     final isWideScreen = 1.sw > 800;
-    final toolbarHeight =
-        blogDetailVideoToolbarHeight(showControlsRow: isWideScreen);
+    final toolbarHeight = blogDetailVideoToolbarHeight(
+      showControlsRow: isWideScreen,
+    );
     final recommendState = ref.watch(videoRecommendProvider);
     final recommendNotifier = ref.read(videoRecommendProvider.notifier);
     final playQueue = ref.watch(videoPlayQueueProvider);

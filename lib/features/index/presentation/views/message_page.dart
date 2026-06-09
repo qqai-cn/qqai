@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:qqai/components/refresh_status_badge.dart';
 
 import '../../../../components/qq_tab_bar.dart';
 import '../../../../config/theme/app_action_colors.dart';
+import '../../../chat/providers/chat_providers.dart';
 import '../../providers/home_providers.dart';
+import '../../providers/main_shell_tab_reselect_provider.dart';
 import '../widgets/app_bar_publish_search_actions.dart';
 import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
@@ -25,6 +28,7 @@ class MessagePage extends ConsumerStatefulWidget {
 class _MessagePageState extends ConsumerState<MessagePage>
     with TickerProviderStateMixin, LazyTabMountMixin {
   late TabController _tabController;
+  bool _showBottomRefreshStatus = false;
 
   @override
   void initState() {
@@ -55,9 +59,38 @@ class _MessagePageState extends ConsumerState<MessagePage>
     super.dispose();
   }
 
+  Future<void> _refreshFirstTabWithStatus() async {
+    if (_showBottomRefreshStatus) return;
+    setState(() => _showBottomRefreshStatus = true);
+    ref.invalidate(chatConversationsProvider);
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 650));
+    } finally {
+      if (mounted) {
+        setState(() => _showBottomRefreshStatus = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isWideScreen = 1.sw > 800;
+
+    ref.listen(mainShellTabActivationProvider(2), (
+      MainShellTabActivation? previous,
+      next,
+    ) {
+      if (!context.mounted) return;
+      if (previous == null || next.nonce <= previous.nonce) return;
+      lazyTabMount(0);
+      if (_tabController.index != 0) {
+        _tabController.animateTo(0);
+      }
+      if (next.refresh) {
+        Future.microtask(_refreshFirstTabWithStatus);
+      }
+    });
+
     return Scaffold(
       appBar: AppBar(
         leadingWidth: isWideScreen ? 148 : 48,
@@ -87,12 +120,29 @@ class _MessagePageState extends ConsumerState<MessagePage>
         ],
       ),
       drawer: isWideScreen ? null : const DrawerPage(),
-      body: TabBarView(
-        controller: _tabController,
-        physics: isWideScreen
-            ? const NeverScrollableScrollPhysics()
-            : const PageScrollPhysics(),
-        children: List.generate(2, _tabBody),
+      body: Stack(
+        children: [
+          TabBarView(
+            controller: _tabController,
+            physics: isWideScreen
+                ? const NeverScrollableScrollPhysics()
+                : const PageScrollPhysics(),
+            children: List.generate(2, _tabBody),
+          ),
+          Positioned(
+            top: kToolbarHeight,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: _showBottomRefreshStatus
+                    ? const RefreshStatusBadge()
+                    : const SizedBox.shrink(),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -27,7 +27,14 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   void _onMainTabTap(int index) {
     final shell = widget.navigationShell;
-    if (shell.currentIndex == index) {
+    final refresh = shell.currentIndex == index;
+    ref
+        .read(mainShellTabActivationProvider(index).notifier)
+        .state = MainShellTabActivation(
+      nonce: ref.read(mainShellTabActivationProvider(index)).nonce + 1,
+      refresh: refresh,
+    );
+    if (refresh) {
       ref.read(mainShellTabReselectProvider(index).notifier).bump();
       return;
     }
@@ -48,9 +55,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         drawer: isWideScreen ? const DrawerPage() : null,
-        body: isWideScreen
-            ? getWideScreen(homeState, shell)
-            : shell,
+        body: isWideScreen ? getWideScreen(homeState, shell) : shell,
         bottomNavigationBar: !isWideScreen
             ? SafeArea(
                 child: AnimatedBottomBar(
@@ -72,7 +77,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (!auth.isAuthenticated) {
       return 0;
     }
-    return ref.watch(chatConversationsProvider).maybeWhen(
+    return ref
+        .watch(chatConversationsProvider)
+        .maybeWhen(
           data: (conversations) => conversations.fold<int>(
             0,
             (sum, conversation) => sum + (conversation.unreadCount ?? 0),

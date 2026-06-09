@@ -55,12 +55,19 @@ class _IndexPageState extends ConsumerState<IndexPage>
     }
   }
 
-  Future<void> _refreshCurrentHomeTab() async {
-    await homeTabConfigs[_tabController.index].onReselect?.call(ref);
-  }
-
   Future<void> _refreshHomeTabAt(int index) async {
     await homeTabConfigs[index].onReselect?.call(ref);
+  }
+
+  void _resetToFirstHomeTab({required bool refresh}) {
+    lazyTabMount(0);
+    if (_tabController.index != 0) {
+      _activeHomeTabIndex = 0;
+      _tabController.animateTo(0);
+    }
+    if (refresh) {
+      Future.microtask(() => _refreshHomeTabAt(0));
+    }
   }
 
   @override
@@ -72,10 +79,13 @@ class _IndexPageState extends ConsumerState<IndexPage>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(mainShellTabReselectProvider(0), (int? previous, int next) {
+    ref.listen(mainShellTabActivationProvider(0), (
+      MainShellTabActivation? previous,
+      next,
+    ) {
       if (!context.mounted) return;
-      if (previous != null && next > previous) {
-        _refreshCurrentHomeTab();
+      if (previous != null && next.nonce > previous.nonce) {
+        _resetToFirstHomeTab(refresh: next.refresh);
       }
     });
 

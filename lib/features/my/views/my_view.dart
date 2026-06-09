@@ -4,12 +4,14 @@ import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qqai/components/refresh_status_badge.dart';
 import 'package:qqai/components/profile/profile_banner_overlay_buttons.dart';
 import 'package:qqai/components/label.dart';
 import 'package:qqai/components/app_action_outline_button.dart';
 import 'package:qqai/components/follow_button.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
 
@@ -45,6 +47,8 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
   bool? _followed;
   bool _followLoading = false;
   bool _messageLoading = false;
+  int _workTabRefreshNonce = 0;
+  bool _showBottomRefreshStatus = false;
 
   static const String _defaultCover =
       'https://file.qqai.cn/qqai/2025/09/1.webp';
@@ -83,6 +87,21 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
   void _handleTabChange() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _refreshWorkTabWithStatus() async {
+    if (_showBottomRefreshStatus) return;
+    setState(() {
+      _showBottomRefreshStatus = true;
+      _workTabRefreshNonce++;
+    });
+    try {
+      await Future<void>.delayed(const Duration(milliseconds: 650));
+    } finally {
+      if (mounted) {
+        setState(() => _showBottomRefreshStatus = false);
+      }
+    }
   }
 
   Future<void> _loadFollowState() async {
@@ -420,6 +439,20 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(mainShellTabActivationProvider(3), (
+      MainShellTabActivation? previous,
+      next,
+    ) {
+      if (!context.mounted) return;
+      if (previous == null || next.nonce <= previous.nonce) return;
+      if (_tabController.index != 0) {
+        _tabController.animateTo(0);
+      }
+      if (next.refresh) {
+        Future.microtask(_refreshWorkTabWithStatus);
+      }
+    });
+
     final pageAsync = _isSelf
         ? ref.watch(myPageProfileProvider)
         : ref.watch(userPageProfileProvider(widget.userId!));
@@ -433,9 +466,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
         : _defaultCover;
     final avatarUrl = page?.avatar?.trim();
     final hasCustomIntro = page?.intro?.trim().isNotEmpty == true;
-    final intro = hasCustomIntro
-        ? page!.intro!.trim()
-        : '这个人很懒，还没有写签名。';
+    final intro = hasCustomIntro ? page!.intro!.trim() : '这个人很懒，还没有写签名。';
     final targetUserId = widget.userId;
 
     final isWideScreen = MediaQuery.sizeOf(context).width > 800;
@@ -454,263 +485,293 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
     final expandedHeight =
         bannerHeight + infoHeight + toolbarHeight + tabBarHeight;
 
-    return NestedScrollView(
-      controller: _scrollviewController,
-      headerSliverBuilder: (context, boxIsScrolled) {
-        return [
-          SliverOverlapAbsorber(
-            handle: NestedScrollView.sliverOverlapAbsorberHandleFor(context),
-            sliver: SliverAppBar(
-              pinned: true,
-              floating: false,
-              primary: false,
-              toolbarHeight: toolbarHeight,
-              elevation: 0.5,
-              forceElevated: true,
-              expandedHeight: expandedHeight,
-              automaticallyImplyLeading: false,
-              backgroundColor: AppActionColors.surface(context),
-              flexibleSpace: FlexibleSpaceBar(
-                collapseMode: CollapseMode.pin,
-                background: Column(
-                  children: [
-                    SizedBox(
-                      height: bannerHeight,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          DecoratedBox(
-                            decoration: BoxDecoration(
-                              image: DecorationImage(
-                                image: CachedNetworkImageProvider(bannerUrl),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          if (useBannerOverlayNav)
-                            Positioned(
-                              top: 0,
-                              left: 0,
-                              right: 0,
-                              child: SafeArea(
-                                bottom: false,
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (showBackButton)
-                                      ProfileBannerOverlayBackButton(
-                                        onPressed: () => context.pop(),
-                                      )
-                                    else
-                                      const SizedBox(width: 48),
-                                    if (showMoreButton)
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          right: 4,
-                                        ),
-                                        child: Builder(
-                                          builder: (menuContext) =>
-                                              _buildOtherUserMoreMenu(
-                                                menuContext,
-                                              ),
-                                        ),
-                                      ),
-                                  ],
+    return Stack(
+      children: [
+        NestedScrollView(
+          controller: _scrollviewController,
+          headerSliverBuilder: (context, boxIsScrolled) {
+            return [
+              SliverOverlapAbsorber(
+                handle: NestedScrollView.sliverOverlapAbsorberHandleFor(
+                  context,
+                ),
+                sliver: SliverAppBar(
+                  pinned: true,
+                  floating: false,
+                  primary: false,
+                  toolbarHeight: toolbarHeight,
+                  elevation: 0.5,
+                  forceElevated: true,
+                  expandedHeight: expandedHeight,
+                  automaticallyImplyLeading: false,
+                  backgroundColor: AppActionColors.surface(context),
+                  flexibleSpace: FlexibleSpaceBar(
+                    collapseMode: CollapseMode.pin,
+                    background: Column(
+                      children: [
+                        SizedBox(
+                          height: bannerHeight,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  image: DecorationImage(
+                                    image: CachedNetworkImageProvider(
+                                      bannerUrl,
+                                    ),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
-                            ),
-                          Center(
-                            child: Container(
-                              color: Colors.transparent,
-                              height: 0.2.sh - 50,
-                              child: Row(
-                                children: <Widget>[
-                                  const SizedBox(width: 20),
-                                  buildDetailAvatar(
-                                    avatarUrl: avatarUrl,
-                                    size: 100,
-                                    context: context,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Column(
+                              if (useBannerOverlayNav)
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  child: SafeArea(
+                                    bottom: false,
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        const Spacer(),
-                                        SelectableText(
-                                          displayName,
-                                          style: context.typo.pageTitle
-                                              .copyWith(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.bold,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                          maxLines: 1,
-                                        ),
-                                        if (subtitle.isNotEmpty)
-                                          SelectableText(
-                                            subtitle,
-                                            style: context.typo.cardSubtitle
-                                                .copyWith(
-                                                  color: Colors.white,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                            maxLines: 1,
+                                      children: [
+                                        if (showBackButton)
+                                          ProfileBannerOverlayBackButton(
+                                            onPressed: () => context.pop(),
+                                          )
+                                        else
+                                          const SizedBox(width: 48),
+                                        if (showMoreButton)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 4,
+                                            ),
+                                            child: Builder(
+                                              builder: (menuContext) =>
+                                                  _buildOtherUserMoreMenu(
+                                                    menuContext,
+                                                  ),
+                                            ),
                                           ),
-                                        const Spacer(),
                                       ],
                                     ),
                                   ),
+                                ),
+                              Center(
+                                child: Container(
+                                  color: Colors.transparent,
+                                  height: 0.2.sh - 50,
+                                  child: Row(
+                                    children: <Widget>[
+                                      const SizedBox(width: 20),
+                                      buildDetailAvatar(
+                                        avatarUrl: avatarUrl,
+                                        size: 100,
+                                        context: context,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            const Spacer(),
+                                            SelectableText(
+                                              displayName,
+                                              style: context.typo.pageTitle
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                    fontWeight: FontWeight.bold,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                              maxLines: 1,
+                                            ),
+                                            if (subtitle.isNotEmpty)
+                                              SelectableText(
+                                                subtitle,
+                                                style: context.typo.cardSubtitle
+                                                    .copyWith(
+                                                      color: Colors.white,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                maxLines: 1,
+                                              ),
+                                            const Spacer(),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: infoHeight,
+                          child: Container(
+                            color: AppActionColors.surface(context),
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      _statColumn(
+                                        formatCompactCount(
+                                          page?.likeReceivedCount,
+                                        ),
+                                        '获赞',
+                                      ),
+                                      const SizedBox(width: 20),
+                                      _statColumn(
+                                        formatCompactCount(
+                                          page?.mutualFollowCount,
+                                        ),
+                                        '互关',
+                                      ),
+                                      const SizedBox(width: 20),
+                                      _statColumn(
+                                        formatCompactCount(
+                                          page?.followingCount,
+                                        ),
+                                        '关注',
+                                        onTap: _isSelf
+                                            ? () => context.push(Routes.care)
+                                            : null,
+                                      ),
+                                      const SizedBox(width: 20),
+                                      _statColumn(
+                                        formatCompactCount(page?.followerCount),
+                                        '粉丝',
+                                      ),
+                                      const Spacer(),
+                                      _buildActionButton(),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 5),
+                                  _ProfileIntroText(
+                                    text: intro,
+                                    maxLines: 2,
+                                    expandable: hasCustomIntro,
+                                    onTapExpand: () =>
+                                        _showFullIntroSheet(context, intro),
+                                  ),
+                                  if (hasProfileMeta) ...[
+                                    const SizedBox(height: 5),
+                                    Row(
+                                      spacing: 10,
+                                      children: [
+                                        if (page?.address?.trim().isNotEmpty ==
+                                            true)
+                                          Label(
+                                            content: formatAddressForDisplay(
+                                              page!.address,
+                                              empty: '',
+                                            ),
+                                            backgroundColor:
+                                                AppActionColors.borderSubtle(
+                                                  context,
+                                                ),
+                                          ),
+                                        if (page?.age != null)
+                                          Label(
+                                            content: '${page!.age}岁',
+                                            backgroundColor:
+                                                AppActionColors.borderSubtle(
+                                                  context,
+                                                ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                  if (_isSelf)
+                                    Expanded(
+                                      child: Align(
+                                        alignment: Alignment.center,
+                                        child: const DouyinServiceStrip(),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ),
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                    SizedBox(
-                      height: infoHeight,
-                      child: Container(
-                        color: AppActionColors.surface(context),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  _statColumn(
-                                    formatCompactCount(page?.likeReceivedCount),
-                                    '获赞',
-                                  ),
-                                  const SizedBox(width: 20),
-                                  _statColumn(
-                                    formatCompactCount(page?.mutualFollowCount),
-                                    '互关',
-                                  ),
-                                  const SizedBox(width: 20),
-                                  _statColumn(
-                                    formatCompactCount(page?.followingCount),
-                                    '关注',
-                                    onTap: _isSelf
-                                        ? () => context.push(Routes.care)
-                                        : null,
-                                  ),
-                                  const SizedBox(width: 20),
-                                  _statColumn(
-                                    formatCompactCount(page?.followerCount),
-                                    '粉丝',
-                                  ),
-                                  const Spacer(),
-                                  _buildActionButton(),
-                                ],
-                              ),
-                              const SizedBox(height: 5),
-                              _ProfileIntroText(
-                                text: intro,
-                                maxLines: 2,
-                                expandable: hasCustomIntro,
-                                onTapExpand: () =>
-                                    _showFullIntroSheet(context, intro),
-                              ),
-                              if (hasProfileMeta) ...[
-                                const SizedBox(height: 5),
-                                Row(
-                                  spacing: 10,
-                                  children: [
-                                    if (page?.address?.trim().isNotEmpty ==
-                                        true)
-                                      Label(
-                                        content: formatAddressForDisplay(
-                                          page!.address,
-                                          empty: '',
-                                        ),
-                                        backgroundColor:
-                                            AppActionColors.borderSubtle(
-                                          context,
-                                        ),
-                                      ),
-                                    if (page?.age != null)
-                                      Label(
-                                        content: '${page!.age}岁',
-                                        backgroundColor:
-                                            AppActionColors.borderSubtle(
-                                          context,
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ],
-                              if (_isSelf)
-                                Expanded(
-                                  child: Align(
-                                    alignment: Alignment.center,
-                                    child: const DouyinServiceStrip(),
-                                  ),
-                                ),
-                            ],
-                          ),
-                      ),
-                    ),
-                    ),
-                  ],
+                  ),
+                  bottom: TabBar(
+                    indicatorColor: AppActionColors.muted(context),
+                    controller: _tabController,
+                    labelColor: AppActionColors.strong(context),
+                    unselectedLabelColor: AppActionColors.muted(context),
+                    isScrollable: false,
+                    indicatorSize: TabBarIndicatorSize.label,
+                    tabs: const [
+                      Tab(text: '作品'),
+                      Tab(text: '合集'),
+                      Tab(text: '日常'),
+                      Tab(text: '店铺'),
+                      Tab(text: '喜欢'),
+                    ],
+                  ),
                 ),
               ),
-              bottom: TabBar(
-                indicatorColor: AppActionColors.muted(context),
-                controller: _tabController,
-                labelColor: AppActionColors.strong(context),
-                unselectedLabelColor: AppActionColors.muted(context),
-                isScrollable: false,
-                indicatorSize: TabBarIndicatorSize.label,
-                tabs: const [
-                  Tab(text: '作品'),
-                  Tab(text: '合集'),
-                  Tab(text: '日常'),
-                  Tab(text: '店铺'),
-                  Tab(text: '喜欢'),
-                ],
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              MyVideoView(
+                tabIndex: 0,
+                currentIndex: _tabController.index,
+                kind: MyProfileWorkGridKind.works,
+                userId: targetUserId,
+                refreshNonce: _workTabRefreshNonce,
               ),
+              MyVideoListView(
+                tabIndex: 1,
+                currentIndex: _tabController.index,
+                userId: targetUserId,
+              ),
+              MyBlogView(
+                tabIndex: 2,
+                currentIndex: _tabController.index,
+                userId: targetUserId,
+              ),
+              MyGoodsView(
+                tabIndex: 3,
+                currentIndex: _tabController.index,
+                userId: targetUserId,
+              ),
+              MyVideoView(
+                tabIndex: 4,
+                currentIndex: _tabController.index,
+                kind: MyProfileWorkGridKind.likes,
+                userId: targetUserId,
+              ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: kToolbarHeight,
+          left: 0,
+          right: 0,
+          child: IgnorePointer(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: _showBottomRefreshStatus
+                  ? const RefreshStatusBadge()
+                  : const SizedBox.shrink(),
             ),
           ),
-        ];
-      },
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          MyVideoView(
-            tabIndex: 0,
-            currentIndex: _tabController.index,
-            kind: MyProfileWorkGridKind.works,
-            userId: targetUserId,
-          ),
-          MyVideoListView(
-            tabIndex: 1,
-            currentIndex: _tabController.index,
-            userId: targetUserId,
-          ),
-          MyBlogView(
-            tabIndex: 2,
-            currentIndex: _tabController.index,
-            userId: targetUserId,
-          ),
-          MyGoodsView(
-            tabIndex: 3,
-            currentIndex: _tabController.index,
-            userId: targetUserId,
-          ),
-          MyVideoView(
-            tabIndex: 4,
-            currentIndex: _tabController.index,
-            kind: MyProfileWorkGridKind.likes,
-            userId: targetUserId,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

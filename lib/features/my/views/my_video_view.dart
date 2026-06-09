@@ -23,6 +23,7 @@ class MyVideoView extends ConsumerStatefulWidget {
   final int currentIndex;
   final MyProfileWorkGridKind kind;
   final int? userId;
+  final int refreshNonce;
 
   const MyVideoView({
     super.key,
@@ -30,6 +31,7 @@ class MyVideoView extends ConsumerStatefulWidget {
     required this.currentIndex,
     this.kind = MyProfileWorkGridKind.works,
     this.userId,
+    this.refreshNonce = 0,
   });
 
   @override
@@ -47,12 +49,14 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
   bool _loadingMore = false;
   bool _hasMore = true;
   int _page = 1;
+  int _handledRefreshNonce = 0;
   Object? _error;
 
   @override
   void initState() {
     super.initState();
     if (widget.tabIndex == widget.currentIndex) {
+      _handledRefreshNonce = widget.refreshNonce;
       scheduleMicrotask(_loadFirstPage);
     }
   }
@@ -65,16 +69,26 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
       _page = 1;
       _hasMore = true;
       _error = null;
+      _handledRefreshNonce = widget.refreshNonce;
       if (widget.tabIndex == widget.currentIndex) {
         unawaited(_loadFirstPage());
       }
       return;
     }
-    if (widget.tabIndex == widget.currentIndex &&
-        oldWidget.currentIndex != widget.currentIndex &&
-        _items.isEmpty &&
-        !_loading) {
+    if (oldWidget.refreshNonce != widget.refreshNonce &&
+        widget.tabIndex == widget.currentIndex) {
+      _handledRefreshNonce = widget.refreshNonce;
       unawaited(_loadFirstPage());
+      return;
+    }
+    if (widget.tabIndex == widget.currentIndex &&
+        oldWidget.currentIndex != widget.currentIndex) {
+      if (_handledRefreshNonce != widget.refreshNonce) {
+        _handledRefreshNonce = widget.refreshNonce;
+        unawaited(_loadFirstPage());
+      } else if (_items.isEmpty && !_loading) {
+        unawaited(_loadFirstPage());
+      }
     }
   }
 
