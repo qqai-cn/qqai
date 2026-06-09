@@ -9,6 +9,7 @@ import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
 import 'package:qqai/util/media_url.dart';
 
+import '../data/blog_display_text.dart';
 import '../data/blog_list_patch.dart';
 import '../data/models/blog_page_model.dart';
 import '../data/repos/blog_repo.dart';
@@ -296,6 +297,12 @@ class _RecommendTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final title = blogVideoSidePanelTitle(item);
+    final content = blogVideoSidePanelContent(item);
+    final selectedColor = Theme.of(context).brightness == Brightness.light
+        ? const Color(0xFFE65100)
+        : Colors.orange.shade300;
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -314,20 +321,47 @@ class _RecommendTile extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    selected
-                        ? '正在播放 · ${item.content ?? ''}'
-                        : item.content ?? '',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: selected
-                        ? context.typo.bodyStrong.copyWith(
-                            color: Theme.of(context).brightness == Brightness.light
-                                ? const Color(0xFFE65100)
-                                : Colors.orange.shade300,
-                          )
-                        : context.typo.body,
-                  ),
+                  if (selected) ...[
+                    Text(
+                      '正在播放',
+                      style: context.typo.caption.copyWith(
+                        color: selectedColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
+                  if (title != null)
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.bodyStrong.copyWith(
+                        color: selected ? selectedColor : null,
+                      ),
+                    ),
+                  if (content != null) ...[
+                    if (title != null) const SizedBox(height: 4),
+                    Text(
+                      content,
+                      maxLines: title != null ? 1 : 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.body.copyWith(
+                        color: selected
+                            ? selectedColor
+                            : AppActionColors.muted(context),
+                      ),
+                    ),
+                  ],
+                  if (title == null && content == null)
+                    Text(
+                      '未命名',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: context.typo.body.copyWith(
+                        color: AppActionColors.muted(context),
+                      ),
+                    ),
                   const SizedBox(height: 6),
                   Text(
                     item.creatorName ?? '用户',

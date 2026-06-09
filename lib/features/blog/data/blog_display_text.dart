@@ -20,6 +20,20 @@ String blogVideoListPreview(BlogItem item) {
   return '$title#$content';
 }
 
+/// 侧栏推荐/合集条目：标题行（无则 null）。
+String? blogVideoSidePanelTitle(BlogItem item) {
+  final title = item.title?.trim();
+  if (title == null || title.isEmpty) return null;
+  return title;
+}
+
+/// 侧栏推荐/合集条目：正文行（无则 null）。
+String? blogVideoSidePanelContent(BlogItem item) {
+  final content = stripBlogRewardLines(item.content);
+  if (content.isEmpty) return null;
+  return content;
+}
+
 /// 视频详情：title 与 content 合并展示，最多 [maxLines] 行，超出省略。
 String blogVideoDetailPreviewText(BlogItem item) => blogVideoListPreview(item);
 
