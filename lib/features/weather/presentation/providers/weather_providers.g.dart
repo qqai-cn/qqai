@@ -82,7 +82,7 @@ final class WeatherNotifierProvider
   }
 }
 
-String _$weatherNotifierHash() => r'340401c5fc766cbb750c34a90dbf714fbf41a663';
+String _$weatherNotifierHash() => r'aa5da2139955b5b7c2d382a406f1ae3b2a7002af';
 
 abstract class _$WeatherNotifier extends $Notifier<WeatherState> {
   WeatherState build();

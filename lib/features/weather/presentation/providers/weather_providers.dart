@@ -50,6 +50,7 @@ sealed class WeatherState with _$WeatherState {
     required TextEditingController textEditingController,
     @Default([]) List<WeatherCityData> weatherCitys,
     @Default([]) List<RealTimeWeatherEntity> leftWeathers,
+    @Default([]) List<DayWeatherDaily> leftTodayDaily,
     @Default([]) List<Map<String, String>> card1,
     @Default([]) List<HourWeatherHourly> hourly,
     @Default([]) List<DayWeatherDaily> daily,
@@ -111,6 +112,7 @@ class WeatherNotifier extends _$WeatherNotifier {
 
   Future<void> initLeftWeather() async {
     final newLeftWeathers = <RealTimeWeatherEntity>[];
+    final newLeftTodayDaily = <DayWeatherDaily>[];
     final newCard1 = <Map<String, String>>[];
     final newWeatherMaps = <Map>[];
 
@@ -126,6 +128,17 @@ class WeatherNotifier extends _$WeatherNotifier {
           final map = _setWeatherMap(realTimeWeatherEntity.now);
           newCard1.add(map);
           newWeatherMaps.add(map);
+
+          try {
+            final dayWeather = await repo.getDayWeather(value.id);
+            newLeftTodayDaily.add(
+              dayWeather.daily.isNotEmpty
+                  ? dayWeather.daily.first
+                  : DayWeatherDaily(),
+            );
+          } catch (_) {
+            newLeftTodayDaily.add(DayWeatherDaily());
+          }
         } catch (e) {
           // 单个城市失败不影响其他城市
           print('Failed to get weather for city ${value.city}: $e');
@@ -136,6 +149,7 @@ class WeatherNotifier extends _$WeatherNotifier {
       state = state.copyWith(
         apiCallStatus: ApiCallStatus.success,
         leftWeathers: newLeftWeathers,
+        leftTodayDaily: newLeftTodayDaily,
         card1: newCard1,
         weatherMaps: newWeatherMaps,
       );

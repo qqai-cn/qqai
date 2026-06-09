@@ -29,6 +29,7 @@ import '../features/index/presentation/views/me_page.dart';
 import '../features/index/presentation/views/message_page.dart';
 import '../features/index/presentation/views/video_page.dart';
 import '../features/index/presentation/widgets/lazy_shell_tab.dart';
+import '../constant/constant.dart';
 import '../providers/auth_providers.dart';
 import '../util/media_url.dart';
 import 'app_routes.dart';
@@ -747,39 +748,49 @@ GoRouter appRouter(Ref ref) {
 
       /// ========== 天气模块（嵌套路由）==========
       ShellRoute(
-        builder: (context, state, child) => AppDeferredWidget(
-          libraryLoader: route_pages.loadLibrary,
-          builder: () => route_pages.WeatherHomePage(),
-        ),
+        builder: (context, state, child) {
+          final wide =
+              MediaQuery.sizeOf(context).width > Constant.CHAT_TWO_VIEW_WIDTH;
+          final onDetail = state.uri.path.endsWith('/detail');
+          if (!wide && onDetail) {
+            return child;
+          }
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.WeatherHomePage(),
+          );
+        },
         routes: [
           GoRoute(
             path: Routes.weatherPageUrl,
             name: 'weatherHome',
-            builder: (context, state) => Container(),
-          ),
-          GoRoute(
-            path: 'left',
-            name: 'weatherLeft',
-            builder: (context, state) => AppDeferredWidget(
-              libraryLoader: route_pages.loadLibrary,
-              builder: () => route_pages.WeatherLeftPage(),
-            ),
-          ),
-          GoRoute(
-            path: 'detail',
-            name: 'weatherDetail',
-            builder: (context, state) => AppDeferredWidget(
-              libraryLoader: route_pages.loadLibrary,
-              builder: () => route_pages.WeatherDetailView(),
-            ),
-          ),
-          GoRoute(
-            path: 'per-day',
-            name: 'perDayWeather',
-            builder: (context, state) => AppDeferredWidget(
-              libraryLoader: route_pages.loadLibrary,
-              builder: () => route_pages.PerDayWeatherView(),
-            ),
+            builder: (context, state) => const SizedBox.shrink(),
+            routes: [
+              GoRoute(
+                path: 'left',
+                name: 'weatherLeft',
+                builder: (context, state) => AppDeferredWidget(
+                  libraryLoader: route_pages.loadLibrary,
+                  builder: () => route_pages.WeatherLeftPage(),
+                ),
+              ),
+              GoRoute(
+                path: 'detail',
+                name: 'weatherDetail',
+                builder: (context, state) => AppDeferredWidget(
+                  libraryLoader: route_pages.loadLibrary,
+                  builder: () => route_pages.WeatherDetailView(),
+                ),
+              ),
+              GoRoute(
+                path: 'per-day',
+                name: 'perDayWeather',
+                builder: (context, state) => AppDeferredWidget(
+                  libraryLoader: route_pages.loadLibrary,
+                  builder: () => route_pages.PerDayWeatherView(),
+                ),
+              ),
+            ],
           ),
         ],
       ),

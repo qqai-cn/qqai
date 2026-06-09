@@ -246,30 +246,15 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
                 flex: 9,
                 child: Stack(
                   children: [
-                    Positioned.fill(
-                      child: VisibilityVideoSlot(
-                        key: Key(
-                          'blog_video_${widget.blogItem.id}_$selectedVideoSegmentIndex',
-                        ),
-                        url: videoUrl,
-                        imgUrl: coverUrl,
-                        videoId: widget.blogItem.id,
+                    _wrapFeedVideoSlot(
+                      aspectRatio: aspectRatio,
+                      slot: _buildFeedVideoSlot(
+                        videoUrl: videoUrl,
+                        coverUrl: coverUrl,
+                        videoUrls: videoUrls,
+                        selectedVideoSegmentIndex: selectedVideoSegmentIndex,
+                        mediaHeroTag: mediaHeroTag,
                         aspectRatio: aspectRatio,
-                        playerHeroTag: selectedVideoSegmentIndex == 0
-                            ? mediaHeroTag
-                            : null,
-                        videoAdInitialState: selectedVideoSegmentIndex == 0
-                            ? _videoAdState
-                            : null,
-                        onVideoAdStateChanged: selectedVideoSegmentIndex == 0
-                            ? (state) {
-                                _videoAdState = state;
-                              }
-                            : null,
-                        onCompleted: () =>
-                            _playNextSegmentIfAvailable(videoUrls.length),
-                        autoPlay: _autoPlaySelectedSegment,
-                        coverFitMode: VideoCoverFitMode.showFull,
                       ),
                     ),
                     if (videoUrls.length > 1)
@@ -331,6 +316,51 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFeedVideoSlot({
+    required String videoUrl,
+    required String coverUrl,
+    required List<String> videoUrls,
+    required int selectedVideoSegmentIndex,
+    required String mediaHeroTag,
+    required double aspectRatio,
+  }) {
+    return VisibilityVideoSlot(
+      key: Key(
+        'blog_video_${widget.blogItem.id}_$selectedVideoSegmentIndex',
+      ),
+      url: videoUrl,
+      imgUrl: coverUrl,
+      videoId: widget.blogItem.id,
+      aspectRatio: aspectRatio,
+      playerHeroTag:
+          selectedVideoSegmentIndex == 0 ? mediaHeroTag : null,
+      videoAdInitialState:
+          selectedVideoSegmentIndex == 0 ? _videoAdState : null,
+      onVideoAdStateChanged: selectedVideoSegmentIndex == 0
+          ? (state) {
+              _videoAdState = state;
+            }
+          : null,
+      onCompleted: () => _playNextSegmentIfAvailable(videoUrls.length),
+      autoPlay: _autoPlaySelectedSegment,
+      coverFitMode: VideoCoverFitMode.showFull,
+    );
+  }
+
+  /// 竖屏：按真实比例靠左，模糊只在视频框内；横屏：铺满视频槽位。
+  Widget _wrapFeedVideoSlot({
+    required double aspectRatio,
+    required Widget slot,
+  }) {
+    if (aspectRatio >= 1) {
+      return Positioned.fill(child: slot);
+    }
+    return Align(
+      alignment: Alignment.topLeft,
+      child: AspectRatio(aspectRatio: aspectRatio, child: slot),
     );
   }
 
