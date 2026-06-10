@@ -86,12 +86,6 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     _titleController.addListener(_syncContent);
     _targetController.addListener(_syncContent);
     _videoSegmentsPageController.addListener(_onVideoSegmentPageChanged);
-    if (widget.type == FabuPublishType.video) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!context.mounted) return;
-        _fabuNotifier.setWidgetCoverCapture(_captureWidgetCoverForPublish);
-      });
-    }
   }
 
   void _onVideoSegmentPageChanged() {
@@ -101,19 +95,24 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     setState(() => _currentVideoSegmentIndex = page);
   }
 
-  Future<Uint8List?> _captureWidgetCoverForPublish() async {
-    return captureVideoCoverStylePreviewWhenReady(_coverRepaintKey);
-  }
-
   Future<Uint8List?> _captureVisibleCoverPreview() {
     return captureVideoCoverStylePreviewWhenReady(_coverRepaintKey);
   }
 
+  Future<void> _captureAndApplyStyledCover(FabuNotifier notifier) async {
+    try {
+      final bytes = await captureVideoCoverStylePreviewWhenReady(_coverRepaintKey);
+      if (!mounted || bytes == null || bytes.isEmpty) return;
+      setState(() => _showWidgetCoverPreview = false);
+      notifier.applyVideoCoverFromBytes(bytes);
+    } catch (e) {
+      if (!mounted) return;
+      _showMessage('封面生成失败：$e');
+    }
+  }
+
   @override
   void dispose() {
-    if (widget.type == FabuPublishType.video) {
-      _fabuNotifier.setWidgetCoverCapture(null);
-    }
     _videoSegmentsPageController.removeListener(_onVideoSegmentPageChanged);
     _videoPreviewController.detach();
     _videoSegmentsPageController.dispose();
@@ -942,8 +941,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
                   onSelected: (_) {
                     notifier.setCoverStyle(style.id);
                     if (_showWidgetCoverPreview) {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
                         _coverPreviewKey.currentState?.regenerate();
+                        await _captureAndApplyStyledCover(notifier);
                       });
                     }
                   },
@@ -1014,7 +1014,7 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
     if (hasDisplay) {
       return '当前预览将作为封面，发布时自动上传';
     }
-    return '拖动进度条定位画面后点击「使用当前帧」，或上传/生成封面';
+    return '已自动生成默认封面，也可拖动进度条后点击「使用当前帧」或上传封面';
   }
 
   Future<void> _useCurrentVideoFrameAsCover(FabuNotifier notifier) async {
@@ -1053,8 +1053,9 @@ class _FabuPublishPageState extends ConsumerState<FabuPublishPage> {
         _showWidgetCoverPreview = true;
         _coverDurationSeconds = seconds ?? 60;
       });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         _coverPreviewKey.currentState?.regenerate();
+        await _captureAndApplyStyledCover(notifier);
       });
     } catch (e) {
       if (!mounted) return;

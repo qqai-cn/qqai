@@ -84,17 +84,10 @@ class FabuNotifier extends _$FabuNotifier {
   String? _cachedVideoPath;
   double? _cachedVideoAspectRatio;
   int _coverPreviewGeneration = 0;
-  Future<Uint8List?> Function()? _widgetCoverCapture;
-
-  /// 由发布页视频 Tab 注册：发布前从组件预览截图封面。
-  void setWidgetCoverCapture(Future<Uint8List?> Function()? capture) {
-    _widgetCoverCapture = capture;
-  }
 
   @override
   FabuState build() {
     _repo = ref.read(fabuRepoProvider);
-    ref.onDispose(() => _widgetCoverCapture = null);
     return const FabuState();
   }
 
@@ -294,6 +287,33 @@ class FabuNotifier extends _$FabuNotifier {
       uploadedCoverUrl: null,
       isCoverPreviewing: false,
     );
+    final video = state.videoFiles.isNotEmpty ? state.videoFiles.first : null;
+    if (video != null) {
+      unawaited(_applyDefaultVideoCover(video));
+    }
+  }
+
+  /// 默认封面：取视频总时长一半处的那一帧。
+  Future<void> _applyDefaultVideoCover(XFile video) async {
+    _coverPreviewGeneration++;
+    final generation = _coverPreviewGeneration;
+    state = state.copyWith(isCoverPreviewing: true, uploadedCoverUrl: null);
+    try {
+      final durationMs = await _videoDurationMs(video);
+      if (generation != _coverPreviewGeneration) return;
+      final bytes = await generateVideoCoverBytes(
+        videoPath: video.path,
+        timeMs: defaultVideoCoverTimeMs(durationMs),
+        imageFormat: ImageFormat.JPEG,
+      );
+      if (generation != _coverPreviewGeneration) return;
+      applyVideoCoverFromBytes(bytes);
+    } catch (e, st) {
+      debugPrint('Apply default video cover failed: $e\n$st');
+      if (generation == _coverPreviewGeneration) {
+        state = state.copyWith(isCoverPreviewing: false);
+      }
+    }
   }
 
   void setCoverStyle(int styleId) {
@@ -467,6 +487,7 @@ class FabuNotifier extends _$FabuNotifier {
       isCoverPreviewing: false,
     );
     _syncCoverStyleForAspectRatio(metadata.aspectRatio);
+    await _applyDefaultVideoCover(video);
   }
 
   void removeVideoFile(XFile file) {
@@ -634,7 +655,6 @@ class FabuNotifier extends _$FabuNotifier {
     _revokePublishBlobUrls();
     _resetVideoDurationCache();
     _coverPreviewGeneration++;
-    _widgetCoverCapture = null;
     state = FabuState(
       items: state.items,
       addressList: state.addressList,
@@ -871,18 +891,6 @@ class FabuNotifier extends _$FabuNotifier {
     if (previewBytes != null && previewBytes.isNotEmpty) {
       return _xFileFromCoverBytes(previewBytes);
     }
-    if (state.videoFiles.isNotEmpty && _widgetCoverCapture != null) {
-      try {
-        final bytes = await _widgetCoverCapture!();
-        if (bytes != null && bytes.isNotEmpty) {
-          final file = _xFileFromCoverBytes(bytes);
-          state = state.copyWith(coverFile: file, coverPreviewBytes: bytes);
-          return file;
-        }
-      } catch (e, st) {
-        debugPrint('Capture widget cover before publish failed: $e\n$st');
-      }
-    }
     if (state.videoFiles.isNotEmpty) {
       return _generateVideoCoverXFile(state.videoFiles.first);
     }
@@ -895,16 +903,6 @@ class FabuNotifier extends _$FabuNotifier {
 
   Future<XFile?> _generateVideoCoverXFile(XFile video) async {
     final durationMs = await _videoDurationMs(video);
-    try {
-      final bytes = await generateStyledVideoCoverBytes(
-        videoPath: video.path,
-        durationMs: durationMs,
-        styleId: state.selectedCoverStyleId,
-      );
-      return _xFileFromCoverBytes(bytes);
-    } catch (e, st) {
-      debugPrint('Generate styled video cover failed: $e\n$st');
-    }
     try {
       final bytes = await generateVideoCoverBytes(
         videoPath: video.path,
