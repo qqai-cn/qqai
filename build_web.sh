@@ -7,7 +7,7 @@
 #   WEB_RENDERER_MODE=cdn ./build_web.sh
 #   ./build_web.sh local -- --dart-define=FOO=bar
 #
-# 产物：build/web/main.dart.js（无 main.dart.wasm）
+# 产物：build/web/main.dart.js（无 main.dart.wasm）、build/web.zip（供 deploy.exp）
 # 标记：build/web/.web-renderer-mode（local|cdn）、.web-build-target=js
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -80,8 +80,16 @@ echo "js" > build/web/.web-build-target
 
 bash web/compress_web_assets.sh
 
+echo "==> 打包 build/web.zip"
+rm -f build/web.zip
+(
+  cd build
+  zip -r web.zip web -x "*.DS_Store"
+)
+
 echo ""
 echo "完成: target=js, renderer=${MODE}, 标记 build/web/.web-build-target"
+echo "  zip: build/web.zip"
 if [[ "$MODE" == "local" ]]; then
   echo "  canvaskit: https://<你的域名>/canvaskit/"
   echo "  部署: ./web/deploy/deploy_web.sh 或 expect deploy.exp"
