@@ -348,12 +348,6 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                           onPressed: _startVideoCall,
                         ),
                         ComposerActionButton(
-                          icon: Icons.delete_sweep,
-                          title: '清除',
-                          onPressed: _confirmClearMessages,
-                          destructive: true,
-                        ),
-                        ComposerActionButton(
                           icon: Icons.more_horiz,
                           title: '更多',
                           onPressed: () {
@@ -584,29 +578,6 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       _exitEmojiPanel();
     } else {
       _enterEmojiPanel();
-    }
-  }
-
-  Future<void> _confirmClearMessages() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('清除消息'),
-        content: const Text('确定要清空当前会话的所有消息吗？此操作仅影响本地展示。'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('清除', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) {
-      await _chatController.setMessages([]);
     }
   }
 
