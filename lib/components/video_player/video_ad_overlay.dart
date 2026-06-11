@@ -12,6 +12,9 @@ import 'package:video_player/video_player.dart';
 /// 详情页右侧操作条区域宽度，跳过按钮默认右内边距。
 const double kVideoAdDetailSkipRightInset = 72;
 
+/// 仅对时长大于 5 分钟的视频插入广告。
+const Duration kVideoAdMinVideoDuration = Duration(minutes: 5);
+
 /// 视频插入广告遮罩：播放前触发一次，播放到配置时间点后可再次触发。
 class VideoAdOverlay extends StatefulWidget {
   const VideoAdOverlay({
@@ -136,6 +139,24 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
     }
   }
 
+  bool _isVideoLongEnoughForAd() {
+    final value = widget.videoController.value;
+    if (!value.isInitialized) return false;
+    final duration = value.duration;
+    if (duration <= Duration.zero) return false;
+    return duration > kVideoAdMinVideoDuration;
+  }
+
+  void _skipAdsForShortVideoIfNeeded() {
+    if (_prerollShown) return;
+    final value = widget.videoController.value;
+    if (!value.isInitialized) return;
+    final duration = value.duration;
+    if (duration <= Duration.zero || duration > kVideoAdMinVideoDuration) return;
+    _prerollShown = true;
+    _notifyPlaybackStateChanged();
+  }
+
   void _handleVideoChanged() {
     if (!mounted || !widget.enabled || !_configLoaded) return;
     if (_adVisible) {
@@ -152,6 +173,11 @@ class _VideoAdOverlayState extends State<VideoAdOverlay> {
 
     final value = widget.videoController.value;
     if (!value.isInitialized || !value.isPlaying) return;
+
+    if (!_isVideoLongEnoughForAd()) {
+      _skipAdsForShortVideoIfNeeded();
+      return;
+    }
 
     if (!_prerollShown && config.showPreroll) {
       _prerollShown = true;

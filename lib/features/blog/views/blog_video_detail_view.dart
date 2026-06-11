@@ -333,7 +333,7 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         const SnackBar(
-          content: Text('即将自动播放下一集'),
+          content: Text('自动播放下一集'),
           duration: Duration(milliseconds: 1600),
           behavior: SnackBarBehavior.floating,
         ),

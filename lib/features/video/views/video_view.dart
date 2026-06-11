@@ -455,7 +455,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: const Text('即将自动播放下一集'),
+          content: const Text('自动播放下一集'),
           duration: const Duration(milliseconds: 1600),
           behavior: SnackBarBehavior.floating,
         ),

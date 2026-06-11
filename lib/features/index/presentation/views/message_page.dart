@@ -12,6 +12,7 @@ import '../widgets/app_bar_publish_search_actions.dart';
 import '../widgets/brand_drawer_leading.dart';
 import '../widgets/drawer_page.dart';
 import '../widgets/lazy_tab_slot.dart';
+import '../../../friends/apply_friend_dialog.dart';
 import '../../../friends/chat_page_list.dart';
 import '../../../friends/create_group_chat_dialog.dart';
 import '../../../friends/friends_page.dart';
@@ -111,13 +112,24 @@ class _MessagePageState extends ConsumerState<MessagePage>
               .toList(),
         ),
         actions: [
-          IconButton(
-            tooltip: '创建群聊',
+          PopupMenuButton<String>(
+            tooltip: '更多',
             icon: Icon(
               Icons.group_add,
               color: AppActionColors.foreground(context),
             ),
-            onPressed: () => showCreateGroupChatDialog(context, ref),
+            onSelected: (value) {
+              switch (value) {
+                case 'group':
+                  showCreateGroupChatDialog(context, ref);
+                case 'friend':
+                  showApplyFriendDialog(context, ref);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'group', child: Text('发起群聊')),
+              PopupMenuItem(value: 'friend', child: Text('添加好友')),
+            ],
           ),
           const AppBarPublishSearchActions(),
         ],
