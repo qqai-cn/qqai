@@ -1,5 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/util/media_url.dart';
+
 import 'image_tile_layout.dart';
 
 /// Hero + 圆角宫格，点击回调带 index 与 tag。
@@ -43,6 +45,7 @@ class HeroImageWrapGrid extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   child: CachedNetworkImage(
                     imageUrl: url,
+                    cacheKey: mediaCacheKey(url),
                     fit: BoxFit.cover,
                     width: itemSize,
                     height: itemSize,

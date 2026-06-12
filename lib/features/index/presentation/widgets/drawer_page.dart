@@ -8,6 +8,7 @@ import 'package:qqai/components/shiny_avatar_ring.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/format_count.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../../../../providers/app_config_providers.dart';
 import '../../../../providers/app_theme_preference.dart';
@@ -23,7 +24,10 @@ const String _defaultCover = 'https://file.qqai.cn/qqai/2025/09/1.webp';
 BoxDecoration _drawerHeaderDecoration(String coverUrl) {
   return BoxDecoration(
     image: DecorationImage(
-      image: CachedNetworkImageProvider(coverUrl),
+      image: CachedNetworkImageProvider(
+        coverUrl,
+        cacheKey: mediaCacheKey(coverUrl),
+      ),
       fit: BoxFit.cover,
     ),
   );

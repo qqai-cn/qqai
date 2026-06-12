@@ -553,7 +553,11 @@ class _BlogFootprintCard extends StatelessWidget {
                         size: 40,
                       ),
                     )
-                  : CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover),
+                  : CachedNetworkImage(
+                      imageUrl: cover,
+                      cacheKey: mediaCacheKey(cover),
+                      fit: BoxFit.cover,
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(8),
@@ -620,7 +624,11 @@ class _ProductFootprintCard extends StatelessWidget {
                         color: AppActionColors.muted(context),
                       ),
                     )
-                  : CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover),
+                  : CachedNetworkImage(
+                      imageUrl: cover,
+                      cacheKey: mediaCacheKey(cover),
+                      fit: BoxFit.cover,
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(8),

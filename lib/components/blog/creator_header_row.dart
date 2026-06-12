@@ -100,7 +100,7 @@ class CreatorHeaderRow extends StatelessWidget {
         child: CachedNetworkImage(
           key: ValueKey(url),
           imageUrl: url,
-          cacheKey: url,
+          cacheKey: mediaCacheKey(url),
           width: avatarSize,
           height: avatarSize,
           fit: BoxFit.cover,

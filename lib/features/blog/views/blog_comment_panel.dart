@@ -791,6 +791,7 @@ class _Avatar extends StatelessWidget {
         borderRadius: BorderRadius.circular(size / 2),
         child: CachedNetworkImage(
           imageUrl: resolved,
+          cacheKey: mediaCacheKey(resolved),
           width: size,
           height: size,
           fit: BoxFit.cover,

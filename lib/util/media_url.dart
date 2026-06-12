@@ -18,3 +18,10 @@ String? resolveMediaUrl(String? raw) {
 }
 
 bool hasResolvableMediaUrl(String? raw) => resolveMediaUrl(raw) != null;
+
+/// 磁盘/内存缓存键：去掉 secure_link 的 ?e=&token=，避免每次 API 重签导致缓存失效。
+String mediaCacheKey(String url) {
+  final uri = Uri.tryParse(url);
+  if (uri == null || uri.query.isEmpty) return url;
+  return uri.replace(queryParameters: {}).toString();
+}

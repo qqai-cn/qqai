@@ -317,6 +317,7 @@ class _OrderCard extends StatelessWidget {
                         )
                       : CachedNetworkImage(
                           imageUrl: cover,
+                          cacheKey: mediaCacheKey(cover),
                           width: 72.w,
                           height: 72.w,
                           fit: BoxFit.cover,

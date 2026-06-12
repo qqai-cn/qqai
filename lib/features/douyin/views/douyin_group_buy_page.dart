@@ -218,6 +218,7 @@ class _DouyinGroupBuyPageState extends ConsumerState<DouyinGroupBuyPage> {
                 onTap: () => _openProduct(product),
                 image: CachedNetworkImage(
                   imageUrl: coverUrl,
+                  cacheKey: mediaCacheKey(coverUrl),
                   fit: BoxFit.cover,
                   errorWidget: (_, __, ___) => Image.network(
                     _placeholderCover,

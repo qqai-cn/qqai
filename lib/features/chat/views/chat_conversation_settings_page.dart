@@ -12,6 +12,7 @@ import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/media_url.dart';
 
 class ChatConversationSettingsPage extends ConsumerStatefulWidget {
   const ChatConversationSettingsPage({super.key, required this.conversationId});
@@ -649,7 +650,10 @@ class _GroupMemberTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: avatar != null && avatar!.isNotEmpty
                   ? Image(
-                image: CachedNetworkImageProvider(avatar!),
+                image: CachedNetworkImageProvider(
+                  avatar!,
+                  cacheKey: mediaCacheKey(avatar!),
+                ),
                 width: 40,
                 height: 40,
                 fit: BoxFit.cover,

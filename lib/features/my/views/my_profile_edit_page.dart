@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_base_client.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../data/models/area_models.dart';
 import '../data/models/profile_models.dart';
@@ -453,7 +454,11 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
             child: Stack(
               fit: StackFit.expand,
               children: [
-                CachedNetworkImage(imageUrl: _coverDisplay, fit: BoxFit.cover),
+                CachedNetworkImage(
+                  imageUrl: _coverDisplay,
+                  cacheKey: mediaCacheKey(_coverDisplay),
+                  fit: BoxFit.cover,
+                ),
                 DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -587,7 +592,10 @@ class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
             child: CircleAvatar(
               radius: radius - 2,
               backgroundImage: _avatarUrl?.trim().isNotEmpty == true
-                  ? CachedNetworkImageProvider(_avatarUrl!.trim())
+                  ? CachedNetworkImageProvider(
+                      _avatarUrl!.trim(),
+                      cacheKey: mediaCacheKey(_avatarUrl!.trim()),
+                    )
                   : null,
               child: _avatarUrl?.trim().isNotEmpty == true
                   ? null

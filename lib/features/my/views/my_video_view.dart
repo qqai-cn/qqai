@@ -8,6 +8,7 @@ import 'package:qqai/components/default_asset_image.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_error_message.dart';
 import 'package:qqai/constant/constant.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../../../../components/blog/network_image_carousel_pages.dart';
 import '../../blog/data/models/blog_page_model.dart';
@@ -297,6 +298,7 @@ class _MyVideoViewState extends ConsumerState<MyVideoView>
                                   : Image(
                                       image: CachedNetworkImageProvider(
                                         cover,
+                                        cacheKey: mediaCacheKey(cover),
                                         maxWidth: cacheWidth,
                                         maxHeight: cacheHeight,
                                       ),

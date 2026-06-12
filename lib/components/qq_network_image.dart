@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:qqai/util/media_url.dart';
 
 class QqNetworkImage extends StatelessWidget {
   const QqNetworkImage({
@@ -30,6 +31,7 @@ class QqNetworkImage extends StatelessWidget {
     Widget image = Image(
       image: CachedNetworkImageProvider(
         url,
+        cacheKey: mediaCacheKey(url),
         maxWidth: cacheWidth,
         maxHeight: cacheHeight,
       ),

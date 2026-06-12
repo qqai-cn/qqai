@@ -435,6 +435,7 @@ class _RecommendThumb extends StatelessWidget {
   static Widget _networkImage(String url, {required Widget error}) {
     return CachedNetworkImage(
       imageUrl: url,
+      cacheKey: mediaCacheKey(url),
       width: _size,
       height: _size,
       fit: BoxFit.cover,

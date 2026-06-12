@@ -42,6 +42,7 @@ class MallProductHorizontalCard extends StatelessWidget {
           ? const _GoodsImageFallback()
           : CachedNetworkImage(
               imageUrl: coverUrl,
+              cacheKey: mediaCacheKey(coverUrl),
               fit: BoxFit.cover,
               errorWidget: (_, _, _) => const _GoodsImageFallback(),
             ),

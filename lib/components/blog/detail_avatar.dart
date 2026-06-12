@@ -21,7 +21,7 @@ Widget buildDetailAvatar({
     child: CachedNetworkImage(
       key: ValueKey(url),
       imageUrl: url,
-      cacheKey: url,
+      cacheKey: mediaCacheKey(url),
       width: size,
       height: size,
       fit: BoxFit.cover,

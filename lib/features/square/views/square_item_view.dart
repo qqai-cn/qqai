@@ -21,6 +21,7 @@ Widget _squareOwnerAvatar(String? avatarUrl, double size) {
   }
   return CachedNetworkImage(
     imageUrl: avatarUrl,
+    cacheKey: mediaCacheKey(avatarUrl),
     width: size,
     height: size,
     fit: BoxFit.cover,
@@ -225,7 +226,11 @@ class _SquareCover extends StatelessWidget {
       children: [
         ColoredBox(color: GoodsPageStyle.imageBg(context)),
         Image(
-          image: CachedNetworkImageProvider(imageUrl, maxWidth: cacheWidth),
+          image: CachedNetworkImageProvider(
+            imageUrl,
+            cacheKey: mediaCacheKey(imageUrl),
+            maxWidth: cacheWidth,
+          ),
           fit: BoxFit.cover,
           width: double.infinity,
           height: double.infinity,

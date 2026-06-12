@@ -158,6 +158,7 @@ class _EditSquareFormState extends State<_EditSquareForm> {
     if (url == null) return const SizedBox.shrink();
     return CachedNetworkImage(
       imageUrl: url,
+      cacheKey: mediaCacheKey(url),
       height: _previewHeight,
       width: double.infinity,
       fit: BoxFit.cover,

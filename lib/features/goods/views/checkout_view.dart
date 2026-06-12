@@ -715,6 +715,7 @@ class _CheckoutGoodsRow extends StatelessWidget {
     if (url.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: url,
+        cacheKey: mediaCacheKey(url),
         width: 72,
         height: 72,
         fit: BoxFit.cover,

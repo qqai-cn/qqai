@@ -14,6 +14,7 @@ import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/features/index/providers/main_shell_tab_reselect_provider.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/format_count.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../../douyin/widgets/douyin_service_strip.dart';
 import '../../chat/data/repos/chat_repo.dart';
@@ -519,6 +520,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
                                   image: DecorationImage(
                                     image: CachedNetworkImageProvider(
                                       bannerUrl,
+                                      cacheKey: mediaCacheKey(bannerUrl),
                                     ),
                                     fit: BoxFit.cover,
                                   ),

@@ -305,6 +305,7 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
                                 children: [
                                   CachedNetworkImage(
                                     imageUrl: cover,
+                                    cacheKey: mediaCacheKey(cover),
                                     fit: BoxFit.cover,
                                     errorWidget: (_, __, ___) => Image.network(
                                       _placeholderCover,

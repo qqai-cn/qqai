@@ -14,6 +14,7 @@ import '../../blog/providers/blog_providers.dart';
 import 'package:qqai/components/blog/feed_video_more_menu.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/media_url.dart';
 
 class MyBlogImgItemView extends ConsumerStatefulWidget {
   final BlogItem blogItem;
@@ -99,6 +100,7 @@ class _MyBlogImgItemViewState extends ConsumerState<MyBlogImgItemView> {
                         borderRadius: BorderRadius.circular(12),
                         child: CachedNetworkImage(
                           imageUrl: url,
+                          cacheKey: mediaCacheKey(url),
                           fit: BoxFit.cover,
                           width: getImgGridHeight(imageCount, parentWidth),
                           height: getImgGridHeight(imageCount, parentWidth),

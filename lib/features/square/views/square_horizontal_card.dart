@@ -52,6 +52,7 @@ class SquareHorizontalCard extends ConsumerWidget {
           : () => context.push(Routes.squareBlogView, extra: squareId),
       image: CachedNetworkImage(
         imageUrl: coverUrl,
+        cacheKey: mediaCacheKey(coverUrl),
         fit: BoxFit.cover,
         errorWidget: (_, _, _) => ColoredBox(
           color: GoodsPageStyle.imageBg(context),

@@ -442,7 +442,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
               ? CachedNetworkImage(
                   key: ValueKey(resolvedAvatar),
                   imageUrl: resolvedAvatar,
-                  cacheKey: resolvedAvatar,
+                  cacheKey: mediaCacheKey(resolvedAvatar),
                   width: size,
                   height: size,
                   fit: BoxFit.cover,

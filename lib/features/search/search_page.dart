@@ -1375,6 +1375,7 @@ class _SearchPageState extends ConsumerState<SearchPage>
             )
           : CachedNetworkImage(
               imageUrl: coverUrl,
+              cacheKey: mediaCacheKey(coverUrl),
               fit: BoxFit.cover,
               errorWidget: (_, _, _) => ColoredBox(
                 color: GoodsPageStyle.imageBg(context),
@@ -1417,6 +1418,7 @@ class _SearchPageState extends ConsumerState<SearchPage>
             )
           : CachedNetworkImage(
               imageUrl: coverUrl,
+              cacheKey: mediaCacheKey(coverUrl),
               fit: BoxFit.cover,
               errorWidget: (_, _, _) => ColoredBox(
                 color: GoodsPageStyle.imageBg(context),

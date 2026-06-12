@@ -6,6 +6,7 @@ import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/features/goods/theme/goods_page_style.dart';
 
 import '../../../util/api_base_client.dart';
+import '../../../util/media_url.dart';
 import '../data/models/profile_models.dart';
 import '../data/repos/profile_repo.dart';
 
@@ -198,6 +199,7 @@ class _CreateCollectionFormState extends ConsumerState<_CreateCollectionForm> {
                     children: [
                       CachedNetworkImage(
                         imageUrl: remoteCoverUrl,
+                        cacheKey: mediaCacheKey(remoteCoverUrl),
                         fit: BoxFit.cover,
                         errorWidget: (_, __, ___) => _coverPlaceholder(),
                       ),

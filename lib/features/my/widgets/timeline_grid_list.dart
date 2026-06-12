@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../utils/footprint_timeline.dart';
 
@@ -164,7 +165,11 @@ class TimelineBlogGridCard extends StatelessWidget {
                         size: 40,
                       ),
                     )
-                  : CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover),
+                  : CachedNetworkImage(
+                      imageUrl: cover,
+                      cacheKey: mediaCacheKey(cover),
+                      fit: BoxFit.cover,
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(8),
@@ -236,7 +241,11 @@ class TimelineProductGridCard extends StatelessWidget {
                         color: AppActionColors.muted(context),
                       ),
                     )
-                  : CachedNetworkImage(imageUrl: cover, fit: BoxFit.cover),
+                  : CachedNetworkImage(
+                      imageUrl: cover,
+                      cacheKey: mediaCacheKey(cover),
+                      fit: BoxFit.cover,
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.all(8),

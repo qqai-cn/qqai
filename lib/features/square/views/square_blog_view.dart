@@ -367,6 +367,7 @@ class _SquareDetailHeader extends StatelessWidget {
                       child: iconUrl != null
                           ? CachedNetworkImage(
                               imageUrl: iconUrl,
+                              cacheKey: mediaCacheKey(iconUrl),
                               width: 64,
                               height: 64,
                               fit: BoxFit.cover,

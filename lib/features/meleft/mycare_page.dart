@@ -400,7 +400,10 @@ class _FollowMemberTile extends StatelessWidget {
       leading: CircleAvatar(
         radius: 26,
         backgroundImage: avatarUrl != null
-            ? CachedNetworkImageProvider(avatarUrl)
+            ? CachedNetworkImageProvider(
+                avatarUrl,
+                cacheKey: mediaCacheKey(avatarUrl),
+              )
             : null,
         child: avatarUrl == null ? const DefaultAssetImage() : null,
       ),

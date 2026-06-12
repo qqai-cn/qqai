@@ -15,6 +15,7 @@ import '../data/repos/profile_repo.dart';
 import 'create_collection_dialog.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_error_message.dart';
+import 'package:qqai/util/media_url.dart';
 
 /// 「合集」Tab：我的合集分页。
 class MyVideoListView extends ConsumerStatefulWidget {
@@ -190,6 +191,7 @@ class _MyVideoListViewState extends ConsumerState<MyVideoListView>
                               ? AssetImageView(cover, fit: BoxFit.cover)
                               : CachedNetworkImage(
                                   imageUrl: cover,
+                                  cacheKey: mediaCacheKey(cover),
                                   fit: BoxFit.cover,
                                   errorWidget: (context, url, error) =>
                                       AssetImageView(

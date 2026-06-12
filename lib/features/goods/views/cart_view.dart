@@ -657,6 +657,7 @@ class _CartItemCard extends StatelessWidget {
     if (url.isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: url,
+        cacheKey: mediaCacheKey(url),
         width: 88,
         height: 88,
         fit: BoxFit.cover,
