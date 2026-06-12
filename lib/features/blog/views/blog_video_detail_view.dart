@@ -46,6 +46,7 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
   PageController? _pageController;
   int _currentPage = 0;
   int? _entryBlogId;
+  bool _hasShownAutoPlayNextTip = false;
 
   @override
   void initState() {
@@ -327,6 +328,8 @@ class _BlogVideoDetailView extends ConsumerState<BlogVideoDetailView> {
   }
 
   void _showAutoPlayNextTip() {
+    if (_hasShownAutoPlayNextTip) return;
+    _hasShownAutoPlayNextTip = true;
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
     messenger

@@ -218,6 +218,7 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
   final Map<int, BlogItem> _collectionNextItems = {};
   bool _openingNextCollectionVideo = false;
   int _currentPage = 0;
+  bool _hasShownAutoPlayNextTip = false;
 
   @override
   void dispose() {
@@ -449,6 +450,8 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
   }
 
   void _showAutoPlayNextTip() {
+    if (_hasShownAutoPlayNextTip) return;
+    _hasShownAutoPlayNextTip = true;
     final messenger = ScaffoldMessenger.maybeOf(context);
     if (messenger == null) return;
     messenger
