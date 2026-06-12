@@ -7,6 +7,7 @@ import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/features/blog/views/video_item_player/video_item_player.dart';
 import 'package:qqai/util/media_url.dart';
+import 'package:qqai/util/media_video_cache.dart';
 import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -43,6 +44,7 @@ class VisibilityVideoSlot extends StatefulWidget {
 
 class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
   static const double _visibleThreshold = 0.72;
+  static const double _precacheThreshold = 0.28;
   static const Duration _mountDelay = Duration(milliseconds: 450);
 
   Timer? _mountTimer;
@@ -71,7 +73,11 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
   }
 
   void _handleVisibility(VisibilityInfo info) {
-    final active = safeVisibleFraction(info) >= _visibleThreshold;
+    final fraction = safeVisibleFraction(info);
+    if (fraction >= _precacheThreshold) {
+      precacheVideo(widget.url);
+    }
+    final active = fraction >= _visibleThreshold;
     if (active && !_shouldMountPlayer) {
       _mountTimer ??= Timer(_mountDelay, () {
         if (!mounted) return;

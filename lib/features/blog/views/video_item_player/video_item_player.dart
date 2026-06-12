@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:qqai/util/media_url.dart';
 
 import '../../../../components/blog/blog_danmaku.dart';
 import '../../../../components/blog/video_cover_fit.dart';
@@ -55,7 +56,7 @@ class _FeedPlayerState extends State<VideoItemPlayer> {
           fallbackAspectRatio: widget.fallbackAspectRatio,
           showLoadingPoster: true,
           coverFitMode: widget.coverFitMode,
-          sharedPlaybackKey: widget.url,
+          sharedPlaybackKey: mediaCacheKey(widget.url),
           videoAdInitialState: widget.videoAdInitialState,
           onVideoAdStateChanged: widget.onVideoAdStateChanged,
           onCompleted: widget.onCompleted,

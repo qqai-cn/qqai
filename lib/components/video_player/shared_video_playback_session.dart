@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flick_video_player/flick_video_player.dart';
+import 'package:qqai/util/media_url.dart';
+import 'package:qqai/util/media_video_cache.dart';
 import 'package:video_player/video_player.dart';
 
 class SharedVideoPlaybackSession {
-  SharedVideoPlaybackSession._(this.url)
-    : videoController = VideoPlayerController.networkUrl(Uri.parse(url)) {
+  SharedVideoPlaybackSession._(this.sessionKey, this.videoController) {
     flickManager = FlickManager(
       videoPlayerController: videoController,
       autoPlay: false,
@@ -13,7 +14,7 @@ class SharedVideoPlaybackSession {
     );
   }
 
-  final String url;
+  final String sessionKey;
   final VideoPlayerController videoController;
   late final FlickManager flickManager;
 
@@ -51,27 +52,69 @@ class SharedVideoPlaybackSession {
     if (_disposed) return;
     _disposed = true;
     _disposeTimer?.cancel();
-    _sessions.remove(url);
+    _sessions.remove(sessionKey);
     flickManager.dispose();
   }
 }
 
-final Map<String, SharedVideoPlaybackSession> _sessions = {};
+class _SessionSlot {
+  SharedVideoPlaybackSession? session;
+  Future<SharedVideoPlaybackSession>? pending;
+}
 
-SharedVideoPlaybackSession acquireSharedVideoPlaybackSession(String url) {
-  final existing = _sessions[url];
-  if (existing != null && existing.isIdleWithError) {
-    existing.dispose();
-    _sessions.remove(url);
+final Map<String, _SessionSlot> _sessions = {};
+
+/// [sessionKey] 默认 [mediaCacheKey]，与磁盘缓存键一致，签名 URL 轮换仍可复用会话。
+Future<SharedVideoPlaybackSession> acquireSharedVideoPlaybackSession({
+  required String playbackUrl,
+  String? sessionKey,
+}) async {
+  final key = sessionKey ?? mediaCacheKey(playbackUrl);
+  final slot = _sessions.putIfAbsent(key, () => _SessionSlot());
+
+  final existing = slot.session;
+  if (existing != null && !existing.isIdleWithError) {
+    existing.retain();
+    return existing;
   }
-  final session = _sessions[url] ??= SharedVideoPlaybackSession._(url);
-  session.retain();
-  return session;
+  if (existing?.isIdleWithError == true) {
+    existing!.dispose();
+    slot.session = null;
+  }
+
+  if (slot.pending != null) {
+    final session = await slot.pending!;
+    session.retain();
+    return session;
+  }
+
+  slot.pending = _createSession(key, playbackUrl);
+  try {
+    final session = await slot.pending!;
+    slot.session = session;
+    slot.pending = null;
+    session.retain();
+    return session;
+  } catch (e) {
+    slot.pending = null;
+    rethrow;
+  }
+}
+
+Future<SharedVideoPlaybackSession> _createSession(
+  String sessionKey,
+  String playbackUrl,
+) async {
+  final controller = await createVideoPlayerController(playbackUrl);
+  return SharedVideoPlaybackSession._(sessionKey, controller);
 }
 
 /// 丢弃空闲中的共享会话（例如加载失败后重试）。
-void invalidateSharedVideoPlaybackSession(String url) {
-  final session = _sessions[url];
+void invalidateSharedVideoPlaybackSession(String playbackUrlOrKey) {
+  final key = playbackUrlOrKey.contains('?')
+      ? mediaCacheKey(playbackUrlOrKey)
+      : playbackUrlOrKey;
+  final session = _sessions[key]?.session;
   if (session == null || !session.isIdle) return;
   session.dispose();
 }

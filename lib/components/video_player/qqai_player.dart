@@ -11,6 +11,8 @@ import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/media_url.dart';
+import 'package:qqai/util/media_video_cache.dart';
 import 'package:video_player/video_player.dart';
 import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -63,46 +65,36 @@ class QqaiPlayer extends StatefulWidget {
 }
 
 class _QqaiPlayerState extends State<QqaiPlayer> {
-  late FlickManager flickManager;
-  late VideoPlayerController videoController;
+  FlickManager? flickManager;
+  VideoPlayerController? videoController;
   SharedVideoPlaybackSession? _sharedSession;
   Timer? _completionTimer;
   bool _isDisposed = false;
   bool _didNotifyCompleted = false;
   bool _didAutoResumeAfterInit = false;
+  int _playbackGeneration = 0;
 
   @override
   void initState() {
     super.initState();
-    _attachPlayback();
-
-    // 添加监听器，当视频初始化完成后设置音量
-    videoController.addListener(_videoListener);
-    _startCompletionPolling();
-
-    // 使用 postFrameCallback 延迟设置音量，确保 FlickManager 完全初始化
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_isDisposed && mounted && widget.isActive) {
-        if (widget.autoPlay) {
-          _startAutoPlayback();
-        }
-        _setVolumeIfNeeded();
-      }
-    });
+    precacheVideo(widget.url);
+    unawaited(_attachPlayback());
   }
 
   @override
   void didUpdateWidget(QqaiPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.url != widget.url ||
-        oldWidget.sharedPlaybackKey != widget.sharedPlaybackKey) {
-      videoController.removeListener(_videoListener);
-      _detachPlayback();
-      _attachPlayback();
-      videoController.addListener(_videoListener);
+    final urlChanged =
+        mediaCacheKey(oldWidget.url) != mediaCacheKey(widget.url);
+    final sessionChanged =
+        oldWidget.sharedPlaybackKey != widget.sharedPlaybackKey;
+    if (urlChanged || sessionChanged) {
+      precacheVideo(widget.url);
+      videoController?.removeListener(_videoListener);
+      _detachPlayback(clearControllers: true);
       _didNotifyCompleted = false;
       _didAutoResumeAfterInit = false;
-      _startCompletionPolling();
+      unawaited(_attachPlayback());
     }
     if (oldWidget.isActive != widget.isActive ||
         oldWidget.autoPlay != widget.autoPlay) {
@@ -119,76 +111,123 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     }
   }
 
-  void _attachPlayback() {
+  Future<void> _attachPlayback() async {
+    final generation = ++_playbackGeneration;
     final sharedKey = widget.sharedPlaybackKey;
-    if (sharedKey != null && sharedKey.isNotEmpty) {
-      final session = acquireSharedVideoPlaybackSession(sharedKey);
-      _sharedSession = session;
-      videoController = session.videoController;
-      flickManager = session.flickManager;
-      return;
-    }
 
-    videoController = VideoPlayerController.networkUrl(Uri.parse(widget.url));
-    flickManager = FlickManager(
-      videoPlayerController: videoController,
-      autoPlay: widget.autoPlay && widget.isActive,
-      autoInitialize: true,
-    );
+    try {
+      if (sharedKey != null && sharedKey.isNotEmpty) {
+        final session = await acquireSharedVideoPlaybackSession(
+          playbackUrl: widget.url,
+          sessionKey: sharedKey,
+        );
+        if (_isDisposed || !mounted || generation != _playbackGeneration) {
+          session.release();
+          return;
+        }
+        _sharedSession = session;
+        videoController = session.videoController;
+        flickManager = session.flickManager;
+      } else {
+        final controller = await createVideoPlayerController(widget.url);
+        if (_isDisposed || !mounted || generation != _playbackGeneration) {
+          await controller.dispose();
+          return;
+        }
+        videoController = controller;
+        flickManager = FlickManager(
+          videoPlayerController: controller,
+          autoPlay: widget.autoPlay && widget.isActive,
+          autoInitialize: true,
+        );
+      }
+
+      videoController!.addListener(_videoListener);
+      _startCompletionPolling();
+      setState(() {});
+
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_isDisposed && mounted && widget.isActive) {
+          if (widget.autoPlay) {
+            _startAutoPlayback();
+          }
+          _setVolumeIfNeeded();
+        }
+      });
+    } catch (e, st) {
+      debugPrint('QqaiPlayer init failed: $e\n$st');
+      if (mounted && generation == _playbackGeneration) {
+        setState(() {});
+      }
+    }
   }
 
-  void _detachPlayback() {
+  void _detachPlayback({bool clearControllers = false}) {
     _completionTimer?.cancel();
     _completionTimer = null;
     final session = _sharedSession;
     if (session != null) {
       session.release();
       _sharedSession = null;
-      return;
+    } else {
+      flickManager?.dispose();
     }
-    flickManager.dispose();
+    if (clearControllers) {
+      videoController = null;
+      flickManager = null;
+    }
   }
 
   void _videoListener() {
+    final controller = videoController;
+    final manager = flickManager;
+    if (controller == null || manager == null) return;
     if (!_isDisposed &&
         mounted &&
         widget.isActive &&
-        videoController.value.isInitialized) {
-      // 每次状态变化时都检查音量
-      if (videoController.value.volume == 0.0) {
+        controller.value.isInitialized) {
+      if (controller.value.volume == 0.0) {
         _setVolumeIfNeeded();
       }
-      final value = videoController.value;
+      final value = controller.value;
       if (!_didAutoResumeAfterInit && widget.autoPlay && value.isInitialized) {
         _didAutoResumeAfterInit = true;
         _startAutoPlayback();
       }
-      _checkCompleted(value);
+      _checkCompleted(value, manager);
     }
   }
 
   void _startAutoPlayback() {
-    if (_isDisposed || !mounted || !widget.isActive || !widget.autoPlay) return;
-    if (videoController.value.isInitialized &&
-        videoController.value.position >= videoController.value.duration &&
-        videoController.value.duration > Duration.zero) {
-      videoController.seekTo(Duration.zero);
+    final controller = videoController;
+    final manager = flickManager;
+    if (controller == null ||
+        manager == null ||
+        _isDisposed ||
+        !mounted ||
+        !widget.isActive ||
+        !widget.autoPlay) {
+      return;
+    }
+    if (controller.value.isInitialized &&
+        controller.value.position >= controller.value.duration &&
+        controller.value.duration > Duration.zero) {
+      controller.seekTo(Duration.zero);
     }
     _setVolumeIfNeeded();
-    flickManager.flickControlManager?.play();
+    manager.flickControlManager?.play();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_isDisposed || !mounted || !widget.isActive || !widget.autoPlay) {
         return;
       }
-      flickManager.flickControlManager?.play();
+      manager.flickControlManager?.play();
     });
     Timer(const Duration(milliseconds: 200), () {
       if (_isDisposed || !mounted || !widget.isActive || !widget.autoPlay) {
         return;
       }
-      if (videoController.value.isInitialized &&
-          !videoController.value.isPlaying) {
-        flickManager.flickControlManager?.play();
+      if (controller.value.isInitialized && !controller.value.isPlaying) {
+        manager.flickControlManager?.play();
       }
     });
   }
@@ -198,47 +237,50 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     if (widget.onCompleted == null) return;
     _completionTimer = Timer.periodic(const Duration(milliseconds: 250), (_) {
       if (_isDisposed || !mounted || !widget.isActive) return;
-      final value = videoController.value;
+      final controller = videoController;
+      final manager = flickManager;
+      if (controller == null || manager == null) return;
+      final value = controller.value;
       if (!value.isInitialized) return;
-      _checkCompleted(value);
+      _checkCompleted(value, manager);
     });
   }
 
-  void _checkCompleted(VideoPlayerValue value) {
+  void _checkCompleted(VideoPlayerValue value, FlickManager manager) {
     if (_didNotifyCompleted || widget.onCompleted == null) return;
     final duration = value.duration;
     final nearEnd =
         duration > Duration.zero &&
         value.position >= duration - const Duration(milliseconds: 700);
-    final flickEnded = flickManager.flickVideoManager?.isVideoEnded == true;
+    final flickEnded = manager.flickVideoManager?.isVideoEnded == true;
     if (!value.isCompleted && !flickEnded && !nearEnd) return;
     _didNotifyCompleted = true;
     widget.onCompleted?.call();
   }
 
   void _setVolumeIfNeeded() {
+    final controller = videoController;
+    final manager = flickManager;
+    if (controller == null || manager == null) return;
     if (!_isDisposed && mounted && widget.isActive) {
-      if (videoController.value.isInitialized) {
-        // 始终设置音量为 1.0（不检查 _volumeSet，因为可能被重置）
-        if (videoController.value.volume != 1.0) {
-          videoController.setVolume(1.0);
+      if (controller.value.isInitialized) {
+        if (controller.value.volume != 1.0) {
+          controller.setVolume(1.0);
         }
-        // 确保 FlickManager 不是静音状态
-        flickManager.flickControlManager?.unmute();
+        manager.flickControlManager?.unmute();
       }
     }
   }
 
   void _pause() {
     if (_isDisposed || !mounted) return;
-    flickManager.flickControlManager?.autoPause();
+    flickManager?.flickControlManager?.autoPause();
   }
 
   @override
   void dispose() {
     _isDisposed = true;
-    // 移除监听器
-    videoController.removeListener(_videoListener);
+    videoController?.removeListener(_videoListener);
     _completionTimer?.cancel();
     _detachPlayback();
     super.dispose();
@@ -268,6 +310,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
       widget.videoFit == BoxFit.contain;
 
   Widget _buildFlickPlayer({required bool transparentBackground}) {
+    final manager = flickManager!;
     final controlsShell = FlickVideoWithControls(
       videoFit: widget.videoFit,
       blurredBackdrop: _useBlurredVideoBackdrop,
@@ -278,7 +321,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     );
 
     return SafeFlickVideoPlayer(
-      flickManager: flickManager,
+      flickManager: manager,
       flickVideoWithControls: controlsShell,
       flickVideoWithControlsFullscreen: FlickVideoWithControls(
         videoFit: widget.videoFit,
@@ -293,16 +336,32 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
     );
   }
 
+  Widget _buildLoadingShell() {
+    return AspectRatio(
+      aspectRatio: widget.fallbackAspectRatio,
+      child: VideoLoadingPlaceholder(
+        imageUrl: widget.image,
+        showPoster: widget.showLoadingPoster,
+        coverFitMode: widget.coverFitMode,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final controller = videoController;
+    final manager = flickManager;
+    if (controller == null || manager == null) {
+      return _buildLoadingShell();
+    }
+
     return VisibilityDetector(
-      key: ObjectKey(flickManager),
+      key: ObjectKey(manager),
       onVisibilityChanged: (visibility) {
         if (!_isDisposed && mounted) {
           final fraction = safeVisibleFraction(visibility);
           if (widget.isActive && fraction > 0.9 && widget.autoPlay) {
-            flickManager.flickControlManager?.autoResume();
-            // 每次恢复播放时确保音量正确
+            manager.flickControlManager?.autoResume();
             _setVolumeIfNeeded();
           }
           if (!widget.isActive || fraction == 0) {
@@ -311,7 +370,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
         }
       },
       child: ValueListenableBuilder<VideoPlayerValue>(
-        valueListenable: videoController,
+        valueListenable: controller,
         builder: (context, value, child) {
           return AspectRatio(
             aspectRatio: effectiveVideoAspectRatio(
@@ -322,8 +381,8 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
           );
         },
         child: VideoAdOverlay(
-          videoController: videoController,
-          flickManager: flickManager,
+          videoController: controller,
+          flickManager: manager,
           videoId: widget.videoId,
           initialPlaybackState: widget.videoAdInitialState,
           onPlaybackStateChanged: widget.onVideoAdStateChanged,
@@ -332,7 +391,7 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
               _buildFlickPlayer(transparentBackground: _useBlurredVideoBackdrop),
               if (widget.overlayBuilder != null)
                 Positioned.fill(
-                  child: widget.overlayBuilder!(context, videoController),
+                  child: widget.overlayBuilder!(context, controller),
                 ),
             ],
           ),

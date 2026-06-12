@@ -12,6 +12,7 @@ import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
+import 'package:qqai/util/media_video_cache.dart';
 import 'package:video_player/video_player.dart';
 import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -221,12 +222,13 @@ class _SingleVideoDetailPlayer extends StatefulWidget {
 }
 
 class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
-  late FlickManager flickManager;
-  late VideoPlayerController videoController;
+  FlickManager? flickManager;
+  VideoPlayerController? videoController;
   SharedVideoPlaybackSession? _sharedSession;
   bool _isDisposed = false;
   bool _didNotifyCompleted = false;
   bool _initializing = false;
+  int _playbackGeneration = 0;
 
   /// Hero 过渡才复用共享会话；推荐流等场景独立初始化，避免滑动时复用失败控制器。
   bool get _usesSharedPlaybackSession {
@@ -237,53 +239,81 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   @override
   void initState() {
     super.initState();
-    _attachPlayback();
-    videoController.addListener(_videoListener);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _resumeIfActive();
-    });
+    precacheVideo(widget.videoUrl);
+    unawaited(_attachPlayback());
   }
 
-  void _attachPlayback() {
+  Future<void> _attachPlayback() async {
+    final generation = ++_playbackGeneration;
     final videoUrl = widget.videoUrl;
-    if (_usesSharedPlaybackSession && videoUrl.isNotEmpty) {
-      _sharedSession = acquireSharedVideoPlaybackSession(videoUrl);
-      videoController = _sharedSession!.videoController;
-      flickManager = _sharedSession!.flickManager;
-      return;
-    }
 
-    _sharedSession = null;
-    videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-    flickManager = FlickManager(
-      videoPlayerController: videoController,
-      autoPlay: false,
-      autoInitialize: false,
-    );
+    try {
+      if (_usesSharedPlaybackSession && videoUrl.isNotEmpty) {
+        final session = await acquireSharedVideoPlaybackSession(
+          playbackUrl: videoUrl,
+          sessionKey: mediaCacheKey(videoUrl),
+        );
+        if (_isDisposed || !mounted || generation != _playbackGeneration) {
+          session.release();
+          return;
+        }
+        _sharedSession = session;
+        videoController = session.videoController;
+        flickManager = session.flickManager;
+      } else {
+        final controller = await createVideoPlayerController(videoUrl);
+        if (_isDisposed || !mounted || generation != _playbackGeneration) {
+          await controller.dispose();
+          return;
+        }
+        _sharedSession = null;
+        videoController = controller;
+        flickManager = FlickManager(
+          videoPlayerController: controller,
+          autoPlay: false,
+          autoInitialize: false,
+        );
+      }
+
+      videoController!.addListener(_videoListener);
+      setState(() {});
+      WidgetsBinding.instance.addPostFrameCallback((_) => _resumeIfActive());
+    } catch (e, st) {
+      debugPrint('BlogVideoDetailPlayer init failed: $e\n$st');
+      if (mounted && generation == _playbackGeneration) {
+        setState(() {});
+      }
+    }
   }
 
-  void _detachPlayback() {
-    videoController.removeListener(_videoListener);
+  void _detachPlayback({bool clearControllers = false}) {
+    videoController?.removeListener(_videoListener);
     final session = _sharedSession;
     if (session != null) {
       session.release();
       _sharedSession = null;
     } else {
-      flickManager.dispose();
+      flickManager?.dispose();
+    }
+    if (clearControllers) {
+      videoController = null;
+      flickManager = null;
     }
   }
 
   Future<void> _ensureInitialized() async {
+    final controller = videoController;
+    final manager = flickManager;
+    if (controller == null || manager == null) return;
     if (_isDisposed || !mounted || !widget.isActive) return;
-    if (videoController.value.isInitialized || _initializing) return;
-    if (videoController.value.hasError) return;
+    if (controller.value.isInitialized || _initializing) return;
+    if (controller.value.hasError) return;
 
     _initializing = true;
     try {
-      await videoController.initialize();
+      await controller.initialize();
       if (!_isDisposed && mounted && widget.isActive) {
-        flickManager.flickControlManager?.play();
+        manager.flickControlManager?.play();
         _setVolumeIfNeeded();
       }
     } catch (_) {
@@ -297,33 +327,29 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   void _resumeIfActive() {
     if (_isDisposed || !mounted || !widget.isActive) return;
     unawaited(_ensureInitialized());
-    flickManager.flickControlManager?.autoResume();
+    flickManager?.flickControlManager?.autoResume();
     _setVolumeIfNeeded();
   }
 
   Future<void> _retryPlayback() async {
     if (_isDisposed || !mounted) return;
     _didNotifyCompleted = false;
-    _detachPlayback();
     if (_usesSharedPlaybackSession) {
       invalidateSharedVideoPlaybackSession(widget.videoUrl);
     }
-    _attachPlayback();
-    videoController.addListener(_videoListener);
-    setState(() {});
-    _resumeIfActive();
+    _detachPlayback(clearControllers: true);
+    await _attachPlayback();
   }
 
   @override
   void didUpdateWidget(_SingleVideoDetailPlayer oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.videoUrl != widget.videoUrl ||
+    if (mediaCacheKey(oldWidget.videoUrl) != mediaCacheKey(widget.videoUrl) ||
         oldWidget.mediaHeroTag != widget.mediaHeroTag) {
-      _detachPlayback();
+      precacheVideo(widget.videoUrl);
+      _detachPlayback(clearControllers: true);
       _didNotifyCompleted = false;
-      _attachPlayback();
-      videoController.addListener(_videoListener);
-      WidgetsBinding.instance.addPostFrameCallback((_) => _resumeIfActive());
+      unawaited(_attachPlayback());
       return;
     }
     if (oldWidget.isActive != widget.isActive) {
@@ -336,18 +362,20 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   }
 
   void _videoListener() {
-    if (!_isDisposed && mounted && videoController.value.hasError) {
+    final controller = videoController;
+    if (controller == null) return;
+    if (!_isDisposed && mounted && controller.value.hasError) {
       setState(() {});
       return;
     }
     if (!_isDisposed &&
         mounted &&
         widget.isActive &&
-        videoController.value.isInitialized) {
-      if (videoController.value.volume == 0.0) {
+        controller.value.isInitialized) {
+      if (controller.value.volume == 0.0) {
         _setVolumeIfNeeded();
       }
-      final value = videoController.value;
+      final value = controller.value;
       final duration = value.duration;
       if (!_didNotifyCompleted &&
           duration > Duration.zero &&
@@ -359,20 +387,23 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
   }
 
   void _setVolumeIfNeeded() {
+    final controller = videoController;
+    final manager = flickManager;
+    if (controller == null || manager == null) return;
     if (!_isDisposed &&
         mounted &&
         widget.isActive &&
-        videoController.value.isInitialized) {
-      if (videoController.value.volume != 1.0) {
-        videoController.setVolume(1.0);
+        controller.value.isInitialized) {
+      if (controller.value.volume != 1.0) {
+        controller.setVolume(1.0);
       }
-      flickManager.flickControlManager?.unmute();
+      manager.flickControlManager?.unmute();
     }
   }
 
   void _pause() {
     if (_isDisposed || !mounted) return;
-    flickManager.flickControlManager?.autoPause();
+    flickManager?.flickControlManager?.autoPause();
   }
 
   @override
@@ -428,15 +459,31 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
     final poster = resolveMediaUrl(resolveBlogCoverUrl(widget.blog));
     final showToolbarDanmakuComposer = MediaQuery.sizeOf(context).width > 900;
     final letterboxShowFull = widget.coverFitMode == VideoCoverFitMode.showFull;
+    final controller = videoController;
+    final manager = flickManager;
+    if (controller == null || manager == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: VideoLoadingPlaceholder(
+              imageUrl: poster,
+              showPoster: true,
+              coverFitMode: widget.coverFitMode,
+            ),
+          ),
+        ],
+      );
+    }
 
     return VisibilityDetector(
-      key: ObjectKey(flickManager),
+      key: ObjectKey(manager),
       onVisibilityChanged: (visibility) {
         if (!_isDisposed && mounted) {
           final fraction = safeVisibleFraction(visibility);
           if (widget.isActive && fraction > 0.9) {
             unawaited(_ensureInitialized());
-            flickManager.flickControlManager?.autoResume();
+            manager.flickControlManager?.autoResume();
             _setVolumeIfNeeded();
           }
           if (!widget.isActive || fraction == 0) {
@@ -451,8 +498,8 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
             child: _VideoSurfaceHero(
               tag: widget.mediaHeroTag,
               child: VideoAdOverlay(
-                videoController: videoController,
-                flickManager: flickManager,
+                videoController: controller,
+                flickManager: manager,
                 videoId: widget.blog.id,
                 adTopInset: widget.adTopInset ?? 12,
                 adSkipRightInset:
@@ -462,7 +509,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                 child: Stack(
                   children: [
                     SafeFlickVideoPlayer(
-                      flickManager: flickManager,
+                      flickManager: manager,
                       flickVideoWithControls: FlickVideoWithControls(
                         videoFit: BoxFit.contain,
                         blurredBackdrop: letterboxShowFull,
@@ -504,7 +551,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                     Positioned.fill(
                       child: BlogDanmakuOverlay(
                         blogId: widget.blog.id,
-                        positionListenable: videoController,
+                        positionListenable: controller,
                         bottomPadding: 24,
                       ),
                     ),
@@ -514,7 +561,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
             ),
           ),
           FlickManagerBuilder(
-            flickManager: flickManager,
+            flickManager: manager,
             child: BlogDetailVideoToolbar(
               showControlsRow: widget.showToolbarControlsRow,
               segmentCount: widget.segmentCount,
@@ -524,7 +571,7 @@ class _SingleVideoDetailPlayerState extends State<_SingleVideoDetailPlayer> {
                   ? BlogDanmakuComposer(
                       blogId: widget.blog.id,
                       positionMillisGetter: () =>
-                          videoController.value.position.inMilliseconds,
+                          controller.value.position.inMilliseconds,
                     )
                   : null,
             ),

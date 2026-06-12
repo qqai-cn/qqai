@@ -966,7 +966,7 @@ class _DeferredVideoHero extends StatelessWidget {
             url: url,
             autoPlay: true,
             showLoadingPoster: true,
-            sharedPlaybackKey: url,
+            sharedPlaybackKey: mediaCacheKey(url),
           );
     if (heroTag == null || heroTag.isEmpty) return child;
     return Hero(tag: heroTag, transitionOnUserGestures: true, child: child);
