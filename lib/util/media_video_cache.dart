@@ -14,6 +14,9 @@ class MediaVideoCache {
 
   static const _cacheName = 'qqai_media_video';
 
+  /// 播放时若预缓存仍在进行，最多等待此时长后改走网络流。
+  static const Duration playbackWaitForCache = Duration(seconds: 2);
+
   final CacheManager _manager = CacheManager(
     Config(
       _cacheName,
@@ -22,30 +25,16 @@ class MediaVideoCache {
     ),
   );
 
-  final Set<String> _downloading = {};
+  final Map<String, Future<FileInfo>> _inflight = {};
 
   String storageKey(String url) => mediaCacheKey(url);
 
-  /// 列表可见时后台预拉取；已缓存或正在下载则跳过。
+  /// 列表项进入视口时后台预拉取。
   void precache(String? url) {
     if (kIsWeb) return;
     final resolved = _resolve(url);
     if (resolved == null) return;
-    final key = storageKey(resolved);
-    if (_downloading.contains(key)) return;
-    _downloading.add(key);
-    unawaited(() async {
-      try {
-        final existing = await _manager.getFileFromCache(key);
-        if (existing == null) {
-          await _manager.downloadFile(resolved, key: key);
-        }
-      } catch (e, st) {
-        debugPrint('MediaVideoCache.precache failed: $e\n$st');
-      } finally {
-        _downloading.remove(key);
-      }
-    }());
+    unawaited(_downloadToCache(resolved));
   }
 
   Future<File?> getFileIfCached(String url) async {
@@ -56,7 +45,7 @@ class MediaVideoCache {
     return info?.file;
   }
 
-  /// 优先本地文件；未命中则网络播放并后台落盘供下次使用。
+  /// 优先本地文件；预缓存进行中则短暂等待；否则网络播放并继续后台落盘。
   Future<VideoPlayerController> createController(String url) async {
     final resolved = _resolve(url);
     if (resolved == null) {
@@ -67,9 +56,43 @@ class MediaVideoCache {
       if (cached != null) {
         return VideoPlayerController.file(cached);
       }
-      precache(resolved);
+      final downloaded = await _downloadToCache(
+        resolved,
+        timeout: playbackWaitForCache,
+      );
+      if (downloaded != null) {
+        return VideoPlayerController.file(downloaded);
+      }
     }
     return VideoPlayerController.networkUrl(Uri.parse(resolved));
+  }
+
+  Future<File?> _downloadToCache(
+    String resolved, {
+    Duration? timeout,
+  }) async {
+    final key = storageKey(resolved);
+    final existing = await _manager.getFileFromCache(key);
+    if (existing != null) return existing.file;
+
+    final downloadFuture = _inflight.putIfAbsent(
+      key,
+      () => _manager
+          .downloadFile(resolved, key: key)
+          .whenComplete(() => _inflight.remove(key)),
+    );
+
+    try {
+      final info = timeout == null
+          ? await downloadFuture
+          : await downloadFuture.timeout(timeout);
+      return info.file;
+    } on TimeoutException {
+      return null;
+    } catch (e, st) {
+      debugPrint('MediaVideoCache download failed: $e\n$st');
+      return null;
+    }
   }
 
   String? _resolve(String? url) {

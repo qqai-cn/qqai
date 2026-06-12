@@ -54,11 +54,17 @@ class _VisibilityVideoSlotState extends State<VisibilityVideoSlot> {
   void initState() {
     super.initState();
     _shouldMountPlayer = widget.autoPlay;
+    if (hasResolvableMediaUrl(widget.url)) {
+      precacheVideo(widget.url);
+    }
   }
 
   @override
   void didUpdateWidget(VisibilityVideoSlot oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (mediaCacheKey(oldWidget.url) != mediaCacheKey(widget.url)) {
+      precacheVideo(widget.url);
+    }
     if (!oldWidget.autoPlay && widget.autoPlay && !_shouldMountPlayer) {
       _mountTimer?.cancel();
       _mountTimer = null;

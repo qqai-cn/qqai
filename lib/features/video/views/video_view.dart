@@ -20,6 +20,7 @@ import '../../index/presentation/widgets/drawer_page.dart';
 import '../../index/presentation/widgets/lazy_tab_slot.dart';
 import '../../index/providers/home_providers.dart';
 import '../../index/providers/main_shell_tab_reselect_provider.dart';
+import '../../../util/media_video_precache.dart';
 import '../providers/video_play_queue_provider.dart';
 import '../providers/video_recommend_providers.dart';
 
@@ -327,6 +328,11 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
           ref
               .read(videoRecommendCurrentBlogProvider.notifier)
               .select(playable.first);
+          precacheUpcomingBlogVideos(
+            playable,
+            currentIndex: -1,
+            aheadCount: 2,
+          );
         });
         return PageView.builder(
           controller: _pageController,
@@ -341,6 +347,11 @@ class _VideoRecommendTabState extends ConsumerState<_VideoRecommendTab> {
               ref
                   .read(videoRecommendCurrentBlogProvider.notifier)
                   .select(playable[index]);
+              precacheUpcomingBlogVideos(
+                playable,
+                currentIndex: index,
+                aheadCount: 2,
+              );
             }
             if (index >= playable.length - 2) {
               recommendNotifier.loadMore();

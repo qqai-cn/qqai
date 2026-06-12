@@ -22,6 +22,7 @@ import 'package:qqai/features/fabu/providers/fabu_providers.dart';
 import 'package:qqai/features/index/presentation/widgets/app_bar_publish_search_actions.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/media_video_precache.dart';
 
 import '../data/models/profile_models.dart';
 import '../data/repos/profile_repo.dart';
@@ -392,6 +393,8 @@ class _CollectionBlogListPageState extends ConsumerState<CollectionBlogListPage>
       hasMore: false,
       onRetry: _load,
       onRefresh: _refresh,
+      videoUrlForPrecache: blogItemVideoUrlForPrecache,
+      precacheVideoAheadCount: 2,
       itemBuilder: (context, index, item) {
         if (item.blogType == 1) {
           return BlogImgItemView(

@@ -6,6 +6,7 @@ import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/media_video_precache.dart';
 
 import '../../index/providers/home_follow_feed_providers.dart';
 import '../data/blog_route_extra.dart';
@@ -91,6 +92,8 @@ class _BlogViewState extends ConsumerState<BlogView> {
             await ref.read(blogProvider(widget.category).notifier).loadMore();
           }
         },
+        videoUrlForPrecache: blogItemVideoUrlForPrecache,
+        precacheVideoAheadCount: 2,
         itemBuilder: (context, index, blogItem) {
           final heroScope = blogFeedListItemHeroScope(
             category: widget.category,

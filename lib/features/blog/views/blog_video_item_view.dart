@@ -13,6 +13,7 @@ import 'package:qqai/components/video_player/video_aspect_ratio.dart';
 import 'package:qqai/components/video_player/video_ad_overlay.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/config/theme/app_typography.dart';
+import 'package:qqai/util/media_video_precache.dart';
 
 import '../../../../constant/constant.dart';
 import '../../../../providers/auth_providers.dart';
@@ -327,6 +328,11 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     required String mediaHeroTag,
     required double aspectRatio,
   }) {
+    precacheUpcomingBlogSegments(
+      widget.blogItem.resources,
+      currentSegmentIndex: selectedVideoSegmentIndex,
+      aheadCount: 2,
+    );
     return VisibilityVideoSlot(
       key: Key(
         'blog_video_${widget.blogItem.id}_$selectedVideoSegmentIndex',

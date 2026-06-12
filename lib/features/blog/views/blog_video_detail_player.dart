@@ -13,6 +13,7 @@ import 'package:qqai/components/video_player/video_loading_placeholder.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/media_url.dart';
 import 'package:qqai/util/media_video_cache.dart';
+import 'package:qqai/util/media_video_precache.dart';
 import 'package:video_player/video_player.dart';
 import 'package:qqai/util/visibility_safe.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -128,6 +129,14 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
       );
     }
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      precacheUpcomingBlogSegments(
+        widget.blog.resources,
+        currentSegmentIndex: _segmentIndex,
+        aheadCount: 1,
+      );
+    });
+
     if (videoUrls.length == 1) {
       return _SingleVideoDetailPlayer(
         blog: widget.blog,
@@ -152,7 +161,14 @@ class _BlogVideoDetailPlayerState extends State<BlogVideoDetailPlayer> {
           controller: _segmentsPageController,
           scrollDirection: Axis.horizontal,
           itemCount: videoUrls.length,
-          onPageChanged: (index) => setState(() => _segmentIndex = index),
+          onPageChanged: (index) {
+            setState(() => _segmentIndex = index);
+            precacheUpcomingBlogSegments(
+              widget.blog.resources,
+              currentSegmentIndex: index,
+              aheadCount: 1,
+            );
+          },
           itemBuilder: (context, index) {
             return _SingleVideoDetailPlayer(
               key: ValueKey('blog_video_segment_${widget.blog.id}_$index'),

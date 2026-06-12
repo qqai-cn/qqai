@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qqai/components/responsive_masonry_grid.dart';
 import 'package:qqai/components/refresh_status_badge.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 import 'package:qqai/util/api_error_message.dart';
+import 'package:qqai/util/media_video_precache.dart';
 
 /// 异步列表 + 瀑布流 + 加载/错误占位 + 下拉刷新 + 上拉加载更多。
 class AsyncMasonryFeed<T> extends StatefulWidget {
@@ -18,6 +21,10 @@ class AsyncMasonryFeed<T> extends StatefulWidget {
   final bool isRefreshing;
   final bool hasMore;
 
+  /// 若提供，滚动时预缓存视口下方即将出现的视频（仅 [precacheVideoAheadCount] 条）。
+  final String? Function(T item)? videoUrlForPrecache;
+  final int precacheVideoAheadCount;
+
   const AsyncMasonryFeed({
     super.key,
     required this.asyncItems,
@@ -30,6 +37,8 @@ class AsyncMasonryFeed<T> extends StatefulWidget {
     this.isLoadingMore = false,
     this.isRefreshing = false,
     this.hasMore = true,
+    this.videoUrlForPrecache,
+    this.precacheVideoAheadCount = 2,
   });
 
   @override
@@ -40,6 +49,7 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
   final ScrollController _scrollController = ScrollController();
   bool _isLoadingMoreLocally = false;
   bool _hideExternalRefreshStatus = false;
+  Timer? _precacheDebounce;
 
   @override
   void initState() {
@@ -57,12 +67,49 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
 
   @override
   void dispose() {
+    _precacheDebounce?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
   }
 
+  List<T>? _displayItems() {
+    return widget.items ?? widget.asyncItems.whenOrNull(data: (data) => data);
+  }
+
+  void _scheduleVideoPrecacheAhead() {
+    final extract = widget.videoUrlForPrecache;
+    final ahead = widget.precacheVideoAheadCount;
+    if (extract == null || ahead <= 0 || !_scrollController.hasClients) return;
+
+    _precacheDebounce?.cancel();
+    _precacheDebounce = Timer(const Duration(milliseconds: 250), () {
+      if (!mounted) return;
+      final displayItems = _displayItems();
+      if (displayItems == null || displayItems.isEmpty) return;
+
+      final offset = _scrollController.offset;
+      final viewport = _scrollController.position.viewportDimension;
+      final rowEstimate = widget.minColumnWidth * 0.85;
+      final belowViewportStart = ((offset + viewport) / rowEstimate)
+          .floor()
+          .clamp(0, displayItems.length);
+
+      final urls = <String?>[];
+      for (
+        var i = belowViewportStart;
+        i < displayItems.length && urls.length < ahead;
+        i++
+      ) {
+        final url = extract(displayItems[i]);
+        if (url != null && url.isNotEmpty) urls.add(url);
+      }
+      precacheUpcomingVideoUrls(urls, maxCount: ahead);
+    });
+  }
+
   void _onScroll() async {
+    _scheduleVideoPrecacheAhead();
     if (_scrollController.position.pixels >=
             _scrollController.position.maxScrollExtent - 200 &&
         !_isLoadingMoreLocally &&
@@ -100,6 +147,12 @@ class _AsyncMasonryFeedState<T> extends State<AsyncMasonryFeed<T>> {
     return widget.asyncItems.when(
       data: (dataItems) {
         final displayItems = widget.items ?? dataItems;
+        if (widget.videoUrlForPrecache != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            _scheduleVideoPrecacheAhead();
+          });
+        }
         final List<Widget> footerWidgets = [];
         if (widget.isLoadingMore) {
           footerWidgets.add(
