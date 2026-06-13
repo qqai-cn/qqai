@@ -11,4 +11,11 @@ void downloadUint8ListAsFile(
 
 void revokeBlobUrlIfNeeded(String url) {}
 
+/// 为 [Uint8List] 创建可播放/下载的 blob: URL（仅 Web）。
+String createBlobUrlFromBytes(
+  Uint8List bytes, {
+  String mimeType = 'application/octet-stream',
+}) =>
+    '';
+
 Future<Uint8List?> encodeWebpViaBrowserCanvas(img.Image image) async => null;

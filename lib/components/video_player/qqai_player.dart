@@ -155,7 +155,9 @@ class _QqaiPlayerState extends State<QqaiPlayer> {
         }
       });
     } catch (e, st) {
-      debugPrint('QqaiPlayer init failed: $e\n$st');
+      if (e is! TimeoutException) {
+        debugPrint('QqaiPlayer init failed: $e\n$st');
+      }
       if (mounted && generation == _playbackGeneration) {
         setState(() {});
       }

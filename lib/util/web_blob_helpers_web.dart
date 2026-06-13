@@ -30,6 +30,17 @@ void revokeBlobUrlIfNeeded(String url) {
   }
 }
 
+String createBlobUrlFromBytes(
+  Uint8List bytes, {
+  String mimeType = 'application/octet-stream',
+}) {
+  final blob = Blob(
+    [bytes.toJS].toJS,
+    BlobPropertyBag(type: mimeType),
+  );
+  return URL.createObjectURL(blob);
+}
+
 /// Encode to WebP using browser canvas (`toDataURL`), for targets without `dart:html`.
 Future<Uint8List?> encodeWebpViaBrowserCanvas(img.Image image) async {
   final pngBytes = img.encodePng(image);
