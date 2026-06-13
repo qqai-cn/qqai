@@ -146,7 +146,11 @@ class TradeCartItem {
 
   double get priceYuan => (skuPrice ?? 0) / 100.0;
 
-  String get coverUrl => skuPicUrl ?? spuPicUrl ?? '';
+  String get coverUrl {
+    final skuPic = skuPicUrl?.trim();
+    if (skuPic != null && skuPic.isNotEmpty) return skuPic;
+    return spuPicUrl?.trim() ?? '';
+  }
 
   String get title {
     final name = spuName ?? '商品';

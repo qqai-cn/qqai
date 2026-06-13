@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../router/app_routes.dart';
 import 'models/cart_line.dart';
 import 'providers/goods_mall_tab_reselect_provider.dart';
 import 'theme/goods_page_style.dart';
@@ -109,6 +111,10 @@ class _CheckoutEmptyPage extends StatelessWidget {
 }
 
 extension GoodsTabNavigation on BuildContext {
+  /// 商场 Tab 内嵌 Navigator；个人中心等入口经 GoRouter 打开时不在此栈内。
+  bool get _inGoodsTabNavigator =>
+      findAncestorWidgetOfExactType<GoodsTabNavigator>() != null;
+
   NavigatorState get _goodsTabNav => Navigator.of(this);
 
   void pushGoodsDetail(String goodsId) {
@@ -120,10 +126,19 @@ extension GoodsTabNavigation on BuildContext {
   }
 
   void pushGoodsCheckout(List<CartLine> lines) {
+    if (lines.isEmpty) return;
+    if (!_inGoodsTabNavigator) {
+      push(Routes.checkoutPageUrl, extra: lines);
+      return;
+    }
     _goodsTabNav.pushNamed(GoodsTabRoutes.checkout, arguments: lines);
   }
 
   void pushGoodsOrderResult(String orderId) {
+    if (!_inGoodsTabNavigator) {
+      pushReplacement(Routes.orderResultPageUrl, extra: orderId);
+      return;
+    }
     _goodsTabNav.pushReplacementNamed(
       GoodsTabRoutes.orderResult,
       arguments: orderId,
@@ -139,6 +154,10 @@ extension GoodsTabNavigation on BuildContext {
 
   /// 打开购物车并清掉列表之上的页面
   void openGoodsCartFromRoot() {
+    if (!_inGoodsTabNavigator) {
+      go(Routes.cartPageUrl);
+      return;
+    }
     _goodsTabNav.pushNamedAndRemoveUntil(
       GoodsTabRoutes.cart,
       (route) => route.settings.name == GoodsTabRoutes.list,
