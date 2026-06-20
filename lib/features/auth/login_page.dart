@@ -402,17 +402,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         borderRadius: const BorderRadius.horizontal(
                                           left: Radius.circular(12),
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 10),
-                                          child: Text(
-                                            '手机号',
-                                            textAlign: TextAlign.center,
-                                            style: context.typo.caption.copyWith(
+                                        child: Tooltip(
+                                          message: '手机号',
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                            child: Icon(
+                                              Icons.phone_android,
+                                              size: 22,
                                               color: !_loginByQqId
                                                   ? const Color(0xFF00D9F5)
                                                   : c.inactiveTab,
-                                              fontWeight:
-                                                  !_loginByQqId ? FontWeight.w700 : FontWeight.w500,
                                             ),
                                           ),
                                         ),
@@ -428,17 +427,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                         borderRadius: const BorderRadius.horizontal(
                                           right: Radius.circular(12),
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 10),
-                                          child: Text(
-                                            '千千号',
-                                            textAlign: TextAlign.center,
-                                            style: context.typo.caption.copyWith(
+                                        child: Tooltip(
+                                          message: '千千号',
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 10),
+                                            child: Icon(
+                                              Icons.account_circle,
+                                              size: 22,
                                               color: _loginByQqId
                                                   ? const Color(0xFF00D9F5)
                                                   : c.inactiveTab,
-                                              fontWeight:
-                                                  _loginByQqId ? FontWeight.w700 : FontWeight.w500,
                                             ),
                                           ),
                                         ),
