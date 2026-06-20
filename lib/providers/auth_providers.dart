@@ -64,11 +64,16 @@ class AuthNotifier extends _$AuthNotifier {
     );
   }
 
-  // 登录
-  Future<void> login(String username, String password) async {
-    final resp = await loginApi(username: username, password: password);
+  // 登录（手机号或千千号 + 密码）
+  Future<void> login({
+    String? mobile,
+    int? qqId,
+    required String password,
+  }) async {
+    final resp = await loginApi(mobile: mobile, qqId: qqId, password: password);
     if (!ref.mounted) return;
-    await _persistSession(resp, usernameForState: username);
+    final usernameForState = mobile ?? qqId?.toString();
+    await _persistSession(resp, usernameForState: usernameForState);
   }
 
   /// 注册成功后与登录一致写入 token 并进入已登录态

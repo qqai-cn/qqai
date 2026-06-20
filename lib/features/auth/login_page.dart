@@ -65,21 +65,23 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   final _formKey = GlobalKey<FormState>();
-  final _mobileController = TextEditingController();
+  final _accountController = TextEditingController();
   final _passwordController = TextEditingController();
   final _nicknameController = TextEditingController();
   final _idCardController = TextEditingController();
   bool _isRegisterMode = false;
+  bool _loginByQqId = false;
   bool _isLoading = false;
   double _sliderValue = 0;
   bool _sliderVerified = false;
 
   static final _mobileRe = RegExp(r'^1\d{10}$');
+  static final _qqIdRe = RegExp(r'^\d+$');
   static final _idCardRe = RegExp(r'^\d{15}$|^\d{17}[\dXx]$');
 
   @override
   void dispose() {
-    _mobileController.dispose();
+    _accountController.dispose();
     _passwordController.dispose();
     _nicknameController.dispose();
     _idCardController.dispose();
@@ -90,8 +92,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (_isRegisterMode == register) return;
     setState(() {
       _isRegisterMode = register;
+      _loginByQqId = false;
       _sliderValue = 0;
       _sliderVerified = false;
+    });
+  }
+
+  void _setLoginAccountMode(bool byQqId) {
+    if (_loginByQqId == byQqId) return;
+    setState(() {
+      _loginByQqId = byQqId;
+      _accountController.clear();
     });
   }
 
@@ -116,15 +127,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       if (_isRegisterMode) {
         await authNotifier.register(
-          mobile: _mobileController.text.trim(),
+          mobile: _accountController.text.trim(),
           password: _passwordController.text,
           username: _nicknameController.text.trim(),
           idCard: _idCardController.text.trim(),
         );
+      } else if (_loginByQqId) {
+        await authNotifier.login(
+          qqId: int.parse(_accountController.text.trim()),
+          password: _passwordController.text,
+        );
       } else {
         await authNotifier.login(
-          _mobileController.text.trim(),
-          _passwordController.text,
+          mobile: _accountController.text.trim(),
+          password: _passwordController.text,
         );
       }
 
@@ -369,22 +385,102 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
+                          if (!_isRegisterMode) ...[
+                            DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: c.pillFill,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: c.pillBorder),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () => _setLoginAccountMode(false),
+                                        borderRadius: const BorderRadius.horizontal(
+                                          left: Radius.circular(12),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          child: Text(
+                                            '手机号',
+                                            textAlign: TextAlign.center,
+                                            style: context.typo.caption.copyWith(
+                                              color: !_loginByQqId
+                                                  ? const Color(0xFF00D9F5)
+                                                  : c.inactiveTab,
+                                              fontWeight:
+                                                  !_loginByQqId ? FontWeight.w700 : FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(width: 1, height: 22, color: c.borderSubtle),
+                                  Expanded(
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
+                                        onTap: () => _setLoginAccountMode(true),
+                                        borderRadius: const BorderRadius.horizontal(
+                                          right: Radius.circular(12),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(vertical: 10),
+                                          child: Text(
+                                            '千千号',
+                                            textAlign: TextAlign.center,
+                                            style: context.typo.caption.copyWith(
+                                              color: _loginByQqId
+                                                  ? const Color(0xFF00D9F5)
+                                                  : c.inactiveTab,
+                                              fontWeight:
+                                                  _loginByQqId ? FontWeight.w700 : FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                          ],
                           TextFormField(
-                            controller: _mobileController,
+                            controller: _accountController,
                             style: context.typo.body.copyWith(color: c.bodyText),
                             decoration: _loginFieldDecoration(
                               c,
-                              label: '手机号',
-                              prefixIcon: Icons.person,
+                              label: _isRegisterMode
+                                  ? '手机号'
+                                  : (_loginByQqId ? '千千号' : '手机号'),
+                              prefixIcon: _isRegisterMode || !_loginByQqId
+                                  ? Icons.phone_android
+                                  : Icons.tag,
                             ),
-                            keyboardType: TextInputType.phone,
+                            keyboardType: TextInputType.number,
                             validator: (value) {
                               final v = value?.trim() ?? '';
                               if (v.isEmpty) {
-                                return '请输入手机号';
+                                return _isRegisterMode || !_loginByQqId
+                                    ? '请输入手机号'
+                                    : '请输入千千号';
                               }
-                              if (!_mobileRe.hasMatch(v)) {
-                                return '请输入 11 位有效手机号';
+                              if (_isRegisterMode || !_loginByQqId) {
+                                if (!_mobileRe.hasMatch(v)) {
+                                  return '请输入 11 位有效手机号';
+                                }
+                              } else {
+                                if (!_qqIdRe.hasMatch(v)) {
+                                  return '千千号只能包含数字';
+                                }
+                                if (int.tryParse(v) == null || int.parse(v) <= 0) {
+                                  return '请输入有效的千千号';
+                                }
                               }
                               return null;
                             },

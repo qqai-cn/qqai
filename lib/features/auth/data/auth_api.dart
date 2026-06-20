@@ -49,16 +49,23 @@ LoginResponse _parseAuthLoginEnvelope(dynamic data, {required String badFormatMe
 }
 
 Future<LoginResponse> loginApi({
-  required String username,
+  String? mobile,
+  int? qqId,
   required String password,
 }) async {
+  final data = <String, dynamic>{
+    'password': password,
+  };
+  if (qqId != null) {
+    data['qqId'] = qqId;
+  } else if (mobile != null && mobile.isNotEmpty) {
+    data['mobile'] = mobile;
+  }
+
   final Response response = await ApiBaseClient.safeApiCall(
     ApiConstant.LOGIN,
     RequestType.post,
-    data: {
-      'mobile': username,
-      'password': password,
-    },
+    data: data,
   );
 
   return _parseAuthLoginEnvelope(response.data, badFormatMessage: '登录接口返回格式错误');
