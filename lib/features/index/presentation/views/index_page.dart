@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
+import 'package:qqai/features/analytics/page_track_navigator_observer.dart';
+import 'package:qqai/features/analytics/page_track_service.dart';
 import 'package:qqai/features/goods/theme/goods_page_style.dart';
 import 'package:qqai/features/index/data/home_tab_config.dart';
 import 'package:qqai/features/index/presentation/widgets/app_bar_publish_search_actions.dart';
@@ -36,12 +38,27 @@ class _IndexPageState extends ConsumerState<IndexPage>
       vsync: this,
     );
     _tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackHomeTab(_activeHomeTabIndex);
+    });
+  }
+
+  void _trackHomeTab(int index) {
+    if (index < 0 || index >= homeTabConfigs.length) {
+      return;
+    }
+    final tab = homeIndexTabRoute(homeTabConfigs[index].title);
+    PageTrackService.instance.trackPage(
+      pagePath: tab.pagePath,
+      pageName: tab.pageName,
+    );
   }
 
   void _onTabChanged() {
     onLazyTabChanged(_tabController);
     if (!_tabController.indexIsChanging) {
       _activeHomeTabIndex = _tabController.index;
+      _trackHomeTab(_activeHomeTabIndex);
       FocusManager.instance.primaryFocus?.unfocus();
     }
   }
@@ -102,6 +119,7 @@ class _IndexPageState extends ConsumerState<IndexPage>
       } else {
         _refreshHomeTabAt(index);
       }
+      _trackHomeTab(index);
     });
 
     final isWideScreen = 1.sw > 800;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../router/app_routes.dart';
+import '../analytics/page_track_service.dart';
 import 'models/cart_line.dart';
 import 'providers/goods_mall_tab_reselect_provider.dart';
 import 'theme/goods_page_style.dart';
@@ -33,6 +34,17 @@ class _GoodsTabNavigatorState extends ConsumerState<GoodsTabNavigator> {
   final _navigatorKey = GlobalKey<NavigatorState>();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      PageTrackService.instance.trackPage(
+        pagePath: '/goods_page',
+        pageName: '商品列表',
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     ref.listen(goodsMallTabReselectProvider, (previous, next) {
       if (!context.mounted) return;
@@ -48,6 +60,7 @@ class _GoodsTabNavigatorState extends ConsumerState<GoodsTabNavigator> {
     return Navigator(
       key: _navigatorKey,
       initialRoute: GoodsTabRoutes.list,
+      observers: [PageTrackService.instance.goodsTabNavigatorObserver],
       onGenerateRoute: _onGenerateRoute,
     );
   }

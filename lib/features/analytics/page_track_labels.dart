@@ -135,6 +135,13 @@ class PageTrackLabels {
   }) {
     final normalizedPath = _normalizePath(pagePath);
 
+    if (normalizedPath.startsWith('/home/tab/')) {
+      final title = normalizedPath.substring('/home/tab/'.length);
+      if (title.isNotEmpty) {
+        return title;
+      }
+    }
+
     if (routeName != null && routeName.isNotEmpty) {
       final fromRoute = _routeNames[routeName];
       if (fromRoute != null) {

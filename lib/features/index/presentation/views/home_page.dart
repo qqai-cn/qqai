@@ -7,6 +7,8 @@ import '../../../../components/AnimatedBottomBar.dart';
 import '../../../../components/AnimatedLeftBar.dart';
 import '../../../../config/theme/shell_nav_colors.dart';
 import '../../../../features/chat/providers/chat_providers.dart';
+import '../../../../features/analytics/page_track_navigator_observer.dart';
+import '../../../../features/analytics/page_track_service.dart';
 import '../../providers/home_providers.dart';
 import '../../providers/main_shell_tab_reselect_provider.dart';
 import '../widgets/drawer_page.dart';
@@ -38,6 +40,13 @@ class _HomePageState extends ConsumerState<HomePage> {
       return;
     }
     shell.goBranch(index);
+    if (index >= 0 && index < mainShellTabRoutes.length) {
+      final tab = mainShellTabRoutes[index];
+      PageTrackService.instance.trackPage(
+        pagePath: tab.pagePath,
+        pageName: tab.pageName,
+      );
+    }
     // goBranch 不会触发 HomePage rebuild，需同步 MainShellIndexScope 供 LazyShellTab 挂载。
     setState(() {});
   }
