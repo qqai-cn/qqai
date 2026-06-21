@@ -100,6 +100,8 @@ class ApiConstant {
   static const String MEMBER_ADDRESS_DELETE = '/app-api/member/address/delete';
   static const String MEMBER_FEEDBACK_CREATE =
       '/app-api/member/feedback/create';
+  static const String INFRA_PAGE_TRACK_REPORT =
+      '/app-api/infra/page-track/report';
   static const String SYSTEM_AREA_TREE = '/app-api/system/area/tree';
 
   /// 个人中心 / 我的（QQAI blog profile）

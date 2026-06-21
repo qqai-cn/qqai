@@ -29,6 +29,7 @@ import '../features/index/presentation/views/me_page.dart';
 import '../features/index/presentation/views/message_page.dart';
 import '../features/index/presentation/views/video_page.dart';
 import '../features/index/presentation/widgets/lazy_shell_tab.dart';
+import '../features/analytics/page_track_service.dart';
 import '../constant/constant.dart';
 import '../providers/auth_providers.dart';
 import '../util/media_url.dart';
@@ -55,7 +56,7 @@ GoRouter appRouter(Ref ref) {
   final authRefresh = _AuthRefreshListenable(ref);
   ref.onDispose(authRefresh.dispose);
 
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: Routes.HOME,
     refreshListenable: authRefresh,
@@ -801,6 +802,8 @@ GoRouter appRouter(Ref ref) {
       body: Center(child: Text('PageRoute not found: ${state.uri}')),
     ),
   );
+  PageTrackService.instance.bindRouter(router);
+  return router;
 }
 
 class _DeferredVideoDetailPlaceholder extends ConsumerWidget {

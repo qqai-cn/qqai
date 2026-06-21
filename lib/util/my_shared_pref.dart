@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import '../config/translations/localization_service.dart';
 import '../providers/app_theme_preference.dart';
@@ -18,6 +19,7 @@ class MySharedPref {
   static const String _userIdKey = 'user_id';
   static const String _watchHistoryKey = 'watch_history_v1';
   static const String _searchHistoryKey = 'search_history_v1';
+  static const String _visitorIdKey = 'analytics_visitor_id';
   static const String _currentLocalKey = 'current_local';
   static const String _lightThemeKey = 'is_theme_light';
   static const String _themePreferenceKey = 'theme_preference';
@@ -137,5 +139,16 @@ class MySharedPref {
 
   static Future<void> setSearchHistory(List<String> history) =>
       _sharedPreferences.setStringList(_searchHistoryKey, history);
+
+  /// 埋点访客标识（未登录时用于 UV 去重）
+  static Future<String> getOrCreateVisitorId() async {
+    final existing = _sharedPreferences.getString(_visitorIdKey);
+    if (existing != null && existing.isNotEmpty) {
+      return existing;
+    }
+    final visitorId = const Uuid().v4();
+    await _sharedPreferences.setString(_visitorIdKey, visitorId);
+    return visitorId;
+  }
 
 }
