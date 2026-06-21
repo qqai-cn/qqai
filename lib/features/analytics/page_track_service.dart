@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../constant/api_constant.dart';
 import '../../util/api_base_client.dart';
 import '../../util/my_shared_pref.dart';
+import 'page_track_labels.dart';
 
 /// 页面访问埋点：路由变化时自动上报 PV，后端按 userId / visitorId 统计 UV。
 class PageTrackService {
@@ -26,17 +27,31 @@ class PageTrackService {
       return;
     }
     _lastTrackedPath = path;
-    unawaited(reportPageView(pagePath: path, pageName: _routeName(router)));
+    final routeName = _leafRouteName(router);
+    final pageName = PageTrackLabels.resolve(
+      pagePath: path,
+      routeName: routeName,
+    );
+    unawaited(reportPageView(pagePath: path, pageName: pageName));
   }
 
-  String? _routeName(GoRouter router) {
+  /// Shell / Tab 路由需取叶子 GoRoute，否则 name 为空。
+  String? _leafRouteName(GoRouter router) {
     final matches = router.routerDelegate.currentConfiguration.matches;
     if (matches.isEmpty) {
       return null;
     }
-    final route = matches.last.route;
-    if (route is GoRoute) {
-      return route.name;
+
+    RouteMatchBase current = matches.last;
+    while (current is ShellRouteMatch) {
+      if (current.matches.isEmpty) {
+        return null;
+      }
+      current = current.matches.last;
+    }
+
+    if (current is RouteMatch) {
+      return current.route.name;
     }
     return null;
   }
@@ -45,13 +60,16 @@ class PageTrackService {
     required String pagePath,
     String? pageName,
   }) async {
+    final resolvedName = pageName?.trim().isNotEmpty == true
+        ? pageName!.trim()
+        : PageTrackLabels.resolve(pagePath: pagePath);
     try {
       await ApiBaseClient.safeApiCall(
         ApiConstant.INFRA_PAGE_TRACK_REPORT,
         RequestType.post,
         data: {
           'pagePath': pagePath,
-          if (pageName != null && pageName.isNotEmpty) 'pageName': pageName,
+          'pageName': resolvedName,
           'visitorId': await MySharedPref.getOrCreateVisitorId(),
           'platform': _platformLabel(),
         },
