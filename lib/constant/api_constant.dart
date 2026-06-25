@@ -1,5 +1,5 @@
 class ApiConstant {
-  static const String BASE_URL = 'https://qqai.cn';
+  static const String BASE_URL = 'https://aabe.cn';
 
   /// Socket.IO（与 BASE_URL 同域，Nginx 反代 /socket.io/ 到 59092）
   static const String SOCKET_IO_URL = BASE_URL;
