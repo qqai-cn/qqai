@@ -141,7 +141,7 @@ class _Animatedleftbar extends State<Animatedleftbar>
                 _launchURL(Uri(scheme: 'https', host: 'beian.miit.gov.cn'));
               },
               child: Text(
-                '京ICP备2022023998号-2',
+                '京ICP备2022023998号-3',
                 style: context.typo.body.copyWith(
                   color: ShellNavColors.isDark(context)
                       ? DarkThemeColors.bottomBarForegroundMuted
