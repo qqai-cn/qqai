@@ -72,7 +72,7 @@ class _TabPageState extends State<FriendGoodsView>
               children: [
                 Positioned.fill(
                   child: Image.network(
-                    'https://file.qqai.cn/qqai/2025/09/1.webp',
+                    'https://file.aabe.cn/qqai/2025/09/1.webp',
                     fit: BoxFit.cover,
                   ),
                 ),

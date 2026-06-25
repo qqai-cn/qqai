@@ -19,7 +19,7 @@ import '../../../my/providers/my_page_profile.dart';
 /// Drawer 头部用户头像尺寸（[DrawerHeader] 内容区约 136px 高）。
 const double _drawerAvatarSize = 80;
 const double _drawerAvatarRingWidth = 3.5;
-const String _defaultCover = 'https://file.qqai.cn/qqai/2025/09/1.webp';
+const String _defaultCover = 'https://file.aabe.cn/qqai/2025/09/1.webp';
 
 BoxDecoration _drawerHeaderDecoration(String coverUrl) {
   return BoxDecoration(

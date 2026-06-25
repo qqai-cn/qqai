@@ -5,7 +5,7 @@ import 'media_video_cache_partial_download_io.dart'
     if (dart.library.js_interop) 'media_video_cache_partial_download_web.dart'
     as impl;
 
-/// 防盗链 Referer（file.qqai.cn，仅原生 Dio 请求使用）。
+/// 防盗链 Referer（file.aabe.cn，仅原生 Dio 请求使用）。
 const kMediaVideoCacheReferer = 'https://qqai.cn/';
 
 /// 下载视频前缀：最多约 [MediaVideoCachePolicy.maxCachedDuration]（HTTP Range）。

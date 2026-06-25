@@ -35,7 +35,7 @@ class _MyGoodsViewState extends ConsumerState<MyGoodsView>
     with AutomaticKeepAliveClientMixin {
   static const int _pageSize = 12;
   static const String _placeholderCover =
-      'https://file.qqai.cn/qqai/2025/09/1.webp';
+      'https://file.aabe.cn/qqai/2025/09/1.webp';
 
   List<MallProduct> _items = [];
   bool _loading = false;

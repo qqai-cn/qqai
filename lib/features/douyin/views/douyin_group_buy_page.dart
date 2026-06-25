@@ -24,7 +24,7 @@ class DouyinGroupBuyPage extends ConsumerStatefulWidget {
 class _DouyinGroupBuyPageState extends ConsumerState<DouyinGroupBuyPage> {
   static const _pageSize = 12;
   static const _placeholderCover =
-      'https://file.qqai.cn/qqai/2025/09/1.webp';
+      'https://file.aabe.cn/qqai/2025/09/1.webp';
 
   final List<BlogShopProductResp> _items = [];
   final ScrollController _scrollController = ScrollController();

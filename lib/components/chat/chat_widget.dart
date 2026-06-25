@@ -73,7 +73,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   late final ChatController _chatController;
   final _systemUser = const User(id: 'system');
   late final User _meUser;
-  final _defaultAvatar = 'https://file.qqai.cn/qqai/2025/09/1.webp';
+  final _defaultAvatar = 'https://file.aabe.cn/qqai/2025/09/1.webp';
   final _composerController = TextEditingController();
   final _composerFocusNode = FocusNode();
   bool _showEmojiPanel = false;

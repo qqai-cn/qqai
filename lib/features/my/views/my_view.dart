@@ -52,7 +52,7 @@ class _MyViewState extends ConsumerState<MyView> with TickerProviderStateMixin {
   bool _showBottomRefreshStatus = false;
 
   static const String _defaultCover =
-      'https://file.qqai.cn/qqai/2025/09/1.webp';
+      'https://file.aabe.cn/qqai/2025/09/1.webp';
 
   bool get _isSelf => widget.userId == null;
 

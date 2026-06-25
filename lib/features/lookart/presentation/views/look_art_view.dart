@@ -69,7 +69,7 @@ class _LookartViewState extends ConsumerState<LookartView>
             CircleAvatar(
               radius: 15, // 圆形半径
               backgroundImage: NetworkImage(
-                'https://file.qqai.cn/qqai/2025/09/avator.webp',
+                'https://file.aabe.cn/qqai/2025/09/avator.webp',
               ),
               // 可选：当图片未加载时显示的文字（如用户首字母）
               // child: Text('U'),
@@ -263,7 +263,7 @@ class _LookartViewState extends ConsumerState<LookartView>
           child: CircleAvatar(
             radius: 20, // 圆形半径
             backgroundImage: NetworkImage(
-              'https://file.qqai.cn/qqai/2025/09/avator.webp',
+              'https://file.aabe.cn/qqai/2025/09/avator.webp',
             ),
             // 可选：当图片未加载时显示的文字（如用户首字母）
             // child: Text('U'),

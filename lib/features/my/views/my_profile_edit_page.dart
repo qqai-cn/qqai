@@ -25,7 +25,7 @@ class MyProfileEditPage extends ConsumerStatefulWidget {
 
 class _MyProfileEditPageState extends ConsumerState<MyProfileEditPage> {
   static const String _defaultCover =
-      'https://file.qqai.cn/qqai/2025/09/1.webp';
+      'https://file.aabe.cn/qqai/2025/09/1.webp';
 
   bool _loading = true;
   String? _nickname;

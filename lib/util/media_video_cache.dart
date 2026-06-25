@@ -7,7 +7,7 @@ import 'media_video_cache_backend_io.dart'
     if (dart.library.js_interop) 'media_video_cache_backend_web.dart'
     as impl;
 
-/// file.qqai.cn 媒体视频预缓存：App 落盘文件，Web IndexedDB + Blob URL。
+/// file.aabe.cn 媒体视频预缓存：App 落盘文件，Web IndexedDB + Blob URL。
 class MediaVideoCache {
   MediaVideoCache._();
 

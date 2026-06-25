@@ -39,7 +39,7 @@ class SquareItemView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final coverUrl =
         resolveMediaUrl(square.squareImg) ??
-        'https://file.qqai.cn/qqai/2025/09/square.webp';
+        'https://file.aabe.cn/qqai/2025/09/square.webp';
     final avatarUrl = resolveMediaUrl(square.userAvatar);
     final title = (square.squareName?.trim().isNotEmpty ?? false)
         ? square.squareName!.trim()
