@@ -222,47 +222,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   // Logo / Title（品牌图：imgs/qqai_logo.png）
                   Column(
                     children: [
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: c.logoShadowCyan,
-                              blurRadius: 28,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 10),
+                      Image.asset(
+                        'imgs/qqai_logo.png',
+                        width: 96,
+                        height: 96,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 96,
+                          height: 96,
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF00F5A0),
+                                Color(0xFF00D9F5),
+                              ],
                             ),
-                            BoxShadow(
-                              color: c.logoShadowDark,
-                              blurRadius: 16,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: ClipOval(
-                          child: Image.asset(
-                            'imgs/qqai_logo.png',
-                            width: 96,
-                            height: 96,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              width: 96,
-                              height: 96,
-                              alignment: Alignment.center,
-                              decoration: const BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFF00F5A0),
-                                    Color(0xFF00D9F5),
-                                  ],
-                                ),
-                              ),
-                              child: const Icon(
-                                Icons.bolt_rounded,
-                                color: Colors.white,
-                                size: 40,
-                              ),
-                            ),
+                          ),
+                          child: const Icon(
+                            Icons.bolt_rounded,
+                            color: Colors.white,
+                            size: 40,
                           ),
                         ),
                       ),
