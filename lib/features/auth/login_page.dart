@@ -70,7 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final _nicknameController = TextEditingController();
   final _idCardController = TextEditingController();
   bool _isRegisterMode = false;
-  bool _loginByQqId = false;
+  bool _loginByQqId = true;
   bool _isLoading = false;
   double _sliderValue = 0;
   bool _sliderVerified = false;
@@ -92,7 +92,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (_isRegisterMode == register) return;
     setState(() {
       _isRegisterMode = register;
-      _loginByQqId = false;
+      _loginByQqId = !register;
       _sliderValue = 0;
       _sliderVerified = false;
     });

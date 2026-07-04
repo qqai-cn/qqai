@@ -56,7 +56,8 @@ class BlogVideoItemView extends ConsumerStatefulWidget {
 
 class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
   static const double _initialVideoAspectRatio = 15 / 9;
-  static const double _portraitDisplayAspectRatio = 1.1875;
+  /// 竖屏视频在列表中的宽度占比（相对列宽），越小显示越窄。
+  static const double _portraitVideoWidthFactor = 0.58;
 
   String text = '在十几二十岁的年纪遇见了你成为了我最喜欢的那个女孩，对我来说就是上天赐予我最好的礼物。';
   VideoAdPlaybackState? _videoAdState;
@@ -194,129 +195,187 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     required double aspectRatio,
   }) {
     final shopProducts = visibleBlogShopProducts(item);
-    return Card(
-      child: SizedBox(
-        height: _videoItemHeightWithAspectRatio(aspectRatio),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              CreatorHeaderRow(
-                creatorName: widget.blogItem.creatorName ?? '未知用户',
-                care: blogFollowCare(widget.blogItem),
-                metaText: authorFollowerMetaText(
-                  widget.blogItem,
-                  includeDistance: widget.category != HomeBlogTab.local,
-                ),
-                avatarUrl: avatarUrl,
-                creatorLevel: blogCreatorLevel(widget.blogItem),
-                avatarSize: Constant.HEAD_IMG_SEZE,
-                showCareButton: showCareButton,
-                onCareTap: () => blogNotifier.onCareTap(widget.blogItem),
-                avatarHeroTag: avatarHeroTag,
-                onAvatarTap: avatarUrl != null && avatarHeroTag != null
-                    ? () => blogNotifier.onBlogAvatarTap(
-                        context,
-                        widget.blogItem,
-                        avatarHeroTag,
-                        avatarUrl,
-                      )
-                    : null,
-              ),
-              if (preview.isNotEmpty)
-                Padding(
-                  padding: EdgeInsets.only(left: 5, right: 5),
-                  child: Text(
-                    preview,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: bodyStyle.copyWith(
-                      fontSize: (bodyStyle.fontSize ?? 16),
-                    ),
-                  ),
-                ),
-              if (widget.category == HomeBlogTab.mutualAid &&
-                  rewardText != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
-                  child: _RewardAmountText(text: rewardText),
-                ),
-              const SizedBox(height: 2),
-              Expanded(
-                flex: 9,
-                child: Stack(
-                  children: [
-                    _wrapFeedVideoSlot(
-                      aspectRatio: aspectRatio,
-                      slot: _buildFeedVideoSlot(
-                        videoUrl: videoUrl,
-                        coverUrl: coverUrl,
-                        videoUrls: videoUrls,
-                        selectedVideoSegmentIndex: selectedVideoSegmentIndex,
-                        mediaHeroTag: mediaHeroTag,
-                        aspectRatio: aspectRatio,
-                      ),
-                    ),
-                    if (videoUrls.length > 1)
-                      Positioned(
-                        right: 8,
-                        bottom: 8,
-                        child: _VideoSegmentButtons(
-                          count: videoUrls.length,
-                          selectedIndex: selectedVideoSegmentIndex,
-                          onSelected: (index) {
-                            if (index == selectedVideoSegmentIndex) return;
-                            setState(() {
-                              _selectedVideoSegmentIndex = index;
-                              _autoPlaySelectedSegment = false;
-                              if (index != 0) {
-                                _videoAdState = null;
-                              }
-                            });
-                          },
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              if (widget.category == HomeBlogTab.local &&
-                  blogLocalLocationButtonVisible(item))
-                Padding(
-                  padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
-                  child: BlogLocalLocationButton(item: item),
-                ),
-              FeedActionBar(
-                liked: blogLikedByMe(item),
-                likeCount: item.zan,
-                commentCount: item.commentCount,
-                onLike: () => blogNotifier.onZanTap(item),
-                shareCount: item.shareCount,
-                onShare: () => blogNotifier.onShareTap(item),
-                onBlogDeleted: (_) => blogNotifier.onBlogDeleted(item),
-                shareBlog: item,
-                afterShare: shopProducts.isEmpty
-                    ? null
-                    : BlogShopProductCartButton(products: shopProducts),
-                onMenuSelected: (value) {
-                  handleBlogFeedMoreMenuSelection(
-                    context: context,
-                    ref: ref,
-                    item: item,
-                    value: value,
-                    feedActions: blogNotifier,
-                  );
-                },
-                onComment: () => _openVideoDetail(mediaHeroTag),
-                menuBuilder: (context) => feedVideoMoreMenuEntries(
-                  context,
-                  collectLabel: blogCollectedByMe(item) ? '取消收藏' : '收藏',
-                ),
-              ),
-            ],
+    final isPortrait = aspectRatio < 1;
+    final column = Padding(
+      padding: const EdgeInsets.all(8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: isPortrait ? MainAxisSize.min : MainAxisSize.max,
+        children: <Widget>[
+          CreatorHeaderRow(
+            creatorName: widget.blogItem.creatorName ?? '未知用户',
+            care: blogFollowCare(widget.blogItem),
+            metaText: authorFollowerMetaText(
+              widget.blogItem,
+              includeDistance: widget.category != HomeBlogTab.local,
+            ),
+            avatarUrl: avatarUrl,
+            creatorLevel: blogCreatorLevel(widget.blogItem),
+            avatarSize: Constant.HEAD_IMG_SEZE,
+            showCareButton: showCareButton,
+            onCareTap: () => blogNotifier.onCareTap(widget.blogItem),
+            avatarHeroTag: avatarHeroTag,
+            onAvatarTap: avatarUrl != null && avatarHeroTag != null
+                ? () => blogNotifier.onBlogAvatarTap(
+                    context,
+                    widget.blogItem,
+                    avatarHeroTag,
+                    avatarUrl,
+                  )
+                : null,
           ),
-        ),
+          if (preview.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(left: 5, right: 5),
+              child: Text(
+                preview,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: bodyStyle.copyWith(
+                  fontSize: (bodyStyle.fontSize ?? 16),
+                ),
+              ),
+            ),
+          if (widget.category == HomeBlogTab.mutualAid && rewardText != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
+              child: _RewardAmountText(text: rewardText),
+            ),
+          const SizedBox(height: 2),
+          if (isPortrait)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final videoWidth =
+                    constraints.maxWidth * _portraitVideoWidthFactor;
+                final videoHeight = videoWidth / aspectRatio;
+                return SizedBox(
+                  height: videoHeight,
+                  width: constraints.maxWidth,
+                  child: _buildVideoStack(
+                    aspectRatio: aspectRatio,
+                    videoUrl: videoUrl,
+                    coverUrl: coverUrl,
+                    videoUrls: videoUrls,
+                    selectedVideoSegmentIndex: selectedVideoSegmentIndex,
+                    mediaHeroTag: mediaHeroTag,
+                    isPortrait: true,
+                    videoWidth: videoWidth,
+                    videoHeight: videoHeight,
+                  ),
+                );
+              },
+            )
+          else
+            Expanded(
+              flex: 9,
+              child: _buildVideoStack(
+                aspectRatio: aspectRatio,
+                videoUrl: videoUrl,
+                coverUrl: coverUrl,
+                videoUrls: videoUrls,
+                selectedVideoSegmentIndex: selectedVideoSegmentIndex,
+                mediaHeroTag: mediaHeroTag,
+                isPortrait: false,
+              ),
+            ),
+          if (widget.category == HomeBlogTab.local &&
+              blogLocalLocationButtonVisible(item))
+            Padding(
+              padding: const EdgeInsets.only(left: 5, right: 5, top: 4),
+              child: BlogLocalLocationButton(item: item),
+            ),
+          FeedActionBar(
+            liked: blogLikedByMe(item),
+            likeCount: item.zan,
+            commentCount: item.commentCount,
+            onLike: () => blogNotifier.onZanTap(item),
+            shareCount: item.shareCount,
+            onShare: () => blogNotifier.onShareTap(item),
+            onBlogDeleted: (_) => blogNotifier.onBlogDeleted(item),
+            shareBlog: item,
+            afterShare: shopProducts.isEmpty
+                ? null
+                : BlogShopProductCartButton(products: shopProducts),
+            onMenuSelected: (value) {
+              handleBlogFeedMoreMenuSelection(
+                context: context,
+                ref: ref,
+                item: item,
+                value: value,
+                feedActions: blogNotifier,
+              );
+            },
+            onComment: () => _openVideoDetail(mediaHeroTag),
+            menuBuilder: (context) => feedVideoMoreMenuEntries(
+              context,
+              collectLabel: blogCollectedByMe(item) ? '取消收藏' : '收藏',
+            ),
+          ),
+        ],
       ),
+    );
+    return Card(
+      child: isPortrait
+          ? column
+          : SizedBox(
+              height: _landscapeVideoItemHeight(aspectRatio),
+              child: column,
+            ),
+    );
+  }
+
+  Widget _buildVideoStack({
+    required double aspectRatio,
+    required String videoUrl,
+    required String coverUrl,
+    required List<String> videoUrls,
+    required int selectedVideoSegmentIndex,
+    required String mediaHeroTag,
+    required bool isPortrait,
+    double? videoWidth,
+    double? videoHeight,
+  }) {
+    final slot = _buildFeedVideoSlot(
+      videoUrl: videoUrl,
+      coverUrl: coverUrl,
+      videoUrls: videoUrls,
+      selectedVideoSegmentIndex: selectedVideoSegmentIndex,
+      mediaHeroTag: mediaHeroTag,
+      aspectRatio: aspectRatio,
+    );
+    return Stack(
+      children: [
+        if (isPortrait)
+          Align(
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: videoWidth,
+              height: videoHeight,
+              child: slot,
+            ),
+          )
+        else
+          Positioned.fill(child: slot),
+        if (videoUrls.length > 1)
+          Positioned(
+            right: 8,
+            bottom: 8,
+            child: _VideoSegmentButtons(
+              count: videoUrls.length,
+              selectedIndex: selectedVideoSegmentIndex,
+              onSelected: (index) {
+                if (index == selectedVideoSegmentIndex) return;
+                setState(() {
+                  _selectedVideoSegmentIndex = index;
+                  _autoPlaySelectedSegment = false;
+                  if (index != 0) {
+                    _videoAdState = null;
+                  }
+                });
+              },
+            ),
+          ),
+      ],
     );
   }
 
@@ -356,30 +415,14 @@ class _BlogVideoItemViewState extends ConsumerState<BlogVideoItemView> {
     );
   }
 
-  /// 竖屏：按真实比例靠左，模糊只在视频框内；横屏：铺满视频槽位。
-  Widget _wrapFeedVideoSlot({
-    required double aspectRatio,
-    required Widget slot,
-  }) {
-    if (aspectRatio >= 1) {
-      return Positioned.fill(child: slot);
-    }
-    return Align(
-      alignment: Alignment.topLeft,
-      child: AspectRatio(aspectRatio: aspectRatio, child: slot),
-    );
-  }
-
-  double _videoItemHeightWithAspectRatio(double aspectRatio) {
+  /// 横屏：铺满视频槽位。
+  double _landscapeVideoItemHeight(double aspectRatio) {
     final colCount = 1.sw <= 800 ? 1 : 2;
     var widthItem = 1.sw;
     if (colCount > 1) {
       widthItem = widthItem * 0.5;
     }
-    final displayAspectRatio = aspectRatio < 1
-        ? _portraitDisplayAspectRatio
-        : 15 / 9;
-    return widthItem / displayAspectRatio + 162;
+    return widthItem / (15 / 9) + 162;
   }
 
   double? _validVideoAspectRatio(double? value) {
