@@ -6,7 +6,7 @@ import 'media_video_cache_partial_download_io.dart'
     as impl;
 
 /// 防盗链 Referer（file.aabe.cn，仅原生 Dio 请求使用）。
-const kMediaVideoCacheReferer = 'https://qqai.cn/';
+const kMediaVideoCacheReferer = 'https://aabe.cn/';
 
 /// 下载视频前缀：最多约 [MediaVideoCachePolicy.maxCachedDuration]（HTTP Range）。
 Future<Uint8List?> downloadPartialVideoPrefix(

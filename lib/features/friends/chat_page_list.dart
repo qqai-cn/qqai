@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,11 +17,11 @@ import 'package:qqai/features/ai/widgets/ai_assistant_avatar.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
-import 'package:qqai/features/search/theme/search_ai_theme.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/api_base_client.dart';
 import 'package:qqai/util/conversation_list_time_format.dart';
+import 'package:qqai/util/media_url.dart';
 
 /// 消息 Tab：左侧会话列表（IM + AI 助手），右侧或全屏进入聊天。
 class ChatPageList extends ConsumerStatefulWidget {
@@ -315,7 +316,13 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
             // 依赖会话列表刷新时保留旧数据，避免右侧会话被反复卸载重建
             child: asyncConvs.when(
               skipLoadingOnReload: true,
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(
+                child: SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: CircularProgressIndicator(strokeWidth: 3.5),
+                ),
+              ),
               error: (e, _) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -447,7 +454,13 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
               },
               orElse: () => ColoredBox(
                 color: Theme.of(context).scaffoldBackgroundColor,
-                child: const Center(child: CircularProgressIndicator()),
+                child: const Center(
+                  child: SizedBox(
+                    width: 48,
+                    height: 48,
+                    child: CircularProgressIndicator(strokeWidth: 3.5),
+                  ),
+                ),
               ),
             ),
           ),
@@ -504,12 +517,13 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                                 size: 52,
                               )
                             : avatar != null && avatar.isNotEmpty
-                            ? Image.network(
-                                avatar,
+                            ? CachedNetworkImage(
+                                imageUrl: avatar,
+                                cacheKey: mediaCacheKey(avatar),
                                 width: 52,
                                 height: 52,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, _, _) => Image.asset(
+                                errorWidget: (_, _, _) => Image.asset(
                                   useDefault,
                                   width: 52,
                                   height: 52,

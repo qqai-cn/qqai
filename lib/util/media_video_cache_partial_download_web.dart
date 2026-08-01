@@ -7,7 +7,7 @@ import 'package:web/web.dart' as web;
 import 'media_video_cache_policy.dart';
 
 /// Web：用浏览器 fetch（勿手动设 Referer，避免 XHR/CORS 预检失败）。
-/// 防盗链依赖页面自然 Referer（如 https://qqai.cn）。
+/// 防盗链依赖页面自然 Referer（如 https://aabe.cn）。
 Future<Uint8List?> downloadPartialVideoPrefix(
   Dio dio,
   String url, {

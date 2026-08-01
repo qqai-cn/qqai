@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
     <!--
       If you are serving your web app in a path other than the root, change the
@@ -19,10 +19,13 @@
     <meta charset="UTF-8">
     <meta content="IE=Edge" http-equiv="X-UA-Compatible">
     <meta name="description" content="千千AI">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F0F7FC">
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B1A2E">
 
     <!-- iOS meta tags & icons -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="千千Ai">
     <link rel="apple-touch-icon" href="icons/icon-192.png">
 
@@ -34,67 +37,160 @@
     <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
-    <meta name="theme-color" content="#0B1A2E"><title>千千Ai</title>    <link rel="manifest" href="manifest.json">
+    <title>千千Ai</title>
+    <link rel="manifest" href="manifest.json">
 
     <style>
-        html,
-        body {
-            overscroll-behavior-x: none;
+        :root {
+            color-scheme: light dark;
+            --loading-bg: #F0F7FC;
+            --loading-bg-mid: #EEF6FA;
+            --loading-fg: #15202B;
+            --loading-muted: #5A6B7D;
+            --loading-ring: rgba(0, 168, 204, 0.22);
+            --loading-accent: #E53935;
+            --loading-accent-2: #00A8CC;
         }
 
-        .loading {
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --loading-bg: #0B1A2E;
+                --loading-bg-mid: #0E1828;
+                --loading-fg: #E8F0FA;
+                --loading-muted: #8CA0BC;
+                --loading-ring: rgba(0, 217, 245, 0.28);
+                --loading-accent: #FF8A80;
+                --loading-accent-2: #00D9F5;
+            }
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overscroll-behavior-x: none;
+            background: var(--loading-bg);
+            color: var(--loading-fg);
+        }
+
+        #loading {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
+            gap: 18px;
             margin: 0;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            -ms-transform: translate(-50%, -50%);
-            transform: translate(-50%, -50%);
+            background: linear-gradient(
+                160deg,
+                var(--loading-bg) 0%,
+                var(--loading-bg-mid) 55%,
+                var(--loading-bg) 100%
+            );
+            transition: opacity 0.28s ease, visibility 0.28s ease;
+        }
+
+        #loading.is-hiding {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loading-mark {
+            width: 96px;
+            height: 96px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 28px var(--loading-ring);
+            animation: spin 12s linear infinite;
+        }
+
+        .loading-mark img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .loading-text {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            color: var(--loading-muted);
         }
 
         .loader {
-            border: 16px solid #f3f3f3;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
-            border: 15px solid;
-            border-top: 16px solid blue;
-            border-right: 16px solid white;
-            border-bottom: 16px solid blue;
-            border-left: 16px solid white;
-            width: 120px;
-            height: 120px;
-            -webkit-animation: spin 2s linear infinite;
-            animation: spin 2s linear infinite;
-        }
-
-        @-webkit-keyframes spin {
-            0% {
-                -webkit-transform: rotate(0deg);
-            }
-            100% {
-                -webkit-transform: rotate(360deg);
-            }
+            border: 3.5px solid var(--loading-ring);
+            border-top-color: var(--loading-accent);
+            border-right-color: var(--loading-accent-2);
+            animation: spin 0.9s linear infinite;
         }
 
         @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
+            to {
                 transform: rotate(360deg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .loading-mark,
+            .loader {
+                animation: none;
+            }
+        }
+
+        /* 窄屏（手机竖屏）再放大，避免相对视口显得过小 */
+        @media (max-width: 700px) {
+            #loading {
+                gap: 22px;
+            }
+
+            .loading-mark {
+                width: 128px;
+                height: 128px;
+                border-radius: 28px;
+            }
+
+            .loader {
+                width: 56px;
+                height: 56px;
+                border-width: 4.5px;
+            }
+
+            .loading-text {
+                font-size: 17px;
             }
         }
     </style>
 </head>
 <body>
-<div id="loading" class="loading">
-    <div class="loader"></div>
+<div id="loading" role="status" aria-live="polite" aria-label="加载中">
+    <div class="loading-mark">
+        <img src="icons/icon-192.png" alt="千千AI" width="128" height="128">
+    </div>
+    <div class="loader" aria-hidden="true"></div>
+    <div class="loading-text">加载中…</div>
 </div>
 <script>
-    window.addEventListener('flutter-first-frame', function () {
-        document.getElementById('loading')?.remove();
-    });
+    (function () {
+        function hideLoading() {
+            var el = document.getElementById('loading');
+            if (!el) return;
+            el.classList.add('is-hiding');
+            window.setTimeout(function () {
+                el.remove();
+            }, 280);
+        }
+        window.addEventListener('flutter-first-frame', hideLoading);
+    })();
 </script>
 <script src="flutter_bootstrap.js" async></script>
 </body>

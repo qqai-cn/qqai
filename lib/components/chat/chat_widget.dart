@@ -14,6 +14,7 @@ import 'package:flutter_link_previewer/flutter_link_previewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flyer_chat_image_message/flyer_chat_image_message.dart';
 import 'package:flyer_chat_system_message/flyer_chat_system_message.dart';
+import 'package:qqai/components/blog/detail_avatar.dart';
 import 'package:qqai/components/chat/global_chat_socket_service.dart';
 import 'package:qqai/components/chat/qqai_chat_file_message.dart';
 import 'package:qqai/components/chat/qqai_chat_video_message.dart';
@@ -24,13 +25,17 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:qqai/features/ai/data/models/ai_chat_models.dart';
 import 'package:qqai/features/ai/data/repos/ai_chat_repo.dart';
+import 'package:qqai/features/ai/providers/ai_assistants_provider.dart';
+import 'package:qqai/features/ai/widgets/ai_assistant_avatar.dart';
 import 'package:qqai/features/chat/data/chat_message_mapper.dart';
 import 'package:qqai/features/chat/data/chat_message_extra.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
+import 'package:qqai/features/my/providers/my_page_profile.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/chat_message_time_format.dart';
+import 'package:qqai/util/media_url.dart';
 import 'package:uuid/uuid.dart';
 
 import 'chat_file_download.dart';
@@ -80,7 +85,6 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   late final ChatController _chatController;
   final _systemUser = const User(id: 'system');
   late final User _meUser;
-  final _defaultAvatar = 'https://file.aabe.cn/qqai/2025/09/1.webp';
   final _composerController = TextEditingController();
   final _composerFocusNode = FocusNode();
   bool _showEmojiPanel = false;
@@ -97,11 +101,8 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   @override
   void initState() {
     super.initState();
-    _meUser = User(
-      id: widget.currentUserId,
-      imageSource: _defaultAvatar,
-      name: '我',
-    );
+    // 头像走接口签名 URL（?e=&token=），勿写死未签名的 file.aabe.cn
+    _meUser = User(id: widget.currentUserId, name: '我');
     _chatController = InMemoryChatController(messages: widget.initialMessages);
     if (widget.enableSocket && !widget.isAi) {
       _connectToGlobalSocket();
@@ -312,6 +313,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final avatarBook = _resolveAvatarBook();
 
     return Scaffold(
       // appBar: AppBar(title: const Text('Api')),
@@ -481,7 +483,10 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                           left: isCurrentUser ? 8 : 0,
                           right: isCurrentUser ? 0 : 8,
                         ),
-                        child: Avatar(userId: message.authorId),
+                        child: _buildMessageAvatar(
+                          message.authorId,
+                          avatarBook,
+                        ),
                       );
                     } else if (!isSystemMessage) {
                       avatar = const SizedBox(width: 40);
@@ -537,22 +542,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
             onMessageSend: _addItem,
             // onMessageTap: _removeItem1,
             onMessageLongPress: _handleMessageLongPress,
-            resolveUser: (id) => Future.value(switch (id) {
-              final same when same == _meUser.id => _meUser,
-              'system' => _systemUser,
-              kAiChatPeerUserId => const User(
-                id: kAiChatPeerUserId,
-                name: 'AI助手',
-                imageSource: 'https://file.aabe.cn/qqai/2025/09/1.webp',
-              ),
-              final bot when bot == Constant.QQAI_IM_BOT_USER_ID.toString() =>
-                User(
-                  id: bot,
-                  name: '千千AI助手',
-                  imageSource: _defaultAvatar,
-                ),
-              _ => User(id: id, name: '用户 $id', imageSource: _defaultAvatar),
-            }),
+            resolveUser: (id) => Future.value(_resolveUser(id, avatarBook)),
             theme: theme.brightness == Brightness.dark
                 ? ChatTheme.dark()
                 : ChatTheme.light(),
@@ -560,6 +550,119 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
         ],
       ),
     );
+  }
+
+  /// 会话内头像/昵称：优先用接口已签名的 URL（secure_link ?e=&token=）。
+  _ChatAvatarBook _resolveAvatarBook() {
+    final myAvatar = resolveMediaUrl(
+      ref.watch(myPageProfileProvider).asData?.value.avatar,
+    );
+
+    if (widget.isAi) {
+      final assistants = ref.watch(aiAssistantsProvider).asData?.value;
+      AiChatConversationDto? assistant;
+      if (assistants != null) {
+        for (final a in assistants) {
+          if (a.id == widget.conversationId) {
+            assistant = a;
+            break;
+          }
+        }
+      }
+      return _ChatAvatarBook(
+        myAvatar: myAvatar,
+        peerUserId: kAiChatPeerUserId,
+        peerName: (assistant?.title?.trim().isNotEmpty == true)
+            ? assistant!.title!.trim()
+            : 'AI助手',
+        peerAvatar: resolveMediaUrl(assistant?.avatar),
+        aiIsDefault: assistant?.isDefaultAssistant ?? false,
+      );
+    }
+
+    final conversation =
+        ref.watch(chatConversationProvider(widget.conversationId)).asData?.value;
+    final peerUserId = conversation?.peerUserId?.toString();
+    Map<String, ChatGroupMemberDto> members = const {};
+    if (conversation?.isGroup == true) {
+      final list =
+          ref.watch(chatGroupMembersProvider(widget.conversationId)).asData?.value;
+      if (list != null && list.isNotEmpty) {
+        members = {
+          for (final m in list)
+            if (m.userId != null) m.userId!.toString(): m,
+        };
+      }
+    }
+
+    return _ChatAvatarBook(
+      myAvatar: myAvatar,
+      peerUserId: peerUserId,
+      peerName: conversation?.displayTitle,
+      peerAvatar: resolveMediaUrl(conversation?.avatar),
+      members: members,
+    );
+  }
+
+  User _resolveUser(String id, _ChatAvatarBook book) {
+    if (id == _meUser.id) {
+      return User(id: id, name: '我', imageSource: book.myAvatar);
+    }
+    if (id == 'system') return _systemUser;
+    if (id == kAiChatPeerUserId) {
+      return User(
+        id: id,
+        name: book.peerName ?? 'AI助手',
+        imageSource: book.aiIsDefault ? null : book.peerAvatar,
+      );
+    }
+    if (id == Constant.QQAI_IM_BOT_USER_ID.toString()) {
+      return User(
+        id: Constant.QQAI_IM_BOT_USER_ID.toString(),
+        name: '千千AI助手',
+      );
+    }
+    final member = book.members[id];
+    if (member != null) {
+      return User(
+        id: id,
+        name: member.label,
+        imageSource: resolveMediaUrl(member.avatar),
+      );
+    }
+    if (book.peerUserId != null && id == book.peerUserId) {
+      return User(
+        id: id,
+        name: book.peerName ?? '用户 $id',
+        imageSource: book.peerAvatar,
+      );
+    }
+    return User(id: id, name: '用户 $id');
+  }
+
+  Widget _buildMessageAvatar(String userId, _ChatAvatarBook book) {
+    const size = 32.0;
+    if (userId == kAiChatPeerUserId) {
+      return AiAssistantAvatar(
+        isDefault: book.aiIsDefault,
+        avatarUrl: book.peerAvatar,
+        size: size,
+      );
+    }
+    if (userId == Constant.QQAI_IM_BOT_USER_ID.toString()) {
+      return const AiAssistantAvatar(isDefault: true, size: size);
+    }
+    final String? url;
+    if (userId == _meUser.id) {
+      url = book.myAvatar;
+    } else if (book.members.containsKey(userId)) {
+      url = resolveMediaUrl(book.members[userId]?.avatar);
+    } else if (book.peerUserId != null && userId == book.peerUserId) {
+      url = book.peerAvatar;
+    } else {
+      url = null;
+    }
+    return buildDetailAvatar(avatarUrl: url, size: size, context: context);
   }
 
   void _handleMessageLongPress(
@@ -1098,4 +1201,22 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       await _chatController.removeMessage(_chatController.messages[0]);
     }
   }
+}
+
+class _ChatAvatarBook {
+  const _ChatAvatarBook({
+    this.myAvatar,
+    this.peerUserId,
+    this.peerName,
+    this.peerAvatar,
+    this.aiIsDefault = false,
+    this.members = const {},
+  });
+
+  final String? myAvatar;
+  final String? peerUserId;
+  final String? peerName;
+  final String? peerAvatar;
+  final bool aiIsDefault;
+  final Map<String, ChatGroupMemberDto> members;
 }

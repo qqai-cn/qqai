@@ -22,6 +22,15 @@ Future<ChatConversationDto> chatConversation(Ref ref, int conversationId) async 
   return ref.watch(chatRepoProvider).getConversation(conversationId);
 }
 
+/// 群成员（头像/昵称；avatar 已由后端 secure_link 签名）。
+final chatGroupMembersProvider =
+    FutureProvider.autoDispose.family<List<ChatGroupMemberDto>, int>((
+  ref,
+  conversationId,
+) {
+  return ref.watch(chatRepoProvider).listGroupMembers(conversationId);
+});
+
 @riverpod
 Future<List<ChatConversationDto>> chatConversations(Ref ref) async {
   return ref.watch(chatRepoProvider).listConversations();
