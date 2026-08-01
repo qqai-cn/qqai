@@ -19,6 +19,7 @@ import 'package:qqai/components/chat/qqai_chat_file_message.dart';
 import 'package:qqai/components/chat/qqai_chat_video_message.dart';
 import 'package:go_router/go_router.dart';
 import 'package:qqai/components/chat/qqai_chat_text_message.dart';
+import 'package:qqai/constant/constant.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
 import 'package:qqai/features/ai/data/models/ai_chat_models.dart';
@@ -544,6 +545,12 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                 name: 'AI助手',
                 imageSource: 'https://file.aabe.cn/qqai/2025/09/1.webp',
               ),
+              final bot when bot == Constant.QQAI_IM_BOT_USER_ID.toString() =>
+                User(
+                  id: bot,
+                  name: '千千AI助手',
+                  imageSource: _defaultAvatar,
+                ),
               _ => User(id: id, name: '用户 $id', imageSource: _defaultAvatar),
             }),
             theme: theme.brightness == Brightness.dark

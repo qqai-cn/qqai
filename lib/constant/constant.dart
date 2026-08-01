@@ -20,6 +20,10 @@ class Constant {
   static const double SQUARE_SPLIT_WIDTH = 750;
   static const double HEAD_IMG_SEZE = 40;
 
+  /// IM 中 @qqai 助手的技术 senderId（与后端 qqai.im.at-assistant.bot-user-id 一致；
+  /// 人设来自每人好友「千千AI助手」）
+  static const int QQAI_IM_BOT_USER_ID = 888888888;
+
   /// C 端用户无头像时的本地占位图
   static const String DEFAULT_USER_AVATAR = 'imgs/touxiang.jpeg';
   static const String DEFAULT_IMAGE_PLACEHOLDER = 'imgs/img_default.png';
