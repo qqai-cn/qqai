@@ -266,4 +266,4 @@ final class MessageTabUnreadCountProvider
 }
 
 String _$messageTabUnreadCountHash() =>
-    r'c454be7287b9e5844e6288005ad2d0d0405dea9b';
+    r'4748b554ff2215fc8025983a35605119293791d2';

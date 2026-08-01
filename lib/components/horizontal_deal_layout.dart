@@ -248,9 +248,8 @@ class HorizontalDealCard extends StatelessWidget {
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: stretch
-                ? MainAxisAlignment.spaceEvenly
-                : MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.max,
             children: [
               Container(
                 padding: style.useScreenUtil
@@ -266,24 +265,34 @@ class HorizontalDealCard extends StatelessWidget {
                 ),
                 child: Text(
                   tag,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: context.typo.caption.copyWith(
                     color: style.accentColor,
                     fontWeight:
                         style.useScreenUtil ? FontWeight.w200 : FontWeight.w500,
                     fontSize: style.useScreenUtil ? null : 11,
+                    height: 1.1,
                   ),
                 ),
               ),
               if (!stretch) SizedBox(height: style.useScreenUtil ? 0 : 6),
-              Text(
-                title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: titleStyle.copyWith(
-                  fontSize: style.useScreenUtil ? null : 15,
-                  height: style.useScreenUtil ? null : 1.25,
-                  fontWeight:
-                      style.useScreenUtil ? null : FontWeight.w600,
+              Flexible(
+                child: Padding(
+                  padding: stretch
+                      ? const EdgeInsets.symmetric(vertical: 2)
+                      : EdgeInsets.zero,
+                  child: Text(
+                    title,
+                    maxLines: stretch ? 1 : 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: titleStyle.copyWith(
+                      fontSize: style.useScreenUtil ? null : 15,
+                      height: style.useScreenUtil ? 1.15 : 1.25,
+                      fontWeight:
+                          style.useScreenUtil ? null : FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
               if (!stretch) SizedBox(height: style.useScreenUtil ? 0 : 6),
@@ -293,6 +302,7 @@ class HorizontalDealCard extends StatelessWidget {
                   color: style.priceTextColor ?? style.accentColor,
                   fontWeight: FontWeight.bold,
                   fontSize: style.useScreenUtil ? null : 18,
+                  height: 1.1,
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1,

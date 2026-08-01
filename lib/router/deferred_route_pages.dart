@@ -29,7 +29,7 @@ export '../features/goods/views/goods_detail_view.dart';
 export '../features/goods/views/goods_view.dart';
 export '../features/goods/views/order_result_view.dart';
 export '../features/my/views/my_profile_edit_page.dart';
-export '../features/search/search_page.dart';
+export '../features/search/views/search_page.dart';
 export '../features/square/views/square_blog_view.dart';
 export '../features/tool/ai_page.dart' hide ChatWidget;
 export '../features/tool/calendar_tool_page.dart';

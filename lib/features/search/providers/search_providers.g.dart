@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fabu_providers.dart';
+part of 'search_providers.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,52 +9,52 @@ part of 'fabu_providers.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(FabuNotifier)
-const fabuProvider = FabuNotifierProvider._();
+@ProviderFor(SearchNotifier)
+const searchProvider = SearchNotifierProvider._();
 
-final class FabuNotifierProvider
-    extends $NotifierProvider<FabuNotifier, FabuState> {
-  const FabuNotifierProvider._()
+final class SearchNotifierProvider
+    extends $NotifierProvider<SearchNotifier, SearchState> {
+  const SearchNotifierProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'fabuProvider',
+        name: r'searchProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$fabuNotifierHash();
+  String debugGetCreateSourceHash() => _$searchNotifierHash();
 
   @$internal
   @override
-  FabuNotifier create() => FabuNotifier();
+  SearchNotifier create() => SearchNotifier();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(FabuState value) {
+  Override overrideWithValue(SearchState value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<FabuState>(value),
+      providerOverride: $SyncValueProvider<SearchState>(value),
     );
   }
 }
 
-String _$fabuNotifierHash() => r'b7e26162672d2521ce4a6f9d8083f1d41ac1567e';
+String _$searchNotifierHash() => r'3faf9667c726cbd21bbdb6054bda4dda782ed8d6';
 
-abstract class _$FabuNotifier extends $Notifier<FabuState> {
-  FabuState build();
+abstract class _$SearchNotifier extends $Notifier<SearchState> {
+  SearchState build();
   @$mustCallSuper
   @override
   void runBuild() {
     final created = build();
-    final ref = this.ref as $Ref<FabuState, FabuState>;
+    final ref = this.ref as $Ref<SearchState, SearchState>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<FabuState, FabuState>,
-              FabuState,
+              AnyNotifier<SearchState, SearchState>,
+              SearchState,
               Object?,
               Object?
             >;

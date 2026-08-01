@@ -43,8 +43,11 @@ enum FabuPublishType {
     FabuPublishType.help => 3,
   };
 
-  /// 后端 blogType：视频 Tab 为 2，其余为 1
-  int get blogType => this == FabuPublishType.video ? 2 : 1;
+  /// 后端 blogType：含视频为 2，纯图文为 1（发布视频 Tab 固定为 2）
+  int resolveBlogType({required bool hasVideo}) => switch (this) {
+    FabuPublishType.video => 2,
+    FabuPublishType.dynamic || FabuPublishType.help => hasVideo ? 2 : 1,
+  };
 }
 
 class FabuPublishPage extends ConsumerStatefulWidget {
