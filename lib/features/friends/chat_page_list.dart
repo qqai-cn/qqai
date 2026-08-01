@@ -12,6 +12,7 @@ import 'package:qqai/constant/constant.dart';
 import 'package:qqai/features/ai/data/models/ai_chat_models.dart';
 import 'package:qqai/features/ai/data/repos/ai_chat_repo.dart';
 import 'package:qqai/features/ai/providers/ai_assistants_provider.dart';
+import 'package:qqai/features/ai/widgets/ai_assistant_avatar.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
@@ -496,23 +497,11 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                       ),
                       child: ClipOval(
                         child: c.isAi
-                            ? Container(
-                                width: 52,
-                                height: 52,
-                                alignment: Alignment.center,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      SearchAiTheme.cyan,
-                                      SearchAiTheme.mint,
-                                    ],
-                                  ),
-                                ),
-                                child: const Icon(
-                                  Icons.auto_awesome,
-                                  color: Colors.white,
-                                  size: 26,
-                                ),
+                            ? AiAssistantAvatar(
+                                isDefault: c.isDefaultAi ||
+                                    c.name == kDefaultAiAssistantTitle,
+                                avatarUrl: avatar,
+                                size: 52,
                               )
                             : avatar != null && avatar.isNotEmpty
                             ? Image.network(

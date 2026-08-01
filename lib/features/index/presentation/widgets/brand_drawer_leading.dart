@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:qqai/components/brand/qqai_brand_logo.dart';
 import 'package:qqai/config/theme/app_typography.dart';
 
 import '../../providers/home_providers.dart';
@@ -19,10 +20,9 @@ class BrandDrawerLeading extends ConsumerStatefulWidget {
 }
 
 class _BrandDrawerLeadingState extends ConsumerState<BrandDrawerLeading>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   late AnimationController _brandPulseController;
   late Animation<double> _brandBreath;
-  late AnimationController _logoRotateController;
 
   @override
   void initState() {
@@ -35,15 +35,10 @@ class _BrandDrawerLeadingState extends ConsumerState<BrandDrawerLeading>
       parent: _brandPulseController,
       curve: Curves.easeInOut,
     );
-    _logoRotateController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 12),
-    )..repeat();
   }
 
   @override
   void dispose() {
-    _logoRotateController.dispose();
     _brandPulseController.dispose();
     super.dispose();
   }
@@ -125,31 +120,17 @@ class _BrandDrawerLeadingState extends ConsumerState<BrandDrawerLeading>
                   children: [
                     Opacity(
                       opacity: 0.94 + 0.06 * t,
-                      child: RotationTransition(
-                        turns: _logoRotateController,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Image.asset(
-                            'imgs/qqai_logo.png',
-                            width: 28,
-                            height: 28,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const Icon(Icons.menu, size: 28),
-                          ),
+                      child: const QqaiBrandLogo(size: 28),
+                    ),
+                    if (widget.isWideScreen) const SizedBox(width: 8),
+                    if (widget.isWideScreen)
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: _brandMark(context, glowBlur),
                         ),
                       ),
-                    ),
-                    if(widget.isWideScreen)
-                    const SizedBox(width: 8),
-                    if(widget.isWideScreen)
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.centerLeft,
-                        child: _brandMark(context, glowBlur),
-                      ),
-                    ),
                   ],
                 ),
               );

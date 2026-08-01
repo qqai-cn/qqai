@@ -62,6 +62,7 @@ class ChatConversationDto {
     this.sourceType,
     this.updateTime,
     this.isAi = false,
+    this.isDefaultAi = false,
   });
 
   /// IM 单聊
@@ -90,6 +91,9 @@ class ChatConversationDto {
   final String? updateTime;
   final bool isAi;
 
+  /// 系统默认「千千AI助手」（头像固定网站 icon）
+  final bool isDefaultAi;
+
   factory ChatConversationDto.fromJson(Map<String, dynamic> json) {
     return ChatConversationDto(
       id: (json['id'] as num?)?.toInt(),
@@ -108,6 +112,7 @@ class ChatConversationDto {
       sourceType: (json['sourceType'] as num?)?.toInt(),
       updateTime: json['updateTime'] as String?,
       isAi: false,
+      isDefaultAi: false,
     );
   }
 
@@ -118,11 +123,16 @@ class ChatConversationDto {
     bool? pinned,
     String? model,
     String? createTime,
+    String? avatar,
+    bool isDefaultAssistant = false,
   }) {
     return ChatConversationDto(
       id: id,
       type: typeAi,
       name: title,
+      avatar: isDefaultAssistant
+          ? null
+          : (avatar?.trim().isNotEmpty == true ? avatar!.trim() : null),
       pinned: pinned,
       lastMessageSummary: model == null || model.isEmpty ? 'AI 助手' : model,
       lastMessageTime: createTime,
@@ -130,6 +140,7 @@ class ChatConversationDto {
       unreadCount: 0,
       muted: false,
       isAi: true,
+      isDefaultAi: isDefaultAssistant,
     );
   }
 
@@ -141,6 +152,7 @@ class ChatConversationDto {
     bool? pinned,
     int? memberCount,
     bool? isAi,
+    bool? isDefaultAi,
   }) {
     return ChatConversationDto(
       id: id,
@@ -159,6 +171,7 @@ class ChatConversationDto {
       sourceType: sourceType,
       updateTime: updateTime,
       isAi: isAi ?? this.isAi,
+      isDefaultAi: isDefaultAi ?? this.isDefaultAi,
     );
   }
 

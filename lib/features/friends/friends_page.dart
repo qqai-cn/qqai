@@ -18,6 +18,7 @@ import '../../router/app_routes.dart';
 import '../ai/data/models/ai_chat_models.dart';
 import '../ai/providers/ai_assistants_provider.dart';
 import '../ai/views/ai_friend_detail_page.dart';
+import '../ai/widgets/ai_assistant_avatar.dart';
 import '../data/models/contact.dart';
 import 'data/friend_models.dart';
 import 'friends_detail_view.dart';
@@ -126,10 +127,13 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
               ? a.title!.trim()
               : 'AI助手',
           tagIndex: '助',
-          img: null,
+          img: a.isDefaultAssistant ? null : a.avatar,
           id: id,
           isAi: true,
-          iconData: Icons.auto_awesome,
+          isDefaultAi: a.isDefaultAssistant,
+          iconData: a.isDefaultAssistant || (a.avatar?.trim().isNotEmpty != true)
+              ? Icons.auto_awesome
+              : null,
           bgColor: const Color(0xFF00A8CC),
         ),
       );
@@ -490,6 +494,15 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     Color? defHeaderBgColor,
   }) {
     const size = 36.0;
+    if (model.isAi) {
+      return AiAssistantAvatar(
+        isDefault: model.isDefaultAi,
+        avatarUrl: model.img,
+        size: size,
+        circular: false,
+        borderRadius: BorderRadius.circular(4),
+      );
+    }
     final resolvedAvatar = resolveMediaUrl(model.img);
 
     return Container(

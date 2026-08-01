@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:qqai/features/search/theme/search_ai_theme.dart';
 import 'package:qqai/router/app_routes.dart';
+import 'package:qqai/util/api_base_client.dart';
 
 import '../data/models/ai_chat_models.dart';
 import '../data/repos/ai_chat_repo.dart';
 import '../providers/ai_assistants_provider.dart';
+import '../widgets/ai_assistant_avatar.dart';
 
 /// AI 好友详情：发消息 + 设定（对标后管对话设定）
 class AiFriendDetailPage extends ConsumerStatefulWidget {
@@ -41,6 +44,8 @@ class _AiFriendDetailPageState extends ConsumerState<AiFriendDetailPage> {
   double _temperature = 0.7;
   int _maxTokens = 4096;
   int _maxContexts = 10;
+  String? _avatarUrl;
+  bool _uploadingAvatar = false;
 
   bool get _isDefault => _conversation?.isDefaultAssistant == true;
 
@@ -92,6 +97,7 @@ class _AiFriendDetailPageState extends ConsumerState<AiFriendDetailPage> {
       _temperature = c.temperature ?? 0.7;
       _maxTokens = c.maxTokens ?? 4096;
       _maxContexts = c.maxContexts ?? 10;
+      _avatarUrl = c.isDefaultAssistant ? null : c.avatar;
       setState(() => _loading = false);
     } catch (e) {
       if (mounted) {
@@ -193,6 +199,41 @@ class _AiFriendDetailPageState extends ConsumerState<AiFriendDetailPage> {
     context.go(
       '${Routes.messagePage}?aiConversationId=${widget.conversationId}',
     );
+  }
+
+  Future<void> _pickAndUploadAvatar() async {
+    if (_isDefault || _uploadingAvatar) return;
+    final file = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+    );
+    if (file == null) return;
+    setState(() => _uploadingAvatar = true);
+    try {
+      final url = await ApiBaseClient.uploadFile(
+        file: file,
+        directory: 'qqai/ai-avatar',
+      );
+      await ref.read(aiChatRepoProvider).updateMyConversation(
+            id: widget.conversationId,
+            avatar: url,
+          );
+      ref.invalidate(aiAssistantsProvider);
+      if (mounted) {
+        setState(() => _avatarUrl = url);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('头像已更新')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('头像上传失败：$e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
   }
 
   InputDecoration _fieldDecoration(
@@ -324,6 +365,9 @@ class _AiFriendDetailPageState extends ConsumerState<AiFriendDetailPage> {
                           title: _conversation?.title ?? 'AI助手',
                           model: _conversation?.model ?? 'AI 助手',
                           isDefault: _isDefault,
+                          avatarUrl: _avatarUrl,
+                          uploadingAvatar: _uploadingAvatar,
+                          onAvatarTap: _isDefault ? null : _pickAndUploadAvatar,
                           onChat: _openChat,
                         ),
                       ),
@@ -538,12 +582,18 @@ class _ProfileCard extends StatelessWidget {
     required this.model,
     required this.isDefault,
     required this.onChat,
+    this.avatarUrl,
+    this.uploadingAvatar = false,
+    this.onAvatarTap,
   });
 
   final SearchAiTheme ai;
   final String title;
   final String model;
   final bool isDefault;
+  final String? avatarUrl;
+  final bool uploadingAvatar;
+  final VoidCallback? onAvatarTap;
   final VoidCallback onChat;
 
   @override
@@ -558,26 +608,82 @@ class _ProfileCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: ai.aiBadgeGradient,
-              boxShadow: [
-                BoxShadow(
-                  color: SearchAiTheme.cyan.withValues(alpha: 0.28),
-                  blurRadius: 18,
-                  offset: const Offset(0, 6),
+          GestureDetector(
+            onTap: onAvatarTap,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: SearchAiTheme.cyan.withValues(alpha: 0.28),
+                        blurRadius: 18,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: AiAssistantAvatar(
+                    isDefault: isDefault,
+                    avatarUrl: avatarUrl,
+                    size: 72,
+                  ),
                 ),
+                if (uploadingAvatar)
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.35),
+                    ),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (!isDefault && !uploadingAvatar)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: ai.accent,
+                        border: Border.all(color: ai.cardBg, width: 2),
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt_outlined,
+                        size: 12,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
               ],
             ),
-            child: const Icon(
-              Icons.auto_awesome,
-              color: Colors.white,
-              size: 32,
-            ),
           ),
+          if (isDefault) ...[
+            SizedBox(height: 8.h),
+            Text(
+              '官方头像，不可修改',
+              style: TextStyle(color: ai.textSecondary, fontSize: 12),
+            ),
+          ] else if (onAvatarTap != null) ...[
+            SizedBox(height: 8.h),
+            Text(
+              '点击头像更换',
+              style: TextStyle(color: ai.textSecondary, fontSize: 12),
+            ),
+          ],
           SizedBox(height: 12.h),
           Text(
             title,

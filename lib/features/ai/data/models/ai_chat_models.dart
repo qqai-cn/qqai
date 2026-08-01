@@ -15,6 +15,7 @@ class AiChatConversationDto {
     this.maxContexts,
     this.assistant,
     this.defaultAssistant,
+    this.avatar,
     this.createTime,
   });
 
@@ -31,6 +32,7 @@ class AiChatConversationDto {
   final int? maxContexts;
   final bool? assistant;
   final bool? defaultAssistant;
+  final String? avatar;
   final String? createTime;
 
   bool get isDefaultAssistant =>
@@ -51,6 +53,7 @@ class AiChatConversationDto {
       maxContexts: (json['maxContexts'] as num?)?.toInt(),
       assistant: json['assistant'] as bool?,
       defaultAssistant: json['defaultAssistant'] as bool?,
+      avatar: json['avatar'] as String?,
       createTime: json['createTime']?.toString(),
     );
   }

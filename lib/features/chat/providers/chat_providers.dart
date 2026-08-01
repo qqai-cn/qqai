@@ -47,6 +47,8 @@ final messageInboxConversationsProvider =
         pinned: a.pinned,
         model: a.model,
         createTime: a.createTime,
+        avatar: a.avatar,
+        isDefaultAssistant: a.isDefaultAssistant,
       ),
     );
   }

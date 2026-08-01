@@ -36,6 +36,7 @@ abstract class IAiChatRepo {
     double? temperature,
     int? maxTokens,
     int? maxContexts,
+    String? avatar,
   });
 
   Future<void> deleteMyConversation(int id);
@@ -169,6 +170,7 @@ class AiChatRepo implements IAiChatRepo {
     double? temperature,
     int? maxTokens,
     int? maxContexts,
+    String? avatar,
   }) async {
     final body = <String, dynamic>{'id': id};
     if (title != null) body['title'] = title;
@@ -178,6 +180,7 @@ class AiChatRepo implements IAiChatRepo {
     if (temperature != null) body['temperature'] = temperature;
     if (maxTokens != null) body['maxTokens'] = maxTokens;
     if (maxContexts != null) body['maxContexts'] = maxContexts;
+    if (avatar != null) body['avatar'] = avatar;
     final response = await ApiBaseClient.safeApiCall(
       ApiConstant.AI_CHAT_CONVERSATION_UPDATE_MY,
       RequestType.put,
