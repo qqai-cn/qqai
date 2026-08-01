@@ -19,6 +19,9 @@ const double kSearchResultGridTwoColMinWidth = 520;
 /// 搜索结果分类吸顶栏高度。
 const double kSearchResultCategoryBarHeight = 52;
 
+/// 分类 Tab 最大宽度，避免超宽屏三段拉得过散、字像「消失」。
+const double kSearchCategoryBarMaxWidth = 420;
+
 bool searchIsWideSplit(double width) => width >= kSearchWideSplitBreakpoint;
 
 double searchPageHorizontalGap(double width) {

@@ -113,12 +113,23 @@ class SearchResultPanel extends StatelessWidget {
                   child: SizedBox(
                     height: kSearchResultCategoryBarHeight,
                     child: Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 10.w, vertical: 1),
-                      child: SearchResultCategoryBar(
-                        state: state,
-                        compact: true,
-                        onCategoryChanged: onCategoryChanged,
+                      // 不用 .w：超宽屏 ScreenUtil 会把水平 padding 放大到挤掉文字。
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 1,
+                      ),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: kSearchCategoryBarMaxWidth,
+                          ),
+                          child: SearchResultCategoryBar(
+                            state: state,
+                            compact: true,
+                            onCategoryChanged: onCategoryChanged,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -157,14 +168,15 @@ class SearchResultCategoryBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ai = SearchAiTheme.of(context);
+    // 吸顶栏高度固定，padding/间距勿用 .w，否则超宽屏会被放大后裁切文字。
     return Container(
       margin: compact
           ? EdgeInsets.zero
-          : EdgeInsets.fromLTRB(10.w, 8.h, 10.w, 0),
-      padding: EdgeInsets.all(compact ? 3.w : 4.w),
+          : const EdgeInsets.fromLTRB(10, 8, 10, 0),
+      padding: EdgeInsets.all(compact ? 3 : 4),
       decoration: BoxDecoration(
         color: ai.categoryTrack,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: ai.cardBorder),
       ),
       child: Row(
@@ -177,7 +189,7 @@ class SearchResultCategoryBar extends StatelessWidget {
             compact: compact,
             onTap: () => onCategoryChanged(SearchCategory.blog),
           ),
-          SizedBox(width: 6.w),
+          const SizedBox(width: 6),
           _CategoryChip(
             label: SearchCategory.video.label,
             count: state.video.total,
@@ -186,7 +198,7 @@ class SearchResultCategoryBar extends StatelessWidget {
             compact: compact,
             onTap: () => onCategoryChanged(SearchCategory.video),
           ),
-          SizedBox(width: 6.w),
+          const SizedBox(width: 6),
           _CategoryChip(
             label: SearchCategory.goods.label,
             count: state.goods.total,
@@ -227,7 +239,7 @@ class _CategoryChip extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         decoration: BoxDecoration(
           color: selected ? ai.categorySelectedBg : Colors.transparent,
-          borderRadius: BorderRadius.circular(9.r),
+          borderRadius: BorderRadius.circular(9),
           boxShadow: selected
               ? [
                   BoxShadow(
@@ -241,17 +253,19 @@ class _CategoryChip extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(9.r),
+            borderRadius: BorderRadius.circular(9),
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: compact ? 6 : 8.h),
+              padding: EdgeInsets.symmetric(vertical: compact ? 6 : 8),
               child: Text(
                 '$label $countLabel',
                 textAlign: TextAlign.center,
                 maxLines: 1,
+                softWrap: false,
                 overflow: TextOverflow.ellipsis,
-                style: context.typo.body.copyWith(
+                style: TextStyle(
                   fontSize: compact ? 13 : 14,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                  height: 1.2,
+                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
                   color: selected ? ai.selectedFg : ai.text,
                 ),
               ),
