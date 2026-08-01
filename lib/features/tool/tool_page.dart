@@ -50,10 +50,21 @@ class _ToolPage extends State<ToolPage> {
     allToolItemBeans.add(
       ToolItemBean(
         imageUrl: "imgs/ai.svg",
+        title: "AI对话",
+        subTitle: "千千 AI",
+        desc: "多轮对话，流式回复",
+        indexLetter: "ai",
+        clickUrl: Routes.aiChatPageUrl,
+      ),
+    );
+
+    allToolItemBeans.add(
+      ToolItemBean(
+        imageUrl: "imgs/ai.svg",
         title: "AI小助手",
         subTitle: "谷歌Gemini AI",
-        desc: "文本回答",
-        indexLetter: "ai",
+        desc: "文本回答（本地演示）",
+        indexLetter: "gemini",
         clickUrl: Routes.aiPageUrl,
       ),
     );

@@ -58,6 +58,8 @@ class Routes {
   static const String publishHelpPageUrl = "/publish_help_page";
   static const String publishShortVideoPageUrl = "/publish_short_video_page";
   static const String aiPageUrl = "/ai_page";
+  static const String aiChatPageUrl = "/ai/chat";
+  static const String aiFriendDetailPageUrl = "/ai/friend";
   static const String weatherPageUrl = "/weather";
   static const String weatherLeftPageUrl = "/weather/left";
   static const String weatherRightPageUrl = "/weather/detail";

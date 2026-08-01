@@ -1,7 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../providers/auth_providers.dart';
+import '../../ai/data/models/ai_chat_models.dart';
+import '../../ai/providers/ai_assistants_provider.dart';
 import '../../friends/providers/friend_providers.dart';
 import '../data/models/chat_models.dart';
 import '../data/repos/chat_repo.dart';
@@ -23,6 +26,48 @@ Future<ChatConversationDto> chatConversation(Ref ref, int conversationId) async 
 Future<List<ChatConversationDto>> chatConversations(Ref ref) async {
   return ref.watch(chatRepoProvider).listConversations();
 }
+
+/// 消息 Tab 收件箱：IM 会话 + AI 助手（合成列表）。
+/// 不用 autoDispose，避免切会话时短暂无监听导致反复销毁重建。
+final messageInboxConversationsProvider =
+    FutureProvider<List<ChatConversationDto>>((ref) async {
+  final im = await ref.watch(chatConversationsProvider.future);
+  List<AiChatConversationDto> assistants = const [];
+  try {
+    assistants = await ref.watch(aiAssistantsProvider.future);
+  } catch (_) {}
+  final aiItems = <ChatConversationDto>[];
+  for (final a in assistants) {
+    final id = a.id;
+    if (id == null) continue;
+    aiItems.add(
+      ChatConversationDto.fromAiAssistant(
+        id: id,
+        title: (a.title?.trim().isNotEmpty == true) ? a.title!.trim() : 'AI助手',
+        pinned: a.pinned,
+        model: a.model,
+        createTime: a.createTime,
+      ),
+    );
+  }
+  final merged = [...aiItems, ...im];
+  merged.sort((a, b) {
+    final ap = a.pinned == true ? 1 : 0;
+    final bp = b.pinned == true ? 1 : 0;
+    if (ap != bp) return bp - ap;
+    final ad = a.isAi && a.name == kDefaultAiAssistantTitle ? 1 : 0;
+    final bd = b.isAi && b.name == kDefaultAiAssistantTitle ? 1 : 0;
+    if (ad != bd) return bd - ad;
+    final at = DateTime.tryParse(a.lastMessageTime ?? a.updateTime ?? '')
+            ?.millisecondsSinceEpoch ??
+        0;
+    final bt = DateTime.tryParse(b.lastMessageTime ?? b.updateTime ?? '')
+            ?.millisecondsSinceEpoch ??
+        0;
+    return bt.compareTo(at);
+  });
+  return merged;
+});
 
 @riverpod
 Future<List<GroupInvitationPendingDto>> groupInvitationPendingIncoming(

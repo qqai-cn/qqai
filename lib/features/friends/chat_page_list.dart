@@ -9,19 +9,28 @@ import 'package:pull_down_button/pull_down_button.dart';
 import 'package:qqai/components/chat/chat_widget.dart';
 import 'package:qqai/config/theme/app_action_colors.dart';
 import 'package:qqai/constant/constant.dart';
+import 'package:qqai/features/ai/data/models/ai_chat_models.dart';
+import 'package:qqai/features/ai/data/repos/ai_chat_repo.dart';
+import 'package:qqai/features/ai/providers/ai_assistants_provider.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
 import 'package:qqai/features/chat/data/repos/chat_repo.dart';
 import 'package:qqai/features/chat/providers/chat_providers.dart';
+import 'package:qqai/features/search/theme/search_ai_theme.dart';
 import 'package:qqai/providers/auth_providers.dart';
 import 'package:qqai/router/app_routes.dart';
 import 'package:qqai/util/api_base_client.dart';
 import 'package:qqai/util/conversation_list_time_format.dart';
 
-/// 消息 Tab：左侧会话列表（接口 [CHAT_CONVERSATION_LIST]），右侧或全屏进入聊天。
+/// 消息 Tab：左侧会话列表（IM + AI 助手），右侧或全屏进入聊天。
 class ChatPageList extends ConsumerStatefulWidget {
-  const ChatPageList({super.key, this.initialConversationId});
+  const ChatPageList({
+    super.key,
+    this.initialConversationId,
+    this.initialAiConversationId,
+  });
 
   final int? initialConversationId;
+  final int? initialAiConversationId;
 
   @override
   ConsumerState<ChatPageList> createState() => _ChatPageListState();
@@ -29,6 +38,7 @@ class ChatPageList extends ConsumerStatefulWidget {
 
 class _ChatPageListState extends ConsumerState<ChatPageList> {
   int? _selectedConversationId;
+  bool _selectedIsAi = false;
   final String useDefault = 'imgs/user_default.png';
 
   static Color _selectedTileBg(BuildContext context) {
@@ -51,41 +61,54 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
   @override
   void initState() {
     super.initState();
-    _selectedConversationId = widget.initialConversationId;
+    if (widget.initialAiConversationId != null) {
+      _selectedConversationId = widget.initialAiConversationId;
+      _selectedIsAi = true;
+    } else {
+      _selectedConversationId = widget.initialConversationId;
+      _selectedIsAi = false;
+    }
   }
 
   @override
   void didUpdateWidget(covariant ChatPageList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialConversationId != widget.initialConversationId &&
+    if (widget.initialAiConversationId != null &&
+        widget.initialAiConversationId != oldWidget.initialAiConversationId) {
+      _selectedConversationId = widget.initialAiConversationId;
+      _selectedIsAi = true;
+    } else if (oldWidget.initialConversationId != widget.initialConversationId &&
         widget.initialConversationId != null) {
       _selectedConversationId = widget.initialConversationId;
+      _selectedIsAi = false;
     }
   }
 
   Future<void> _refreshConversations() async {
     ref.invalidate(chatConversationsProvider);
-    await ref.read(chatConversationsProvider.future);
+    ref.invalidate(aiAssistantsProvider);
+    await ref.read(messageInboxConversationsProvider.future);
   }
 
-  Future<void> _markConversationRead(int conversationId) async {
-    try {
-      await ref
-          .read(chatRepoProvider)
-          .markConversationRead(conversationId: conversationId);
-      ref.invalidate(chatConversationsProvider);
-    } catch (_) {}
+  bool _isSelected(ChatConversationDto c) {
+    return c.id != null &&
+        c.id == _selectedConversationId &&
+        c.isAi == _selectedIsAi;
   }
 
   Future<void> _openConversation(ChatConversationDto c) async {
     final id = c.id;
     if (id == null) return;
-    setState(() => _selectedConversationId = id);
-    if ((c.unreadCount ?? 0) > 0) {
-      unawaited(_markConversationRead(id));
-    }
+    setState(() {
+      _selectedConversationId = id;
+      _selectedIsAi = c.isAi;
+    });
     if (1.sw < Constant.CHAT_TWO_VIEW_WIDTH) {
-      await context.push('${Routes.chat}/$id');
+      if (c.isAi) {
+        await context.push('${Routes.chat}/ai/$id');
+      } else {
+        await context.push('${Routes.chat}/$id');
+      }
       if (mounted) {
         await _refreshConversations();
       }
@@ -116,23 +139,25 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
             unawaited(_togglePin(c));
           },
         ),
-        PullDownMenuItem(
-          title: muted ? '取消免打扰' : '免打扰',
-          icon: muted ? CupertinoIcons.bell : CupertinoIcons.bell_slash,
-          onTap: () {
-            if (!mounted) return;
-            unawaited(_toggleMute(c));
-          },
-        ),
-        PullDownMenuItem(
-          title: '删除',
-          icon: CupertinoIcons.delete,
-          isDestructive: true,
-          onTap: () {
-            if (!mounted) return;
-            unawaited(_confirmDelete(c));
-          },
-        ),
+        if (!c.isAi)
+          PullDownMenuItem(
+            title: muted ? '取消免打扰' : '免打扰',
+            icon: muted ? CupertinoIcons.bell : CupertinoIcons.bell_slash,
+            onTap: () {
+              if (!mounted) return;
+              unawaited(_toggleMute(c));
+            },
+          ),
+        if (!(c.isAi && c.name == kDefaultAiAssistantTitle))
+          PullDownMenuItem(
+            title: '删除',
+            icon: CupertinoIcons.delete,
+            isDestructive: true,
+            onTap: () {
+              if (!mounted) return;
+              unawaited(_confirmDelete(c));
+            },
+          ),
       ],
     );
   }
@@ -142,9 +167,18 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     if (id == null) return;
     final nextPinned = !(c.pinned == true);
     try {
-      await ref
-          .read(chatRepoProvider)
-          .updateConversationPinned(conversationId: id, pinned: nextPinned);
+      if (c.isAi) {
+        await ref.read(aiChatRepoProvider).updateMyConversation(
+              id: id,
+              pinned: nextPinned,
+            );
+        ref.invalidate(aiAssistantsProvider);
+      } else {
+        await ref.read(chatRepoProvider).updateConversationPinned(
+              conversationId: id,
+              pinned: nextPinned,
+            );
+      }
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
@@ -201,9 +235,17 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
     );
     if (ok != true || !mounted) return;
     try {
-      await ref.read(chatRepoProvider).deleteConversation(id);
-      if (_selectedConversationId == id) {
-        setState(() => _selectedConversationId = null);
+      if (c.isAi) {
+        await ref.read(aiChatRepoProvider).deleteMyConversation(id);
+        ref.invalidate(aiAssistantsProvider);
+      } else {
+        await ref.read(chatRepoProvider).deleteConversation(id);
+      }
+      if (_selectedConversationId == id && _selectedIsAi == c.isAi) {
+        setState(() {
+          _selectedConversationId = null;
+          _selectedIsAi = false;
+        });
       }
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -252,7 +294,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final asyncConvs = ref.watch(chatConversationsProvider);
+    final asyncConvs = ref.watch(messageInboxConversationsProvider);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -269,7 +311,9 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                 ),
               ),
             ),
+            // 依赖会话列表刷新时保留旧数据，避免右侧会话被反复卸载重建
             child: asyncConvs.when(
+              skipLoadingOnReload: true,
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(
                 child: Padding(
@@ -303,8 +347,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                         const SizedBox(height: 8),
                         TextButton.icon(
                           onPressed: () async {
-                            ref.invalidate(chatConversationsProvider);
-                            await ref.read(chatConversationsProvider.future);
+                            await _refreshConversations();
                           },
                           icon: const Icon(Icons.refresh),
                           label: const Text('点击刷新'),
@@ -314,10 +357,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                   );
                 }
                 return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(chatConversationsProvider);
-                    await ref.read(chatConversationsProvider.future);
-                  },
+                  onRefresh: _refreshConversations,
                   child: ListView.separated(
                     physics: const AlwaysScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -330,9 +370,9 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                         ),
                     itemBuilder: (context, position) {
                       final c = convs[position];
-                      final selected =
-                          c.id != null &&
-                          c.id == (_selectedConversationId ?? convs.first.id);
+                      final selected = _selectedConversationId == null
+                          ? position == 0
+                          : _isSelected(c);
                       return _conversationTile(c, selected);
                     },
                   ),
@@ -345,6 +385,7 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
           Expanded(
             flex: 5,
             child: asyncConvs.maybeWhen(
+              skipLoadingOnReload: true,
               data: (convs) {
                 if (convs.isEmpty) {
                   return ColoredBox(
@@ -371,20 +412,35 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                     ),
                   );
                 }
-                final id = _selectedConversationId ?? convs.first.id;
+                ChatConversationDto? selected;
+                for (final c in convs) {
+                  if (_selectedConversationId == null) {
+                    selected = convs.first;
+                    break;
+                  }
+                  if (_isSelected(c)) {
+                    selected = c;
+                    break;
+                  }
+                }
+                selected ??= convs.first;
+                final id = selected.id;
                 if (id == null) {
                   return const SizedBox.shrink();
                 }
                 return ColoredBox(
                   color: Theme.of(context).scaffoldBackgroundColor,
                   child: ChatWidget(
-                    key: ValueKey<int>(id),
+                    key: ValueKey<String>(
+                      '${selected.isAi ? 'ai' : 'im'}-$id',
+                    ),
                     currentUserId: authState.userId ?? '0',
                     conversationId: id,
                     initialMessages: const [],
                     dio: ApiBaseClient.dio,
                     token: authState.token,
-                    enableSocket: true,
+                    enableSocket: !selected.isAi,
+                    isAi: selected.isAi,
                   ),
                 );
               },
@@ -439,7 +495,26 @@ class _ChatPageListState extends ConsumerState<ChatPageList> {
                         ],
                       ),
                       child: ClipOval(
-                        child: avatar != null && avatar.isNotEmpty
+                        child: c.isAi
+                            ? Container(
+                                width: 52,
+                                height: 52,
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      SearchAiTheme.cyan,
+                                      SearchAiTheme.mint,
+                                    ],
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.auto_awesome,
+                                  color: Colors.white,
+                                  size: 26,
+                                ),
+                              )
+                            : avatar != null && avatar.isNotEmpty
                             ? Image.network(
                                 avatar,
                                 width: 52,

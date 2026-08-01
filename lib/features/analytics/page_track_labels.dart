@@ -87,6 +87,8 @@ class PageTrackLabels {
     Routes.myProfileEdit: '编辑资料',
     Routes.goodsPageUrl: '商品列表',
     Routes.aiPageUrl: 'AI 助手',
+    Routes.aiChatPageUrl: 'AI 对话',
+    Routes.aiFriendDetailPageUrl: 'AI 好友',
     Routes.qrCodePageUrl: '二维码工具',
     Routes.calendarToolPageUrl: '日历工具',
     Routes.dateToolPageUrl: '日期工具',

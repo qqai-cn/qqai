@@ -61,7 +61,17 @@ class ChatConversationDto {
     this.joinMode,
     this.sourceType,
     this.updateTime,
+    this.isAi = false,
   });
+
+  /// IM 单聊
+  static const int typeSingle = 1;
+
+  /// IM 群聊
+  static const int typeGroup = 2;
+
+  /// AI 助手会话（App 消息列表合成项，非 infra chat）
+  static const int typeAi = 3;
 
   final int? id;
   final int? type;
@@ -78,6 +88,7 @@ class ChatConversationDto {
   final int? joinMode;
   final int? sourceType;
   final String? updateTime;
+  final bool isAi;
 
   factory ChatConversationDto.fromJson(Map<String, dynamic> json) {
     return ChatConversationDto(
@@ -96,6 +107,29 @@ class ChatConversationDto {
       joinMode: (json['joinMode'] as num?)?.toInt(),
       sourceType: (json['sourceType'] as num?)?.toInt(),
       updateTime: json['updateTime'] as String?,
+      isAi: false,
+    );
+  }
+
+  /// 将 AI 助手会话映射为消息列表项
+  factory ChatConversationDto.fromAiAssistant({
+    required int id,
+    required String title,
+    bool? pinned,
+    String? model,
+    String? createTime,
+  }) {
+    return ChatConversationDto(
+      id: id,
+      type: typeAi,
+      name: title,
+      pinned: pinned,
+      lastMessageSummary: model == null || model.isEmpty ? 'AI 助手' : model,
+      lastMessageTime: createTime,
+      updateTime: createTime,
+      unreadCount: 0,
+      muted: false,
+      isAi: true,
     );
   }
 
@@ -106,6 +140,7 @@ class ChatConversationDto {
     bool? muted,
     bool? pinned,
     int? memberCount,
+    bool? isAi,
   }) {
     return ChatConversationDto(
       id: id,
@@ -119,19 +154,24 @@ class ChatConversationDto {
       muted: muted ?? this.muted,
       pinned: pinned ?? this.pinned,
       memberCount: memberCount ?? this.memberCount,
+      creatorId: creatorId,
+      joinMode: joinMode,
+      sourceType: sourceType,
       updateTime: updateTime,
+      isAi: isAi ?? this.isAi,
     );
   }
 
-  bool get isGroup => type == 2;
+  bool get isGroup => type == typeGroup;
 
-  bool get isSingle => type == 1;
+  bool get isSingle => type == typeSingle;
 
   String get displayTitle =>
       (name != null && name!.isNotEmpty) ? name! : '会话 ${id ?? ''}';
 
-  /// 消息列表左上角来源标记文案（广场 / 商品）。
+  /// 消息列表左上角来源标记文案（广场 / 商品 / AI）。
   String? get listSourceBadge {
+    if (isAi) return 'AI';
     if (sourceType == ChatConversationSourceType.product) return '商品';
     if (sourceType == ChatConversationSourceType.square ||
         (isGroup && joinMode == 2)) {

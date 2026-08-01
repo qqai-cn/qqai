@@ -17,11 +17,18 @@ import '../../../friends/chat_page_list.dart';
 import '../../../friends/create_group_chat_dialog.dart';
 import '../../../friends/friends_page.dart';
 import '../../../friends/providers/friend_providers.dart';
+import '../../../ai/views/add_ai_assistant_dialog.dart';
+import '../../../ai/providers/ai_assistants_provider.dart';
 
 class MessagePage extends ConsumerStatefulWidget {
-  const MessagePage({super.key, this.initialConversationId});
+  const MessagePage({
+    super.key,
+    this.initialConversationId,
+    this.initialAiConversationId,
+  });
 
   final int? initialConversationId;
+  final int? initialAiConversationId;
 
   @override
   ConsumerState<MessagePage> createState() => _MessagePageState();
@@ -46,9 +53,13 @@ class _MessagePageState extends ConsumerState<MessagePage>
   @override
   void didUpdateWidget(covariant MessagePage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialConversationId != widget.initialConversationId &&
-        widget.initialConversationId != null &&
-        _tabController.index != 0) {
+    final aiChanged = oldWidget.initialAiConversationId !=
+            widget.initialAiConversationId &&
+        widget.initialAiConversationId != null;
+    final imChanged = oldWidget.initialConversationId !=
+            widget.initialConversationId &&
+        widget.initialConversationId != null;
+    if ((aiChanged || imChanged) && _tabController.index != 0) {
       _tabController.index = 0;
       lazyTabMount(0);
     }
@@ -124,11 +135,22 @@ class _MessagePageState extends ConsumerState<MessagePage>
                   showCreateGroupChatDialog(context, ref);
                 case 'friend':
                   showApplyFriendDialog(context, ref);
+                case 'ai':
+                  showAddAiAssistantDialog(context, ref).then((id) {
+                    if (id != null) {
+                      ref.invalidate(aiAssistantsProvider);
+                      if (_tabController.index != 1) {
+                        _tabController.animateTo(1);
+                        lazyTabMount(1);
+                      }
+                    }
+                  });
               }
             },
             itemBuilder: (context) => const [
               PopupMenuItem(value: 'group', child: Text('发起群聊')),
               PopupMenuItem(value: 'friend', child: Text('添加好友')),
+              PopupMenuItem(value: 'ai', child: Text('添加AI助手')),
             ],
           ),
           const AppBarPublishSearchActions(),
@@ -166,7 +188,10 @@ class _MessagePageState extends ConsumerState<MessagePage>
     return LazyTabSlot(
       isMounted: lazyTabMountedIndices.contains(index),
       builder: (_) => switch (index) {
-        0 => ChatPageList(initialConversationId: widget.initialConversationId),
+        0 => ChatPageList(
+            initialConversationId: widget.initialConversationId,
+            initialAiConversationId: widget.initialAiConversationId,
+          ),
         _ => const FriendsPage(),
       },
     );

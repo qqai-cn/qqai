@@ -1,7 +1,38 @@
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 
+import '../../ai/data/models/ai_chat_models.dart';
 import 'chat_message_extra.dart';
 import 'models/chat_models.dart';
+
+/// AI 助手在 flutter_chat_ui 中的固定 authorId。
+const String kAiChatPeerUserId = 'ai';
+
+Message? mapAiChatMessageDtoToMessage(
+  AiChatMessageDto dto, {
+  required String currentUserId,
+}) {
+  final idStr = dto.id?.toString();
+  if (idStr == null || idStr.isEmpty) return null;
+  final authorId = dto.isUser ? currentUserId : kAiChatPeerUserId;
+  final created = DateTime.tryParse(dto.createTime ?? '')?.toUtc() ??
+      DateTime.now().toUtc();
+  if (dto.type == AiChatMessageDto.typeSystem) {
+    return SystemMessage(
+      id: idStr,
+      authorId: 'system',
+      createdAt: created,
+      sentAt: created,
+      text: dto.content ?? '',
+    );
+  }
+  return TextMessage(
+    id: idStr,
+    authorId: authorId,
+    createdAt: created,
+    sentAt: created,
+    text: dto.content ?? '',
+  );
+}
 
 Message? mapChatMessageDtoToMessage(
   ChatMessageDto dto, {

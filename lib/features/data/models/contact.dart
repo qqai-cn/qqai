@@ -4,8 +4,6 @@ import 'package:flutter/cupertino.dart';
 
 import '../../../components/azlist/az_common.dart';
 
-
-
 class ContactInfo extends ISuspensionBean {
   String name;
   String? tagIndex;
@@ -18,6 +16,9 @@ class ContactInfo extends ISuspensionBean {
   int? id;
   String? firstletter;
 
+  /// AI 助手好友：为 true 时 [id] 为会话 id（正数），走 AI 对话而非 IM。
+  bool isAi;
+
   ContactInfo({
     required this.name,
     this.tagIndex,
@@ -27,23 +28,21 @@ class ContactInfo extends ISuspensionBean {
     this.img,
     this.id,
     this.firstletter,
+    this.isAi = false,
   });
 
   ContactInfo.fromJson(Map<String, dynamic> json)
       : name = json['name'],
         img = json['img'],
         id = json['id'],
-        firstletter = json['firstletter'];
+        firstletter = json['firstletter'],
+        isAi = json['isAi'] == true;
 
   Map<String, dynamic> toJson() => {
-//        'id': id,
-    'name': name,
-    'img': img,
-//        'firstletter': firstletter,
-//        'tagIndex': tagIndex,
-//        'namePinyin': namePinyin,
-//        'isShowSuspension': isShowSuspension
-  };
+        'name': name,
+        'img': img,
+        'isAi': isAi,
+      };
 
   @override
   String getSuspensionTag() => tagIndex!;

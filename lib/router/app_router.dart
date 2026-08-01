@@ -254,9 +254,15 @@ GoRouter appRouter(Ref ref) {
                   final conversationId = int.tryParse(
                     state.uri.queryParameters['conversationId'] ?? '',
                   );
+                  final aiConversationId = int.tryParse(
+                    state.uri.queryParameters['aiConversationId'] ?? '',
+                  );
                   return LazyShellTab(
                     tabIndex: 2,
-                    child: MessagePage(initialConversationId: conversationId),
+                    child: MessagePage(
+                      initialConversationId: conversationId,
+                      initialAiConversationId: aiConversationId,
+                    ),
                   );
                 },
               ),
@@ -300,6 +306,32 @@ GoRouter appRouter(Ref ref) {
       ),
 
       /// ========== 工具类页面 ==========
+      GoRoute(
+        path: Routes.aiChatPageUrl,
+        name: 'aiChat',
+        builder: (c, s) {
+          final raw = s.uri.queryParameters['conversationId'];
+          final id = raw == null ? null : int.tryParse(raw);
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.AiChatPage(initialConversationId: id),
+          );
+        },
+      ),
+      GoRoute(
+        path: '${Routes.aiFriendDetailPageUrl}/:conversationId',
+        name: 'aiFriendDetail',
+        builder: (c, s) {
+          final id = int.tryParse(s.pathParameters['conversationId'] ?? '') ?? 0;
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.AiFriendDetailPage(
+              conversationId: id,
+              showAppBar: true,
+            ),
+          );
+        },
+      ),
       GoRoute(
         path: Routes.aiPageUrl,
         name: 'ai',
@@ -579,6 +611,27 @@ GoRouter appRouter(Ref ref) {
             builder: () => friend_detail.FriendsDetailView(
               userId: userId,
               showAppBar: showAppBar,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '${Routes.chat}/ai/:conversationId',
+        name: 'aiChatSession',
+        builder: (context, state) {
+          final id =
+              int.tryParse(state.pathParameters['conversationId'] ?? '') ?? 0;
+          if (id == 0) {
+            return Scaffold(
+              appBar: AppBar(title: const Text('AI 助手')),
+              body: const Center(child: Text('无效会话')),
+            );
+          }
+          return AppDeferredWidget(
+            libraryLoader: route_pages.loadLibrary,
+            builder: () => route_pages.ChatDetailPage(
+              conversationId: id,
+              isAi: true,
             ),
           );
         },
@@ -1014,6 +1067,9 @@ bool _requiresAuth(String path) {
     Routes.publishShortVideoPageUrl,
     Routes.publishHelpPageUrl,
     Routes.myProfileEdit,
+    Routes.chat,
+    Routes.aiChatPageUrl,
+    Routes.aiFriendDetailPageUrl,
   ];
   return protectedPaths.any((protected) => path.startsWith(protected));
 }

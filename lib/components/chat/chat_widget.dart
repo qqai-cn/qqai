@@ -21,6 +21,8 @@ import 'package:go_router/go_router.dart';
 import 'package:qqai/components/chat/qqai_chat_text_message.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pull_down_button/pull_down_button.dart';
+import 'package:qqai/features/ai/data/models/ai_chat_models.dart';
+import 'package:qqai/features/ai/data/repos/ai_chat_repo.dart';
 import 'package:qqai/features/chat/data/chat_message_mapper.dart';
 import 'package:qqai/features/chat/data/chat_message_extra.dart';
 import 'package:qqai/features/chat/data/models/chat_models.dart';
@@ -50,6 +52,9 @@ class ChatWidget extends ConsumerStatefulWidget {
   /// 是否订阅全局 Socket 消息（连接由 App 登录态统一管理）
   final bool enableSocket;
 
+  /// AI 助手会话：历史/发送走 `/ai/chat`，关闭 Socket 与 IM 专属能力。
+  final bool isAi;
+
   const ChatWidget({
     super.key,
     required this.currentUserId,
@@ -58,6 +63,7 @@ class ChatWidget extends ConsumerStatefulWidget {
     required this.dio,
     this.token,
     this.enableSocket = false,
+    this.isAi = false,
   });
 
   @override
@@ -84,6 +90,8 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   bool _loadingOlder = false;
   bool _initialHistoryReady = false;
   late final ChatMessageTimeFormat _messageTimeFormat = ChatMessageTimeFormat();
+  CancelToken? _aiCancel;
+  bool _aiStreaming = false;
 
   @override
   void initState() {
@@ -94,18 +102,20 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       name: '我',
     );
     _chatController = InMemoryChatController(messages: widget.initialMessages);
-    if (widget.enableSocket) {
+    if (widget.enableSocket && !widget.isAi) {
       _connectToGlobalSocket();
     }
     _composerFocusNode.addListener(_onComposerFocusChange);
-    _historyRevisionSub = ref.listenManual<int>(
-      chatHistoryRevisionProvider(widget.conversationId),
-      (previous, next) {
-        if (previous != next) {
-          Future.microtask(_loadInitialHistory);
-        }
-      },
-    );
+    if (!widget.isAi) {
+      _historyRevisionSub = ref.listenManual<int>(
+        chatHistoryRevisionProvider(widget.conversationId),
+        (previous, next) {
+          if (previous != next) {
+            Future.microtask(_loadInitialHistory);
+          }
+        },
+      );
+    }
     Future.microtask(_loadInitialHistory);
   }
 
@@ -118,18 +128,25 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   @override
   void didUpdateWidget(covariant ChatWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.conversationId != widget.conversationId) {
+    if (oldWidget.conversationId != widget.conversationId ||
+        oldWidget.isAi != widget.isAi) {
+      _aiCancel?.cancel();
+      _aiCancel = null;
+      _aiStreaming = false;
       _historyRevisionSub?.close();
-      _historyRevisionSub = ref.listenManual<int>(
-        chatHistoryRevisionProvider(widget.conversationId),
-        (previous, next) {
-          if (previous != next) {
-            Future.microtask(_loadInitialHistory);
-          }
-        },
-      );
+      _historyRevisionSub = null;
+      if (!widget.isAi) {
+        _historyRevisionSub = ref.listenManual<int>(
+          chatHistoryRevisionProvider(widget.conversationId),
+          (previous, next) {
+            if (previous != next) {
+              Future.microtask(_loadInitialHistory);
+            }
+          },
+        );
+      }
       _nextOlderPage = 2;
-      _hasMoreOlder = true;
+      _hasMoreOlder = !widget.isAi;
       _loadingOlder = false;
       _initialHistoryReady = false;
       Future.microtask(_loadInitialHistory);
@@ -152,25 +169,55 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
     return messages;
   }
 
+  List<Message> _messagesFromAiDtos(List<AiChatMessageDto> dtos) {
+    final messages = <Message>[];
+    for (final dto in dtos) {
+      final m = mapAiChatMessageDtoToMessage(
+        dto,
+        currentUserId: widget.currentUserId,
+      );
+      if (m != null) messages.add(m);
+    }
+    messages.sort(
+      (a, b) => (a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+          .toUtc()
+          .compareTo(
+            (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)).toUtc(),
+          ),
+    );
+    return messages;
+  }
+
   Future<void> _loadInitialHistory() async {
     if (!mounted) return;
     _initialHistoryReady = false;
     _nextOlderPage = 2;
-    _hasMoreOlder = true;
+    _hasMoreOlder = !widget.isAi;
     try {
-      final page = await ref
-          .read(chatRepoProvider)
-          .getMessagePage(
-            conversationId: widget.conversationId,
-            pageNo: 1,
-            pageSize: _historyPageSize,
-          );
-      final raw = [...?page.list];
-      final messages = _messagesFromDtos(raw);
-      if (mounted) {
-        await _chatController.setMessages(messages);
-        _hasMoreOlder = (page.list?.length ?? 0) >= _historyPageSize;
-        await _markConversationRead(page.list);
+      if (widget.isAi) {
+        final raw = await ref
+            .read(aiChatRepoProvider)
+            .listMessages(widget.conversationId);
+        final messages = _messagesFromAiDtos(raw);
+        if (mounted) {
+          await _chatController.setMessages(messages);
+          _hasMoreOlder = false;
+        }
+      } else {
+        final page = await ref
+            .read(chatRepoProvider)
+            .getMessagePage(
+              conversationId: widget.conversationId,
+              pageNo: 1,
+              pageSize: _historyPageSize,
+            );
+        final raw = [...?page.list];
+        final messages = _messagesFromDtos(raw);
+        if (mounted) {
+          await _chatController.setMessages(messages);
+          _hasMoreOlder = (page.list?.length ?? 0) >= _historyPageSize;
+          await _markConversationRead(page.list);
+        }
       }
     } catch (e) {
       debugPrint('chat history: $e');
@@ -204,7 +251,8 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   }
 
   Future<void> _loadOlderHistory() async {
-    if (!mounted ||
+    if (widget.isAi ||
+        !mounted ||
         _loadingOlder ||
         !_hasMoreOlder ||
         !_initialHistoryReady) {
@@ -249,6 +297,7 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
 
   @override
   void dispose() {
+    _aiCancel?.cancel();
     _historyRevisionSub?.close();
     _socketMessageSubscription?.cancel();
     _composerFocusNode.removeListener(_onComposerFocusChange);
@@ -342,18 +391,25 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                           title: _showEmojiPanel ? '键盘' : '表情',
                           onPressed: _toggleEmojiPanel,
                         ),
-                        ComposerActionButton(
-                          icon: Icons.videocam_outlined,
-                          title: '视频通话',
-                          onPressed: _startVideoCall,
-                        ),
+                        if (!widget.isAi)
+                          ComposerActionButton(
+                            icon: Icons.videocam_outlined,
+                            title: '视频通话',
+                            onPressed: _startVideoCall,
+                          ),
                         ComposerActionButton(
                           icon: Icons.more_horiz,
                           title: '更多',
                           onPressed: () {
-                            context.push(
-                              '${Routes.chat}/${widget.conversationId}/settings',
-                            );
+                            if (widget.isAi) {
+                              context.push(
+                                '${Routes.aiFriendDetailPageUrl}/${widget.conversationId}',
+                              );
+                            } else {
+                              context.push(
+                                '${Routes.chat}/${widget.conversationId}/settings',
+                              );
+                            }
                           },
                         ),
                       ],
@@ -476,13 +532,18 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                   ? ChatColors.dark().surface
                   : ChatColors.light().surface,
             ),
-            onAttachmentTap: _handleAttachmentTap,
+            onAttachmentTap: widget.isAi ? null : _handleAttachmentTap,
             onMessageSend: _addItem,
             // onMessageTap: _removeItem1,
             onMessageLongPress: _handleMessageLongPress,
             resolveUser: (id) => Future.value(switch (id) {
               final same when same == _meUser.id => _meUser,
               'system' => _systemUser,
+              kAiChatPeerUserId => const User(
+                id: kAiChatPeerUserId,
+                name: 'AI助手',
+                imageSource: 'https://file.aabe.cn/qqai/2025/09/1.webp',
+              ),
               _ => User(id: id, name: '用户 $id', imageSource: _defaultAvatar),
             }),
             theme: theme.brightness == Brightness.dark
@@ -683,6 +744,11 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   }
 
   void _addItem(String? text) async {
+    if (widget.isAi) {
+      await _sendAiMessage(text);
+      return;
+    }
+
     final message = await createMessage(
       widget.currentUserId,
       widget.dio,
@@ -704,6 +770,99 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       await _sendMessageBySocket(message.copyWith(metadata: originalMetadata));
     } catch (error) {
       debugPrint('Error sending message: $error');
+    }
+  }
+
+  Future<void> _sendAiMessage(String? text) async {
+    final content = text?.trim() ?? '';
+    if (content.isEmpty || _aiStreaming) return;
+
+    _aiCancel?.cancel();
+    final cancel = CancelToken();
+    _aiCancel = cancel;
+    _aiStreaming = true;
+
+    final now = DateTime.now().toUtc();
+    var userMsg = TextMessage(
+      id: _uuid.v4(),
+      authorId: widget.currentUserId,
+      createdAt: now,
+      sentAt: now,
+      text: content,
+    );
+    var assistantMsg = TextMessage(
+      id: _uuid.v4(),
+      authorId: kAiChatPeerUserId,
+      createdAt: now,
+      sentAt: now,
+      text: '',
+    );
+
+    if (mounted) {
+      await _chatController.insertMessage(userMsg);
+      await _chatController.insertMessage(assistantMsg);
+    }
+
+    var assistantContent = '';
+    try {
+      await for (final chunk in ref.read(aiChatRepoProvider).sendMessageStream(
+            conversationId: widget.conversationId,
+            content: content,
+            useContext: true,
+            cancelToken: cancel,
+          )) {
+        if (!mounted) break;
+        if (!chunk.isOk) {
+          throw Exception(chunk.msg ?? '生成失败');
+        }
+        final send = chunk.send;
+        final receive = chunk.receive;
+        if (send?.id != null) {
+          final oldUser = userMsg;
+          userMsg = userMsg.copyWith(id: send!.id!.toString());
+          await _chatController.updateMessage(oldUser, userMsg);
+        }
+        final delta = receive?.content;
+        if (delta != null && delta.isNotEmpty) {
+          if (assistantContent.isNotEmpty &&
+              (delta == assistantContent ||
+                  (delta.length >= assistantContent.length &&
+                      delta.startsWith(assistantContent)))) {
+            assistantContent = delta;
+          } else {
+            assistantContent += delta;
+          }
+        }
+        if (receive != null || delta != null) {
+          final oldAssistant = assistantMsg;
+          assistantMsg = assistantMsg.copyWith(
+            id: receive?.id?.toString() ?? assistantMsg.id,
+            text: assistantContent,
+          );
+          await _chatController.updateMessage(oldAssistant, assistantMsg);
+        }
+      }
+    } on DioException catch (e) {
+      if (!CancelToken.isCancel(e) && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message ?? e.toString()),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      _aiCancel = null;
+      _aiStreaming = false;
     }
   }
 

@@ -45,6 +45,33 @@ class ApiConstant {
   static const String FRIEND_REJECT = '/app-api/member/friend/reject';
   static const String FRIEND_DELETE = '/app-api/member/friend/delete';
 
+  // AI 对话（LangChain4j，与后管能力对齐的 App 端）
+  static const String AI_CHAT_CONVERSATION_MY_LIST =
+      '/app-api/ai/chat/conversation/my-list';
+  static const String AI_CHAT_CONVERSATION_ASSISTANTS =
+      '/app-api/ai/chat/conversation/assistants';
+  static const String AI_CHAT_CONVERSATION_CREATE_ASSISTANT =
+      '/app-api/ai/chat/conversation/create-assistant';
+  static const String AI_CHAT_CONVERSATION_GET_MY =
+      '/app-api/ai/chat/conversation/get-my';
+  static const String AI_CHAT_CONVERSATION_CREATE_MY =
+      '/app-api/ai/chat/conversation/create-my';
+  static const String AI_CHAT_CONVERSATION_UPDATE_MY =
+      '/app-api/ai/chat/conversation/update-my';
+  static const String AI_CHAT_CONVERSATION_DELETE_MY =
+      '/app-api/ai/chat/conversation/delete-my';
+  static const String AI_CHAT_CONVERSATION_DELETE_UNPINNED =
+      '/app-api/ai/chat/conversation/delete-by-unpinned';
+  static const String AI_CHAT_MESSAGE_LIST =
+      '/app-api/ai/chat/message/list-by-conversation-id';
+  static const String AI_CHAT_MESSAGE_SEND = '/app-api/ai/chat/message/send';
+  static const String AI_CHAT_MESSAGE_SEND_STREAM =
+      '/app-api/ai/chat/message/send-stream';
+  static const String AI_CHAT_MESSAGE_DELETE = '/app-api/ai/chat/message/delete';
+  static const String AI_CHAT_MESSAGE_DELETE_BY_CONVERSATION =
+      '/app-api/ai/chat/message/delete-by-conversation-id';
+  static const String AI_MODEL_SIMPLE_LIST = '/app-api/ai/model/simple-list';
+
   // Chat / 消息
   static const String CHAT_MESSAGE_SEND = '/app-api/infra/chat/message/send';
   static const String CHAT_MESSAGE_PAGE = '/app-api/infra/chat/message/page';

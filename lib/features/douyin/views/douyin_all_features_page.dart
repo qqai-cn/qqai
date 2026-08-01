@@ -42,7 +42,8 @@ class DouyinAllFeaturesPage extends StatelessWidget {
         title: '工具与服务',
         items: [
           _FeatureItem('天气', Icons.wb_sunny_outlined, Routes.weatherPageUrl),
-          _FeatureItem('AI 助手', Icons.auto_awesome, Routes.aiPageUrl),
+          _FeatureItem('AI 对话', Icons.auto_awesome, Routes.aiChatPageUrl),
+          _FeatureItem('AI 助手', Icons.smart_toy_outlined, Routes.aiPageUrl),
           _FeatureItem('二维码', Icons.qr_code_2, Routes.qrCodePageUrl),
           _FeatureItem(
             '日历',

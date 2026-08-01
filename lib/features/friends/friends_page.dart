@@ -15,6 +15,9 @@ import '../../components/azlist/az_common.dart';
 import '../../components/azlist/az_listview.dart';
 import '../../components/azlist/index_bar.dart';
 import '../../router/app_routes.dart';
+import '../ai/data/models/ai_chat_models.dart';
+import '../ai/providers/ai_assistants_provider.dart';
+import '../ai/views/ai_friend_detail_page.dart';
 import '../data/models/contact.dart';
 import 'data/friend_models.dart';
 import 'friends_detail_view.dart';
@@ -108,8 +111,29 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     return 26;
   }
 
-  List<ContactInfo> _buildRowsFromGroups(List<FriendLetterGroupDto> groups) {
+  List<ContactInfo> _buildRowsFromGroups(
+    List<FriendLetterGroupDto> groups,
+    List<AiChatConversationDto> assistants,
+  ) {
     final flat = <ContactInfo>[];
+    // AI 助手好友：固定分区「助」
+    for (final a in assistants) {
+      final id = a.id;
+      if (id == null) continue;
+      flat.add(
+        ContactInfo(
+          name: (a.title?.trim().isNotEmpty == true)
+              ? a.title!.trim()
+              : 'AI助手',
+          tagIndex: '助',
+          img: null,
+          id: id,
+          isAi: true,
+          iconData: Icons.auto_awesome,
+          bgColor: const Color(0xFF00A8CC),
+        ),
+      );
+    }
     final sorted = [...groups]
       ..sort((a, b) => _tagRank(_normSuspTag(a.letter))
           .compareTo(_tagRank(_normSuspTag(b.letter))));
@@ -149,9 +173,16 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
       c.namePinyin = PinyinHelper.getPinyinE(c.name);
     }
     flat.sort((a, b) {
-      final ra = _tagRank(a.tagIndex ?? '#');
-      final rb = _tagRank(b.tagIndex ?? '#');
+      // AI 分区排在字母好友之前、置顶入口之后
+      final ra = a.isAi ? -1 : _tagRank(a.tagIndex ?? '#');
+      final rb = b.isAi ? -1 : _tagRank(b.tagIndex ?? '#');
       if (ra != rb) return ra.compareTo(rb);
+      if (a.isAi && b.isAi) {
+        // 默认助手优先（兼容改名后仍靠列表顺序：千千AI助手名优先）
+        final ad = a.name == kDefaultAiAssistantTitle ? 0 : 1;
+        final bd = b.name == kDefaultAiAssistantTitle ? 0 : 1;
+        if (ad != bd) return ad.compareTo(bd);
+      }
       return (a.namePinyin ?? '').compareTo(b.namePinyin ?? '');
     });
     SuspensionUtil.setShowSuspensionStatus(flat);
@@ -171,7 +202,7 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     if (first == null) return;
     var found = false;
     for (final c in rows) {
-      if (c.id == indexSel && !c.isTopEntry) {
+      if (_sameContact(c, indexSel, _selectedIsAi) && !c.isTopEntry) {
         found = true;
         break;
       }
@@ -181,12 +212,20 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
         if (!mounted) return;
         setState(() {
           indexSel = first.id!;
+          _selectedIsAi = first.isAi;
         });
       });
     }
   }
 
+  bool _sameContact(ContactInfo c, int id, bool isAi) {
+    return c.id == id && c.isAi == isAi;
+  }
+
+  bool _selectedIsAi = false;
+
   String _contactTitle(ContactInfo model) {
+    if (model.isAi) return model.name;
     final id = model.id;
     if (id != null) {
       final remarks = ref.watch(friendRemarkCacheProvider);
@@ -248,25 +287,32 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
 
   Future<void> _onRefresh() async {
     ref.invalidate(friendListGroupedProvider);
+    ref.invalidate(aiAssistantsProvider);
     ref.invalidate(friendPendingIncomingProvider);
     ref.invalidate(groupInvitationPendingIncomingProvider);
-    await ref.read(friendListGroupedProvider.future);
+    await Future.wait([
+      ref.read(friendListGroupedProvider.future),
+      ref.read(aiAssistantsProvider.future),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     final groupedAsync = ref.watch(friendListGroupedProvider);
+    final assistantsAsync = ref.watch(aiAssistantsProvider);
 
-    return groupedAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
+    if (groupedAsync.isLoading && !groupedAsync.hasValue) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (groupedAsync.hasError && !groupedAsync.hasValue) {
+      return Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '$e',
+                '${groupedAsync.error}',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: AppActionColors.muted(context)),
               ),
@@ -278,100 +324,112 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
             ],
           ),
         ),
-      ),
-      data: (groups) {
-        ref.read(friendRemarkCacheProvider.notifier).syncFromGroupedFriends(groups);
-        final contactList = _buildRowsFromGroups(groups);
-        _ensureSelection(contactList);
+      );
+    }
 
-        final wide = 1.sw > Constant.CHAT_TWO_VIEW_WIDTH;
-        ContactInfo? selectedRow;
-        for (final c in contactList) {
-          if (c.id == indexSel) {
-            selectedRow = c;
-            break;
-          }
-        }
-        final showDetail = wide &&
-            selectedRow != null &&
-            !selectedRow.isTopEntry;
+    final groups = groupedAsync.value ?? const <FriendLetterGroupDto>[];
+    final assistants = assistantsAsync.value ?? const <AiChatConversationDto>[];
+    ref.read(friendRemarkCacheProvider.notifier).syncFromGroupedFriends(groups);
+    final contactList = _buildRowsFromGroups(groups, assistants);
+    _ensureSelection(contactList);
 
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              flex: 2,
-              child: RefreshIndicator(
-                onRefresh: _onRefresh,
-                child: AzListView(
-                  data: contactList,
-                  itemCount: contactList.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final model = contactList[index];
-                    return getWeChatListItem(
-                      context,
-                      model,
-                      defHeaderBgColor: GoodsPageStyle.imageBg(context),
-                    );
-                  },
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  susItemBuilder: (BuildContext context, int index) {
-                    final model = contactList[index];
-                    if ('↑' == model.getSuspensionTag()) {
-                      return Container();
-                    }
-                    return _susItem(context, model.getSuspensionTag());
-                  },
-                  indexBarData: ['↑', '☆', ...kIndexBarData],
-                  indexBarOptions: IndexBarOptions(
-                    needRebuild: true,
-                    ignoreDragCancel: true,
-                    downTextStyle: context.typo.label
-                        .copyWith(fontSize: 12, color: Colors.white),
-                    downItemDecoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.green,
+    final wide = 1.sw > Constant.CHAT_TWO_VIEW_WIDTH;
+    ContactInfo? selectedRow;
+    for (final c in contactList) {
+      if (_sameContact(c, indexSel, _selectedIsAi)) {
+        selectedRow = c;
+        break;
+      }
+    }
+    final showDetail =
+        wide && selectedRow != null && !selectedRow.isTopEntry;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        Expanded(
+          flex: 2,
+          child: RefreshIndicator(
+            onRefresh: _onRefresh,
+            child: AzListView(
+              data: contactList,
+              itemCount: contactList.length,
+              itemBuilder: (BuildContext context, int index) {
+                final model = contactList[index];
+                return getWeChatListItem(
+                  context,
+                  model,
+                  defHeaderBgColor: GoodsPageStyle.imageBg(context),
+                );
+              },
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              susItemBuilder: (BuildContext context, int index) {
+                final model = contactList[index];
+                if ('↑' == model.getSuspensionTag()) {
+                  return Container();
+                }
+                final tag = model.getSuspensionTag();
+                return _susItem(
+                  context,
+                  tag == '助' ? 'AI 助手' : tag,
+                );
+              },
+              indexBarData: ['↑', '助', '☆', ...kIndexBarData],
+              indexBarOptions: IndexBarOptions(
+                needRebuild: true,
+                ignoreDragCancel: true,
+                downTextStyle: context.typo.label
+                    .copyWith(fontSize: 12, color: Colors.white),
+                downItemDecoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.green,
+                ),
+                indexHintWidth: 120 / 2,
+                indexHintHeight: 100 / 2,
+                indexHintDecoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                      Utils.getImgPath('ic_index_bar_bubble_gray'),
                     ),
-                    indexHintWidth: 120 / 2,
-                    indexHintHeight: 100 / 2,
-                    indexHintDecoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(
-                          Utils.getImgPath('ic_index_bar_bubble_gray'),
-                        ),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    indexHintAlignment: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
-                        ? Alignment.centerLeft
-                        : Alignment.centerRight,
-                    indexHintChildAlignment: const Alignment(-0.25, 0.0),
-                    indexHintOffset: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
-                        ? Offset((1 / 7).sw, 0)
-                        : Offset.zero,
+                    fit: BoxFit.contain,
                   ),
                 ),
+                indexHintAlignment: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
+                    ? Alignment.centerLeft
+                    : Alignment.centerRight,
+                indexHintChildAlignment: const Alignment(-0.25, 0.0),
+                indexHintOffset: 1.sw > Constant.CHAT_TWO_VIEW_WIDTH
+                    ? Offset((1 / 7).sw, 0)
+                    : Offset.zero,
               ),
             ),
-            if (wide)
-              Expanded(
-                flex: 5,
-                child: showDetail
-                    ? FriendsDetailView(userId: indexSel, showAppBar: false)
-                    : Center(
-                        child: Text(
-                          '请选择好友',
-                          style: TextStyle(
-                            color: AppActionColors.muted(context),
-                          ),
-                        ),
+          ),
+        ),
+        if (wide)
+          Expanded(
+            flex: 5,
+            child: showDetail
+                ? (selectedRow!.isAi
+                    ? AiFriendDetailPage(
+                        conversationId: selectedRow.id!,
+                        showAppBar: false,
+                      )
+                    : FriendsDetailView(
+                        userId: indexSel,
+                        showAppBar: false,
+                      ))
+                : Center(
+                    child: Text(
+                      '请选择好友',
+                      style: TextStyle(
+                        color: AppActionColors.muted(context),
                       ),
-              ),
-          ],
-        );
-      },
+                    ),
+                  ),
+          ),
+      ],
     );
   }
 
@@ -390,29 +448,37 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     Color? defHeaderBgColor,
   }) {
     return ListTile(
-      selected: model.id != null && indexSel == model.id,
+      selected: model.id != null &&
+          indexSel == model.id &&
+          _selectedIsAi == model.isAi,
       selectedTileColor: _selectedTileColor(context),
       leading: _buildFriendLeading(context, model, defHeaderBgColor: defHeaderBgColor),
       title: Text(_contactTitle(model)),
-      trailing: model.id == 12
+      trailing: model.isTopEntry && model.id == 12
           ? _newFriendsTrailing()
-          : model.id == 13
+          : model.isTopEntry && model.id == 13
               ? _groupInvitationsTrailing()
               : null,
       onTap: () {
-        if (model.id == 12) {
-          context.push(Routes.friendPendingIncoming);
-          return;
-        }
-        if (model.id == 13) {
-          context.push(Routes.groupInvitations);
+        // 顶部入口用 isTopEntry 判断，避免与 AI 会话 id（如 12/13）冲突
+        if (model.isTopEntry) {
+          if (model.id == 12) {
+            context.push(Routes.friendPendingIncoming);
+          } else if (model.id == 13) {
+            context.push(Routes.groupInvitations);
+          }
           return;
         }
         setState(() {
           indexSel = model.id ?? indexSel;
+          _selectedIsAi = model.isAi;
         });
         if (1.sw < Constant.CHAT_TWO_VIEW_WIDTH) {
-          context.push('${Routes.userDetail}/${indexSel.toString()}/true');
+          if (model.isAi) {
+            context.push('${Routes.aiFriendDetailPageUrl}/${model.id}');
+          } else {
+            context.push('${Routes.userDetail}/${indexSel.toString()}/true');
+          }
         }
       },
     );
