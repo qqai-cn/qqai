@@ -88,6 +88,10 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
   final _composerController = TextEditingController();
   final _composerFocusNode = FocusNode();
   bool _showEmojiPanel = false;
+  /// AI 会话：是否携带历史上下文（默认开启）
+  bool _useContext = true;
+  /// AI 会话：是否联网搜索（默认关闭）
+  bool _useSearch = false;
 
   static const int _historyPageSize = 30;
   int _nextOlderPage = 2;
@@ -394,6 +398,24 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
                           title: _showEmojiPanel ? '键盘' : '表情',
                           onPressed: _toggleEmojiPanel,
                         ),
+                        if (widget.isAi) ...[
+                          ComposerActionButton(
+                            icon: Icons.history_edu_outlined,
+                            title: '上下文',
+                            selected: _useContext,
+                            onPressed: () {
+                              setState(() => _useContext = !_useContext);
+                            },
+                          ),
+                          ComposerActionButton(
+                            icon: Icons.travel_explore_outlined,
+                            title: '联网搜索',
+                            selected: _useSearch,
+                            onPressed: () {
+                              setState(() => _useSearch = !_useSearch);
+                            },
+                          ),
+                        ],
                         if (!widget.isAi)
                           ComposerActionButton(
                             icon: Icons.videocam_outlined,
@@ -918,7 +940,8 @@ class _ChatWidgetState extends ConsumerState<ChatWidget> {
       await for (final chunk in ref.read(aiChatRepoProvider).sendMessageStream(
             conversationId: widget.conversationId,
             content: content,
-            useContext: true,
+            useContext: _useContext,
+            useSearch: _useSearch,
             cancelToken: cancel,
           )) {
         if (!mounted) break;
