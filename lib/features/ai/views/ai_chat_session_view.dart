@@ -290,11 +290,20 @@ class _Bubble extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (reasoning != null && reasoning.isNotEmpty) ...[
+              if (!isUser && reasoning != null && reasoning.isNotEmpty) ...[
+                Text(
+                  '思考',
+                  style: TextStyle(
+                    color: theme.textSecondary,
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 4.h),
                 Text(
                   reasoning,
                   style: TextStyle(
-                    color: isUser ? Colors.white70 : theme.textSecondary,
+                    color: theme.textSecondary,
                     fontSize: 12.sp,
                     height: 1.35,
                   ),

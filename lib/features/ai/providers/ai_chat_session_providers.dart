@@ -82,6 +82,35 @@ class AiChatSessionNotifier extends Notifier<AiChatSessionState> {
     state = state.copyWith(useContext: value);
   }
 
+  void _applyEmptyFallback(
+    int userId,
+    int assistantId,
+    String userContent,
+    String assistantContent,
+    String reasoningContent,
+  ) {
+    if (assistantContent.isNotEmpty || reasoningContent.isEmpty) {
+      return;
+    }
+    final list = List<AiChatMessageDto>.from(state.messages);
+    if (list.length < 2) {
+      return;
+    }
+    list[list.length - 1] = AiChatMessageDto(
+      id: assistantId,
+      conversationId: conversationId,
+      type: AiChatMessageDto.typeAssistant,
+      content: reasoningContent,
+    );
+    list[list.length - 2] = AiChatMessageDto(
+      id: userId,
+      conversationId: conversationId,
+      type: AiChatMessageDto.typeUser,
+      content: userContent,
+    );
+    state = state.copyWith(messages: list);
+  }
+
   Future<void> stopStreaming() async {
     _cancel?.cancel();
     _cancel = null;
@@ -182,12 +211,17 @@ class AiChatSessionNotifier extends Notifier<AiChatSessionState> {
       }
     } on DioException catch (e) {
       if (!CancelToken.isCancel(e)) {
+        _applyEmptyFallback(userId, assistantId, content, assistantContent, reasoningContent);
         state = state.copyWith(error: e.message ?? e.toString());
       }
     } catch (e) {
+      _applyEmptyFallback(userId, assistantId, content, assistantContent, reasoningContent);
       state = state.copyWith(error: e.toString());
     } finally {
       _cancel = null;
+      if (assistantContent.isEmpty && reasoningContent.isNotEmpty) {
+        _applyEmptyFallback(userId, assistantId, content, assistantContent, reasoningContent);
+      }
       state = state.copyWith(streaming: false);
     }
   }

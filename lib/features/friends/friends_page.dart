@@ -87,10 +87,10 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
     ),
     ContactInfo(
       id: 15,
-      name: '公众号',
+      name: '知识库',
       tagIndex: '↑',
       bgColor: Colors.blueAccent,
-      iconData: Icons.person,
+      iconData: Icons.menu_book,
     ),
   ];
 
@@ -470,6 +470,8 @@ class _FriendsPageState extends ConsumerState<FriendsPage> {
             context.push(Routes.friendPendingIncoming);
           } else if (model.id == 13) {
             context.push(Routes.groupInvitations);
+          } else if (model.id == 15) {
+            context.push(Routes.knowledge);
           }
           return;
         }

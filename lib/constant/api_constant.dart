@@ -72,6 +72,39 @@ class ApiConstant {
       '/app-api/ai/chat/message/delete-by-conversation-id';
   static const String AI_MODEL_SIMPLE_LIST = '/app-api/ai/model/simple-list';
 
+  // AI 知识库（App 仅自己创建的）
+  static const String AI_KNOWLEDGE_PAGE = '/app-api/ai/knowledge/page';
+  static const String AI_KNOWLEDGE_GET = '/app-api/ai/knowledge/get';
+  static const String AI_KNOWLEDGE_CREATE = '/app-api/ai/knowledge/create';
+  static const String AI_KNOWLEDGE_UPDATE = '/app-api/ai/knowledge/update';
+  static const String AI_KNOWLEDGE_DELETE = '/app-api/ai/knowledge/delete';
+  static const String AI_KNOWLEDGE_CREATE_CHAT =
+      '/app-api/ai/knowledge/create-chat';
+  static const String AI_KNOWLEDGE_DOCUMENT_PAGE =
+      '/app-api/ai/knowledge/document/page';
+  static const String AI_KNOWLEDGE_DOCUMENT_GET =
+      '/app-api/ai/knowledge/document/get';
+  static const String AI_KNOWLEDGE_DOCUMENT_CREATE =
+      '/app-api/ai/knowledge/document/create';
+  static const String AI_KNOWLEDGE_DOCUMENT_UPDATE =
+      '/app-api/ai/knowledge/document/update';
+  static const String AI_KNOWLEDGE_DOCUMENT_UPDATE_STATUS =
+      '/app-api/ai/knowledge/document/update-status';
+  static const String AI_KNOWLEDGE_DOCUMENT_DELETE =
+      '/app-api/ai/knowledge/document/delete';
+  static const String AI_KNOWLEDGE_SEGMENT_PAGE =
+      '/app-api/ai/knowledge/segment/page';
+  static const String AI_KNOWLEDGE_SEGMENT_CREATE =
+      '/app-api/ai/knowledge/segment/create';
+  static const String AI_KNOWLEDGE_SEGMENT_UPDATE =
+      '/app-api/ai/knowledge/segment/update';
+  static const String AI_KNOWLEDGE_SEGMENT_UPDATE_STATUS =
+      '/app-api/ai/knowledge/segment/update-status';
+  static const String AI_KNOWLEDGE_SEGMENT_DELETE =
+      '/app-api/ai/knowledge/segment/delete';
+  static const String AI_KNOWLEDGE_SEGMENT_SEARCH =
+      '/app-api/ai/knowledge/segment/search';
+
   // Chat / 消息
   static const String CHAT_MESSAGE_SEND = '/app-api/infra/chat/message/send';
   static const String CHAT_MESSAGE_PAGE = '/app-api/infra/chat/message/page';

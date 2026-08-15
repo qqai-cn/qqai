@@ -600,6 +600,64 @@ GoRouter appRouter(Ref ref) {
         ),
       ),
       GoRoute(
+        path: Routes.knowledge,
+        name: 'knowledge',
+        builder: (c, s) => AppDeferredWidget(
+          libraryLoader: route_pages.loadLibrary,
+          builder: () => route_pages.KnowledgeListPage(),
+        ),
+        routes: [
+          GoRoute(
+            path: ':id',
+            name: 'knowledgeDetail',
+            builder: (context, state) {
+              final id =
+                  int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+              return AppDeferredWidget(
+                libraryLoader: route_pages.loadLibrary,
+                builder: () =>
+                    route_pages.KnowledgeDetailPage(knowledgeId: id),
+              );
+            },
+            routes: [
+              GoRoute(
+                path: 'retrieval',
+                name: 'knowledgeRetrieval',
+                builder: (context, state) {
+                  final id =
+                      int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                  return AppDeferredWidget(
+                    libraryLoader: route_pages.loadLibrary,
+                    builder: () => route_pages.KnowledgeRetrievalPage(
+                      knowledgeId: id,
+                    ),
+                  );
+                },
+              ),
+              GoRoute(
+                path: 'document/:documentId',
+                name: 'knowledgeSegments',
+                builder: (context, state) {
+                  final id =
+                      int.tryParse(state.pathParameters['id'] ?? '') ?? 0;
+                  final documentId = int.tryParse(
+                        state.pathParameters['documentId'] ?? '',
+                      ) ??
+                      0;
+                  return AppDeferredWidget(
+                    libraryLoader: route_pages.loadLibrary,
+                    builder: () => route_pages.KnowledgeSegmentPage(
+                      knowledgeId: id,
+                      documentId: documentId,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(
         path: '${Routes.userDetail}/:userId/:showAppBar',
         name: 'userDetail',
         builder: (context, state) {

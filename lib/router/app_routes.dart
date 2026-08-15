@@ -12,6 +12,9 @@ class Routes {
 
   /// 群聊邀请（待处理群邀请）
   static const String groupInvitations = "/chat/group-invitations";
+
+  /// 知识库
+  static const String knowledge = "/ai/knowledge";
   static const String userDetail = "/user_detail";
   static const String care = "/cares";
   static const String collect = "/collects";
