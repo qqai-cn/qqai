@@ -99,8 +99,8 @@ class _TimelineGridScrollViewState<T> extends State<TimelineGridScrollView<T>> {
                 itemCount: section.items.length,
                 gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                   maxCrossAxisExtent: 180,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 4,
                   childAspectRatio: 0.72,
                 ),
                 itemBuilder: (context, index) =>
@@ -116,7 +116,7 @@ class _TimelineGridScrollViewState<T> extends State<TimelineGridScrollView<T>> {
               onLoadMore: widget.onLoadMore,
             ),
           ),
-        const SliverPadding(padding: EdgeInsets.only(bottom: 16)),
+        const SliverPadding(padding: EdgeInsets.only(bottom: 12)),
       ],
     );
   }

@@ -110,18 +110,24 @@ class ContentTimelineSectionHeader extends StatelessWidget {
 }
 
 class ContentTimelineSectionFrame extends StatelessWidget {
+  static const EdgeInsets defaultPadding = EdgeInsets.fromLTRB(16, 10, 16, 10);
+
   const ContentTimelineSectionFrame({
     super.key,
     required this.title,
     required this.child,
-    this.padding = const EdgeInsets.fromLTRB(16, 10, 16, 10),
+    this.padding = defaultPadding,
     this.labelWidth = 88,
+    this.titleGap = 10,
+    this.railInset = 18,
   });
 
   final String title;
   final Widget child;
   final EdgeInsets padding;
   final double labelWidth;
+  final double titleGap;
+  final double railInset;
 
   @override
   Widget build(BuildContext context) {
@@ -143,12 +149,12 @@ class ContentTimelineSectionFrame extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: titleGap),
           Expanded(
             child: Stack(
               children: [
                 Positioned(
-                  left: 18,
+                  left: railInset,
                   top: 4,
                   bottom: 8,
                   child: Container(

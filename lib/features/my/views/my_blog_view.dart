@@ -209,7 +209,11 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
         SliverToBoxAdapter(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final contentWidth = (constraints.maxWidth - 114).clamp(
+              const labelWidth = 36.0;
+              const titleGap = 0.0;
+              const padding = EdgeInsets.fromLTRB(8, 10, 12, 10);
+              final reserved = padding.horizontal + labelWidth + titleGap;
+              final contentWidth = (constraints.maxWidth - reserved).clamp(
                 0,
                 double.infinity,
               );
@@ -220,6 +224,10 @@ class _MyBlogViewState extends ConsumerState<MyBlogView>
               );
               return ContentTimelineSectionFrame(
                 title: section.title,
+                padding: padding,
+                labelWidth: labelWidth,
+                titleGap: titleGap,
+                railInset: 0,
                 child: MasonryGridView.count(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
